@@ -55,6 +55,45 @@ const QuestionBank = () => {
     }
   };
 
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+
+  const selectAllFiltered = () => {
+    if (filtered.every(q => selected.has(q.id))) {
+      setSelected(prev => {
+        const next = new Set(prev);
+        filtered.forEach(q => next.delete(q.id));
+        return next;
+      });
+    } else {
+      setSelected(prev => {
+        const next = new Set(prev);
+        filtered.forEach(q => next.add(q.id));
+        return next;
+      });
+    }
+  };
+
+  const handleExport = async () => {
+    const selectedQuestions = questions.filter(q => selected.has(q.id));
+    if (selectedQuestions.length === 0) return;
+    setExporting(true);
+    try {
+      await exportBankQuizToDocx(quizTitle, selectedQuestions, includeAnswerKey);
+      toast.success("Quiz exported!");
+      setShowExportDialog(false);
+    } catch {
+      toast.error("Failed to export quiz");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   // Collect all unique standards
   const allStandards = Array.from(
     new Set(questions.flatMap(q => q.standards.map(s => s.ngss_code)))
@@ -66,6 +105,8 @@ const QuestionBank = () => {
     const matchesStandard = !selectedStandard || q.standards.some(s => s.ngss_code === selectedStandard);
     return matchesSearch && matchesStandard;
   });
+
+  const allFilteredSelected = filtered.length > 0 && filtered.every(q => selected.has(q.id));
 
   if (loading) {
     return (
