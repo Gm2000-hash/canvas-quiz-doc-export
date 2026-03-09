@@ -217,6 +217,14 @@ const QuestionBank = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search questions..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
           </div>
+          <div className="flex gap-2">
+            <Button variant={viewMode === "grouped" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grouped")} className="gap-1.5">
+              <LayoutGrid className="h-4 w-4" /> By Standard
+            </Button>
+            <Button variant={viewMode === "flat" ? "default" : "outline"} size="sm" onClick={() => setViewMode("flat")} className="gap-1.5">
+              <List className="h-4 w-4" /> Flat List
+            </Button>
+          </div>
           {selected.size > 0 && (
             <Button onClick={() => setShowExportDialog(true)} className="gap-2">
               <FileText className="h-4 w-4" />
