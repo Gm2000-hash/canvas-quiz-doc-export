@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { getCourses, getQuizzes, getQuiz, getQuizQuestions, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from '@/lib/canvas-api';
 import { tagQuestionsWithNGSS, type NGSSStandard } from '@/lib/ngss-api';
 import { exportQuizToDocx } from '@/lib/export-docx';
+import { saveQuestionsToBank } from '@/lib/question-bank';
 import { toast } from 'sonner';
 import { BookOpen, FileText, Download, Loader2, ArrowLeft, ChevronRight, FlaskConical, Sparkles } from 'lucide-react';
 
@@ -117,6 +118,14 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
         includeAnswerKey,
         includeNGSS ? ngssTags : undefined
       );
+
+      // Auto-save to question bank
+      try {
+        await saveQuestionsToBank(qs, ngssTags, selectedCourse.name, quiz.title);
+      } catch (err) {
+        console.warn('Question bank save skipped:', err);
+      }
+
       toast.success(includeAnswerKey ? 'Quiz and answer key downloaded!' : 'Quiz downloaded!');
     } catch (err) {
       toast.error('Failed to export quiz. Please try again.');
