@@ -253,7 +253,112 @@ const QuestionBank = () => {
               <p>{questions.length === 0 ? "Your question bank is empty. Export a quiz to start building it!" : "No questions match your filter."}</p>
             </CardContent>
           </Card>
+        ) : viewMode === "grouped" ? (
+          /* Grouped by Standard view */
+          <div className="space-y-6">
+            <div className="flex items-center gap-3">
+              <Checkbox checked={allFilteredSelected} onCheckedChange={selectAllFiltered} />
+              <p className="text-sm text-muted-foreground">
+                {allFilteredSelected ? "Deselect all" : "Select all"} · {filtered.length} unique question{filtered.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+            {sortedGroupKeys.map(code => {
+              const groupQuestions = groupedByStandard.get(code) || [];
+              const desc = standardDescriptions.get(code) || "";
+              return (
+                <Collapsible key={code} defaultOpen>
+                  <CollapsibleTrigger className="w-full">
+                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                      <FlaskConical className="h-5 w-5 text-primary shrink-0" />
+                      <div className="flex-1 text-left">
+                        <div className="flex items-center gap-2">
+                          <Badge variant="default" className="text-xs">{code}</Badge>
+                          <span className="text-sm text-muted-foreground">({groupQuestions.length} question{groupQuestions.length !== 1 ? "s" : ""})</span>
+                        </div>
+                        {desc && <p className="text-xs text-muted-foreground mt-1">{desc}</p>}
+                      </div>
+                    </div>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <div className="space-y-2 mt-2 ml-4 border-l-2 border-primary/20 pl-4">
+                      {groupQuestions.map(q => (
+                        <Card key={`${code}-${q.id}`} className={`group cursor-pointer transition-colors ${selected.has(q.id) ? "ring-2 ring-primary" : ""}`} onClick={() => toggleSelect(q.id)}>
+                          <CardContent className="p-3 space-y-1.5">
+                            <div className="flex items-start gap-3">
+                              <Checkbox checked={selected.has(q.id)} onCheckedChange={() => toggleSelect(q.id)} onClick={e => e.stopPropagation()} className="mt-0.5" />
+                              <p className="text-sm text-foreground flex-1">{stripHtml(q.question_text)}</p>
+                              <div className="flex gap-1 shrink-0">
+                                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" onClick={e => { e.stopPropagation(); openEdit(q); }}>
+                                  <Pencil className="h-3.5 w-3.5" />
+                                </Button>
+                                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); handleDelete(q.id); }}>
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2 pl-7">
+                              {q.standards.filter(s => s.ngss_code !== code).map(s => (
+                                <Badge key={s.ngss_code} variant="outline" className="text-xs">{s.ngss_code}</Badge>
+                              ))}
+                              {q.source_course && (
+                                <span className="text-xs text-muted-foreground">
+                                  {q.source_course}{q.source_quiz ? ` · ${q.source_quiz}` : ""}
+                                </span>
+                              )}
+                              <span className="text-xs text-muted-foreground ml-auto">{q.points_possible} pts</span>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              );
+            })}
+            {untagged.length > 0 && (
+              <Collapsible defaultOpen>
+                <CollapsibleTrigger className="w-full">
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+                    <FlaskConical className="h-5 w-5 text-muted-foreground shrink-0" />
+                    <div className="flex-1 text-left">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-muted-foreground">Untagged</span>
+                        <span className="text-sm text-muted-foreground">({untagged.length})</span>
+                      </div>
+                    </div>
+                  </div>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <div className="space-y-2 mt-2 ml-4 border-l-2 border-muted pl-4">
+                    {untagged.map(q => (
+                      <Card key={`untagged-${q.id}`} className={`group cursor-pointer transition-colors ${selected.has(q.id) ? "ring-2 ring-primary" : ""}`} onClick={() => toggleSelect(q.id)}>
+                        <CardContent className="p-3 space-y-1.5">
+                          <div className="flex items-start gap-3">
+                            <Checkbox checked={selected.has(q.id)} onCheckedChange={() => toggleSelect(q.id)} onClick={e => e.stopPropagation()} className="mt-0.5" />
+                            <p className="text-sm text-foreground flex-1">{stripHtml(q.question_text)}</p>
+                            <div className="flex gap-1 shrink-0">
+                              <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" onClick={e => { e.stopPropagation(); openEdit(q); }}>
+                                <Pencil className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); handleDelete(q.id); }}>
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 pl-7">
+                            {q.source_course && <span className="text-xs text-muted-foreground">{q.source_course}{q.source_quiz ? ` · ${q.source_quiz}` : ""}</span>}
+                            <span className="text-xs text-muted-foreground ml-auto">{q.points_possible} pts</span>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+          </div>
         ) : (
+          /* Flat list view */
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <Checkbox checked={allFilteredSelected} onCheckedChange={selectAllFiltered} />
