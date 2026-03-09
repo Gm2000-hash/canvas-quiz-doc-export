@@ -24,6 +24,11 @@ const QuestionBank = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedStandard, setSelectedStandard] = useState<string | null>(null);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  const [quizTitle, setQuizTitle] = useState("Custom Quiz");
+  const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
 
   const loadQuestions = async () => {
