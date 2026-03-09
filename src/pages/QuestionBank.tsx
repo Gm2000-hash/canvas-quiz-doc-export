@@ -11,8 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { getQuestionBank, deleteFromBank, updateQuestion, type QuestionBankItem } from "@/lib/question-bank";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, Plus, X } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, Plus, X, List, LayoutGrid } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 function stripHtml(html: string): string {
   const div = document.createElement("div");
