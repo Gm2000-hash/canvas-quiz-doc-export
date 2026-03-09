@@ -150,15 +150,42 @@ const QuestionBank = () => {
     }
   };
 
-  const allStandards = Array.from(
-    new Set(questions.flatMap(q => q.standards.map(s => s.ngss_code)))
-  ).sort();
+  // Build a map of standard -> description for display
+  const standardDescriptions = new Map<string, string>();
+  questions.forEach(q => q.standards.forEach(s => {
+    if (!standardDescriptions.has(s.ngss_code)) standardDescriptions.set(s.ngss_code, s.ngss_description);
+  }));
+
+  const allStandards = Array.from(standardDescriptions.keys()).sort();
 
   const filtered = questions.filter(q => {
     const matchesSearch = !search || stripHtml(q.question_text).toLowerCase().includes(search.toLowerCase());
     const matchesStandard = !selectedStandard || q.standards.some(s => s.ngss_code === selectedStandard);
     return matchesSearch && matchesStandard;
   });
+
+  // Group questions by standard (questions with multiple standards appear in each group)
+  const groupedByStandard = new Map<string, QuestionBankItem[]>();
+  const untagged: QuestionBankItem[] = [];
+  filtered.forEach(q => {
+    if (q.standards.length === 0) {
+      untagged.push(q);
+    } else {
+      q.standards.forEach(s => {
+        if (!selectedStandard || s.ngss_code === selectedStandard) {
+          const list = groupedByStandard.get(s.ngss_code) || [];
+          list.push(q);
+          groupedByStandard.set(s.ngss_code, list);
+        }
+      });
+      // If filtering by a specific standard, also ensure it appears
+      if (selectedStandard && !q.standards.some(s => s.ngss_code === selectedStandard)) return;
+      if (!selectedStandard) {
+        // Already handled above
+      }
+    }
+  });
+  const sortedGroupKeys = Array.from(groupedByStandard.keys()).sort();
 
   const allFilteredSelected = filtered.length > 0 && filtered.every(q => selected.has(q.id));
 
