@@ -131,7 +131,7 @@ const QuestionBank = () => {
       </header>
 
       <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-6">
-        {/* Search & filter */}
+        {/* Search & filter + create quiz button */}
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -142,6 +142,12 @@ const QuestionBank = () => {
               className="pl-10"
             />
           </div>
+          {selected.size > 0 && (
+            <Button onClick={() => setShowExportDialog(true)} className="gap-2">
+              <FileText className="h-4 w-4" />
+              Create Quiz ({selected.size})
+            </Button>
+          )}
         </div>
 
         {/* NGSS standard filter chips */}
@@ -177,22 +183,40 @@ const QuestionBank = () => {
           </Card>
         ) : (
           <div className="space-y-3">
-            <p className="text-sm text-muted-foreground">{filtered.length} question{filtered.length !== 1 ? "s" : ""}</p>
+            <div className="flex items-center gap-3">
+              <Checkbox
+                checked={allFilteredSelected}
+                onCheckedChange={selectAllFiltered}
+              />
+              <p className="text-sm text-muted-foreground">
+                {allFilteredSelected ? "Deselect all" : "Select all"} · {filtered.length} question{filtered.length !== 1 ? "s" : ""}
+              </p>
+            </div>
             {filtered.map(q => (
-              <Card key={q.id} className="group">
+              <Card
+                key={q.id}
+                className={`group cursor-pointer transition-colors ${selected.has(q.id) ? "ring-2 ring-primary" : ""}`}
+                onClick={() => toggleSelect(q.id)}
+              >
                 <CardContent className="p-4 space-y-2">
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start gap-3">
+                    <Checkbox
+                      checked={selected.has(q.id)}
+                      onCheckedChange={() => toggleSelect(q.id)}
+                      onClick={e => e.stopPropagation()}
+                      className="mt-0.5"
+                    />
                     <p className="text-sm text-foreground flex-1">{stripHtml(q.question_text)}</p>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 text-destructive hover:text-destructive"
-                      onClick={() => handleDelete(q.id)}
+                      onClick={e => { e.stopPropagation(); handleDelete(q.id); }}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </div>
-                  <div className="flex flex-wrap items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2 pl-7">
                     {q.standards.map(s => (
                       <Badge key={s.ngss_code} variant="secondary" className="text-xs cursor-help" title={s.ngss_description}>
                         {s.ngss_code}
@@ -211,6 +235,44 @@ const QuestionBank = () => {
           </div>
         )}
       </main>
+
+      {/* Export Dialog */}
+      <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create Quiz Document</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="quiz-title">Quiz Title</Label>
+              <Input
+                id="quiz-title"
+                value={quizTitle}
+                onChange={e => setQuizTitle(e.target.value)}
+                placeholder="Enter quiz title..."
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="answer-key">Include Answer Key</Label>
+              <Switch
+                id="answer-key"
+                checked={includeAnswerKey}
+                onCheckedChange={setIncludeAnswerKey}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {selected.size} question{selected.size !== 1 ? "s" : ""} selected
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowExportDialog(false)}>Cancel</Button>
+            <Button onClick={handleExport} disabled={exporting || !quizTitle.trim()}>
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
+              Export
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
