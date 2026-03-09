@@ -218,9 +218,12 @@ const QuestionBank = () => {
                   </div>
                   <div className="flex flex-wrap items-center gap-2 pl-7">
                     {q.standards.map(s => (
-                      <Badge key={s.ngss_code} variant="secondary" className="text-xs cursor-help" title={s.ngss_description}>
-                        {s.ngss_code}
-                      </Badge>
+                      <div key={s.ngss_code} className="flex items-center gap-1.5">
+                        <Badge variant="secondary" className="text-xs shrink-0">
+                          {s.ngss_code}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground italic">{s.ngss_description}</span>
+                      </div>
                     ))}
                     {q.source_course && (
                       <span className="text-xs text-muted-foreground">
