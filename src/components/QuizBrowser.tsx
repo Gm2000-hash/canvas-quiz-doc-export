@@ -118,6 +118,14 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
         includeAnswerKey,
         includeNGSS ? ngssTags : undefined
       );
+
+      // Auto-save to question bank
+      try {
+        await saveQuestionsToBank(qs, ngssTags, selectedCourse.name, quiz.title);
+      } catch (err) {
+        console.warn('Question bank save skipped:', err);
+      }
+
       toast.success(includeAnswerKey ? 'Quiz and answer key downloaded!' : 'Quiz downloaded!');
     } catch (err) {
       toast.error('Failed to export quiz. Please try again.');
