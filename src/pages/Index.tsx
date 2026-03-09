@@ -1,18 +1,21 @@
 import { SettingsForm } from '@/components/SettingsForm';
 import { QuizBrowser } from '@/components/QuizBrowser';
 import { useCanvasConfig } from '@/hooks/useCanvasConfig';
-import { Settings, Menu, FileText } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { Settings, Menu, FileText, BookOpen, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 const Index = () => {
   const { config, setConfig, isConfigured } = useCanvasConfig();
+  const { signOut } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Google Classroom-style top app bar */}
       <header className="sticky top-0 z-50 h-16 border-b bg-primary text-primary-foreground flex items-center px-4 gap-4 shadow-md">
         {isConfigured && (
           <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
@@ -37,8 +40,17 @@ const Index = () => {
           </div>
           <span className="text-lg font-semibold tracking-tight">Canvas Quiz Exporter</span>
         </div>
-        {isConfigured && (
-          <div className="ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-primary-foreground hover:bg-primary-foreground/10 gap-2"
+            onClick={() => navigate('/question-bank')}
+          >
+            <BookOpen className="h-4 w-4" />
+            <span className="hidden sm:inline">Question Bank</span>
+          </Button>
+          {isConfigured && (
             <Button
               variant="ghost"
               size="icon"
@@ -47,11 +59,19 @@ const Index = () => {
             >
               <Settings className="h-5 w-5" />
             </Button>
-          </div>
-        )}
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-primary-foreground hover:bg-primary-foreground/10"
+            onClick={signOut}
+            title="Sign out"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
+        </div>
       </header>
 
-      {/* Main content */}
       <main className="flex-1">
         {!isConfigured ? (
           <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
