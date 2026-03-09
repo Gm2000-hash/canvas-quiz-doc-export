@@ -106,6 +106,30 @@ export async function getQuestionBank(): Promise<QuestionBankItem[]> {
 }
 
 export async function deleteFromBank(id: string) {
+  // Delete standards first (foreign key)
+  await supabase.from("question_bank_standards").delete().eq("question_bank_id", id);
   const { error } = await supabase.from("question_bank").delete().eq("id", id);
   if (error) throw error;
+}
+
+export async function updateQuestion(
+  id: string,
+  updates: { question_text?: string; points_possible?: number },
+  standards?: { ngss_code: string; ngss_description: string }[]
+) {
+  if (updates.question_text !== undefined || updates.points_possible !== undefined) {
+    const { error } = await supabase.from("question_bank").update(updates).eq("id", id);
+    if (error) throw error;
+  }
+
+  if (standards !== undefined) {
+    // Replace all standards
+    await supabase.from("question_bank_standards").delete().eq("question_bank_id", id);
+    if (standards.length > 0) {
+      const { error } = await supabase.from("question_bank_standards").insert(
+        standards.map(s => ({ question_bank_id: id, ngss_code: s.ngss_code, ngss_description: s.ngss_description }))
+      );
+      if (error) throw error;
+    }
+  }
 }
