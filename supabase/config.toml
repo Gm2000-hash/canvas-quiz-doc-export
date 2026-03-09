@@ -1,1 +1,7 @@
 project_id = "fpodibymgxupaxgosjls"
+
+[functions.ngss-tagger]
+verify_jwt = false
+
+[functions.canvas-proxy]
+verify_jwt = false
