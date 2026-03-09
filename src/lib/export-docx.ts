@@ -1,28 +1,12 @@
 import { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Packer, BorderStyle } from 'docx';
 import { saveAs } from 'file-saver';
 import type { Quiz, QuizQuestion } from './canvas-api';
+import type { NGSSStandard } from './ngss-api';
 
 function stripHtml(html: string): string {
   const div = document.createElement('div');
   div.innerHTML = html;
   return div.textContent || div.innerText || '';
-}
-
-function getQuestionTypeName(type: string): string {
-  const map: Record<string, string> = {
-    multiple_choice_question: 'Multiple Choice',
-    true_false_question: 'True/False',
-    short_answer_question: 'Short Answer',
-    fill_in_multiple_blanks_question: 'Fill in the Blanks',
-    multiple_answers_question: 'Select All That Apply',
-    matching_question: 'Matching',
-    numerical_question: 'Numerical',
-    essay_question: 'Essay',
-    calculated_question: 'Calculated',
-    multiple_dropdowns_question: 'Multiple Dropdowns',
-    text_only_question: 'Text Only',
-  };
-  return map[type] || type;
 }
 
 function getLetterLabel(index: number): string {
@@ -32,7 +16,8 @@ function getLetterLabel(index: number): string {
 function buildQuestionParagraphs(
   question: QuizQuestion,
   index: number,
-  showAnswers: boolean
+  showAnswers: boolean,
+  standards?: NGSSStandard[]
 ): Paragraph[] {
   const paragraphs: Paragraph[] = [];
 
@@ -47,6 +32,24 @@ function buildQuestionParagraphs(
       ],
     })
   );
+
+  // NGSS standards line
+  if (standards && standards.length > 0) {
+    paragraphs.push(
+      new Paragraph({
+        spacing: { before: 40, after: 60 },
+        indent: { left: 360 },
+        children: [
+          new TextRun({ text: 'NGSS: ', bold: true, size: 18, color: '1a6b3c' }),
+          ...standards.flatMap((s, i) => [
+            ...(i > 0 ? [new TextRun({ text: ', ', size: 18, color: '1a6b3c' })] : []),
+            new TextRun({ text: s.code, bold: true, size: 18, color: '1a6b3c' }),
+            new TextRun({ text: ` (${s.description})`, size: 18, italics: true, color: '4a8c64' }),
+          ]),
+        ],
+      })
+    );
+  }
 
   // Answer choices
   if (question.answers && question.answers.length > 0) {
@@ -91,7 +94,6 @@ function buildQuestionParagraphs(
         );
       }
     } else if (!showAnswers && ['short_answer_question', 'essay_question', 'numerical_question'].includes(question.question_type)) {
-      // Add blank line for student answers
       paragraphs.push(
         new Paragraph({
           spacing: { before: 100 },
@@ -114,7 +116,13 @@ function buildQuestionParagraphs(
   return paragraphs;
 }
 
-function createDocument(quiz: Quiz, questions: QuizQuestion[], showAnswers: boolean, courseName: string): Document {
+function createDocument(
+  quiz: Quiz,
+  questions: QuizQuestion[],
+  showAnswers: boolean,
+  courseName: string,
+  ngssTags?: Map<number, NGSSStandard[]>
+): Document {
   const sections: Paragraph[] = [];
 
   // Title
@@ -136,13 +144,24 @@ function createDocument(quiz: Quiz, questions: QuizQuestion[], showAnswers: bool
     })
   );
 
-  // Subtitle
+  // Answer key subtitle
   if (showAnswers) {
     sections.push(
       new Paragraph({
         alignment: AlignmentType.CENTER,
         spacing: { after: 100 },
         children: [new TextRun({ text: '— ANSWER KEY —', bold: true, size: 28, color: '16a34a' })],
+      })
+    );
+  }
+
+  // NGSS note
+  if (ngssTags && ngssTags.size > 0) {
+    sections.push(
+      new Paragraph({
+        alignment: AlignmentType.CENTER,
+        spacing: { after: 50 },
+        children: [new TextRun({ text: 'Aligned to Next Generation Science Standards (NGSS)', size: 20, italics: true, color: '1a6b3c' })],
       })
     );
   }
@@ -159,7 +178,7 @@ function createDocument(quiz: Quiz, questions: QuizQuestion[], showAnswers: bool
     })
   );
 
-  // Student name line (only for student version)
+  // Student name line
   if (!showAnswers) {
     sections.push(
       new Paragraph({
@@ -193,7 +212,8 @@ function createDocument(quiz: Quiz, questions: QuizQuestion[], showAnswers: bool
   // Questions
   const filteredQuestions = questions.filter(q => q.question_type !== 'text_only_question');
   filteredQuestions.forEach((question, index) => {
-    sections.push(...buildQuestionParagraphs(question, index, showAnswers));
+    const standards = ngssTags?.get(question.id);
+    sections.push(...buildQuestionParagraphs(question, index, showAnswers, standards));
   });
 
   return new Document({
@@ -205,17 +225,16 @@ export async function exportQuizToDocx(
   quiz: Quiz,
   questions: QuizQuestion[],
   courseName: string,
-  includeAnswerKey: boolean
+  includeAnswerKey: boolean,
+  ngssTags?: Map<number, NGSSStandard[]>
 ) {
-  // Export student version
-  const studentDoc = createDocument(quiz, questions, false, courseName);
+  const studentDoc = createDocument(quiz, questions, false, courseName, ngssTags);
   const studentBlob = await Packer.toBlob(studentDoc);
   const safeName = quiz.title.replace(/[^a-zA-Z0-9]/g, '_');
   saveAs(studentBlob, `${safeName}_Quiz.docx`);
 
-  // Export answer key if requested
   if (includeAnswerKey) {
-    const answerDoc = createDocument(quiz, questions, true, courseName);
+    const answerDoc = createDocument(quiz, questions, true, courseName, ngssTags);
     const answerBlob = await Packer.toBlob(answerDoc);
     saveAs(answerBlob, `${safeName}_Answer_Key.docx`);
   }
