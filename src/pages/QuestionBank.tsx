@@ -575,21 +575,61 @@ const QuestionBank = () => {
                                     </button>
                                   </div>
 
-                                  {/* Expanded: show questions for this core idea */}
+                                  {/* Expanded: show substandards with questions */}
                                   {isCoreExpanded && (
-                                    <div className="space-y-2 mt-2 ml-6 border-l-2 border-primary/20 pl-4">
-                                      {coreQuestions
-                                        .slice()
-                                        .sort((a, b) => {
-                                          const getSubNum = (q: typeof a) => {
-                                            const s = q.standards.find(s => getCoreIdeaFromCode(s.ngss_code) === coreIdea);
-                                            if (!s) return 999;
-                                            const match = s.ngss_code.match(/-(\d+)$/);
-                                            return match ? parseInt(match[1], 10) : 999;
-                                          };
-                                          return getSubNum(a) - getSubNum(b);
-                                        })
-                                        .map(q => questionCard(q, coreIdea))}
+                                    <div className="space-y-3 mt-2 ml-6 border-l-2 border-primary/20 pl-4">
+                                      {(ALL_SUBSTANDARDS[coreIdea] || []).map(sub => {
+                                        const subQuestions = coreQuestions.filter(q =>
+                                          q.standards.some(s => s.ngss_code === sub.code) ||
+                                          q.standards.some(s => {
+                                            // Also match HS equivalent (e.g., HS-LS1-1 for MS-LS1-1)
+                                            const parsed = parseStandardCode(s.ngss_code);
+                                            if (!parsed || parsed.level !== "HS") return false;
+                                            return `MS-${parsed.discipline}${parsed.coreNum}-${s.ngss_code.match(/-(\d+)$/)?.[1]}` === sub.code;
+                                          })
+                                        );
+                                        return (
+                                          <div key={sub.code}>
+                                            <div className="flex items-start gap-2 py-1.5">
+                                              <Badge variant={subQuestions.length > 0 ? "secondary" : "outline"} className="text-xs shrink-0 mt-0.5">
+                                                {sub.code}
+                                              </Badge>
+                                              <p className="text-xs text-muted-foreground flex-1">{sub.description}</p>
+                                              <span className="text-xs text-muted-foreground shrink-0">
+                                                {subQuestions.length > 0 ? `${subQuestions.length} Q` : "—"}
+                                              </span>
+                                            </div>
+                                            {subQuestions.length > 0 && (
+                                              <div className="space-y-2 mt-1 ml-4">
+                                                {subQuestions.map(q => questionCard(q, sub.code))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                      {/* Questions not matching any defined substandard */}
+                                      {coreQuestions.filter(q => {
+                                        const subCodes = (ALL_SUBSTANDARDS[coreIdea] || []).map(s => s.code);
+                                        return !q.standards.some(s => subCodes.includes(s.ngss_code) || (() => {
+                                          const parsed = parseStandardCode(s.ngss_code);
+                                          if (!parsed || parsed.level !== "HS") return false;
+                                          return subCodes.includes(`MS-${parsed.discipline}${parsed.coreNum}-${s.ngss_code.match(/-(\d+)$/)?.[1]}`);
+                                        })());
+                                      }).length > 0 && (
+                                        <div>
+                                          <p className="text-xs font-medium text-muted-foreground py-1.5">Other questions</p>
+                                          <div className="space-y-2 ml-4">
+                                            {coreQuestions.filter(q => {
+                                              const subCodes = (ALL_SUBSTANDARDS[coreIdea] || []).map(s => s.code);
+                                              return !q.standards.some(s => subCodes.includes(s.ngss_code) || (() => {
+                                                const parsed = parseStandardCode(s.ngss_code);
+                                                if (!parsed || parsed.level !== "HS") return false;
+                                                return subCodes.includes(`MS-${parsed.discipline}${parsed.coreNum}-${s.ngss_code.match(/-(\d+)$/)?.[1]}`);
+                                              })());
+                                            }).map(q => questionCard(q, `${coreIdea}-other`))}
+                                          </div>
+                                        </div>
+                                      )}
                                     </div>
                                   )}
                                 </div>
