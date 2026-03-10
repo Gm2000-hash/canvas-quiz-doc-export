@@ -578,7 +578,7 @@ const QuestionBank = () => {
 
                       {/* Expanded: show core ideas for this discipline */}
                       {isExpanded && (
-                        <div className="mt-4 space-y-2 border-t border-border pt-4" onClick={e => e.stopPropagation()}>
+                        <div className="mt-4 space-y-2 border-t border-border pt-4 overflow-x-hidden min-w-0" onClick={e => e.stopPropagation()}>
                           {Array.from(hierarchy.get(disc.key)?.entries() || [])
                             .sort(([a], [b]) => a.localeCompare(b))
                             .map(([coreIdea, group]) => {
@@ -614,14 +614,14 @@ const QuestionBank = () => {
                                           <Badge variant="default" className="text-xs shrink-0">{coreIdea}</Badge>
                                           <span className="text-sm text-muted-foreground">({coreQuestions.length} question{coreQuestions.length !== 1 ? "s" : ""})</span>
                                         </div>
-                                        {firstDesc && <p className="text-xs text-muted-foreground mt-1 truncate">{firstDesc}</p>}
+                                        {firstDesc && <p className="text-xs text-muted-foreground mt-1 break-words">{firstDesc}</p>}
                                       </div>
                                     </button>
                                   </div>
 
                                   {/* Expanded: show substandards with questions */}
                                   {isCoreExpanded && (
-                                    <div className="space-y-3 mt-2 ml-6 border-l-2 border-primary/20 pl-4">
+                                    <div className="space-y-3 mt-2 ml-6 border-l-2 border-primary/20 pl-4 overflow-x-hidden min-w-0">
                                       {(ALL_SUBSTANDARDS[coreIdea] || []).map(sub => {
                                         const subQuestions = coreQuestions.filter(q =>
                                           q.standards.some(s => s.ngss_code === sub.code) ||
@@ -638,7 +638,7 @@ const QuestionBank = () => {
                                               <Badge variant={subQuestions.length > 0 ? "secondary" : "outline"} className="text-xs shrink-0 mt-0.5">
                                                 {sub.code}
                                               </Badge>
-                                              <p className="text-xs text-muted-foreground flex-1">{sub.description}</p>
+                                              <p className="text-xs text-muted-foreground flex-1 break-words">{sub.description}</p>
                                               <span className="text-xs text-muted-foreground shrink-0">
                                                 {subQuestions.length > 0 ? `${subQuestions.length} Q` : "—"}
                                               </span>
