@@ -726,7 +726,7 @@ const QuestionBank = () => {
 
       {/* Edit Question Dialog */}
       <Dialog open={!!editingQuestion} onOpenChange={(open) => { if (!open) setEditingQuestion(null); }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Edit Question</DialogTitle>
             <DialogDescription>Update the question text, points, and NGSS standards.</DialogDescription>
