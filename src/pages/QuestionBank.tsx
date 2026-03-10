@@ -762,12 +762,56 @@ const QuestionBank = () => {
                   </div>
                 ))}
               </div>
-              <div className="flex gap-2">
-                <Input placeholder="Code (e.g. MS-PS1-1)" value={newCode} onChange={e => setNewCode(e.target.value)} className="w-36" />
-                <Input placeholder="Description" value={newDesc} onChange={e => setNewDesc(e.target.value)} className="flex-1" />
-                <Button variant="outline" size="icon" onClick={addStandard} disabled={!newCode.trim()}>
-                  <Plus className="h-4 w-4" />
-                </Button>
+              {/* Searchable standard picker */}
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                  <Input
+                    placeholder="Search standards (e.g. MS-ESS2-3 or 'plate')..."
+                    value={standardSearch}
+                    onChange={e => setStandardSearch(e.target.value)}
+                    className="pl-8 text-sm h-9"
+                  />
+                </div>
+                {standardSearch.trim() && (
+                  <div className="max-h-40 overflow-y-auto border rounded-md divide-y">
+                    {Object.entries(ALL_SUBSTANDARDS)
+                      .flatMap(([, subs]) => subs)
+                      .filter(sub => {
+                        const q = standardSearch.toLowerCase();
+                        return (
+                          sub.code.toLowerCase().includes(q) ||
+                          sub.description.toLowerCase().includes(q)
+                        ) && !editStandards.some(es => es.ngss_code === sub.code);
+                      })
+                      .slice(0, 20)
+                      .map(sub => (
+                        <button
+                          key={sub.code}
+                          type="button"
+                          className="w-full flex items-start gap-2 px-3 py-2 hover:bg-muted/50 text-left transition-colors"
+                          onClick={() => {
+                            setEditStandards(prev => [...prev, { ngss_code: sub.code, ngss_description: sub.description }]);
+                            setStandardSearch("");
+                          }}
+                        >
+                          <Badge variant="outline" className="text-xs shrink-0 mt-0.5">{sub.code}</Badge>
+                          <span className="text-xs text-muted-foreground">{sub.description}</span>
+                        </button>
+                      ))}
+                    {Object.entries(ALL_SUBSTANDARDS)
+                      .flatMap(([, subs]) => subs)
+                      .filter(sub => {
+                        const q = standardSearch.toLowerCase();
+                        return (
+                          sub.code.toLowerCase().includes(q) ||
+                          sub.description.toLowerCase().includes(q)
+                        ) && !editStandards.some(es => es.ngss_code === sub.code);
+                      }).length === 0 && (
+                      <p className="text-xs text-muted-foreground p-3">No matching standards found</p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
