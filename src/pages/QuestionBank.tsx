@@ -402,6 +402,17 @@ const QuestionBank = () => {
                 const isExpanded = expandedDiscipline === disc.key;
                 const Icon = disc.icon;
 
+                // Collect all question IDs in this discipline
+                const discQuestionIds: string[] = [];
+                const discMap = hierarchy.get(disc.key);
+                if (discMap) {
+                  for (const group of discMap.values()) {
+                    group.questionIds.forEach(id => discQuestionIds.push(id));
+                  }
+                }
+                const uniqueDiscIds = [...new Set(discQuestionIds)];
+                const allDiscSelected = uniqueDiscIds.length > 0 && uniqueDiscIds.every(id => selected.has(id));
+
                 return (
                   <Card
                     key={disc.key}
@@ -414,6 +425,20 @@ const QuestionBank = () => {
                   >
                     <CardContent className="p-5">
                       <div className="flex items-center gap-3">
+                        {count > 0 && (
+                          <Checkbox
+                            checked={allDiscSelected}
+                            onCheckedChange={() => {
+                              setSelected(prev => {
+                                const next = new Set(prev);
+                                uniqueDiscIds.forEach(id => allDiscSelected ? next.delete(id) : next.add(id));
+                                return next;
+                              });
+                            }}
+                            onClick={e => e.stopPropagation()}
+                            className="shrink-0"
+                          />
+                        )}
                         <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                           <Icon className="h-5 w-5 text-primary" />
                         </div>
