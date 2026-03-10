@@ -614,7 +614,7 @@ const QuestionBank = () => {
                                           <Badge variant="default" className="text-xs shrink-0">{coreIdea}</Badge>
                                           <span className="text-sm text-muted-foreground">({coreQuestions.length} question{coreQuestions.length !== 1 ? "s" : ""})</span>
                                         </div>
-                                        {firstDesc && <p className="text-xs text-muted-foreground mt-1 truncate">{firstDesc}</p>}
+                                        {firstDesc && <p className="text-xs text-muted-foreground mt-1 break-words">{firstDesc}</p>}
                                       </div>
                                     </button>
                                   </div>
