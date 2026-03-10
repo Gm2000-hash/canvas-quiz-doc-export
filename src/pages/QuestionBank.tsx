@@ -578,7 +578,7 @@ const QuestionBank = () => {
 
                       {/* Expanded: show core ideas for this discipline */}
                       {isExpanded && (
-                        <div className="mt-4 space-y-2 border-t border-border pt-4" onClick={e => e.stopPropagation()}>
+                        <div className="mt-4 space-y-2 border-t border-border pt-4 overflow-x-hidden min-w-0" onClick={e => e.stopPropagation()}>
                           {Array.from(hierarchy.get(disc.key)?.entries() || [])
                             .sort(([a], [b]) => a.localeCompare(b))
                             .map(([coreIdea, group]) => {
