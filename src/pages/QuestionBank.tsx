@@ -25,14 +25,13 @@ interface DisciplineConfig {
   key: string;
   label: string;
   icon: typeof Leaf;
-  prefixes: string[]; // MS prefixes like MS-LS, MS-ESS, MS-PS
-  hsPrefixes: string[]; // matching HS prefixes
+  coreIdeas: string[]; // All MS core idea codes for this discipline
 }
 
 const DISCIPLINES: DisciplineConfig[] = [
-  { key: "LS", label: "Life Science", icon: Leaf, prefixes: ["MS-LS"], hsPrefixes: ["HS-LS"] },
-  { key: "ESS", label: "Earth & Space Science", icon: Globe, prefixes: ["MS-ESS"], hsPrefixes: ["HS-ESS"] },
-  { key: "PS", label: "Physical Science", icon: Atom, prefixes: ["MS-PS"], hsPrefixes: ["HS-PS"] },
+  { key: "LS", label: "Life Science", icon: Leaf, coreIdeas: ["MS-LS1", "MS-LS2", "MS-LS3", "MS-LS4"] },
+  { key: "ESS", label: "Earth & Space Science", icon: Globe, coreIdeas: ["MS-ESS1", "MS-ESS2", "MS-ESS3"] },
+  { key: "PS", label: "Physical Science", icon: Atom, coreIdeas: ["MS-PS1", "MS-PS2", "MS-PS3", "MS-PS4"] },
 ];
 
 // Parse a standard code like "MS-LS1-3" into { discipline: "LS", coreIdea: "MS-LS1", full: "MS-LS1-3" }
@@ -208,7 +207,12 @@ const QuestionBank = () => {
     const untagged: QuestionBankItem[] = [];
 
     for (const disc of DISCIPLINES) {
-      hierarchy.set(disc.key, new Map());
+      const discMap = new Map<string, { questionIds: Set<string>; descriptions: Set<string> }>();
+      // Pre-populate all core ideas so they always appear
+      for (const ci of disc.coreIdeas) {
+        discMap.set(ci, { questionIds: new Set(), descriptions: new Set() });
+      }
+      hierarchy.set(disc.key, discMap);
     }
 
     for (const q of filtered) {
