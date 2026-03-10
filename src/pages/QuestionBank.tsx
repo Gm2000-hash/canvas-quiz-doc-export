@@ -494,6 +494,30 @@ const QuestionBank = () => {
                 const uniqueDiscIds = [...new Set(discQuestionIds)];
                 const allDiscSelected = uniqueDiscIds.length > 0 && uniqueDiscIds.every(id => selected.has(id));
 
+                // Coverage: count substandards with at least one question
+                let totalSubs = 0;
+                let coveredSubs = 0;
+                for (const ci of disc.coreIdeas) {
+                  const subs = ALL_SUBSTANDARDS[ci] || [];
+                  totalSubs += subs.length;
+                  const group = discMap?.get(ci);
+                  if (group) {
+                    for (const sub of subs) {
+                      const hasQ = filtered.some(q =>
+                        group.questionIds.has(q.id) &&
+                        q.standards.some(s => {
+                          if (s.ngss_code === sub.code) return true;
+                          const parsed = parseStandardCode(s.ngss_code);
+                          if (!parsed || parsed.level !== "HS") return false;
+                          return `MS-${parsed.discipline}${parsed.coreNum}-${s.ngss_code.match(/-(\d+)$/)?.[1]}` === sub.code;
+                        })
+                      );
+                      if (hasQ) coveredSubs++;
+                    }
+                  }
+                }
+                const coveragePct = totalSubs > 0 ? Math.round((coveredSubs / totalSubs) * 100) : 0;
+
                 return (
                   <Card
                     key={disc.key}
