@@ -549,7 +549,7 @@ const QuestionBank = () => {
                         </div>
                         <div className="flex-1">
                           <h3 className="font-semibold text-foreground">{disc.label}</h3>
-                          <p className="text-sm text-muted-foreground">{count} question{count !== 1 ? "s" : ""}</p>
+                          <p className="text-sm text-muted-foreground">{count} question{count !== 1 ? "s" : ""} · {coveredSubs}/{totalSubs} standards covered ({coveragePct}%)</p>
                         </div>
                         {count > 0 && (
                           isExpanded ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />
