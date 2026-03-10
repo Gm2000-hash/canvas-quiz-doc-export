@@ -340,6 +340,44 @@ const QuestionBank = () => {
           )}
         </div>
 
+        {/* Breadcrumb trail for grouped view */}
+        {viewMode === "grouped" && (expandedDiscipline || expandedCoreIdea) && (
+          <nav className="flex items-center gap-1.5 text-sm">
+            <button
+              className="text-primary hover:underline font-medium"
+              onClick={() => { setExpandedDiscipline(null); setExpandedCoreIdea(null); }}
+            >
+              All Standards
+            </button>
+            {expandedDiscipline && expandedDiscipline !== "untagged" && (() => {
+              const disc = DISCIPLINES.find(d => d.key === expandedDiscipline);
+              return disc ? (
+                <>
+                  <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                  <button
+                    className={`font-medium ${expandedCoreIdea ? "text-primary hover:underline" : "text-foreground"}`}
+                    onClick={() => setExpandedCoreIdea(null)}
+                  >
+                    {disc.label}
+                  </button>
+                </>
+              ) : null;
+            })()}
+            {expandedDiscipline === "untagged" && (
+              <>
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="font-medium text-foreground">Untagged</span>
+              </>
+            )}
+            {expandedCoreIdea && (
+              <>
+                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                <span className="font-medium text-foreground">{expandedCoreIdea}</span>
+              </>
+            )}
+          </nav>
+        )}
+
         {filtered.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
