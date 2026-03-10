@@ -11,9 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { getQuestionBank, deleteFromBank, updateQuestion, type QuestionBankItem } from "@/lib/question-bank";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, Plus, X, List, LayoutGrid } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, Plus, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 
 function stripHtml(html: string): string {
   const div = document.createElement("div");
@@ -21,11 +20,54 @@ function stripHtml(html: string): string {
   return div.textContent || div.innerText || "";
 }
 
+// NGSS discipline categories
+interface DisciplineConfig {
+  key: string;
+  label: string;
+  icon: typeof Leaf;
+  prefixes: string[]; // MS prefixes like MS-LS, MS-ESS, MS-PS
+  hsPrefixes: string[]; // matching HS prefixes
+}
+
+const DISCIPLINES: DisciplineConfig[] = [
+  { key: "LS", label: "Life Science", icon: Leaf, prefixes: ["MS-LS"], hsPrefixes: ["HS-LS"] },
+  { key: "ESS", label: "Earth & Space Science", icon: Globe, prefixes: ["MS-ESS"], hsPrefixes: ["HS-ESS"] },
+  { key: "PS", label: "Physical Science", icon: Atom, prefixes: ["MS-PS"], hsPrefixes: ["HS-PS"] },
+];
+
+// Parse a standard code like "MS-LS1-3" into { discipline: "LS", coreIdea: "MS-LS1", full: "MS-LS1-3" }
+function parseStandardCode(code: string) {
+  // Match patterns like MS-LS1-3, HS-PS2-1, MS-ESS1-4
+  const match = code.match(/^(MS|HS)-(LS|ESS|PS)(\d+)(-\d+)?$/i);
+  if (!match) return null;
+  const level = match[1].toUpperCase(); // MS or HS
+  const discipline = match[2].toUpperCase(); // LS, ESS, PS
+  const coreNum = match[3]; // 1, 2, 3, etc.
+  return {
+    level,
+    discipline,
+    coreNum,
+    // The "core idea" grouping key — always use MS prefix for grouping
+    coreIdea: `MS-${discipline}${coreNum}`,
+    full: code,
+  };
+}
+
+// Get the core idea label (e.g., "MS-LS1" from "MS-LS1" or "HS-LS1")
+function getCoreIdeaFromCode(code: string): string | null {
+  const parsed = parseStandardCode(code);
+  return parsed ? parsed.coreIdea : null;
+}
+
+function getDisciplineForCode(code: string): string | null {
+  const parsed = parseStandardCode(code);
+  return parsed ? parsed.discipline : null;
+}
+
 const QuestionBank = () => {
   const [questions, setQuestions] = useState<QuestionBankItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [selectedStandard, setSelectedStandard] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<"grouped" | "flat">("grouped");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -33,6 +75,10 @@ const QuestionBank = () => {
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
   const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
+
+  // Drill-down state for grouped view
+  const [expandedDiscipline, setExpandedDiscipline] = useState<string | null>(null);
+  const [expandedCoreIdea, setExpandedCoreIdea] = useState<string | null>(null);
 
   // Edit state
   const [editingQuestion, setEditingQuestion] = useState<QuestionBankItem | null>(null);
@@ -119,6 +165,10 @@ const QuestionBank = () => {
     });
   };
 
+  const filtered = questions.filter(q => {
+    return !search || stripHtml(q.question_text).toLowerCase().includes(search.toLowerCase());
+  });
+
   const selectAllFiltered = () => {
     if (filtered.every(q => selected.has(q.id))) {
       setSelected(prev => {
@@ -150,44 +200,97 @@ const QuestionBank = () => {
     }
   };
 
-  // Build a map of standard -> description for display
-  const standardDescriptions = new Map<string, string>();
-  questions.forEach(q => q.standards.forEach(s => {
-    if (!standardDescriptions.has(s.ngss_code)) standardDescriptions.set(s.ngss_code, s.ngss_description);
-  }));
+  // Build discipline → coreIdea → questions hierarchy
+  // HS standards are grouped under their MS counterpart core idea
+  const buildHierarchy = () => {
+    // Map: discipline key → { coreIdea → { questions: Set<id>, descriptions: Set<string> } }
+    const hierarchy: Map<string, Map<string, { questionIds: Set<string>; descriptions: Set<string> }>> = new Map();
+    const untagged: QuestionBankItem[] = [];
 
-  const allStandards = Array.from(standardDescriptions.keys()).sort();
+    for (const disc of DISCIPLINES) {
+      hierarchy.set(disc.key, new Map());
+    }
 
-  const filtered = questions.filter(q => {
-    const matchesSearch = !search || stripHtml(q.question_text).toLowerCase().includes(search.toLowerCase());
-    const matchesStandard = !selectedStandard || q.standards.some(s => s.ngss_code === selectedStandard);
-    return matchesSearch && matchesStandard;
-  });
+    for (const q of filtered) {
+      if (q.standards.length === 0) {
+        untagged.push(q);
+        continue;
+      }
 
-  // Group questions by standard (questions with multiple standards appear in each group)
-  const groupedByStandard = new Map<string, QuestionBankItem[]>();
-  const untagged: QuestionBankItem[] = [];
-  filtered.forEach(q => {
-    if (q.standards.length === 0) {
-      untagged.push(q);
-    } else {
-      q.standards.forEach(s => {
-        if (!selectedStandard || s.ngss_code === selectedStandard) {
-          const list = groupedByStandard.get(s.ngss_code) || [];
-          list.push(q);
-          groupedByStandard.set(s.ngss_code, list);
+      for (const s of q.standards) {
+        const discipline = getDisciplineForCode(s.ngss_code);
+        const coreIdea = getCoreIdeaFromCode(s.ngss_code);
+        if (!discipline || !coreIdea) {
+          // Non-standard code, treat as untagged if no other standards match
+          continue;
         }
-      });
-      // If filtering by a specific standard, also ensure it appears
-      if (selectedStandard && !q.standards.some(s => s.ngss_code === selectedStandard)) return;
-      if (!selectedStandard) {
-        // Already handled above
+
+        const discMap = hierarchy.get(discipline);
+        if (!discMap) continue;
+
+        if (!discMap.has(coreIdea)) {
+          discMap.set(coreIdea, { questionIds: new Set(), descriptions: new Set() });
+        }
+        const group = discMap.get(coreIdea)!;
+        group.questionIds.add(q.id);
+        if (s.ngss_description) group.descriptions.add(s.ngss_description);
       }
     }
-  });
-  const sortedGroupKeys = Array.from(groupedByStandard.keys()).sort();
+
+    // Check if question has no recognized discipline tags → untagged
+    for (const q of filtered) {
+      if (q.standards.length > 0 && !q.standards.some(s => getDisciplineForCode(s.ngss_code))) {
+        untagged.push(q);
+      }
+    }
+
+    return { hierarchy, untagged };
+  };
+
+  const { hierarchy, untagged } = buildHierarchy();
+
+  // Count questions per discipline
+  const disciplineCounts = (discKey: string) => {
+    const discMap = hierarchy.get(discKey);
+    if (!discMap) return 0;
+    const ids = new Set<string>();
+    for (const group of discMap.values()) {
+      group.questionIds.forEach(id => ids.add(id));
+    }
+    return ids.size;
+  };
 
   const allFilteredSelected = filtered.length > 0 && filtered.every(q => selected.has(q.id));
+
+  const questionCard = (q: QuestionBankItem, keyPrefix: string) => (
+    <Card key={`${keyPrefix}-${q.id}`} className={`group cursor-pointer transition-colors ${selected.has(q.id) ? "ring-2 ring-primary" : ""}`} onClick={() => toggleSelect(q.id)}>
+      <CardContent className="p-3 space-y-1.5">
+        <div className="flex items-start gap-3">
+          <Checkbox checked={selected.has(q.id)} onCheckedChange={() => toggleSelect(q.id)} onClick={e => e.stopPropagation()} className="mt-0.5" />
+          <p className="text-sm text-foreground flex-1">{stripHtml(q.question_text)}</p>
+          <div className="flex gap-1 shrink-0">
+            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" onClick={e => { e.stopPropagation(); openEdit(q); }}>
+              <Pencil className="h-3.5 w-3.5" />
+            </Button>
+            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); handleDelete(q.id); }}>
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 pl-7">
+          {q.standards.map(s => (
+            <Badge key={s.ngss_code} variant="outline" className="text-xs">{s.ngss_code}</Badge>
+          ))}
+          {q.source_course && (
+            <span className="text-xs text-muted-foreground">
+              {q.source_course}{q.source_quiz ? ` · ${q.source_quiz}` : ""}
+            </span>
+          )}
+          <span className="text-xs text-muted-foreground ml-auto">{q.points_possible} pts</span>
+        </div>
+      </CardContent>
+    </Card>
+  );
 
   if (loading) {
     return (
@@ -233,128 +336,119 @@ const QuestionBank = () => {
           )}
         </div>
 
-        {allStandards.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            <Badge variant={!selectedStandard ? "default" : "outline"} className="cursor-pointer" onClick={() => setSelectedStandard(null)}>
-              All Standards
-            </Badge>
-            {allStandards.map(code => (
-              <Badge key={code} variant={selectedStandard === code ? "default" : "outline"} className="cursor-pointer" onClick={() => setSelectedStandard(selectedStandard === code ? null : code)}>
-                {code}
-              </Badge>
-            ))}
-          </div>
-        )}
-
         {filtered.length === 0 ? (
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <FlaskConical className="h-10 w-10 mx-auto mb-3 opacity-40" />
-              <p>{questions.length === 0 ? "Your question bank is empty. Export a quiz to start building it!" : "No questions match your filter."}</p>
+              <p>{questions.length === 0 ? "Your question bank is empty. Export a quiz to start building it!" : "No questions match your search."}</p>
             </CardContent>
           </Card>
         ) : viewMode === "grouped" ? (
-          /* Grouped by Standard view */
-          <div className="space-y-6">
+          /* 3-tier grouped view: Discipline tiles → Core Ideas → Questions */
+          <div className="space-y-4">
             <div className="flex items-center gap-3">
               <Checkbox checked={allFilteredSelected} onCheckedChange={selectAllFiltered} />
               <p className="text-sm text-muted-foreground">
                 {allFilteredSelected ? "Deselect all" : "Select all"} · {filtered.length} unique question{filtered.length !== 1 ? "s" : ""}
               </p>
             </div>
-            {sortedGroupKeys.map(code => {
-              const groupQuestions = groupedByStandard.get(code) || [];
-              const desc = standardDescriptions.get(code) || "";
-              return (
-                <Collapsible key={code} defaultOpen>
-                  <CollapsibleTrigger className="w-full">
-                    <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
-                      <FlaskConical className="h-5 w-5 text-primary shrink-0" />
-                      <div className="flex-1 text-left">
-                        <div className="flex items-center gap-2">
-                          <Badge variant="default" className="text-xs">{code}</Badge>
-                          <span className="text-sm text-muted-foreground">({groupQuestions.length} question{groupQuestions.length !== 1 ? "s" : ""})</span>
+
+            {/* Discipline tiles */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              {DISCIPLINES.map(disc => {
+                const count = disciplineCounts(disc.key);
+                const isExpanded = expandedDiscipline === disc.key;
+                const Icon = disc.icon;
+
+                return (
+                  <Card
+                    key={disc.key}
+                    className={`cursor-pointer transition-all hover:shadow-md ${isExpanded ? "ring-2 ring-primary col-span-1 sm:col-span-3" : ""} ${count === 0 ? "opacity-50" : ""}`}
+                    onClick={() => {
+                      if (count === 0) return;
+                      setExpandedDiscipline(isExpanded ? null : disc.key);
+                      setExpandedCoreIdea(null);
+                    }}
+                  >
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <Icon className="h-5 w-5 text-primary" />
                         </div>
-                        {desc && <p className="text-xs text-muted-foreground mt-1">{desc}</p>}
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-foreground">{disc.label}</h3>
+                          <p className="text-sm text-muted-foreground">{count} question{count !== 1 ? "s" : ""}</p>
+                        </div>
+                        {count > 0 && (
+                          isExpanded ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        )}
                       </div>
-                    </div>
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <div className="space-y-2 mt-2 ml-4 border-l-2 border-primary/20 pl-4">
-                      {groupQuestions.map(q => (
-                        <Card key={`${code}-${q.id}`} className={`group cursor-pointer transition-colors ${selected.has(q.id) ? "ring-2 ring-primary" : ""}`} onClick={() => toggleSelect(q.id)}>
-                          <CardContent className="p-3 space-y-1.5">
-                            <div className="flex items-start gap-3">
-                              <Checkbox checked={selected.has(q.id)} onCheckedChange={() => toggleSelect(q.id)} onClick={e => e.stopPropagation()} className="mt-0.5" />
-                              <p className="text-sm text-foreground flex-1">{stripHtml(q.question_text)}</p>
-                              <div className="flex gap-1 shrink-0">
-                                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" onClick={e => { e.stopPropagation(); openEdit(q); }}>
-                                  <Pencil className="h-3.5 w-3.5" />
-                                </Button>
-                                <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); handleDelete(q.id); }}>
-                                  <Trash2 className="h-3.5 w-3.5" />
-                                </Button>
-                              </div>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 pl-7">
-                              {q.standards.filter(s => s.ngss_code !== code).map(s => (
-                                <Badge key={s.ngss_code} variant="outline" className="text-xs">{s.ngss_code}</Badge>
-                              ))}
-                              {q.source_course && (
-                                <span className="text-xs text-muted-foreground">
-                                  {q.source_course}{q.source_quiz ? ` · ${q.source_quiz}` : ""}
-                                </span>
-                              )}
-                              <span className="text-xs text-muted-foreground ml-auto">{q.points_possible} pts</span>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              );
-            })}
+
+                      {/* Expanded: show core ideas for this discipline */}
+                      {isExpanded && (
+                        <div className="mt-4 space-y-2 border-t border-border pt-4" onClick={e => e.stopPropagation()}>
+                          {Array.from(hierarchy.get(disc.key)?.entries() || [])
+                            .sort(([a], [b]) => a.localeCompare(b))
+                            .map(([coreIdea, group]) => {
+                              const isCoreExpanded = expandedCoreIdea === coreIdea;
+                              const coreQuestions = filtered.filter(q => group.questionIds.has(q.id));
+                              const firstDesc = Array.from(group.descriptions)[0] || "";
+
+                              return (
+                                <div key={coreIdea}>
+                                  <button
+                                    className="w-full flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-left"
+                                    onClick={() => setExpandedCoreIdea(isCoreExpanded ? null : coreIdea)}
+                                  >
+                                    {isCoreExpanded ? <ChevronDown className="h-4 w-4 text-primary shrink-0" /> : <ChevronRight className="h-4 w-4 text-primary shrink-0" />}
+                                    <div className="flex-1 min-w-0">
+                                      <div className="flex items-center gap-2">
+                                        <Badge variant="default" className="text-xs shrink-0">{coreIdea}</Badge>
+                                        <span className="text-sm text-muted-foreground">({coreQuestions.length} question{coreQuestions.length !== 1 ? "s" : ""})</span>
+                                      </div>
+                                      {firstDesc && <p className="text-xs text-muted-foreground mt-1 truncate">{firstDesc}</p>}
+                                    </div>
+                                  </button>
+
+                                  {/* Expanded: show questions for this core idea */}
+                                  {isCoreExpanded && (
+                                    <div className="space-y-2 mt-2 ml-6 border-l-2 border-primary/20 pl-4">
+                                      {coreQuestions.map(q => questionCard(q, coreIdea))}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+
+            {/* Untagged section */}
             {untagged.length > 0 && (
-              <Collapsible defaultOpen>
-                <CollapsibleTrigger className="w-full">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors">
+              <Card className="mt-4">
+                <CardContent className="p-5">
+                  <button
+                    className="w-full flex items-center gap-3 text-left"
+                    onClick={() => setExpandedDiscipline(expandedDiscipline === "untagged" ? null : "untagged")}
+                  >
                     <FlaskConical className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className="flex-1 text-left">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-muted-foreground">Untagged</span>
-                        <span className="text-sm text-muted-foreground">({untagged.length})</span>
-                      </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-muted-foreground">Untagged</h3>
+                      <p className="text-sm text-muted-foreground">{untagged.length} question{untagged.length !== 1 ? "s" : ""}</p>
                     </div>
-                  </div>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <div className="space-y-2 mt-2 ml-4 border-l-2 border-muted pl-4">
-                    {untagged.map(q => (
-                      <Card key={`untagged-${q.id}`} className={`group cursor-pointer transition-colors ${selected.has(q.id) ? "ring-2 ring-primary" : ""}`} onClick={() => toggleSelect(q.id)}>
-                        <CardContent className="p-3 space-y-1.5">
-                          <div className="flex items-start gap-3">
-                            <Checkbox checked={selected.has(q.id)} onCheckedChange={() => toggleSelect(q.id)} onClick={e => e.stopPropagation()} className="mt-0.5" />
-                            <p className="text-sm text-foreground flex-1">{stripHtml(q.question_text)}</p>
-                            <div className="flex gap-1 shrink-0">
-                              <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" onClick={e => { e.stopPropagation(); openEdit(q); }}>
-                                <Pencil className="h-3.5 w-3.5" />
-                              </Button>
-                              <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); handleDelete(q.id); }}>
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </Button>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2 pl-7">
-                            {q.source_course && <span className="text-xs text-muted-foreground">{q.source_course}{q.source_quiz ? ` · ${q.source_quiz}` : ""}</span>}
-                            <span className="text-xs text-muted-foreground ml-auto">{q.points_possible} pts</span>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
+                    {expandedDiscipline === "untagged" ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />}
+                  </button>
+                  {expandedDiscipline === "untagged" && (
+                    <div className="space-y-2 mt-4 border-t border-border pt-4">
+                      {untagged.map(q => questionCard(q, "untagged"))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             )}
           </div>
         ) : (
@@ -366,38 +460,7 @@ const QuestionBank = () => {
                 {allFilteredSelected ? "Deselect all" : "Select all"} · {filtered.length} question{filtered.length !== 1 ? "s" : ""}
               </p>
             </div>
-            {filtered.map(q => (
-              <Card key={q.id} className={`group cursor-pointer transition-colors ${selected.has(q.id) ? "ring-2 ring-primary" : ""}`} onClick={() => toggleSelect(q.id)}>
-                <CardContent className="p-4 space-y-2">
-                  <div className="flex items-start gap-3">
-                    <Checkbox checked={selected.has(q.id)} onCheckedChange={() => toggleSelect(q.id)} onClick={e => e.stopPropagation()} className="mt-0.5" />
-                    <p className="text-sm text-foreground flex-1">{stripHtml(q.question_text)}</p>
-                    <div className="flex gap-1 shrink-0">
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" onClick={e => { e.stopPropagation(); openEdit(q); }}>
-                        <Pencil className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); handleDelete(q.id); }}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap items-center gap-2 pl-7">
-                    {q.standards.map(s => (
-                      <div key={s.ngss_code} className="flex items-center gap-1.5">
-                        <Badge variant="secondary" className="text-xs shrink-0">{s.ngss_code}</Badge>
-                        <span className="text-xs text-muted-foreground italic">{s.ngss_description}</span>
-                      </div>
-                    ))}
-                    {q.source_course && (
-                      <span className="text-xs text-muted-foreground">
-                        {q.source_course}{q.source_quiz ? ` · ${q.source_quiz}` : ""}
-                      </span>
-                    )}
-                    <span className="text-xs text-muted-foreground ml-auto">{q.points_possible} pts · {q.question_type.replace(/_/g, " ")}</span>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            {filtered.map(q => questionCard(q, "flat"))}
           </div>
         )}
       </main>
@@ -460,7 +523,7 @@ const QuestionBank = () => {
                 ))}
               </div>
               <div className="flex gap-2">
-                <Input placeholder="Code (e.g. HS-PS1-1)" value={newCode} onChange={e => setNewCode(e.target.value)} className="w-36" />
+                <Input placeholder="Code (e.g. MS-PS1-1)" value={newCode} onChange={e => setNewCode(e.target.value)} className="w-36" />
                 <Input placeholder="Description" value={newDesc} onChange={e => setNewDesc(e.target.value)} className="flex-1" />
                 <Button variant="outline" size="icon" onClick={addStandard} disabled={!newCode.trim()}>
                   <Plus className="h-4 w-4" />
