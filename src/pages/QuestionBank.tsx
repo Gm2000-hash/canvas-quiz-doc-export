@@ -497,7 +497,18 @@ const QuestionBank = () => {
                                   {/* Expanded: show questions for this core idea */}
                                   {isCoreExpanded && (
                                     <div className="space-y-2 mt-2 ml-6 border-l-2 border-primary/20 pl-4">
-                                      {coreQuestions.map(q => questionCard(q, coreIdea))}
+                                      {coreQuestions
+                                        .slice()
+                                        .sort((a, b) => {
+                                          const getSubNum = (q: typeof a) => {
+                                            const s = q.standards.find(s => getCoreIdeaFromCode(s.ngss_code) === coreIdea);
+                                            if (!s) return 999;
+                                            const match = s.ngss_code.match(/-(\d+)$/);
+                                            return match ? parseInt(match[1], 10) : 999;
+                                          };
+                                          return getSubNum(a) - getSubNum(b);
+                                        })
+                                        .map(q => questionCard(q, coreIdea))}
                                     </div>
                                   )}
                                 </div>
