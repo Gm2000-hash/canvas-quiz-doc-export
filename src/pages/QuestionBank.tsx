@@ -726,15 +726,15 @@ const QuestionBank = () => {
 
       {/* Edit Question Dialog */}
       <Dialog open={!!editingQuestion} onOpenChange={(open) => { if (!open) setEditingQuestion(null); }}>
-        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
             <DialogTitle>Edit Question</DialogTitle>
             <DialogDescription>Update the question text, points, and NGSS standards.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-2">
+          <div className="space-y-4 py-2 min-w-0">
             <div className="space-y-2">
               <Label>Question Text</Label>
-              <Textarea value={editText} onChange={e => setEditText(e.target.value)} rows={4} />
+              <Textarea value={editText} onChange={e => setEditText(e.target.value)} rows={4} className="break-words" />
             </div>
             <div className="space-y-2">
               <Label>Points</Label>
@@ -744,9 +744,9 @@ const QuestionBank = () => {
               <Label>NGSS Standards</Label>
               <div className="space-y-2">
                 {editStandards.map((s, idx) => (
-                  <div key={idx} className="flex items-center gap-2 bg-muted/50 rounded-md px-3 py-2">
-                    <Badge variant="secondary" className="text-xs shrink-0">{s.ngss_code}</Badge>
-                    <span className="text-xs text-muted-foreground flex-1 truncate">{s.ngss_description}</span>
+                  <div key={idx} className="flex items-start gap-2 bg-muted/50 rounded-md px-3 py-2 min-w-0">
+                    <Badge variant="secondary" className="text-xs shrink-0 mt-0.5">{s.ngss_code}</Badge>
+                    <span className="text-xs text-muted-foreground flex-1 break-words">{s.ngss_description}</span>
                     <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-destructive" onClick={() => removeStandard(idx)}>
                       <X className="h-3 w-3" />
                     </Button>
