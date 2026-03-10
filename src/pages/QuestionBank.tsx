@@ -758,17 +758,190 @@ const QuestionBank = () => {
         <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto overflow-x-hidden">
           <DialogHeader>
             <DialogTitle>Edit Question</DialogTitle>
-            <DialogDescription>Update the question text, points, and NGSS standards.</DialogDescription>
+            <DialogDescription>Update question text, type, answers, and NGSS standards.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2 min-w-0">
             <div className="space-y-2">
               <Label>Question Text</Label>
               <Textarea value={editText} onChange={e => setEditText(e.target.value)} rows={4} className="break-words" />
             </div>
-            <div className="space-y-2">
-              <Label>Points</Label>
-              <Input type="number" min={0} value={editPoints} onChange={e => setEditPoints(Number(e.target.value))} />
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Question Type</Label>
+                <Select value={editType} onValueChange={(val) => {
+                  setEditType(val);
+                  // Reset answers for new type
+                  if (val === "true_false_question") {
+                    setEditAnswers([
+                      { id: 1, text: "True", weight: 100 },
+                      { id: 2, text: "False", weight: 0 },
+                    ]);
+                  } else if (val === "essay_question") {
+                    setEditAnswers([]);
+                  }
+                }}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {QUESTION_TYPES.map(t => (
+                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Points</Label>
+                <Input type="number" min={0} value={editPoints} onChange={e => setEditPoints(Number(e.target.value))} />
+              </div>
             </div>
+
+            {/* Answer editing */}
+            {editType !== "essay_question" && (
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label>Answers</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="h-7 text-xs gap-1"
+                    onClick={() => {
+                      setEditAnswers(prev => [...prev, {
+                        id: Date.now(),
+                        text: "",
+                        weight: 0,
+                        ...(editType === "matching_question" ? { left: "", right: "" } : {}),
+                      }]);
+                    }}
+                  >
+                    + Add Answer
+                  </Button>
+                </div>
+
+                <div className="space-y-2">
+                  {editType === "matching_question" ? (
+                    /* Matching question: left-right pairs */
+                    editAnswers.map((a, idx) => (
+                      <div key={a.id} className="flex items-center gap-2 bg-muted/50 rounded-md px-3 py-2">
+                        <Input
+                          placeholder="Left side"
+                          value={a.left || ""}
+                          onChange={e => {
+                            const updated = [...editAnswers];
+                            updated[idx] = { ...updated[idx], left: e.target.value };
+                            setEditAnswers(updated);
+                          }}
+                          className="text-sm h-8 flex-1"
+                        />
+                        <span className="text-muted-foreground text-xs">→</span>
+                        <Input
+                          placeholder="Right side"
+                          value={a.right || ""}
+                          onChange={e => {
+                            const updated = [...editAnswers];
+                            updated[idx] = { ...updated[idx], right: e.target.value };
+                            setEditAnswers(updated);
+                          }}
+                          className="text-sm h-8 flex-1"
+                        />
+                        <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-destructive" onClick={() => setEditAnswers(prev => prev.filter((_, i) => i !== idx))}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))
+                  ) : editType === "fill_in_multiple_blanks_question" || editType === "short_answer_question" ? (
+                    /* Fill-in / Short answer: just accepted answers */
+                    editAnswers.map((a, idx) => (
+                      <div key={a.id} className="flex items-center gap-2 bg-muted/50 rounded-md px-3 py-2">
+                        <span className="text-xs text-muted-foreground shrink-0">Accepted:</span>
+                        <Input
+                          value={a.text}
+                          onChange={e => {
+                            const updated = [...editAnswers];
+                            updated[idx] = { ...updated[idx], text: e.target.value, weight: 100 };
+                            setEditAnswers(updated);
+                          }}
+                          className="text-sm h-8 flex-1"
+                        />
+                        <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-destructive" onClick={() => setEditAnswers(prev => prev.filter((_, i) => i !== idx))}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))
+                  ) : editType === "true_false_question" ? (
+                    /* True/False: radio for correct answer */
+                    <RadioGroup
+                      value={editAnswers.find(a => a.weight === 100)?.text || "True"}
+                      onValueChange={val => {
+                        setEditAnswers(prev => prev.map(a => ({ ...a, weight: a.text === val ? 100 : 0 })));
+                      }}
+                    >
+                      {editAnswers.map(a => (
+                        <div key={a.id} className="flex items-center gap-2 bg-muted/50 rounded-md px-3 py-2">
+                          <RadioGroupItem value={a.text} id={`tf-${a.id}`} />
+                          <Label htmlFor={`tf-${a.id}`} className="text-sm flex-1 cursor-pointer">{a.text}</Label>
+                          {a.weight === 100 && <Badge variant="default" className="text-xs">Correct</Badge>}
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  ) : editType === "multiple_answers_question" ? (
+                    /* Multiple correct: checkboxes */
+                    editAnswers.map((a, idx) => (
+                      <div key={a.id} className="flex items-center gap-2 bg-muted/50 rounded-md px-3 py-2">
+                        <Checkbox
+                          checked={a.weight > 0}
+                          onCheckedChange={checked => {
+                            const updated = [...editAnswers];
+                            updated[idx] = { ...updated[idx], weight: checked ? 100 : 0 };
+                            setEditAnswers(updated);
+                          }}
+                        />
+                        <Input
+                          value={a.text}
+                          onChange={e => {
+                            const updated = [...editAnswers];
+                            updated[idx] = { ...updated[idx], text: e.target.value };
+                            setEditAnswers(updated);
+                          }}
+                          className="text-sm h-8 flex-1"
+                        />
+                        {a.weight > 0 && <Badge variant="default" className="text-xs shrink-0">Correct</Badge>}
+                        <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-destructive" onClick={() => setEditAnswers(prev => prev.filter((_, i) => i !== idx))}>
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))
+                  ) : (
+                    /* Multiple choice (single correct): radio + editable text */
+                    <RadioGroup
+                      value={String(editAnswers.find(a => a.weight === 100)?.id || "")}
+                      onValueChange={val => {
+                        setEditAnswers(prev => prev.map(a => ({ ...a, weight: String(a.id) === val ? 100 : 0 })));
+                      }}
+                    >
+                      {editAnswers.map((a, idx) => (
+                        <div key={a.id} className="flex items-center gap-2 bg-muted/50 rounded-md px-3 py-2">
+                          <RadioGroupItem value={String(a.id)} id={`mc-${a.id}`} />
+                          <Input
+                            value={a.text}
+                            onChange={e => {
+                              const updated = [...editAnswers];
+                              updated[idx] = { ...updated[idx], text: e.target.value };
+                              setEditAnswers(updated);
+                            }}
+                            className="text-sm h-8 flex-1"
+                          />
+                          {a.weight === 100 && <Badge variant="default" className="text-xs shrink-0">Correct</Badge>}
+                          <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0 text-destructive" onClick={() => setEditAnswers(prev => prev.filter((_, i) => i !== idx))}>
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  )}
+                </div>
+              </div>
+            )}
+
             <div className="space-y-2">
               <Label>NGSS Standards</Label>
               <div className="space-y-2">
