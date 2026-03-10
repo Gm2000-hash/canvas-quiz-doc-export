@@ -198,8 +198,7 @@ const QuestionBank = () => {
     setEditText(stripHtml(q.question_text));
     setEditPoints(q.points_possible);
     setEditStandards([...q.standards]);
-    setNewCode("");
-    setNewDesc("");
+    setStandardSearch("");
   };
 
   const handleSaveEdit = async () => {
@@ -223,13 +222,6 @@ const QuestionBank = () => {
     } finally {
       setSaving(false);
     }
-  };
-
-  const addStandard = () => {
-    if (!newCode.trim()) return;
-    setEditStandards(prev => [...prev, { ngss_code: newCode.trim(), ngss_description: newDesc.trim() }]);
-    setNewCode("");
-    setNewDesc("");
   };
 
   const removeStandard = (idx: number) => {
