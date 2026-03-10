@@ -438,19 +438,36 @@ const QuestionBank = () => {
 
                               return (
                                 <div key={coreIdea}>
-                                  <button
-                                    className="w-full flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-left"
-                                    onClick={() => setExpandedCoreIdea(isCoreExpanded ? null : coreIdea)}
-                                  >
-                                    {isCoreExpanded ? <ChevronDown className="h-4 w-4 text-primary shrink-0" /> : <ChevronRight className="h-4 w-4 text-primary shrink-0" />}
-                                    <div className="flex-1 min-w-0">
-                                      <div className="flex items-center gap-2">
-                                        <Badge variant="default" className="text-xs shrink-0">{coreIdea}</Badge>
-                                        <span className="text-sm text-muted-foreground">({coreQuestions.length} question{coreQuestions.length !== 1 ? "s" : ""})</span>
+                                  <div className="flex items-center gap-2">
+                                    {coreQuestions.length > 0 && (
+                                      <Checkbox
+                                        checked={coreQuestions.length > 0 && coreQuestions.every(q => selected.has(q.id))}
+                                        onCheckedChange={() => {
+                                          const allSelected = coreQuestions.every(q => selected.has(q.id));
+                                          setSelected(prev => {
+                                            const next = new Set(prev);
+                                            coreQuestions.forEach(q => allSelected ? next.delete(q.id) : next.add(q.id));
+                                            return next;
+                                          });
+                                        }}
+                                        className="shrink-0"
+                                        onClick={e => e.stopPropagation()}
+                                      />
+                                    )}
+                                    <button
+                                      className="flex-1 flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-left"
+                                      onClick={() => setExpandedCoreIdea(isCoreExpanded ? null : coreIdea)}
+                                    >
+                                      {isCoreExpanded ? <ChevronDown className="h-4 w-4 text-primary shrink-0" /> : <ChevronRight className="h-4 w-4 text-primary shrink-0" />}
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant="default" className="text-xs shrink-0">{coreIdea}</Badge>
+                                          <span className="text-sm text-muted-foreground">({coreQuestions.length} question{coreQuestions.length !== 1 ? "s" : ""})</span>
+                                        </div>
+                                        {firstDesc && <p className="text-xs text-muted-foreground mt-1 truncate">{firstDesc}</p>}
                                       </div>
-                                      {firstDesc && <p className="text-xs text-muted-foreground mt-1 truncate">{firstDesc}</p>}
-                                    </div>
-                                  </button>
+                                    </button>
+                                  </div>
 
                                   {/* Expanded: show questions for this core idea */}
                                   {isCoreExpanded && (
