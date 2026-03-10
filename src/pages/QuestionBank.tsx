@@ -638,7 +638,7 @@ const QuestionBank = () => {
                                               <Badge variant={subQuestions.length > 0 ? "secondary" : "outline"} className="text-xs shrink-0 mt-0.5">
                                                 {sub.code}
                                               </Badge>
-                                              <p className="text-xs text-muted-foreground flex-1">{sub.description}</p>
+                                              <p className="text-xs text-muted-foreground flex-1 break-words">{sub.description}</p>
                                               <span className="text-xs text-muted-foreground shrink-0">
                                                 {subQuestions.length > 0 ? `${subQuestions.length} Q` : "—"}
                                               </span>
