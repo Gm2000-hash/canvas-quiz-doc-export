@@ -166,9 +166,21 @@ const QuestionBank = () => {
   const [editingQuestion, setEditingQuestion] = useState<QuestionBankItem | null>(null);
   const [editText, setEditText] = useState("");
   const [editPoints, setEditPoints] = useState(0);
+  const [editType, setEditType] = useState("multiple_choice_question");
+  const [editAnswers, setEditAnswers] = useState<{ id: number; text: string; weight: number; left?: string; right?: string }[]>([]);
   const [editStandards, setEditStandards] = useState<{ ngss_code: string; ngss_description: string }[]>([]);
   const [standardSearch, setStandardSearch] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const QUESTION_TYPES = [
+    { value: "multiple_choice_question", label: "Multiple Choice" },
+    { value: "multiple_answers_question", label: "Multiple Correct Answers" },
+    { value: "matching_question", label: "Matching" },
+    { value: "fill_in_multiple_blanks_question", label: "Fill in the Blank" },
+    { value: "short_answer_question", label: "Short Answer" },
+    { value: "essay_question", label: "Essay" },
+    { value: "true_false_question", label: "True/False" },
+  ];
 
   const loadQuestions = async () => {
     setLoading(true);
@@ -199,6 +211,14 @@ const QuestionBank = () => {
     setEditingQuestion(q);
     setEditText(stripHtml(q.question_text));
     setEditPoints(q.points_possible);
+    setEditType(q.question_type);
+    setEditAnswers((q.answers || []).map((a: any, i: number) => ({
+      id: a.id || i,
+      text: stripHtml(a.text || a.html || ""),
+      weight: a.weight ?? 0,
+      left: a.left || "",
+      right: a.right || "",
+    })));
     setEditStandards([...q.standards]);
     setStandardSearch("");
   };
