@@ -165,8 +165,7 @@ const QuestionBank = () => {
   const [editText, setEditText] = useState("");
   const [editPoints, setEditPoints] = useState(0);
   const [editStandards, setEditStandards] = useState<{ ngss_code: string; ngss_description: string }[]>([]);
-  const [newCode, setNewCode] = useState("");
-  const [newDesc, setNewDesc] = useState("");
+  const [standardSearch, setStandardSearch] = useState("");
   const [saving, setSaving] = useState(false);
 
   const loadQuestions = async () => {
