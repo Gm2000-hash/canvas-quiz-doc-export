@@ -227,14 +227,21 @@ const QuestionBank = () => {
     if (!editingQuestion) return;
     setSaving(true);
     try {
+      const savedAnswers = editAnswers.map(a => ({
+        id: a.id,
+        text: a.text,
+        html: a.text,
+        weight: a.weight,
+        ...(editType === "matching_question" ? { left: a.left, right: a.right } : {}),
+      }));
       await updateQuestion(
         editingQuestion.id,
-        { question_text: editText, points_possible: editPoints },
+        { question_text: editText, points_possible: editPoints, question_type: editType, answers: savedAnswers },
         editStandards
       );
       setQuestions(prev => prev.map(q =>
         q.id === editingQuestion.id
-          ? { ...q, question_text: editText, points_possible: editPoints, standards: editStandards }
+          ? { ...q, question_text: editText, points_possible: editPoints, question_type: editType, answers: savedAnswers, standards: editStandards }
           : q
       ));
       setEditingQuestion(null);
