@@ -621,7 +621,7 @@ const QuestionBank = () => {
 
                                   {/* Expanded: show substandards with questions */}
                                   {isCoreExpanded && (
-                                    <div className="space-y-3 mt-2 ml-6 border-l-2 border-primary/20 pl-4">
+                                    <div className="space-y-3 mt-2 ml-6 border-l-2 border-primary/20 pl-4 overflow-x-hidden min-w-0">
                                       {(ALL_SUBSTANDARDS[coreIdea] || []).map(sub => {
                                         const subQuestions = coreQuestions.filter(q =>
                                           q.standards.some(s => s.ngss_code === sub.code) ||
