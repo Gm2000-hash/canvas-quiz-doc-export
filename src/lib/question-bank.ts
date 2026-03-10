@@ -114,11 +114,17 @@ export async function deleteFromBank(id: string) {
 
 export async function updateQuestion(
   id: string,
-  updates: { question_text?: string; points_possible?: number },
+  updates: { question_text?: string; points_possible?: number; question_type?: string; answers?: any[] },
   standards?: { ngss_code: string; ngss_description: string }[]
 ) {
-  if (updates.question_text !== undefined || updates.points_possible !== undefined) {
-    const { error } = await supabase.from("question_bank").update(updates).eq("id", id);
+  const dbUpdates: Record<string, unknown> = {};
+  if (updates.question_text !== undefined) dbUpdates.question_text = updates.question_text;
+  if (updates.points_possible !== undefined) dbUpdates.points_possible = updates.points_possible;
+  if (updates.question_type !== undefined) dbUpdates.question_type = updates.question_type;
+  if (updates.answers !== undefined) dbUpdates.answers = updates.answers;
+
+  if (Object.keys(dbUpdates).length > 0) {
+    const { error } = await supabase.from("question_bank").update(dbUpdates).eq("id", id);
     if (error) throw error;
   }
 
