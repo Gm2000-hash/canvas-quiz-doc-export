@@ -207,7 +207,12 @@ const QuestionBank = () => {
     const untagged: QuestionBankItem[] = [];
 
     for (const disc of DISCIPLINES) {
-      hierarchy.set(disc.key, new Map());
+      const discMap = new Map<string, { questionIds: Set<string>; descriptions: Set<string> }>();
+      // Pre-populate all core ideas so they always appear
+      for (const ci of disc.coreIdeas) {
+        discMap.set(ci, { questionIds: new Set(), descriptions: new Set() });
+      }
+      hierarchy.set(disc.key, discMap);
     }
 
     for (const q of filtered) {
