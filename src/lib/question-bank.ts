@@ -118,7 +118,7 @@ export async function deleteFromBank(id: string) {
 
 export async function updateQuestion(
   id: string,
-  updates: { question_text?: string; points_possible?: number; question_type?: string; answers?: any[] },
+  updates: { question_text?: string; points_possible?: number; question_type?: string; answers?: any[]; dok_level?: number | null; blooms_level?: string | null },
   standards?: { ngss_code: string; ngss_description: string }[]
 ) {
   const dbUpdates: Record<string, unknown> = {};
