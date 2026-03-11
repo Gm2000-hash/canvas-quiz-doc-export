@@ -930,9 +930,22 @@ const QuestionBank = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Depth of Knowledge</Label>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Cognitive Levels</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-7 text-xs"
+                  onClick={() => {
+                    if (editingQuestion) setSuggestionsQuestion(editingQuestion);
+                  }}
+                >
+                  <Lightbulb className="h-3 w-3 text-amber-500" />
+                  AI Suggestions
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 <Select value={editDok !== null ? String(editDok) : "none"} onValueChange={val => setEditDok(val === "none" ? null : Number(val))}>
                   <SelectTrigger><SelectValue placeholder="Select DOK level" /></SelectTrigger>
                   <SelectContent>
@@ -942,9 +955,6 @@ const QuestionBank = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Bloom's Taxonomy</Label>
                 <Select value={editBlooms || "none"} onValueChange={val => setEditBlooms(val === "none" ? null : val)}>
                   <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
                   <SelectContent>
