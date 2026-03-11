@@ -74,14 +74,14 @@ const Index = () => {
 
       <main className="flex-1">
         {!isConfigured ? (
-          <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-            <div className="max-w-md w-full mx-auto px-4 space-y-6">
+          <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
+            <div className="max-w-sm w-full mx-auto px-4 space-y-6">
               <div className="text-center space-y-2">
-                <div className="mx-auto h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                  <FileText className="h-8 w-8 text-primary" />
+                <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                  <FileText className="h-7 w-7 text-primary" />
                 </div>
-                <h2 className="text-2xl font-semibold text-foreground">Welcome</h2>
-                <p className="text-muted-foreground">Connect your Canvas LMS to start exporting quizzes as Word documents.</p>
+                <h2 className="text-xl font-semibold text-foreground">Welcome</h2>
+                <p className="text-sm text-muted-foreground">Connect your Canvas LMS to start exporting quizzes as Word documents.</p>
               </div>
               <SettingsForm config={config} onSave={setConfig} onDisconnect={() => setConfig(null)} />
             </div>
