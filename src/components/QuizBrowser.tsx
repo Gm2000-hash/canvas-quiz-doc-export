@@ -151,11 +151,17 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
 
     return (
       <div className="max-w-4xl mx-auto space-y-6">
+        {/* iOS-style back nav */}
+        <button
+          onClick={handleBack}
+          className="flex items-center gap-1 text-primary font-medium text-sm hover:opacity-70 transition-opacity -mb-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          All Courses
+        </button>
+
         {/* Course banner */}
-        <div className={`${colorClass} rounded-xl p-6 text-primary-foreground relative overflow-hidden`}>
-          <button onClick={handleBack} className="flex items-center gap-1 text-sm opacity-80 hover:opacity-100 mb-3 transition-opacity">
-            <ArrowLeft className="h-4 w-4" /> All Courses
-          </button>
+        <div className={`${colorClass} rounded-2xl p-6 text-primary-foreground relative overflow-hidden`}>
           <h2 className="text-2xl font-bold">{selectedCourse.name}</h2>
           {selectedCourse.course_code && (
             <p className="text-sm opacity-80 mt-1">{selectedCourse.course_code}</p>
