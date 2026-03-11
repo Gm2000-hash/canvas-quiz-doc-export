@@ -501,8 +501,25 @@ const QuestionBank = () => {
               ))}
             </SelectContent>
           </Select>
-          {(filterDok !== "all" || filterBlooms !== "all") && (
-            <Button variant="ghost" size="sm" className="h-9 text-xs gap-1" onClick={() => { setFilterDok("all"); setFilterBlooms("all"); }}>
+          <Select value={filterStandard} onValueChange={setFilterStandard}>
+            <SelectTrigger className="w-[200px] h-9 text-sm">
+              <SelectValue placeholder="NGSS Standard" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Standards</SelectItem>
+              <SelectItem value="untagged">Untagged</SelectItem>
+              {DISCIPLINES.map(disc => (
+                <React.Fragment key={disc.key}>
+                  <SelectItem value={`disc:${disc.key}`}>{disc.label}</SelectItem>
+                  {disc.coreIdeas.map(ci => (
+                    <SelectItem key={ci} value={ci} className="pl-8 text-muted-foreground">{ci}</SelectItem>
+                  ))}
+                </React.Fragment>
+              ))}
+            </SelectContent>
+          </Select>
+          {(filterDok !== "all" || filterBlooms !== "all" || filterStandard !== "all") && (
+            <Button variant="ghost" size="sm" className="h-9 text-xs gap-1" onClick={() => { setFilterDok("all"); setFilterBlooms("all"); setFilterStandard("all"); }}>
               <X className="h-3.5 w-3.5" /> Clear Filters
             </Button>
           )}
