@@ -13,8 +13,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getQuestionBank, deleteFromBank, updateQuestion, backfillDokAndBlooms, type QuestionBankItem } from "@/lib/question-bank";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2 } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
 function stripHtml(html: string): string {
   const div = document.createElement("div");
@@ -154,6 +155,7 @@ const QuestionBank = () => {
   const [filterBlooms, setFilterBlooms] = useState<string>("all");
   const [filterStandard, setFilterStandard] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grouped" | "flat">("grouped");
+  const [chartMode, setChartMode] = useState<"bar" | "donut">("bar");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [quizTitle, setQuizTitle] = useState("Custom Quiz");
@@ -556,68 +558,100 @@ const QuestionBank = () => {
         </div>
 
         {/* Distribution summary bar */}
-        {questions.length > 0 && (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <Card>
-              <CardContent className="p-3 space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">DOK Distribution</p>
-                <div className="flex gap-0.5 h-5 rounded-full overflow-hidden bg-muted">
-                  {[1, 2, 3, 4].map(level => {
-                    const count = questions.filter(q => q.dok_level === level).length;
-                    const colors = ["bg-emerald-400", "bg-sky-400", "bg-amber-400", "bg-rose-400"];
-                    return count > 0 ? (
-                      <div key={level} className={`${colors[level - 1]} transition-all`} style={{ width: `${(count / questions.length) * 100}%` }} title={`DOK ${level}: ${count}`} />
-                    ) : null;
-                  })}
+        {questions.length > 0 && (() => {
+          const dokHex = ["#34d399", "#38bdf8", "#fbbf24", "#fb7185"];
+          const dokBg = ["bg-emerald-400", "bg-sky-400", "bg-amber-400", "bg-rose-400"];
+          const dokData = [1, 2, 3, 4].map((level, i) => ({
+            name: `DOK ${level}`, value: questions.filter(q => q.dok_level === level).length, fill: dokHex[i], bg: dokBg[i],
+          })).filter(d => d.value > 0);
+          const dokUnset = questions.filter(q => q.dok_level == null).length;
+          if (dokUnset > 0) dokData.push({ name: "Unset", value: dokUnset, fill: "#94a3b8", bg: "bg-slate-400" });
+
+          const bloomsLabels = ["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"];
+          const bloomsHex = ["#94a3b8", "#34d399", "#38bdf8", "#fbbf24", "#fb923c", "#fb7185"];
+          const bloomsBg = ["bg-slate-400", "bg-emerald-400", "bg-sky-400", "bg-amber-400", "bg-orange-400", "bg-rose-400"];
+          const bloomsData = bloomsLabels.map((level, i) => ({
+            name: level, value: questions.filter(q => (q.blooms_level || "").toLowerCase() === level.toLowerCase()).length, fill: bloomsHex[i], bg: bloomsBg[i],
+          })).filter(d => d.value > 0);
+          const bloomsUnset = questions.filter(q => !q.blooms_level).length;
+          if (bloomsUnset > 0) bloomsData.push({ name: "Unset", value: bloomsUnset, fill: "#94a3b8", bg: "bg-slate-400" });
+
+          const Legend = ({ data }: { data: { name: string; value: number; bg: string }[] }) => (
+            <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+              {data.map(d => (
+                <span key={d.name} className="flex items-center gap-1">
+                  <span className={`inline-block h-2 w-2 rounded-full ${d.bg}`} />
+                  {d.name}: {d.value}
+                </span>
+              ))}
+            </div>
+          );
+
+          const DonutChart = ({ data }: { data: { name: string; value: number; fill: string; bg: string }[] }) => (
+            <div className="flex items-center gap-3">
+              <ResponsiveContainer width={120} height={120}>
+                <PieChart>
+                  <Pie data={data} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={30} outerRadius={50} paddingAngle={2} strokeWidth={0}>
+                    {data.map((d, i) => <Cell key={i} fill={d.fill} />)}
+                  </Pie>
+                  <Tooltip formatter={(value: number, name: string) => [`${value} question${value !== 1 ? "s" : ""}`, name]} />
+                </PieChart>
+              </ResponsiveContainer>
+              <Legend data={data} />
+            </div>
+          );
+
+          return (
+            <div className="space-y-2">
+              <div className="flex justify-end">
+                <div className="flex border rounded-md overflow-hidden">
+                  <button className={`px-2 py-1 text-xs flex items-center gap-1 transition-colors ${chartMode === "bar" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`} onClick={() => setChartMode("bar")}>
+                    <BarChart3 className="h-3.5 w-3.5" /> Bar
+                  </button>
+                  <button className={`px-2 py-1 text-xs flex items-center gap-1 transition-colors ${chartMode === "donut" ? "bg-primary text-primary-foreground" : "bg-background text-muted-foreground hover:bg-muted"}`} onClick={() => setChartMode("donut")}>
+                    <PieChartIcon className="h-3.5 w-3.5" /> Donut
+                  </button>
                 </div>
-                <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
-                  {[1, 2, 3, 4].map(level => {
-                    const count = questions.filter(q => q.dok_level === level).length;
-                    const colors = ["bg-emerald-400", "bg-sky-400", "bg-amber-400", "bg-rose-400"];
-                    return (
-                      <span key={level} className="flex items-center gap-1">
-                        <span className={`inline-block h-2 w-2 rounded-full ${colors[level - 1]}`} />
-                        DOK {level}: {count}
-                      </span>
-                    );
-                  })}
-                  {questions.filter(q => q.dok_level == null).length > 0 && (
-                    <span className="text-muted-foreground/60">Unset: {questions.filter(q => q.dok_level == null).length}</span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="p-3 space-y-2">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Bloom's Distribution</p>
-                <div className="flex gap-0.5 h-5 rounded-full overflow-hidden bg-muted">
-                  {["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"].map((level, i) => {
-                    const count = questions.filter(q => (q.blooms_level || "").toLowerCase() === level.toLowerCase()).length;
-                    const colors = ["bg-slate-400", "bg-emerald-400", "bg-sky-400", "bg-amber-400", "bg-orange-400", "bg-rose-400"];
-                    return count > 0 ? (
-                      <div key={level} className={`${colors[i]} transition-all`} style={{ width: `${(count / questions.length) * 100}%` }} title={`${level}: ${count}`} />
-                    ) : null;
-                  })}
-                </div>
-                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                  {["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"].map((level, i) => {
-                    const count = questions.filter(q => (q.blooms_level || "").toLowerCase() === level.toLowerCase()).length;
-                    const colors = ["bg-slate-400", "bg-emerald-400", "bg-sky-400", "bg-amber-400", "bg-orange-400", "bg-rose-400"];
-                    return count > 0 ? (
-                      <span key={level} className="flex items-center gap-1">
-                        <span className={`inline-block h-2 w-2 rounded-full ${colors[i]}`} />
-                        {level}: {count}
-                      </span>
-                    ) : null;
-                  })}
-                  {questions.filter(q => !q.blooms_level).length > 0 && (
-                    <span className="text-muted-foreground/60">Unset: {questions.filter(q => !q.blooms_level).length}</span>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        )}
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Card>
+                  <CardContent className="p-3 space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">DOK Distribution</p>
+                    {chartMode === "bar" ? (
+                      <>
+                        <div className="flex gap-0.5 h-5 rounded-full overflow-hidden bg-muted">
+                          {dokData.map(d => (
+                            <div key={d.name} style={{ width: `${(d.value / questions.length) * 100}%`, backgroundColor: d.fill }} className="transition-all" title={`${d.name}: ${d.value}`} />
+                          ))}
+                        </div>
+                        <Legend data={dokData} />
+                      </>
+                    ) : (
+                      <DonutChart data={dokData} />
+                    )}
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-3 space-y-2">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Bloom's Distribution</p>
+                    {chartMode === "bar" ? (
+                      <>
+                        <div className="flex gap-0.5 h-5 rounded-full overflow-hidden bg-muted">
+                          {bloomsData.map(d => (
+                            <div key={d.name} style={{ width: `${(d.value / questions.length) * 100}%`, backgroundColor: d.fill }} className="transition-all" title={`${d.name}: ${d.value}`} />
+                          ))}
+                        </div>
+                        <Legend data={bloomsData} />
+                      </>
+                    ) : (
+                      <DonutChart data={bloomsData} />
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* Breadcrumb trail for grouped view */}
         {viewMode === "grouped" && (expandedDiscipline || expandedCoreIdea) && (
