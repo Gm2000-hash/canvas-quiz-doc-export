@@ -288,7 +288,10 @@ const QuestionBank = () => {
   };
 
   const filtered = questions.filter(q => {
-    return !search || stripHtml(q.question_text).toLowerCase().includes(search.toLowerCase());
+    if (search && !stripHtml(q.question_text).toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterDok !== "all" && String(q.dok_level) !== filterDok) return false;
+    if (filterBlooms !== "all" && (q.blooms_level || "").toLowerCase() !== filterBlooms.toLowerCase()) return false;
+    return true;
   });
 
   const selectAllFiltered = () => {
