@@ -1261,6 +1261,12 @@ const QuestionBank = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <CreateQuestionDialog
+        open={showCreateDialog}
+        onOpenChange={setShowCreateDialog}
+        onCreated={loadQuestions}
+      />
     </div>
   );
 };
