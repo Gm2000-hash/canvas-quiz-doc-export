@@ -846,6 +846,7 @@ const QuestionBank = () => {
                   </SelectContent>
                 </Select>
               </div>
+            </div>
 
             {/* Answer editing */}
             {editType !== "essay_question" && (
