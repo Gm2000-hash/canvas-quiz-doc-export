@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -152,6 +152,7 @@ const QuestionBank = () => {
   const [search, setSearch] = useState("");
   const [filterDok, setFilterDok] = useState<string>("all");
   const [filterBlooms, setFilterBlooms] = useState<string>("all");
+  const [filterStandard, setFilterStandard] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grouped" | "flat">("grouped");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -291,6 +292,18 @@ const QuestionBank = () => {
     if (search && !stripHtml(q.question_text).toLowerCase().includes(search.toLowerCase())) return false;
     if (filterDok !== "all" && String(q.dok_level) !== filterDok) return false;
     if (filterBlooms !== "all" && (q.blooms_level || "").toLowerCase() !== filterBlooms.toLowerCase()) return false;
+    if (filterStandard !== "all") {
+      if (filterStandard === "untagged") {
+        if (q.standards.length > 0) return false;
+      } else if (filterStandard.startsWith("disc:")) {
+        // Filter by discipline (e.g., "disc:LS")
+        const discKey = filterStandard.replace("disc:", "");
+        if (!q.standards.some(s => getDisciplineForCode(s.ngss_code) === discKey)) return false;
+      } else {
+        // Filter by specific core idea (e.g., "MS-LS1")
+        if (!q.standards.some(s => getCoreIdeaFromCode(s.ngss_code) === filterStandard)) return false;
+      }
+    }
     return true;
   });
 
@@ -488,8 +501,25 @@ const QuestionBank = () => {
               ))}
             </SelectContent>
           </Select>
-          {(filterDok !== "all" || filterBlooms !== "all") && (
-            <Button variant="ghost" size="sm" className="h-9 text-xs gap-1" onClick={() => { setFilterDok("all"); setFilterBlooms("all"); }}>
+          <Select value={filterStandard} onValueChange={setFilterStandard}>
+            <SelectTrigger className="w-[200px] h-9 text-sm">
+              <SelectValue placeholder="NGSS Standard" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Standards</SelectItem>
+              <SelectItem value="untagged">Untagged</SelectItem>
+              {DISCIPLINES.map(disc => (
+                <React.Fragment key={disc.key}>
+                  <SelectItem value={`disc:${disc.key}`}>{disc.label}</SelectItem>
+                  {disc.coreIdeas.map(ci => (
+                    <SelectItem key={ci} value={ci} className="pl-8 text-muted-foreground">{ci}</SelectItem>
+                  ))}
+                </React.Fragment>
+              ))}
+            </SelectContent>
+          </Select>
+          {(filterDok !== "all" || filterBlooms !== "all" || filterStandard !== "all") && (
+            <Button variant="ghost" size="sm" className="h-9 text-xs gap-1" onClick={() => { setFilterDok("all"); setFilterBlooms("all"); setFilterStandard("all"); }}>
               <X className="h-3.5 w-3.5" /> Clear Filters
             </Button>
           )}
