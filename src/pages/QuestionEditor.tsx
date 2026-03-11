@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Plus, Trash2, Loader2, GripVertical, Highlighter, MousePointerClick } from "lucide-react";
 import { QUESTION_TYPE_CATEGORIES, ALL_QUESTION_TYPES, createDefaultAnswers, isISATType, getQuestionTypeLabel } from "@/lib/question-types";
 import { createQuestion, suggestDokAndBlooms } from "@/lib/question-bank";
+import { StandardsPicker, CognitiveLevelPicker } from "@/components/QuestionTagPickers";
 import { toast } from "sonner";
 
 export default function QuestionEditor() {
@@ -23,6 +24,9 @@ export default function QuestionEditor() {
   const [questionText, setQuestionText] = useState("");
   const [points, setPoints] = useState(1);
   const [answers, setAnswers] = useState<any>(createDefaultAnswers(initialType));
+  const [dokLevel, setDokLevel] = useState<number | null>(null);
+  const [bloomsLevel, setBloomsLevel] = useState<string | null>(null);
+  const [standards, setStandards] = useState<{ ngss_code: string; ngss_description: string }[]>([]);
   const [saving, setSaving] = useState(false);
 
   const handleTypeChange = (type: string) => {
@@ -37,16 +41,17 @@ export default function QuestionEditor() {
     }
     setSaving(true);
     try {
-      const { dok, blooms } = suggestDokAndBlooms(questionType, questionText);
+      const suggested = suggestDokAndBlooms(questionType, questionText);
       await createQuestion({
         question_text: questionText,
         question_type: questionType,
         points_possible: points,
         answers,
-        dok_level: dok,
-        blooms_level: blooms,
+        dok_level: dokLevel ?? suggested.dok,
+        blooms_level: bloomsLevel ?? suggested.blooms,
         source_course: "Manual",
         source_quiz: null,
+        standards,
       });
       toast.success("Question created!");
       navigate("/question-bank");
@@ -120,6 +125,19 @@ export default function QuestionEditor() {
             {!isISATType(questionType) && (
               <TraditionalAnswerEditor type={questionType} answers={answers} onChange={setAnswers} />
             )}
+
+            {/* Tagging */}
+            <Card>
+              <CardContent className="p-5 space-y-4">
+                <CognitiveLevelPicker
+                  dokLevel={dokLevel}
+                  bloomsLevel={bloomsLevel}
+                  onDokChange={setDokLevel}
+                  onBloomsChange={setBloomsLevel}
+                />
+                <StandardsPicker standards={standards} onChange={setStandards} />
+              </CardContent>
+            </Card>
           </div>
 
           {/* Preview Panel */}

@@ -8,10 +8,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Plus, Trash2, GripVertical } from "lucide-react";
+import { Loader2, Plus, Trash2 } from "lucide-react";
 import { QUESTION_TYPE_CATEGORIES, createDefaultAnswers, isISATType } from "@/lib/question-types";
-import { createQuestion } from "@/lib/question-bank";
-import { suggestDokAndBlooms } from "@/lib/question-bank";
+import { createQuestion, suggestDokAndBlooms } from "@/lib/question-bank";
+import { StandardsPicker, CognitiveLevelPicker } from "@/components/QuestionTagPickers";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 
@@ -27,11 +27,13 @@ export default function CreateQuestionDialog({ open, onOpenChange, onCreated }: 
   const [questionText, setQuestionText] = useState("");
   const [points, setPoints] = useState(1);
   const [answers, setAnswers] = useState<any[]>(createDefaultAnswers("multiple_choice_question"));
+  const [dokLevel, setDokLevel] = useState<number | null>(null);
+  const [bloomsLevel, setBloomsLevel] = useState<string | null>(null);
+  const [standards, setStandards] = useState<{ ngss_code: string; ngss_description: string }[]>([]);
   const [saving, setSaving] = useState(false);
 
   const handleTypeChange = (type: string) => {
     if (isISATType(type)) {
-      // Redirect to full editor for ISAT types
       onOpenChange(false);
       navigate(`/create-question?type=${type}`);
       return;
@@ -47,16 +49,17 @@ export default function CreateQuestionDialog({ open, onOpenChange, onCreated }: 
     }
     setSaving(true);
     try {
-      const { dok, blooms } = suggestDokAndBlooms(questionType, questionText);
+      const suggested = suggestDokAndBlooms(questionType, questionText);
       await createQuestion({
         question_text: questionText,
         question_type: questionType,
         points_possible: points,
         answers,
-        dok_level: dok,
-        blooms_level: blooms,
+        dok_level: dokLevel ?? suggested.dok,
+        blooms_level: bloomsLevel ?? suggested.blooms,
         source_course: "Manual",
         source_quiz: null,
+        standards,
       });
       toast.success("Question created!");
       onCreated();
@@ -74,6 +77,9 @@ export default function CreateQuestionDialog({ open, onOpenChange, onCreated }: 
     setQuestionText("");
     setPoints(1);
     setAnswers(createDefaultAnswers("multiple_choice_question"));
+    setDokLevel(null);
+    setBloomsLevel(null);
+    setStandards([]);
   };
 
   const updateAnswer = (index: number, field: string, value: any) => {
@@ -146,12 +152,7 @@ export default function CreateQuestionDialog({ open, onOpenChange, onCreated }: 
                 {answers.map((a, i) => (
                   <div key={a.id} className="flex items-center gap-2">
                     <RadioGroupItem value={String(i)} id={`mc-${i}`} />
-                    <Input
-                      value={a.text}
-                      onChange={e => updateAnswer(i, "text", e.target.value)}
-                      placeholder={`Option ${String.fromCharCode(65 + i)}`}
-                      className="flex-1"
-                    />
+                    <Input value={a.text} onChange={e => updateAnswer(i, "text", e.target.value)} placeholder={`Option ${String.fromCharCode(65 + i)}`} className="flex-1" />
                     <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeAnswer(i)} disabled={answers.length <= 2}>
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -184,16 +185,8 @@ export default function CreateQuestionDialog({ open, onOpenChange, onCreated }: 
               <p className="text-xs text-muted-foreground">Check all correct answers</p>
               {answers.map((a, i) => (
                 <div key={a.id} className="flex items-center gap-2">
-                  <Checkbox
-                    checked={a.weight === 100}
-                    onCheckedChange={checked => updateAnswer(i, "weight", checked ? 100 : 0)}
-                  />
-                  <Input
-                    value={a.text}
-                    onChange={e => updateAnswer(i, "text", e.target.value)}
-                    placeholder={`Option ${String.fromCharCode(65 + i)}`}
-                    className="flex-1"
-                  />
+                  <Checkbox checked={a.weight === 100} onCheckedChange={checked => updateAnswer(i, "weight", checked ? 100 : 0)} />
+                  <Input value={a.text} onChange={e => updateAnswer(i, "text", e.target.value)} placeholder={`Option ${String.fromCharCode(65 + i)}`} className="flex-1" />
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeAnswer(i)} disabled={answers.length <= 2}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -210,19 +203,9 @@ export default function CreateQuestionDialog({ open, onOpenChange, onCreated }: 
               <Label>Matching Pairs</Label>
               {answers.map((a, i) => (
                 <div key={a.id} className="flex items-center gap-2">
-                  <Input
-                    value={a.left || ""}
-                    onChange={e => updateAnswer(i, "left", e.target.value)}
-                    placeholder={`Term ${i + 1}`}
-                    className="flex-1"
-                  />
+                  <Input value={a.left || ""} onChange={e => updateAnswer(i, "left", e.target.value)} placeholder={`Term ${i + 1}`} className="flex-1" />
                   <span className="text-muted-foreground">→</span>
-                  <Input
-                    value={a.right || ""}
-                    onChange={e => updateAnswer(i, "right", e.target.value)}
-                    placeholder={`Definition ${i + 1}`}
-                    className="flex-1"
-                  />
+                  <Input value={a.right || ""} onChange={e => updateAnswer(i, "right", e.target.value)} placeholder={`Definition ${i + 1}`} className="flex-1" />
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeAnswer(i)} disabled={answers.length <= 2}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -240,12 +223,7 @@ export default function CreateQuestionDialog({ open, onOpenChange, onCreated }: 
               <p className="text-xs text-muted-foreground">Enter acceptable answers (one per row)</p>
               {answers.map((a, i) => (
                 <div key={a.id || i} className="flex items-center gap-2">
-                  <Input
-                    value={a.text}
-                    onChange={e => updateAnswer(i, "text", e.target.value)}
-                    placeholder={`Answer ${i + 1}`}
-                    className="flex-1"
-                  />
+                  <Input value={a.text} onChange={e => updateAnswer(i, "text", e.target.value)} placeholder={`Answer ${i + 1}`} className="flex-1" />
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => removeAnswer(i)} disabled={answers.length <= 1}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
@@ -260,6 +238,17 @@ export default function CreateQuestionDialog({ open, onOpenChange, onCreated }: 
           {questionType === "essay_question" && (
             <p className="text-sm text-muted-foreground italic">Essay questions are open-ended and have no predefined answers.</p>
           )}
+
+          {/* Cognitive Levels */}
+          <CognitiveLevelPicker
+            dokLevel={dokLevel}
+            bloomsLevel={bloomsLevel}
+            onDokChange={setDokLevel}
+            onBloomsChange={setBloomsLevel}
+          />
+
+          {/* NGSS Standards */}
+          <StandardsPicker standards={standards} onChange={setStandards} />
         </div>
 
         <DialogFooter>
