@@ -12,6 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Plus, Trash2, Loader2, GripVertical, Highlighter, MousePointerClick } from "lucide-react";
 import { QUESTION_TYPE_CATEGORIES, ALL_QUESTION_TYPES, createDefaultAnswers, isISATType, getQuestionTypeLabel } from "@/lib/question-types";
 import { createQuestion, suggestDokAndBlooms } from "@/lib/question-bank";
+import { StandardsPicker, CognitiveLevelPicker } from "@/components/QuestionTagPickers";
 import { toast } from "sonner";
 
 export default function QuestionEditor() {
