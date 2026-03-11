@@ -494,6 +494,12 @@ const QuestionBank = () => {
             <Button variant={viewMode === "flat" ? "default" : "outline"} size="sm" onClick={() => setViewMode("flat")} className="gap-1.5">
               <List className="h-4 w-4" /> Flat List
             </Button>
+            {questions.some(q => q.dok_level == null || q.blooms_level == null) && (
+              <Button variant="outline" size="sm" onClick={handleBackfill} disabled={backfilling} className="gap-1.5">
+                {backfilling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                Auto-tag Levels
+              </Button>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
