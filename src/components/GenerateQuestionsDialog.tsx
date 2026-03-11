@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom } from "lucide-react";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
@@ -25,31 +25,37 @@ const DISCIPLINES = [
 type GenerateTarget = { type: "coreIdea"; id: string } | { type: "discipline"; key: string } | { type: "all" };
 
 export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete }: Props) {
-  const [questionsPerSub, setQuestionsPerSub] = useState("10");
+  const [questionsPerSub, setQuestionsPerSub] = useState(10);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
   const abortRef = useRef(false);
+  const latestProgressRef = useRef<GenerationProgress | null>(null);
+
+  const handleProgressUpdate = (p: GenerationProgress) => {
+    latestProgressRef.current = p;
+    setProgress(p);
+  };
 
   const handleGenerate = async (target: GenerateTarget) => {
     setGenerating(true);
     setDone(false);
     abortRef.current = false;
-    const count = parseInt(questionsPerSub);
+    latestProgressRef.current = null;
 
     try {
       if (target.type === "coreIdea") {
-        await generateForCoreIdea(target.id, count, setProgress);
+        await generateForCoreIdea(target.id, questionsPerSub, handleProgressUpdate);
       } else if (target.type === "discipline") {
         const disc = DISCIPLINES.find(d => d.key === target.key);
-        if (disc) await generateForDiscipline(disc.coreIdeas, count, setProgress);
+        if (disc) await generateForDiscipline(disc.coreIdeas, questionsPerSub, handleProgressUpdate);
       } else {
-        // All disciplines
         const allCoreIdeas = DISCIPLINES.flatMap(d => d.coreIdeas);
-        await generateForDiscipline(allCoreIdeas, count, setProgress);
+        await generateForDiscipline(allCoreIdeas, questionsPerSub, handleProgressUpdate);
       }
       setDone(true);
-      toast.success(`Generated ${progress?.questionsGenerated ?? 0} questions!`);
+      const total = latestProgressRef.current?.questionsGenerated ?? 0;
+      toast.success(`Generated ${total} questions!`);
       onComplete();
     } catch (e: any) {
       toast.error(e.message || "Generation failed");
@@ -128,16 +134,15 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label className="text-xs">Questions per substandard</Label>
-              <Select value={questionsPerSub} onValueChange={setQuestionsPerSub}>
-                <SelectTrigger className="w-32 h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="3">3</SelectItem>
-                  <SelectItem value="5">5</SelectItem>
-                  <SelectItem value="10">10</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                type="number"
+                min={1}
+                max={50}
+                value={questionsPerSub}
+                onChange={(e) => setQuestionsPerSub(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
+                className="w-32 h-9 text-sm"
+              />
+              <p className="text-[10px] text-muted-foreground">1–50 questions per substandard</p>
             </div>
 
             {/* Generate All */}
@@ -148,7 +153,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
               disabled={generating}
             >
               <Sparkles className="h-4 w-4" />
-              Generate All ({Object.values(ALL_SUBSTANDARDS).reduce((s, a) => s + a.length, 0) * parseInt(questionsPerSub)} questions)
+              Generate All ({Object.values(ALL_SUBSTANDARDS).reduce((s, a) => s + a.length, 0) * questionsPerSub} questions)
             </Button>
 
             <div className="text-xs text-muted-foreground text-center">— or generate by discipline / core idea —</div>
