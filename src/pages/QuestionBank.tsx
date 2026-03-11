@@ -150,6 +150,8 @@ const QuestionBank = () => {
   const [questions, setQuestions] = useState<QuestionBankItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filterDok, setFilterDok] = useState<string>("all");
+  const [filterBlooms, setFilterBlooms] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grouped" | "flat">("grouped");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showExportDialog, setShowExportDialog] = useState(false);
@@ -286,7 +288,10 @@ const QuestionBank = () => {
   };
 
   const filtered = questions.filter(q => {
-    return !search || stripHtml(q.question_text).toLowerCase().includes(search.toLowerCase());
+    if (search && !stripHtml(q.question_text).toLowerCase().includes(search.toLowerCase())) return false;
+    if (filterDok !== "all" && String(q.dok_level) !== filterDok) return false;
+    if (filterBlooms !== "all" && (q.blooms_level || "").toLowerCase() !== filterBlooms.toLowerCase()) return false;
+    return true;
   });
 
   const selectAllFiltered = () => {
@@ -459,6 +464,35 @@ const QuestionBank = () => {
               <List className="h-4 w-4" /> Flat List
             </Button>
           </div>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <Select value={filterDok} onValueChange={setFilterDok}>
+            <SelectTrigger className="w-[180px] h-9 text-sm">
+              <SelectValue placeholder="DOK Level" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All DOK Levels</SelectItem>
+              {DOK_LEVELS.map(d => (
+                <SelectItem key={d.value} value={String(d.value)}>{d.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select value={filterBlooms} onValueChange={setFilterBlooms}>
+            <SelectTrigger className="w-[180px] h-9 text-sm">
+              <SelectValue placeholder="Bloom's Level" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Bloom's Levels</SelectItem>
+              {BLOOMS_LEVELS.map(b => (
+                <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {(filterDok !== "all" || filterBlooms !== "all") && (
+            <Button variant="ghost" size="sm" className="h-9 text-xs gap-1" onClick={() => { setFilterDok("all"); setFilterBlooms("all"); }}>
+              <X className="h-3.5 w-3.5" /> Clear Filters
+            </Button>
+          )}
           {selected.size > 0 && (
             <Button onClick={() => setShowExportDialog(true)} className="gap-2">
               <FileText className="h-4 w-4" />
