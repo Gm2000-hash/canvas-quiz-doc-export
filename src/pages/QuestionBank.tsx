@@ -106,6 +106,7 @@ const QuestionBank = () => {
   const [standardSearch, setStandardSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [backfilling, setBackfilling] = useState(false);
+  const [suggestionsQuestion, setSuggestionsQuestion] = useState<QuestionBankItem | null>(null);
 
   // DOK and Bloom's levels imported from shared data
 
