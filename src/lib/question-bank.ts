@@ -12,6 +12,8 @@ export interface QuestionBankItem {
   source_course: string | null;
   source_quiz: string | null;
   created_at: string;
+  dok_level: number | null;
+  blooms_level: string | null;
   standards: { ngss_code: string; ngss_description: string }[];
 }
 
@@ -101,6 +103,8 @@ export async function getQuestionBank(): Promise<QuestionBankItem[]> {
     source_course: q.source_course,
     source_quiz: q.source_quiz,
     created_at: q.created_at,
+    dok_level: q.dok_level,
+    blooms_level: q.blooms_level,
     standards: standardsMap.get(q.id) || [],
   }));
 }
@@ -114,7 +118,7 @@ export async function deleteFromBank(id: string) {
 
 export async function updateQuestion(
   id: string,
-  updates: { question_text?: string; points_possible?: number; question_type?: string; answers?: any[] },
+  updates: { question_text?: string; points_possible?: number; question_type?: string; answers?: any[]; dok_level?: number | null; blooms_level?: string | null },
   standards?: { ngss_code: string; ngss_description: string }[]
 ) {
   const dbUpdates: Record<string, unknown> = {};
@@ -122,6 +126,8 @@ export async function updateQuestion(
   if (updates.points_possible !== undefined) dbUpdates.points_possible = updates.points_possible;
   if (updates.question_type !== undefined) dbUpdates.question_type = updates.question_type;
   if (updates.answers !== undefined) dbUpdates.answers = updates.answers;
+  if (updates.dok_level !== undefined) dbUpdates.dok_level = updates.dok_level;
+  if (updates.blooms_level !== undefined) dbUpdates.blooms_level = updates.blooms_level;
 
   if (Object.keys(dbUpdates).length > 0) {
     const { error } = await supabase.from("question_bank").update(dbUpdates).eq("id", id);

@@ -17,8 +17,10 @@ export type Database = {
       question_bank: {
         Row: {
           answers: Json | null
+          blooms_level: string | null
           canvas_question_id: number
           created_at: string
+          dok_level: number | null
           id: string
           points_possible: number | null
           question_text: string
@@ -29,8 +31,10 @@ export type Database = {
         }
         Insert: {
           answers?: Json | null
+          blooms_level?: string | null
           canvas_question_id: number
           created_at?: string
+          dok_level?: number | null
           id?: string
           points_possible?: number | null
           question_text: string
@@ -41,8 +45,10 @@ export type Database = {
         }
         Update: {
           answers?: Json | null
+          blooms_level?: string | null
           canvas_question_id?: number
           created_at?: string
+          dok_level?: number | null
           id?: string
           points_possible?: number | null
           question_text?: string

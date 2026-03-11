@@ -169,8 +169,26 @@ const QuestionBank = () => {
   const [editType, setEditType] = useState("multiple_choice_question");
   const [editAnswers, setEditAnswers] = useState<{ id: number; text: string; weight: number; left?: string; right?: string }[]>([]);
   const [editStandards, setEditStandards] = useState<{ ngss_code: string; ngss_description: string }[]>([]);
+  const [editDok, setEditDok] = useState<number | null>(null);
+  const [editBlooms, setEditBlooms] = useState<string | null>(null);
   const [standardSearch, setStandardSearch] = useState("");
   const [saving, setSaving] = useState(false);
+
+  const DOK_LEVELS = [
+    { value: 1, label: "1 – Recall & Reproduction" },
+    { value: 2, label: "2 – Skills & Concepts" },
+    { value: 3, label: "3 – Strategic Thinking" },
+    { value: 4, label: "4 – Extended Thinking" },
+  ];
+
+  const BLOOMS_LEVELS = [
+    { value: "remember", label: "Remember" },
+    { value: "understand", label: "Understand" },
+    { value: "apply", label: "Apply" },
+    { value: "analyze", label: "Analyze" },
+    { value: "evaluate", label: "Evaluate" },
+    { value: "create", label: "Create" },
+  ];
 
   const QUESTION_TYPES = [
     { value: "multiple_choice_question", label: "Multiple Choice" },
@@ -220,6 +238,8 @@ const QuestionBank = () => {
       right: a.right || "",
     })));
     setEditStandards([...q.standards]);
+    setEditDok(q.dok_level);
+    setEditBlooms(q.blooms_level);
     setStandardSearch("");
   };
 
@@ -236,12 +256,12 @@ const QuestionBank = () => {
       }));
       await updateQuestion(
         editingQuestion.id,
-        { question_text: editText, points_possible: editPoints, question_type: editType, answers: savedAnswers },
+        { question_text: editText, points_possible: editPoints, question_type: editType, answers: savedAnswers, dok_level: editDok, blooms_level: editBlooms },
         editStandards
       );
       setQuestions(prev => prev.map(q =>
         q.id === editingQuestion.id
-          ? { ...q, question_text: editText, points_possible: editPoints, question_type: editType, answers: savedAnswers, standards: editStandards }
+          ? { ...q, question_text: editText, points_possible: editPoints, question_type: editType, answers: savedAnswers, dok_level: editDok, blooms_level: editBlooms, standards: editStandards }
           : q
       ));
       setEditingQuestion(null);
@@ -386,6 +406,12 @@ const QuestionBank = () => {
           {q.standards.map(s => (
             <Badge key={s.ngss_code} variant="outline" className="text-xs">{s.ngss_code}</Badge>
           ))}
+          {q.dok_level && (
+            <Badge variant="secondary" className="text-xs">DOK {q.dok_level}</Badge>
+          )}
+          {q.blooms_level && (
+            <Badge variant="secondary" className="text-xs capitalize">{q.blooms_level}</Badge>
+          )}
           {q.source_course && (
             <span className="text-xs text-muted-foreground">
               {q.source_course}{q.source_quiz ? ` · ${q.source_quiz}` : ""}
@@ -792,6 +818,33 @@ const QuestionBank = () => {
               <div className="space-y-2">
                 <Label>Points</Label>
                 <Input type="number" min={0} value={editPoints} onChange={e => setEditPoints(Number(e.target.value))} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Depth of Knowledge</Label>
+                <Select value={editDok !== null ? String(editDok) : "none"} onValueChange={val => setEditDok(val === "none" ? null : Number(val))}>
+                  <SelectTrigger><SelectValue placeholder="Select DOK level" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Not set</SelectItem>
+                    {DOK_LEVELS.map(d => (
+                      <SelectItem key={d.value} value={String(d.value)}>{d.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Bloom's Taxonomy</Label>
+                <Select value={editBlooms || "none"} onValueChange={val => setEditBlooms(val === "none" ? null : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Not set</SelectItem>
+                    {BLOOMS_LEVELS.map(b => (
+                      <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 
