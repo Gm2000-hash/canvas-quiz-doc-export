@@ -155,6 +155,7 @@ const QuestionBank = () => {
   const [filterBlooms, setFilterBlooms] = useState<string>("all");
   const [filterStandard, setFilterStandard] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grouped" | "flat">("grouped");
+  const [chartMode, setChartMode] = useState<"bar" | "donut">("bar");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [quizTitle, setQuizTitle] = useState("Custom Quiz");
