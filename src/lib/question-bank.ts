@@ -17,6 +17,45 @@ export interface QuestionBankItem {
   standards: { ngss_code: string; ngss_description: string }[];
 }
 
+/**
+ * Auto-suggest DOK level and Bloom's taxonomy based on question type and text.
+ */
+function suggestDokAndBlooms(questionType: string, questionText: string): { dok: number; blooms: string } {
+  const text = questionText.toLowerCase();
+
+  // Check for higher-order verbs first (highest priority)
+  const createVerbs = /\b(design|create|construct|develop|formulate|propose|invent|compose)\b/;
+  const evaluateVerbs = /\b(evaluate|justify|defend|critique|judge|assess|argue|support your)\b/;
+  const analyzeVerbs = /\b(analyze|compare|contrast|differentiate|distinguish|examine|investigate|categorize|classify|relationship|cause and effect|evidence)\b/;
+  const applyVerbs = /\b(apply|calculate|solve|demonstrate|predict|model|use .+ to|determine|compute)\b/;
+  const understandVerbs = /\b(explain|describe|summarize|interpret|paraphrase|infer|conclude|illustrate)\b/;
+
+  if (createVerbs.test(text)) return { dok: 4, blooms: "Create" };
+  if (evaluateVerbs.test(text)) return { dok: 3, blooms: "Evaluate" };
+  if (analyzeVerbs.test(text)) return { dok: 3, blooms: "Analyze" };
+  if (applyVerbs.test(text)) return { dok: 2, blooms: "Apply" };
+  if (understandVerbs.test(text)) return { dok: 2, blooms: "Understand" };
+
+  // Fall back to question type heuristics
+  switch (questionType) {
+    case "essay_question":
+      return { dok: 3, blooms: "Analyze" };
+    case "short_answer_question":
+    case "fill_in_multiple_blanks_question":
+      return { dok: 2, blooms: "Apply" };
+    case "matching_question":
+      return { dok: 2, blooms: "Understand" };
+    case "numerical_question":
+    case "calculated_question":
+      return { dok: 2, blooms: "Apply" };
+    case "multiple_choice_question":
+    case "true_false_question":
+    case "multiple_answers_question":
+    default:
+      return { dok: 1, blooms: "Remember" };
+  }
+}
+
 export async function saveQuestionsToBank(
   questions: QuizQuestion[],
   ngssTags: Map<number, NGSSStandard[]>,
