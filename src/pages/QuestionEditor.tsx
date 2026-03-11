@@ -131,6 +131,19 @@ export default function QuestionEditor() {
             {/* Tagging */}
             <Card>
               <CardContent className="p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">Cognitive Levels</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 h-7 text-xs"
+                    onClick={() => setShowSuggestions(true)}
+                    disabled={!questionText.trim()}
+                  >
+                    <Lightbulb className="h-3 w-3 text-amber-500" />
+                    AI Suggestions
+                  </Button>
+                </div>
                 <CognitiveLevelPicker
                   dokLevel={dokLevel}
                   bloomsLevel={bloomsLevel}
