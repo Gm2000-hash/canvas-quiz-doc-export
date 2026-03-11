@@ -83,6 +83,7 @@ const QuestionBank = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
   const [quizTitle, setQuizTitle] = useState("Custom Quiz");
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
   const [exporting, setExporting] = useState(false);
