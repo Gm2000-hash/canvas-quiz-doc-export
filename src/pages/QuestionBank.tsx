@@ -14,9 +14,10 @@ import { getQuestionBank, deleteFromBank, updateQuestion, backfillDokAndBlooms, 
 import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb } from "lucide-react";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateQuestionsDialog from "@/components/GenerateQuestionsDialog";
+import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
@@ -105,6 +106,7 @@ const QuestionBank = () => {
   const [standardSearch, setStandardSearch] = useState("");
   const [saving, setSaving] = useState(false);
   const [backfilling, setBackfilling] = useState(false);
+  const [suggestionsQuestion, setSuggestionsQuestion] = useState<QuestionBankItem | null>(null);
 
   // DOK and Bloom's levels imported from shared data
 
@@ -344,6 +346,9 @@ const QuestionBank = () => {
           <Checkbox checked={selected.has(q.id)} onCheckedChange={() => toggleSelect(q.id)} onClick={e => e.stopPropagation()} className="mt-0.5" />
           <p className="text-sm text-foreground flex-1">{stripHtml(q.question_text)}</p>
           <div className="flex gap-1 shrink-0">
+            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-amber-600 hover:text-amber-700" onClick={e => { e.stopPropagation(); setSuggestionsQuestion(q); }} title="AI DOK/Bloom's suggestions">
+              <Lightbulb className="h-3.5 w-3.5" />
+            </Button>
             <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" onClick={e => { e.stopPropagation(); openEdit(q); }}>
               <Pencil className="h-3.5 w-3.5" />
             </Button>
@@ -925,9 +930,22 @@ const QuestionBank = () => {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Depth of Knowledge</Label>
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Cognitive Levels</Label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5 h-7 text-xs"
+                  onClick={() => {
+                    if (editingQuestion) setSuggestionsQuestion(editingQuestion);
+                  }}
+                >
+                  <Lightbulb className="h-3 w-3 text-amber-500" />
+                  AI Suggestions
+                </Button>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 <Select value={editDok !== null ? String(editDok) : "none"} onValueChange={val => setEditDok(val === "none" ? null : Number(val))}>
                   <SelectTrigger><SelectValue placeholder="Select DOK level" /></SelectTrigger>
                   <SelectContent>
@@ -937,9 +955,6 @@ const QuestionBank = () => {
                     ))}
                   </SelectContent>
                 </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Bloom's Taxonomy</Label>
                 <Select value={editBlooms || "none"} onValueChange={val => setEditBlooms(val === "none" ? null : val)}>
                   <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
                   <SelectContent>
@@ -1184,6 +1199,36 @@ const QuestionBank = () => {
         open={showGenerateDialog}
         onOpenChange={setShowGenerateDialog}
         onComplete={loadQuestions}
+      />
+      <DokBloomsSuggestionsDialog
+        open={!!suggestionsQuestion}
+        onOpenChange={(open) => { if (!open) setSuggestionsQuestion(null); }}
+        questionText={suggestionsQuestion ? stripHtml(suggestionsQuestion.question_text) : ""}
+        questionType={suggestionsQuestion?.question_type || "multiple_choice_question"}
+        currentDok={suggestionsQuestion?.dok_level ?? null}
+        currentBlooms={suggestionsQuestion?.blooms_level ?? null}
+        onApplySuggestion={(text, dok, blooms) => {
+          if (suggestionsQuestion) {
+            // If editing, update edit state; otherwise update the question directly
+            if (editingQuestion && editingQuestion.id === suggestionsQuestion.id) {
+              setEditText(text);
+              setEditDok(dok);
+              setEditBlooms(blooms);
+            } else {
+              // Apply directly via updateQuestion
+              updateQuestion(suggestionsQuestion.id, { question_text: text, dok_level: dok, blooms_level: blooms })
+                .then(() => {
+                  setQuestions(prev => prev.map(q =>
+                    q.id === suggestionsQuestion.id
+                      ? { ...q, question_text: text, dok_level: dok, blooms_level: blooms }
+                      : q
+                  ));
+                  toast.success("Question updated with suggested version");
+                })
+                .catch(() => toast.error("Failed to apply suggestion"));
+            }
+          }
+        }}
       />
     </div>
   );

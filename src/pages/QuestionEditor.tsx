@@ -9,11 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Plus, Trash2, Loader2, GripVertical, Highlighter, MousePointerClick } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, GripVertical, Highlighter, MousePointerClick, Lightbulb } from "lucide-react";
 import { QUESTION_TYPE_CATEGORIES, ALL_QUESTION_TYPES, createDefaultAnswers, isISATType, getQuestionTypeLabel } from "@/lib/question-types";
 import { createQuestion, suggestDokAndBlooms } from "@/lib/question-bank";
 import { StandardsPicker, CognitiveLevelPicker } from "@/components/QuestionTagPickers";
 import { toast } from "sonner";
+import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
 
 export default function QuestionEditor() {
   const navigate = useNavigate();
@@ -28,6 +29,7 @@ export default function QuestionEditor() {
   const [bloomsLevel, setBloomsLevel] = useState<string | null>(null);
   const [standards, setStandards] = useState<{ ngss_code: string; ngss_description: string }[]>([]);
   const [saving, setSaving] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const handleTypeChange = (type: string) => {
     setQuestionType(type);
@@ -129,6 +131,19 @@ export default function QuestionEditor() {
             {/* Tagging */}
             <Card>
               <CardContent className="p-5 space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">Cognitive Levels</Label>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5 h-7 text-xs"
+                    onClick={() => setShowSuggestions(true)}
+                    disabled={!questionText.trim()}
+                  >
+                    <Lightbulb className="h-3 w-3 text-amber-500" />
+                    AI Suggestions
+                  </Button>
+                </div>
                 <CognitiveLevelPicker
                   dokLevel={dokLevel}
                   bloomsLevel={bloomsLevel}
@@ -151,6 +166,19 @@ export default function QuestionEditor() {
           </div>
         </div>
       </main>
+      <DokBloomsSuggestionsDialog
+        open={showSuggestions}
+        onOpenChange={setShowSuggestions}
+        questionText={questionText}
+        questionType={questionType}
+        currentDok={dokLevel}
+        currentBlooms={bloomsLevel}
+        onApplySuggestion={(text, dok, blooms) => {
+          setQuestionText(text);
+          setDokLevel(dok);
+          setBloomsLevel(blooms);
+        }}
+      />
     </div>
   );
 }
