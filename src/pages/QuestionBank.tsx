@@ -821,6 +821,32 @@ const QuestionBank = () => {
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Depth of Knowledge</Label>
+                <Select value={editDok !== null ? String(editDok) : "none"} onValueChange={val => setEditDok(val === "none" ? null : Number(val))}>
+                  <SelectTrigger><SelectValue placeholder="Select DOK level" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Not set</SelectItem>
+                    {DOK_LEVELS.map(d => (
+                      <SelectItem key={d.value} value={String(d.value)}>{d.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Bloom's Taxonomy</Label>
+                <Select value={editBlooms || "none"} onValueChange={val => setEditBlooms(val === "none" ? null : val)}>
+                  <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">Not set</SelectItem>
+                    {BLOOMS_LEVELS.map(b => (
+                      <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
             {/* Answer editing */}
             {editType !== "essay_question" && (
               <div className="space-y-2">
