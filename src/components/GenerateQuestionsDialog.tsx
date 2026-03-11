@@ -134,16 +134,15 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
           <div className="space-y-4">
             <div className="space-y-1.5">
               <Label className="text-xs">Questions per substandard</Label>
-              <Select value={questionsPerSub} onValueChange={setQuestionsPerSub}>
-                <SelectTrigger className="w-32 h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="3">3</SelectItem>
-                  <SelectItem value="5">5</SelectItem>
-                  <SelectItem value="10">10</SelectItem>
-                </SelectContent>
-              </Select>
+              <Input
+                type="number"
+                min={1}
+                max={50}
+                value={questionsPerSub}
+                onChange={(e) => setQuestionsPerSub(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
+                className="w-32 h-9 text-sm"
+              />
+              <p className="text-[10px] text-muted-foreground">1–50 questions per substandard</p>
             </div>
 
             {/* Generate All */}
@@ -154,7 +153,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
               disabled={generating}
             >
               <Sparkles className="h-4 w-4" />
-              Generate All ({Object.values(ALL_SUBSTANDARDS).reduce((s, a) => s + a.length, 0) * parseInt(questionsPerSub)} questions)
+              Generate All ({Object.values(ALL_SUBSTANDARDS).reduce((s, a) => s + a.length, 0) * questionsPerSub} questions)
             </Button>
 
             <div className="text-xs text-muted-foreground text-center">— or generate by discipline / core idea —</div>
