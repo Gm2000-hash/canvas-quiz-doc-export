@@ -492,6 +492,9 @@ const QuestionBank = () => {
             <Input placeholder="Search questions..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
           </div>
           <div className="flex gap-2">
+            <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5">
+              <Plus className="h-4 w-4" /> Create Question
+            </Button>
             <Button variant={viewMode === "grouped" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grouped")} className="gap-1.5">
               <LayoutGrid className="h-4 w-4" /> By Standard
             </Button>
