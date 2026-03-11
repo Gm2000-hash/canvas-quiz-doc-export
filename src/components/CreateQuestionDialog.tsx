@@ -248,7 +248,7 @@ export default function CreateQuestionDialog({ open, onOpenChange, onCreated }: 
           />
 
           {/* NGSS Standards */}
-          <StandardsPicker standards={standards} onChange={setStandards} />
+          <StandardsPicker standards={standards} onChange={setStandards} questionText={questionText} />
         </div>
 
         <DialogFooter>

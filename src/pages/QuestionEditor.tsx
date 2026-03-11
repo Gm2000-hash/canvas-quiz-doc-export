@@ -135,7 +135,7 @@ export default function QuestionEditor() {
                   onDokChange={setDokLevel}
                   onBloomsChange={setBloomsLevel}
                 />
-                <StandardsPicker standards={standards} onChange={setStandards} />
+                <StandardsPicker standards={standards} onChange={setStandards} questionText={questionText} />
               </CardContent>
             </Card>
           </div>
