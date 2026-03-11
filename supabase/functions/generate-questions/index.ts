@@ -78,12 +78,12 @@ Use the tool provided to return your questions.`
                         points_possible: { type: 'number' },
                         dok_level: { type: 'number', enum: [1, 2, 3, 4] },
                         blooms_level: { type: 'string', enum: ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'] },
-                        answers: {
-                          type: 'object',
-                          description: 'Answer data. For MC: array of {text, weight} where weight=100 for correct. For multi-answer: same but multiple weight=100. For multi-step: {parts: [{label, prompt, type, options: [{text, correct}]}]}. For drag-drop: {categories: [{label, items: [string]}]}.',
+                        answers_json: {
+                          type: 'string',
+                          description: 'JSON string of answer data. For MC/multi-answer: [{"text":"...","weight":100},{"text":"...","weight":0}]. For multi-step: {"parts":[{"label":"Part A","prompt":"...","type":"multiple_choice","options":[{"text":"...","correct":true}]}]}. For drag-drop: {"categories":[{"label":"...","items":["item1","item2"]}]}.',
                         }
                       },
-                      required: ['question_type', 'question_text', 'points_possible', 'dok_level', 'blooms_level', 'answers'],
+                      required: ['question_type', 'question_text', 'points_possible', 'dok_level', 'blooms_level', 'answers_json'],
                       additionalProperties: false
                     }
                   }
