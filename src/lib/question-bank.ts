@@ -78,6 +78,8 @@ export async function saveQuestionsToBank(
 
     if (existing) continue; // skip duplicates
 
+    const { dok, blooms } = suggestDokAndBlooms(q.question_type, q.question_text);
+
     const { data: inserted, error } = await supabase
       .from("question_bank")
       .insert({
@@ -89,6 +91,8 @@ export async function saveQuestionsToBank(
         answers: q.answers as any,
         source_course: courseName,
         source_quiz: quizTitle,
+        dok_level: dok,
+        blooms_level: blooms,
       })
       .select("id")
       .single();
