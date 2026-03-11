@@ -13,7 +13,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getQuestionBank, deleteFromBank, updateQuestion, backfillDokAndBlooms, type QuestionBankItem } from "@/lib/question-bank";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus } from "lucide-react";
+import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
