@@ -93,7 +93,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
 
             <div className="flex items-center gap-3 p-3 rounded-md bg-muted/50">
               {done ? (
-                <CheckCircle2 className="h-5 w-5 text-green-600 shrink-0" />
+                <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
               ) : (
                 <Loader2 className="h-5 w-5 animate-spin text-primary shrink-0" />
               )}
