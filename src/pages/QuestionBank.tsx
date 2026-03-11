@@ -406,6 +406,12 @@ const QuestionBank = () => {
           {q.standards.map(s => (
             <Badge key={s.ngss_code} variant="outline" className="text-xs">{s.ngss_code}</Badge>
           ))}
+          {q.dok_level && (
+            <Badge variant="secondary" className="text-xs">DOK {q.dok_level}</Badge>
+          )}
+          {q.blooms_level && (
+            <Badge variant="secondary" className="text-xs capitalize">{q.blooms_level}</Badge>
+          )}
           {q.source_course && (
             <span className="text-xs text-muted-foreground">
               {q.source_course}{q.source_quiz ? ` · ${q.source_quiz}` : ""}
