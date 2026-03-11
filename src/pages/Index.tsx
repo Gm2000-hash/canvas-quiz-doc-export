@@ -1,12 +1,12 @@
-import { SettingsForm } from '@/components/SettingsForm';
-import { QuizBrowser } from '@/components/QuizBrowser';
-import { useCanvasConfig } from '@/hooks/useCanvasConfig';
-import { useAuth } from '@/hooks/useAuth';
-import { Settings, Menu, FileText, BookOpen, LogOut } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { SettingsForm } from "@/components/SettingsForm";
+import { QuizBrowser } from "@/components/QuizBrowser";
+import { useCanvasConfig } from "@/hooks/useCanvasConfig";
+import { useAuth } from "@/hooks/useAuth";
+import { Settings, Menu, FileText, BookOpen, LogOut } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Index = () => {
   const { config, setConfig, isConfigured } = useCanvasConfig();
@@ -29,7 +29,17 @@ const Index = () => {
                 <SheetTitle>Settings</SheetTitle>
               </SheetHeader>
               <div className="p-4">
-                <SettingsForm config={config} onSave={(c) => { setConfig(c); setSettingsOpen(false); }} onDisconnect={() => { setConfig(null); setSettingsOpen(false); }} />
+                <SettingsForm
+                  config={config}
+                  onSave={(c) => {
+                    setConfig(c);
+                    setSettingsOpen(false);
+                  }}
+                  onDisconnect={() => {
+                    setConfig(null);
+                    setSettingsOpen(false);
+                  }}
+                />
               </div>
             </SheetContent>
           </Sheet>
@@ -45,7 +55,7 @@ const Index = () => {
             variant="ghost"
             size="sm"
             className="text-primary hover:bg-accent rounded-xl gap-2 font-medium"
-            onClick={() => navigate('/question-bank')}
+            onClick={() => navigate("/question-bank")}
           >
             <BookOpen className="h-4 w-4" />
             <span className="hidden sm:inline">Question Bank</span>
@@ -81,7 +91,9 @@ const Index = () => {
                   <FileText className="h-7 w-7 text-primary" />
                 </div>
                 <h2 className="text-xl font-semibold text-foreground">Welcome</h2>
-                <p className="text-sm text-muted-foreground">Connect your Canvas LMS to start exporting quizzes as Word documents.</p>
+                <p className="text-sm text-muted-foreground">
+                  Connect your Canvas LMS to start exporting quizzes as Word documents.
+                </p>
               </div>
               <SettingsForm config={config} onSave={setConfig} onDisconnect={() => setConfig(null)} />
             </div>
