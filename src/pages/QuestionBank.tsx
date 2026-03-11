@@ -1180,6 +1180,11 @@ const QuestionBank = () => {
         onOpenChange={setShowCreateDialog}
         onCreated={loadQuestions}
       />
+      <GenerateQuestionsDialog
+        open={showGenerateDialog}
+        onOpenChange={setShowGenerateDialog}
+        onComplete={loadQuestions}
+      />
     </div>
   );
 };
