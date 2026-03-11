@@ -103,6 +103,8 @@ export async function getQuestionBank(): Promise<QuestionBankItem[]> {
     source_course: q.source_course,
     source_quiz: q.source_quiz,
     created_at: q.created_at,
+    dok_level: q.dok_level,
+    blooms_level: q.blooms_level,
     standards: standardsMap.get(q.id) || [],
   }));
 }
