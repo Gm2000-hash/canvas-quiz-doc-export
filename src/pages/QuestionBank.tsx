@@ -256,12 +256,12 @@ const QuestionBank = () => {
       }));
       await updateQuestion(
         editingQuestion.id,
-        { question_text: editText, points_possible: editPoints, question_type: editType, answers: savedAnswers },
+        { question_text: editText, points_possible: editPoints, question_type: editType, answers: savedAnswers, dok_level: editDok, blooms_level: editBlooms },
         editStandards
       );
       setQuestions(prev => prev.map(q =>
         q.id === editingQuestion.id
-          ? { ...q, question_text: editText, points_possible: editPoints, question_type: editType, answers: savedAnswers, standards: editStandards }
+          ? { ...q, question_text: editText, points_possible: editPoints, question_type: editType, answers: savedAnswers, dok_level: editDok, blooms_level: editBlooms, standards: editStandards }
           : q
       ));
       setEditingQuestion(null);
