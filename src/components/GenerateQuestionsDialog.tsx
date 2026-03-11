@@ -25,31 +25,37 @@ const DISCIPLINES = [
 type GenerateTarget = { type: "coreIdea"; id: string } | { type: "discipline"; key: string } | { type: "all" };
 
 export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete }: Props) {
-  const [questionsPerSub, setQuestionsPerSub] = useState("10");
+  const [questionsPerSub, setQuestionsPerSub] = useState(10);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
   const abortRef = useRef(false);
+  const latestProgressRef = useRef<GenerationProgress | null>(null);
+
+  const handleProgressUpdate = (p: GenerationProgress) => {
+    latestProgressRef.current = p;
+    setProgress(p);
+  };
 
   const handleGenerate = async (target: GenerateTarget) => {
     setGenerating(true);
     setDone(false);
     abortRef.current = false;
-    const count = parseInt(questionsPerSub);
+    latestProgressRef.current = null;
 
     try {
       if (target.type === "coreIdea") {
-        await generateForCoreIdea(target.id, count, setProgress);
+        await generateForCoreIdea(target.id, questionsPerSub, handleProgressUpdate);
       } else if (target.type === "discipline") {
         const disc = DISCIPLINES.find(d => d.key === target.key);
-        if (disc) await generateForDiscipline(disc.coreIdeas, count, setProgress);
+        if (disc) await generateForDiscipline(disc.coreIdeas, questionsPerSub, handleProgressUpdate);
       } else {
-        // All disciplines
         const allCoreIdeas = DISCIPLINES.flatMap(d => d.coreIdeas);
-        await generateForDiscipline(allCoreIdeas, count, setProgress);
+        await generateForDiscipline(allCoreIdeas, questionsPerSub, handleProgressUpdate);
       }
       setDone(true);
-      toast.success(`Generated ${progress?.questionsGenerated ?? 0} questions!`);
+      const total = latestProgressRef.current?.questionsGenerated ?? 0;
+      toast.success(`Generated ${total} questions!`);
       onComplete();
     } catch (e: any) {
       toast.error(e.message || "Generation failed");
