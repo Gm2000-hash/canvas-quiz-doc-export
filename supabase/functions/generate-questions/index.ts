@@ -122,19 +122,32 @@ Use the tool provided to return your questions.`
 
     const parsed = JSON.parse(toolCall.function.arguments);
 
-    // Normalize answer formats
+    // Parse answers_json string back to objects and normalize
     const questions = (parsed.questions || []).map((q: any) => {
-      // For MC and multi-answer, ensure answers is an array
-      if ((q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') && Array.isArray(q.answers)) {
-        return q; // already correct format
-      }
-      // If answers came as {options: [...]} unwrap it
-      if (q.answers?.options && Array.isArray(q.answers.options)) {
-        if (q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') {
-          return { ...q, answers: q.answers.options.map((o: any) => ({ text: o.text, weight: o.correct ? 100 : 0 })) };
+      let answers = q.answers;
+      // Parse answers_json if it's a string
+      if (q.answers_json) {
+        try {
+          answers = JSON.parse(q.answers_json);
+        } catch (e) {
+          console.error('Failed to parse answers_json:', q.answers_json?.substring?.(0, 200));
+          answers = [];
         }
       }
-      return q;
+
+      // For MC and multi-answer, ensure answers is an array with weight
+      if ((q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') && Array.isArray(answers)) {
+        answers = answers.map((a: any) => ({ text: a.text, weight: a.weight ?? (a.correct ? 100 : 0) }));
+      }
+      // If answers came as {options: [...]} unwrap it
+      if (answers?.options && Array.isArray(answers.options)) {
+        if (q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') {
+          answers = answers.options.map((o: any) => ({ text: o.text, weight: o.correct ? 100 : 0 }));
+        }
+      }
+
+      const { answers_json, ...rest } = q;
+      return { ...rest, answers };
     });
 
     console.log(`Generated ${questions.length} questions for ${standard_code}`);
