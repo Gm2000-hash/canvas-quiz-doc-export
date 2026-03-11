@@ -166,6 +166,19 @@ export default function QuestionEditor() {
           </div>
         </div>
       </main>
+      <DokBloomsSuggestionsDialog
+        open={showSuggestions}
+        onOpenChange={setShowSuggestions}
+        questionText={questionText}
+        questionType={questionType}
+        currentDok={dokLevel}
+        currentBlooms={bloomsLevel}
+        onApplySuggestion={(text, dok, blooms) => {
+          setQuestionText(text);
+          setDokLevel(dok);
+          setBloomsLevel(blooms);
+        }}
+      />
     </div>
   );
 }
