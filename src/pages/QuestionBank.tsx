@@ -292,6 +292,18 @@ const QuestionBank = () => {
     if (search && !stripHtml(q.question_text).toLowerCase().includes(search.toLowerCase())) return false;
     if (filterDok !== "all" && String(q.dok_level) !== filterDok) return false;
     if (filterBlooms !== "all" && (q.blooms_level || "").toLowerCase() !== filterBlooms.toLowerCase()) return false;
+    if (filterStandard !== "all") {
+      if (filterStandard === "untagged") {
+        if (q.standards.length > 0) return false;
+      } else if (filterStandard.startsWith("disc:")) {
+        // Filter by discipline (e.g., "disc:LS")
+        const discKey = filterStandard.replace("disc:", "");
+        if (!q.standards.some(s => getDisciplineForCode(s.ngss_code) === discKey)) return false;
+      } else {
+        // Filter by specific core idea (e.g., "MS-LS1")
+        if (!q.standards.some(s => getCoreIdeaFromCode(s.ngss_code) === filterStandard)) return false;
+      }
+    }
     return true;
   });
 
