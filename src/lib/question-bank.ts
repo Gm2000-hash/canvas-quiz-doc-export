@@ -159,6 +159,38 @@ export async function deleteFromBank(id: string) {
   if (error) throw error;
 }
 
+export async function backfillDokAndBlooms(): Promise<number> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Must be logged in");
+
+  const { data: questions, error } = await supabase
+    .from("question_bank")
+    .select("id, question_type, question_text, dok_level, blooms_level")
+    .eq("user_id", user.id);
+
+  if (error) throw error;
+  if (!questions) return 0;
+
+  const toUpdate = questions.filter(q => q.dok_level == null || q.blooms_level == null);
+  let updated = 0;
+
+  for (const q of toUpdate) {
+    const { dok, blooms } = suggestDokAndBlooms(q.question_type, q.question_text);
+    const updates: Record<string, unknown> = {};
+    if (q.dok_level == null) updates.dok_level = dok;
+    if (q.blooms_level == null) updates.blooms_level = blooms;
+
+    const { error: updateError } = await supabase
+      .from("question_bank")
+      .update(updates)
+      .eq("id", q.id);
+
+    if (!updateError) updated++;
+  }
+
+  return updated;
+}
+
 export async function updateQuestion(
   id: string,
   updates: { question_text?: string; points_possible?: number; question_type?: string; answers?: any[]; dok_level?: number | null; blooms_level?: string | null },
