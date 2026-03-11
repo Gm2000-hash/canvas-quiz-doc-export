@@ -41,16 +41,17 @@ export default function QuestionEditor() {
     }
     setSaving(true);
     try {
-      const { dok, blooms } = suggestDokAndBlooms(questionType, questionText);
+      const suggested = suggestDokAndBlooms(questionType, questionText);
       await createQuestion({
         question_text: questionText,
         question_type: questionType,
         points_possible: points,
         answers,
-        dok_level: dok,
-        blooms_level: blooms,
+        dok_level: dokLevel ?? suggested.dok,
+        blooms_level: bloomsLevel ?? suggested.blooms,
         source_course: "Manual",
         source_quiz: null,
+        standards,
       });
       toast.success("Question created!");
       navigate("/question-bank");
