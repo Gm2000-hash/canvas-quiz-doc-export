@@ -182,21 +182,7 @@ const QuestionBank = () => {
   const [saving, setSaving] = useState(false);
   const [backfilling, setBackfilling] = useState(false);
 
-  const DOK_LEVELS = [
-    { value: 1, label: "1 – Recall & Reproduction" },
-    { value: 2, label: "2 – Skills & Concepts" },
-    { value: 3, label: "3 – Strategic Thinking" },
-    { value: 4, label: "4 – Extended Thinking" },
-  ];
-
-  const BLOOMS_LEVELS = [
-    { value: "remember", label: "Remember" },
-    { value: "understand", label: "Understand" },
-    { value: "apply", label: "Apply" },
-    { value: "analyze", label: "Analyze" },
-    { value: "evaluate", label: "Evaluate" },
-    { value: "create", label: "Create" },
-  ];
+  // DOK and Bloom's levels imported from shared data
 
   const QUESTION_TYPES = [
     { value: "multiple_choice_question", label: "Multiple Choice" },
