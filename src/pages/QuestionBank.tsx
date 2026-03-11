@@ -698,7 +698,7 @@ const QuestionBank = () => {
                 return (
                   <Card
                     key={disc.key}
-                    className={`cursor-pointer transition-all hover:shadow-md ${isExpanded ? "ring-2 ring-primary col-span-1 sm:col-span-3" : ""} ${count === 0 ? "opacity-50" : ""}`}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] ${isExpanded ? "ring-2 ring-primary col-span-1 sm:col-span-3" : ""} ${count === 0 ? "opacity-50 pointer-events-none" : ""}`}
                     onClick={() => {
                       if (count === 0) return;
                       setExpandedDiscipline(isExpanded ? null : disc.key);
