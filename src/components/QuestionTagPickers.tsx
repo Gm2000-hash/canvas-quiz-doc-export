@@ -4,26 +4,62 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Search, X } from "lucide-react";
+import { Search, X, Sparkles, Loader2 } from "lucide-react";
 import { ALL_SUBSTANDARDS, DOK_LEVELS, BLOOMS_LEVELS } from "@/lib/ngss-data";
+import { tagQuestionsWithNGSS } from "@/lib/ngss-api";
+import { toast } from "sonner";
 
 // ─── NGSS Standards Picker ───
 
 interface StandardsPickerProps {
   standards: { ngss_code: string; ngss_description: string }[];
   onChange: (standards: { ngss_code: string; ngss_description: string }[]) => void;
+  questionText?: string;
 }
 
-export function StandardsPicker({ standards, onChange }: StandardsPickerProps) {
+export function StandardsPicker({ standards, onChange, questionText }: StandardsPickerProps) {
   const [search, setSearch] = useState("");
+  const [suggesting, setSuggesting] = useState(false);
 
   const removeStandard = (index: number) => {
     onChange(standards.filter((_, i) => i !== index));
   };
 
   const addStandard = (code: string, description: string) => {
-    onChange([...standards, { ngss_code: code, ngss_description: description }]);
+    if (!standards.some(s => s.ngss_code === code)) {
+      onChange([...standards, { ngss_code: code, ngss_description: description }]);
+    }
     setSearch("");
+  };
+
+  const handleAutoSuggest = async () => {
+    if (!questionText?.trim()) {
+      toast.error("Enter question text first to get AI suggestions");
+      return;
+    }
+    setSuggesting(true);
+    try {
+      const result = await tagQuestionsWithNGSS([{ id: 1, question_text: questionText }]);
+      const suggested = result.get(1) || [];
+      if (suggested.length === 0) {
+        toast.info("No NGSS standards matched this question");
+        return;
+      }
+      const newStandards = [...standards];
+      let added = 0;
+      for (const s of suggested) {
+        if (!newStandards.some(ex => ex.ngss_code === s.code)) {
+          newStandards.push({ ngss_code: s.code, ngss_description: s.description });
+          added++;
+        }
+      }
+      onChange(newStandards);
+      toast.success(`Added ${added} standard${added !== 1 ? 's' : ''} (${suggested.length} suggested)`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to suggest standards");
+    } finally {
+      setSuggesting(false);
+    }
   };
 
   const filteredStandards = search.trim()
@@ -41,7 +77,21 @@ export function StandardsPicker({ standards, onChange }: StandardsPickerProps) {
 
   return (
     <div className="space-y-2">
-      <Label>NGSS Standards</Label>
+      <div className="flex items-center justify-between">
+        <Label>NGSS Standards</Label>
+        {questionText !== undefined && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleAutoSuggest}
+            disabled={suggesting || !questionText?.trim()}
+            className="gap-1.5 h-7 text-xs"
+          >
+            {suggesting ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+            AI Suggest
+          </Button>
+        )}
+      </div>
       {standards.length > 0 && (
         <div className="space-y-1.5">
           {standards.map((s, idx) => (
