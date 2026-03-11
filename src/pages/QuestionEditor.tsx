@@ -29,6 +29,7 @@ export default function QuestionEditor() {
   const [bloomsLevel, setBloomsLevel] = useState<string | null>(null);
   const [standards, setStandards] = useState<{ ngss_code: string; ngss_description: string }[]>([]);
   const [saving, setSaving] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
   const handleTypeChange = (type: string) => {
     setQuestionType(type);
