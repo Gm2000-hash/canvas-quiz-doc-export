@@ -324,6 +324,23 @@ const QuestionBank = () => {
     }
   };
 
+  const handleBackfill = async () => {
+    setBackfilling(true);
+    try {
+      const count = await backfillDokAndBlooms();
+      if (count > 0) {
+        toast.success(`Auto-tagged ${count} question${count !== 1 ? "s" : ""} with DOK & Bloom's levels`);
+        await loadQuestions();
+      } else {
+        toast.info("All questions already have DOK & Bloom's levels set");
+      }
+    } catch {
+      toast.error("Failed to backfill levels");
+    } finally {
+      setBackfilling(false);
+    }
+  };
+
   const handleExport = async () => {
     const selectedQuestions = questions.filter(q => selected.has(q.id));
     if (selectedQuestions.length === 0) return;
