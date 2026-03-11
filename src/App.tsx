@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import QuestionBank from "./pages/QuestionBank";
+import QuestionEditor from "./pages/QuestionEditor";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
