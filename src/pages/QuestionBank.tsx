@@ -150,6 +150,8 @@ const QuestionBank = () => {
   const [questions, setQuestions] = useState<QuestionBankItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [filterDok, setFilterDok] = useState<string>("all");
+  const [filterBlooms, setFilterBlooms] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"grouped" | "flat">("grouped");
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showExportDialog, setShowExportDialog] = useState(false);
