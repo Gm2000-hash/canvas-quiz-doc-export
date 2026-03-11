@@ -72,19 +72,18 @@ Use the tool provided to return your questions.`
                       properties: {
                         question_type: {
                           type: 'string',
-                          enum: ['multiple_choice_question', 'multiple_answers_question', 'multi_step_question', 'drag_and_drop_question']
+                          description: 'One of: multiple_choice_question, multiple_answers_question, multi_step_question, drag_and_drop_question'
                         },
                         question_text: { type: 'string', description: 'The main question stem or scenario' },
-                        points_possible: { type: 'number' },
-                        dok_level: { type: 'number', enum: [1, 2, 3, 4] },
-                        blooms_level: { type: 'string', enum: ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'] },
+                        points_possible: { type: 'number', description: 'Point value, typically 1-3' },
+                        dok_level: { type: 'number', description: 'DOK level 1-4' },
+                        blooms_level: { type: 'string', description: 'One of: Remember, Understand, Apply, Analyze, Evaluate, Create' },
                         answers_json: {
                           type: 'string',
                           description: 'JSON string of answer data. For MC/multi-answer: [{"text":"...","weight":100},{"text":"...","weight":0}]. For multi-step: {"parts":[{"label":"Part A","prompt":"...","type":"multiple_choice","options":[{"text":"...","correct":true}]}]}. For drag-drop: {"categories":[{"label":"...","items":["item1","item2"]}]}.',
                         }
                       },
-                      required: ['question_type', 'question_text', 'points_possible', 'dok_level', 'blooms_level', 'answers_json'],
-                      additionalProperties: false
+                      required: ['question_type', 'question_text', 'points_possible', 'dok_level', 'blooms_level', 'answers_json']
                     }
                   }
                 },
