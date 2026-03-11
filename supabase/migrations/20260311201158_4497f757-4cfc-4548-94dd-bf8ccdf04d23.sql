@@ -1,0 +1,1 @@
+ALTER TABLE public.question_bank ALTER COLUMN canvas_question_id DROP NOT NULL;

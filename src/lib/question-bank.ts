@@ -152,6 +152,34 @@ export async function getQuestionBank(): Promise<QuestionBankItem[]> {
   }));
 }
 
+export async function createQuestion(data: {
+  question_text: string;
+  question_type: string;
+  points_possible: number;
+  answers: any;
+  dok_level?: number | null;
+  blooms_level?: string | null;
+  source_course?: string | null;
+  source_quiz?: string | null;
+}) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("Must be logged in to create a question");
+
+  const { error } = await supabase.from("question_bank").insert({
+    user_id: user.id,
+    question_text: data.question_text,
+    question_type: data.question_type,
+    points_possible: data.points_possible,
+    answers: data.answers as any,
+    dok_level: data.dok_level ?? null,
+    blooms_level: data.blooms_level ?? null,
+    source_course: data.source_course ?? null,
+    source_quiz: data.source_quiz ?? null,
+  });
+
+  if (error) throw error;
+}
+
 export async function deleteFromBank(id: string) {
   // Delete standards first (foreign key)
   await supabase.from("question_bank_standards").delete().eq("question_bank_id", id);

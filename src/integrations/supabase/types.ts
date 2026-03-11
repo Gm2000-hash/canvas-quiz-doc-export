@@ -18,7 +18,7 @@ export type Database = {
         Row: {
           answers: Json | null
           blooms_level: string | null
-          canvas_question_id: number
+          canvas_question_id: number | null
           created_at: string
           dok_level: number | null
           id: string
@@ -32,7 +32,7 @@ export type Database = {
         Insert: {
           answers?: Json | null
           blooms_level?: string | null
-          canvas_question_id: number
+          canvas_question_id?: number | null
           created_at?: string
           dok_level?: number | null
           id?: string
@@ -46,7 +46,7 @@ export type Database = {
         Update: {
           answers?: Json | null
           blooms_level?: string | null
-          canvas_question_id?: number
+          canvas_question_id?: number | null
           created_at?: string
           dok_level?: number | null
           id?: string
