@@ -12,6 +12,8 @@ export interface QuestionBankItem {
   source_course: string | null;
   source_quiz: string | null;
   created_at: string;
+  dok_level: number | null;
+  blooms_level: string | null;
   standards: { ngss_code: string; ngss_description: string }[];
 }
 
