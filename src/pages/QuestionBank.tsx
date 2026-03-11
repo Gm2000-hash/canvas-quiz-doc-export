@@ -238,6 +238,8 @@ const QuestionBank = () => {
       right: a.right || "",
     })));
     setEditStandards([...q.standards]);
+    setEditDok(q.dok_level);
+    setEditBlooms(q.blooms_level);
     setStandardSearch("");
   };
 
