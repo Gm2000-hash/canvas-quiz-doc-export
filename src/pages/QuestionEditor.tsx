@@ -14,6 +14,7 @@ import { QUESTION_TYPE_CATEGORIES, ALL_QUESTION_TYPES, createDefaultAnswers, isI
 import { createQuestion, suggestDokAndBlooms } from "@/lib/question-bank";
 import { StandardsPicker, CognitiveLevelPicker } from "@/components/QuestionTagPickers";
 import { toast } from "sonner";
+import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
 
 export default function QuestionEditor() {
   const navigate = useNavigate();
