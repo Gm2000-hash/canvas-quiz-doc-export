@@ -24,6 +24,9 @@ export default function QuestionEditor() {
   const [questionText, setQuestionText] = useState("");
   const [points, setPoints] = useState(1);
   const [answers, setAnswers] = useState<any>(createDefaultAnswers(initialType));
+  const [dokLevel, setDokLevel] = useState<number | null>(null);
+  const [bloomsLevel, setBloomsLevel] = useState<string | null>(null);
+  const [standards, setStandards] = useState<{ ngss_code: string; ngss_description: string }[]>([]);
   const [saving, setSaving] = useState(false);
 
   const handleTypeChange = (type: string) => {
