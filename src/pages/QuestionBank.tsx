@@ -340,7 +340,7 @@ const QuestionBank = () => {
   const allFilteredSelected = filtered.length > 0 && filtered.every(q => selected.has(q.id));
 
   const questionCard = (q: QuestionBankItem, keyPrefix: string) => (
-    <Card key={`${keyPrefix}-${q.id}`} className={`group cursor-pointer transition-colors ${selected.has(q.id) ? "ring-2 ring-primary" : ""}`} onClick={() => toggleSelect(q.id)}>
+    <Card key={`${keyPrefix}-${q.id}`} className={`group cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] ${selected.has(q.id) ? "ring-2 ring-primary" : ""}`} onClick={() => toggleSelect(q.id)}>
       <CardContent className="p-3 space-y-1.5">
         <div className="flex items-start gap-3">
           <Checkbox checked={selected.has(q.id)} onCheckedChange={() => toggleSelect(q.id)} onClick={e => e.stopPropagation()} className="mt-0.5" />
@@ -698,7 +698,7 @@ const QuestionBank = () => {
                 return (
                   <Card
                     key={disc.key}
-                    className={`cursor-pointer transition-all hover:shadow-md ${isExpanded ? "ring-2 ring-primary col-span-1 sm:col-span-3" : ""} ${count === 0 ? "opacity-50" : ""}`}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] ${isExpanded ? "ring-2 ring-primary col-span-1 sm:col-span-3" : ""} ${count === 0 ? "opacity-50 pointer-events-none" : ""}`}
                     onClick={() => {
                       if (count === 0) return;
                       setExpandedDiscipline(isExpanded ? null : disc.key);

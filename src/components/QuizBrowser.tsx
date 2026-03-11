@@ -190,7 +190,7 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
                 return (
                   <Card
                     key={quiz.id}
-                    className={`cursor-pointer transition-all hover:shadow-md ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] ${isSelected ? 'ring-2 ring-primary' : ''}`}
                     onClick={() => handleSelectQuiz(String(quiz.id))}
                   >
                     <CardContent className="flex items-center gap-4 p-4">
@@ -314,7 +314,7 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
           return (
             <Card
               key={course.id}
-              className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow group"
+              className="overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 group"
               onClick={() => handleSelectCourse(course)}
             >
               <div className={`${colorClass} p-5 pb-12 text-primary-foreground relative`}>
