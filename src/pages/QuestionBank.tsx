@@ -555,6 +555,70 @@ const QuestionBank = () => {
           )}
         </div>
 
+        {/* Distribution summary bar */}
+        {questions.length > 0 && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="p-3 space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">DOK Distribution</p>
+                <div className="flex gap-0.5 h-5 rounded-full overflow-hidden bg-muted">
+                  {[1, 2, 3, 4].map(level => {
+                    const count = questions.filter(q => q.dok_level === level).length;
+                    const colors = ["bg-emerald-400", "bg-sky-400", "bg-amber-400", "bg-rose-400"];
+                    return count > 0 ? (
+                      <div key={level} className={`${colors[level - 1]} transition-all`} style={{ width: `${(count / questions.length) * 100}%` }} title={`DOK ${level}: ${count}`} />
+                    ) : null;
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-muted-foreground">
+                  {[1, 2, 3, 4].map(level => {
+                    const count = questions.filter(q => q.dok_level === level).length;
+                    const colors = ["bg-emerald-400", "bg-sky-400", "bg-amber-400", "bg-rose-400"];
+                    return (
+                      <span key={level} className="flex items-center gap-1">
+                        <span className={`inline-block h-2 w-2 rounded-full ${colors[level - 1]}`} />
+                        DOK {level}: {count}
+                      </span>
+                    );
+                  })}
+                  {questions.filter(q => q.dok_level == null).length > 0 && (
+                    <span className="text-muted-foreground/60">Unset: {questions.filter(q => q.dok_level == null).length}</span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-3 space-y-2">
+                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Bloom's Distribution</p>
+                <div className="flex gap-0.5 h-5 rounded-full overflow-hidden bg-muted">
+                  {["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"].map((level, i) => {
+                    const count = questions.filter(q => (q.blooms_level || "").toLowerCase() === level.toLowerCase()).length;
+                    const colors = ["bg-slate-400", "bg-emerald-400", "bg-sky-400", "bg-amber-400", "bg-orange-400", "bg-rose-400"];
+                    return count > 0 ? (
+                      <div key={level} className={`${colors[i]} transition-all`} style={{ width: `${(count / questions.length) * 100}%` }} title={`${level}: ${count}`} />
+                    ) : null;
+                  })}
+                </div>
+                <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                  {["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"].map((level, i) => {
+                    const count = questions.filter(q => (q.blooms_level || "").toLowerCase() === level.toLowerCase()).length;
+                    const colors = ["bg-slate-400", "bg-emerald-400", "bg-sky-400", "bg-amber-400", "bg-orange-400", "bg-rose-400"];
+                    return count > 0 ? (
+                      <span key={level} className="flex items-center gap-1">
+                        <span className={`inline-block h-2 w-2 rounded-full ${colors[i]}`} />
+                        {level}: {count}
+                      </span>
+                    ) : null;
+                  })}
+                  {questions.filter(q => !q.blooms_level).length > 0 && (
+                    <span className="text-muted-foreground/60">Unset: {questions.filter(q => !q.blooms_level).length}</span>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
         {/* Breadcrumb trail for grouped view */}
         {viewMode === "grouped" && (expandedDiscipline || expandedCoreIdea) && (
           <nav className="flex items-center gap-1.5 text-sm">
