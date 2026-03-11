@@ -126,6 +126,8 @@ export async function updateQuestion(
   if (updates.points_possible !== undefined) dbUpdates.points_possible = updates.points_possible;
   if (updates.question_type !== undefined) dbUpdates.question_type = updates.question_type;
   if (updates.answers !== undefined) dbUpdates.answers = updates.answers;
+  if (updates.dok_level !== undefined) dbUpdates.dok_level = updates.dok_level;
+  if (updates.blooms_level !== undefined) dbUpdates.blooms_level = updates.blooms_level;
 
   if (Object.keys(dbUpdates).length > 0) {
     const { error } = await supabase.from("question_bank").update(dbUpdates).eq("id", id);
