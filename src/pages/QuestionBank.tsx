@@ -14,8 +14,9 @@ import { getQuestionBank, deleteFromBank, updateQuestion, backfillDokAndBlooms, 
 import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles } from "lucide-react";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
+import GenerateQuestionsDialog from "@/components/GenerateQuestionsDialog";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
@@ -82,6 +83,7 @@ const QuestionBank = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showGenerateDialog, setShowGenerateDialog] = useState(false);
   const [quizTitle, setQuizTitle] = useState("Custom Quiz");
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -399,9 +401,12 @@ const QuestionBank = () => {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input placeholder="Search questions..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5">
               <Plus className="h-4 w-4" /> Create Question
+            </Button>
+            <Button size="sm" variant="outline" onClick={() => setShowGenerateDialog(true)} className="gap-1.5">
+              <Sparkles className="h-4 w-4" /> Generate Sample Questions
             </Button>
             <Button variant={viewMode === "grouped" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grouped")} className="gap-1.5">
               <LayoutGrid className="h-4 w-4" /> By Standard
@@ -1174,6 +1179,11 @@ const QuestionBank = () => {
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
         onCreated={loadQuestions}
+      />
+      <GenerateQuestionsDialog
+        open={showGenerateDialog}
+        onOpenChange={setShowGenerateDialog}
+        onComplete={loadQuestions}
       />
     </div>
   );
