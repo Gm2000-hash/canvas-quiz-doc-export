@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
@@ -72,19 +72,18 @@ Use the tool provided to return your questions.`
                       properties: {
                         question_type: {
                           type: 'string',
-                          enum: ['multiple_choice_question', 'multiple_answers_question', 'multi_step_question', 'drag_and_drop_question']
+                          description: 'One of: multiple_choice_question, multiple_answers_question, multi_step_question, drag_and_drop_question'
                         },
                         question_text: { type: 'string', description: 'The main question stem or scenario' },
-                        points_possible: { type: 'number' },
-                        dok_level: { type: 'number', enum: [1, 2, 3, 4] },
-                        blooms_level: { type: 'string', enum: ['Remember', 'Understand', 'Apply', 'Analyze', 'Evaluate', 'Create'] },
-                        answers: {
-                          type: 'object',
-                          description: 'Answer data. For MC: array of {text, weight} where weight=100 for correct. For multi-answer: same but multiple weight=100. For multi-step: {parts: [{label, prompt, type, options: [{text, correct}]}]}. For drag-drop: {categories: [{label, items: [string]}]}.',
+                        points_possible: { type: 'number', description: 'Point value, typically 1-3' },
+                        dok_level: { type: 'number', description: 'DOK level 1-4' },
+                        blooms_level: { type: 'string', description: 'One of: Remember, Understand, Apply, Analyze, Evaluate, Create' },
+                        answers_json: {
+                          type: 'string',
+                          description: 'JSON string of answer data. For MC/multi-answer: [{"text":"...","weight":100},{"text":"...","weight":0}]. For multi-step: {"parts":[{"label":"Part A","prompt":"...","type":"multiple_choice","options":[{"text":"...","correct":true}]}]}. For drag-drop: {"categories":[{"label":"...","items":["item1","item2"]}]}.',
                         }
                       },
-                      required: ['question_type', 'question_text', 'points_possible', 'dok_level', 'blooms_level', 'answers'],
-                      additionalProperties: false
+                      required: ['question_type', 'question_text', 'points_possible', 'dok_level', 'blooms_level', 'answers_json']
                     }
                   }
                 },
@@ -122,19 +121,32 @@ Use the tool provided to return your questions.`
 
     const parsed = JSON.parse(toolCall.function.arguments);
 
-    // Normalize answer formats
+    // Parse answers_json string back to objects and normalize
     const questions = (parsed.questions || []).map((q: any) => {
-      // For MC and multi-answer, ensure answers is an array
-      if ((q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') && Array.isArray(q.answers)) {
-        return q; // already correct format
-      }
-      // If answers came as {options: [...]} unwrap it
-      if (q.answers?.options && Array.isArray(q.answers.options)) {
-        if (q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') {
-          return { ...q, answers: q.answers.options.map((o: any) => ({ text: o.text, weight: o.correct ? 100 : 0 })) };
+      let answers = q.answers;
+      // Parse answers_json if it's a string
+      if (q.answers_json) {
+        try {
+          answers = JSON.parse(q.answers_json);
+        } catch (e) {
+          console.error('Failed to parse answers_json:', q.answers_json?.substring?.(0, 200));
+          answers = [];
         }
       }
-      return q;
+
+      // For MC and multi-answer, ensure answers is an array with weight
+      if ((q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') && Array.isArray(answers)) {
+        answers = answers.map((a: any) => ({ text: a.text, weight: a.weight ?? (a.correct ? 100 : 0) }));
+      }
+      // If answers came as {options: [...]} unwrap it
+      if (answers?.options && Array.isArray(answers.options)) {
+        if (q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') {
+          answers = answers.options.map((o: any) => ({ text: o.text, weight: o.correct ? 100 : 0 }));
+        }
+      }
+
+      const { answers_json, ...rest } = q;
+      return { ...rest, answers };
     });
 
     console.log(`Generated ${questions.length} questions for ${standard_code}`);
