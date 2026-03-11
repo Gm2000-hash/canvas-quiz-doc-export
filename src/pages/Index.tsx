@@ -16,12 +16,12 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 h-16 border-b bg-primary text-primary-foreground flex items-center px-4 gap-4 shadow-md">
+      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
         {isConfigured && (
           <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10">
-                <Menu className="h-6 w-6" />
+              <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent rounded-xl h-9 w-9">
+                <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="w-80 p-0">
@@ -34,17 +34,17 @@ const Index = () => {
             </SheetContent>
           </Sheet>
         )}
-        <div className="flex items-center gap-3">
-          <div className="h-9 w-9 rounded-full bg-primary-foreground/20 flex items-center justify-center">
-            <FileText className="h-5 w-5" />
+        <div className="flex items-center gap-2.5">
+          <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
+            <FileText className="h-4 w-4 text-primary" />
           </div>
-          <span className="text-lg font-semibold tracking-tight">Canvas Quiz Exporter</span>
+          <span className="text-base font-semibold text-foreground">Canvas Quiz Exporter</span>
         </div>
-        <div className="ml-auto flex items-center gap-2">
+        <div className="ml-auto flex items-center gap-1">
           <Button
             variant="ghost"
             size="sm"
-            className="text-primary-foreground hover:bg-primary-foreground/10 gap-2"
+            className="text-primary hover:bg-accent rounded-xl gap-2 font-medium"
             onClick={() => navigate('/question-bank')}
           >
             <BookOpen className="h-4 w-4" />
@@ -54,20 +54,20 @@ const Index = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="text-primary-foreground hover:bg-primary-foreground/10"
+              className="text-muted-foreground hover:bg-accent rounded-xl h-9 w-9"
               onClick={() => setSettingsOpen(true)}
             >
-              <Settings className="h-5 w-5" />
+              <Settings className="h-4.5 w-4.5" />
             </Button>
           )}
           <Button
             variant="ghost"
             size="icon"
-            className="text-primary-foreground hover:bg-primary-foreground/10"
+            className="text-muted-foreground hover:bg-accent rounded-xl h-9 w-9"
             onClick={signOut}
             title="Sign out"
           >
-            <LogOut className="h-5 w-5" />
+            <LogOut className="h-4.5 w-4.5" />
           </Button>
         </div>
       </header>
