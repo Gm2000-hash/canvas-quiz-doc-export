@@ -10,10 +10,10 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { getQuestionBank, deleteFromBank, updateQuestion, type QuestionBankItem } from "@/lib/question-bank";
+import { getQuestionBank, deleteFromBank, updateQuestion, backfillDokAndBlooms, type QuestionBankItem } from "@/lib/question-bank";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 function stripHtml(html: string): string {
@@ -176,6 +176,7 @@ const QuestionBank = () => {
   const [editBlooms, setEditBlooms] = useState<string | null>(null);
   const [standardSearch, setStandardSearch] = useState("");
   const [saving, setSaving] = useState(false);
+  const [backfilling, setBackfilling] = useState(false);
 
   const DOK_LEVELS = [
     { value: 1, label: "1 – Recall & Reproduction" },
@@ -320,6 +321,23 @@ const QuestionBank = () => {
         filtered.forEach(q => next.add(q.id));
         return next;
       });
+    }
+  };
+
+  const handleBackfill = async () => {
+    setBackfilling(true);
+    try {
+      const count = await backfillDokAndBlooms();
+      if (count > 0) {
+        toast.success(`Auto-tagged ${count} question${count !== 1 ? "s" : ""} with DOK & Bloom's levels`);
+        await loadQuestions();
+      } else {
+        toast.info("All questions already have DOK & Bloom's levels set");
+      }
+    } catch {
+      toast.error("Failed to backfill levels");
+    } finally {
+      setBackfilling(false);
     }
   };
 
@@ -476,6 +494,12 @@ const QuestionBank = () => {
             <Button variant={viewMode === "flat" ? "default" : "outline"} size="sm" onClick={() => setViewMode("flat")} className="gap-1.5">
               <List className="h-4 w-4" /> Flat List
             </Button>
+            {questions.some(q => q.dok_level == null || q.blooms_level == null) && (
+              <Button variant="outline" size="sm" onClick={handleBackfill} disabled={backfilling} className="gap-1.5">
+                {backfilling ? <Loader2 className="h-4 w-4 animate-spin" /> : <Wand2 className="h-4 w-4" />}
+                Auto-tag Levels
+              </Button>
+            )}
           </div>
         </div>
         <div className="flex flex-wrap gap-3">
