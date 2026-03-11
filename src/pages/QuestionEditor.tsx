@@ -125,6 +125,19 @@ export default function QuestionEditor() {
             {!isISATType(questionType) && (
               <TraditionalAnswerEditor type={questionType} answers={answers} onChange={setAnswers} />
             )}
+
+            {/* Tagging */}
+            <Card>
+              <CardContent className="p-5 space-y-4">
+                <CognitiveLevelPicker
+                  dokLevel={dokLevel}
+                  bloomsLevel={bloomsLevel}
+                  onDokChange={setDokLevel}
+                  onBloomsChange={setBloomsLevel}
+                />
+                <StandardsPicker standards={standards} onChange={setStandards} />
+              </CardContent>
+            </Card>
           </div>
 
           {/* Preview Panel */}
