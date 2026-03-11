@@ -66,13 +66,13 @@ export default function QuestionEditor() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 h-16 border-b bg-primary text-primary-foreground flex items-center px-4 gap-4 shadow-md">
-        <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate(-1)}>
+      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-3">
+        <Button variant="ghost" size="icon" className="text-primary hover:bg-accent rounded-xl h-9 w-9" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
-        <span className="text-lg font-semibold tracking-tight">Question Editor</span>
+        <span className="text-base font-semibold text-foreground">Question Editor</span>
         <div className="ml-auto">
-          <Button onClick={handleSave} disabled={saving} variant="secondary">
+          <Button onClick={handleSave} disabled={saving} className="rounded-xl font-medium">
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
             Save to Bank
           </Button>
@@ -83,11 +83,11 @@ export default function QuestionEditor() {
       <nav className="max-w-5xl mx-auto px-4 sm:px-6 pt-3 pb-0">
         <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
           <li>
-            <button className="hover:text-foreground transition-colors" onClick={() => navigate("/")}>Home</button>
+            <button className="hover:text-primary transition-colors" onClick={() => navigate("/")}>Home</button>
           </li>
           <li><ChevronRight className="h-3.5 w-3.5" /></li>
           <li>
-            <button className="hover:text-foreground transition-colors" onClick={() => navigate("/question-bank")}>Question Bank</button>
+            <button className="hover:text-primary transition-colors" onClick={() => navigate("/question-bank")}>Question Bank</button>
           </li>
           <li><ChevronRight className="h-3.5 w-3.5" /></li>
           <li className="font-medium text-foreground">Create Question</li>
