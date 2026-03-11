@@ -161,11 +161,12 @@ export async function createQuestion(data: {
   blooms_level?: string | null;
   source_course?: string | null;
   source_quiz?: string | null;
+  standards?: { ngss_code: string; ngss_description: string }[];
 }) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Must be logged in to create a question");
 
-  const { error } = await supabase.from("question_bank").insert({
+  const { data: inserted, error } = await supabase.from("question_bank").insert({
     user_id: user.id,
     question_text: data.question_text,
     question_type: data.question_type,
@@ -175,9 +176,20 @@ export async function createQuestion(data: {
     blooms_level: data.blooms_level ?? null,
     source_course: data.source_course ?? null,
     source_quiz: data.source_quiz ?? null,
-  });
+  }).select("id").single();
 
   if (error) throw error;
+
+  if (data.standards && data.standards.length > 0 && inserted) {
+    const { error: stdError } = await supabase.from("question_bank_standards").insert(
+      data.standards.map(s => ({
+        question_bank_id: inserted.id,
+        ngss_code: s.ngss_code,
+        ngss_description: s.ngss_description,
+      }))
+    );
+    if (stdError) console.error("Failed to save standards:", stdError);
+  }
 }
 
 export async function deleteFromBank(id: string) {
