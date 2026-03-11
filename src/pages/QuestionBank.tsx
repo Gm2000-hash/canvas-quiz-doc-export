@@ -389,7 +389,7 @@ const QuestionBank = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 h-16 border-b bg-primary text-primary-foreground flex items-center px-4 gap-4 shadow-md">
-        <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate("/")}>
+        <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div className="flex items-center gap-3">
@@ -398,7 +398,29 @@ const QuestionBank = () => {
           </div>
           <span className="text-lg font-semibold tracking-tight">Question Bank</span>
         </div>
+        <div className="ml-auto flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-primary-foreground hover:bg-primary-foreground/10 gap-2"
+            onClick={() => navigate("/")}
+          >
+            <FileText className="h-4 w-4" />
+            <span className="hidden sm:inline">Quiz Exporter</span>
+          </Button>
+        </div>
       </header>
+
+      {/* Breadcrumb navigation */}
+      <nav className="max-w-5xl mx-auto px-4 sm:px-6 pt-3 pb-0">
+        <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <li>
+            <button className="hover:text-foreground transition-colors" onClick={() => navigate("/")}>Home</button>
+          </li>
+          <li><ChevronRight className="h-3.5 w-3.5" /></li>
+          <li className="font-medium text-foreground">Question Bank</li>
+        </ol>
+      </nav>
 
       <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-6">
         <div className="flex flex-col sm:flex-row gap-3">

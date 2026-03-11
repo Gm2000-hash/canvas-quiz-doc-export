@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Plus, Trash2, Loader2, GripVertical, Highlighter, MousePointerClick, Lightbulb } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, Loader2, GripVertical, Highlighter, MousePointerClick, Lightbulb, ChevronRight } from "lucide-react";
 import { QUESTION_TYPE_CATEGORIES, ALL_QUESTION_TYPES, createDefaultAnswers, isISATType, getQuestionTypeLabel } from "@/lib/question-types";
 import { createQuestion, suggestDokAndBlooms } from "@/lib/question-bank";
 import { StandardsPicker, CognitiveLevelPicker } from "@/components/QuestionTagPickers";
@@ -67,7 +67,7 @@ export default function QuestionEditor() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 h-16 border-b bg-primary text-primary-foreground flex items-center px-4 gap-4 shadow-md">
-        <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate("/question-bank")}>
+        <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10" onClick={() => navigate(-1)}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <span className="text-lg font-semibold tracking-tight">Question Editor</span>
@@ -78,6 +78,21 @@ export default function QuestionEditor() {
           </Button>
         </div>
       </header>
+
+      {/* Breadcrumb navigation */}
+      <nav className="max-w-5xl mx-auto px-4 sm:px-6 pt-3 pb-0">
+        <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <li>
+            <button className="hover:text-foreground transition-colors" onClick={() => navigate("/")}>Home</button>
+          </li>
+          <li><ChevronRight className="h-3.5 w-3.5" /></li>
+          <li>
+            <button className="hover:text-foreground transition-colors" onClick={() => navigate("/question-bank")}>Question Bank</button>
+          </li>
+          <li><ChevronRight className="h-3.5 w-3.5" /></li>
+          <li className="font-medium text-foreground">Create Question</li>
+        </ol>
+      </nav>
 
       <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
