@@ -20,7 +20,7 @@ export interface QuestionBankItem {
 /**
  * Auto-suggest DOK level and Bloom's taxonomy based on question type and text.
  */
-function suggestDokAndBlooms(questionType: string, questionText: string): { dok: number; blooms: string } {
+export function suggestDokAndBlooms(questionType: string, questionText: string): { dok: number; blooms: string } {
   const text = questionText.toLowerCase();
 
   // Check for higher-order verbs first (highest priority)
