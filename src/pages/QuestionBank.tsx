@@ -1200,6 +1200,36 @@ const QuestionBank = () => {
         onOpenChange={setShowGenerateDialog}
         onComplete={loadQuestions}
       />
+      <DokBloomsSuggestionsDialog
+        open={!!suggestionsQuestion}
+        onOpenChange={(open) => { if (!open) setSuggestionsQuestion(null); }}
+        questionText={suggestionsQuestion ? stripHtml(suggestionsQuestion.question_text) : ""}
+        questionType={suggestionsQuestion?.question_type || "multiple_choice_question"}
+        currentDok={suggestionsQuestion?.dok_level ?? null}
+        currentBlooms={suggestionsQuestion?.blooms_level ?? null}
+        onApplySuggestion={(text, dok, blooms) => {
+          if (suggestionsQuestion) {
+            // If editing, update edit state; otherwise update the question directly
+            if (editingQuestion && editingQuestion.id === suggestionsQuestion.id) {
+              setEditText(text);
+              setEditDok(dok);
+              setEditBlooms(blooms);
+            } else {
+              // Apply directly via updateQuestion
+              updateQuestion(suggestionsQuestion.id, { question_text: text, dok_level: dok, blooms_level: blooms })
+                .then(() => {
+                  setQuestions(prev => prev.map(q =>
+                    q.id === suggestionsQuestion.id
+                      ? { ...q, question_text: text, dok_level: dok, blooms_level: blooms }
+                      : q
+                  ));
+                  toast.success("Question updated with suggested version");
+                })
+                .catch(() => toast.error("Failed to apply suggestion"));
+            }
+          }
+        }}
+      />
     </div>
   );
 };
