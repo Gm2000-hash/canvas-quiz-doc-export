@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Loader2, Lock, Key, Copy, ChevronDown, ChevronUp, Lightbulb, FileText, FileDown } from "lucide-react";
+import { Sparkles, Loader2, Lock, Key, Copy, ChevronDown, ChevronUp, Lightbulb, FileText, FileDown, BookOpen, FlaskConical, ListOrdered, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { exportEscapeRoomToDocx } from "@/lib/export-escape-room-docx";
@@ -19,6 +19,9 @@ interface Puzzle {
   room_number: number;
   room_name: string;
   narrative_text: string;
+  scenario_text?: string;
+  challenge_steps?: string[];
+  story_transition?: string;
   puzzle_type: string;
   question_text: string;
   hints: string[];
@@ -77,6 +80,7 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
     setEscapeRoom(null);
 
     try {
+      setProgress(25);
       const { data, error } = await supabase.functions.invoke("generate-escape-room", {
         body: {
           title: context?.title || topic,
@@ -122,14 +126,20 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
     escapeRoom.puzzles.forEach((p) => {
       text += `---\n## Room ${p.room_number}: ${p.room_name}\n`;
       text += `**Type:** ${p.puzzle_type}\n\n`;
-      text += `**Story:** ${p.narrative_text}\n\n`;
-      text += `**Puzzle:** ${p.question_text}\n\n`;
+      text += `### Story\n${p.narrative_text}\n\n`;
+      if (p.scenario_text) text += `### Scientific Scenario\n${p.scenario_text}\n\n`;
+      if (p.challenge_steps?.length) {
+        text += `### Challenge Steps\n`;
+        p.challenge_steps.forEach((s, i) => { text += `**Step ${i + 1}:** ${s}\n\n`; });
+      }
+      if (p.question_text) text += `### Puzzle Question\n${p.question_text}\n\n`;
       if (p.distractors?.length > 0) {
         text += `**Options:** ${p.distractors.join(", ")}, ${p.lock_code}\n\n`;
       }
       text += `**Lock Code:** ${p.lock_code}\n`;
       text += `**Explanation:** ${p.lock_code_explanation}\n\n`;
       text += `**Hints:**\n${p.hints.map((h, i) => `${i + 1}. ${h}`).join("\n")}\n\n`;
+      if (p.story_transition) text += `### Story Transition\n${p.story_transition}\n\n`;
       text += `**Form Setup:** ${p.form_section_instructions}\n\n`;
     });
     text += `---\n## Answer Key\n${escapeRoom.answer_key_summary}\n`;
@@ -149,8 +159,7 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
           <div className="space-y-4 pt-2">
             <div className="p-3 rounded-xl bg-accent/50 text-sm">
               <p className="text-muted-foreground">
-                Generate a digital escape room designed for <span className="font-medium text-foreground">Google Forms</span>. 
-                Students solve science puzzles to unlock each room!
+                Generate a digital escape room with <span className="font-medium text-foreground">detailed scenarios, multi-step challenges, and a continuous storyline</span> designed for Google Forms.
               </p>
             </div>
             <div className="space-y-2">
@@ -159,7 +168,7 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-2">
-                <Label>Number of Puzzles</Label>
+                <Label>Number of Rooms</Label>
                 <Input type="number" min={3} max={10} value={numPuzzles} onChange={e => setNumPuzzles(parseInt(e.target.value) || 5)} />
               </div>
               <div className="space-y-2">
@@ -186,12 +195,14 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
             {generating && (
               <div className="space-y-2">
                 <Progress value={progress} className="h-2" />
-                <p className="text-xs text-muted-foreground text-center">Creating escape room puzzles...</p>
+                <p className="text-xs text-muted-foreground text-center">
+                  Crafting detailed scenarios & storyline — this may take a minute...
+                </p>
               </div>
             )}
             <Button onClick={handleGenerate} className="w-full rounded-xl gap-2" disabled={generating || !topic.trim()}>
               {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-              {generating ? "Generating..." : `Generate ${numPuzzles}-Puzzle Escape Room`}
+              {generating ? "Generating..." : `Generate ${numPuzzles}-Room Escape Room`}
             </Button>
           </div>
         ) : (
@@ -271,15 +282,53 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
                     {expandedPuzzle === puzzle.room_number ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
                   </button>
                   {expandedPuzzle === puzzle.room_number && (
-                    <div className="px-4 pb-4 space-y-3 border-t border-border/60 pt-3">
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Story</p>
-                        <p className="text-sm text-foreground">{puzzle.narrative_text}</p>
+                    <div className="px-4 pb-4 space-y-4 border-t border-border/60 pt-3">
+                      {/* Narrative */}
+                      <div className="p-3 rounded-lg bg-accent/30 border border-accent/50">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                          <BookOpen className="h-3.5 w-3.5" /> Story
+                        </p>
+                        <p className="text-sm text-foreground leading-relaxed">{puzzle.narrative_text}</p>
                       </div>
-                      <div>
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Puzzle</p>
-                        <p className="text-sm text-foreground">{puzzle.question_text}</p>
-                      </div>
+
+                      {/* Scientific Scenario */}
+                      {puzzle.scenario_text && (
+                        <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
+                          <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                            <FlaskConical className="h-3.5 w-3.5" /> Scientific Scenario
+                          </p>
+                          <p className="text-sm text-foreground leading-relaxed">{puzzle.scenario_text}</p>
+                        </div>
+                      )}
+
+                      {/* Challenge Steps */}
+                      {puzzle.challenge_steps && puzzle.challenge_steps.length > 0 && (
+                        <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
+                          <p className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                            <ListOrdered className="h-3.5 w-3.5" /> Challenge Steps
+                          </p>
+                          <div className="space-y-2.5">
+                            {puzzle.challenge_steps.map((step, i) => (
+                              <div key={i} className="flex gap-2.5">
+                                <div className="h-6 w-6 rounded-full bg-amber-500/15 flex items-center justify-center text-xs font-bold text-amber-700 dark:text-amber-300 shrink-0 mt-0.5">
+                                  {i + 1}
+                                </div>
+                                <p className="text-sm text-foreground leading-relaxed">{step}</p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Legacy question_text fallback */}
+                      {!puzzle.challenge_steps?.length && puzzle.question_text && (
+                        <div>
+                          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Puzzle</p>
+                          <p className="text-sm text-foreground">{puzzle.question_text}</p>
+                        </div>
+                      )}
+
+                      {/* Answer Options */}
                       {puzzle.distractors?.length > 0 && (
                         <div>
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Answer Options</p>
@@ -292,10 +341,14 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
                           </div>
                         </div>
                       )}
+
+                      {/* Lock Code */}
                       <div className="p-2.5 rounded-lg bg-accent/50">
                         <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1"><Key className="h-3 w-3" /> Lock Code & Explanation</p>
                         <p className="text-sm"><span className="font-bold text-primary">{puzzle.lock_code}</span> — {puzzle.lock_code_explanation}</p>
                       </div>
+
+                      {/* Hints */}
                       {puzzle.hints?.length > 0 && (
                         <div>
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1 flex items-center gap-1"><Lightbulb className="h-3 w-3" /> Hints</p>
@@ -304,12 +357,35 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
                           </ol>
                         </div>
                       )}
+
+                      {/* Story Transition */}
+                      {puzzle.story_transition && (
+                        <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
+                          <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+                            <ArrowRight className="h-3 w-3" /> What Happens Next
+                          </p>
+                          <p className="text-sm text-foreground italic">{puzzle.story_transition}</p>
+                        </div>
+                      )}
+
+                      {/* Form Setup */}
                       <div className="p-2.5 rounded-lg bg-muted/50">
                         <p className="text-xs font-medium text-muted-foreground mb-1">Google Form Setup</p>
                         <p className="text-xs text-muted-foreground">{puzzle.form_section_instructions}</p>
                       </div>
+
                       <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={() => {
-                        const text = `Room ${puzzle.room_number}: ${puzzle.room_name}\n\n${puzzle.narrative_text}\n\n${puzzle.question_text}\n\nAnswer: ${puzzle.lock_code}\n\nForm Setup: ${puzzle.form_section_instructions}`;
+                        let text = `Room ${puzzle.room_number}: ${puzzle.room_name}\n\n`;
+                        text += `STORY:\n${puzzle.narrative_text}\n\n`;
+                        if (puzzle.scenario_text) text += `SCENARIO:\n${puzzle.scenario_text}\n\n`;
+                        if (puzzle.challenge_steps?.length) {
+                          text += `CHALLENGE:\n`;
+                          puzzle.challenge_steps.forEach((s, i) => { text += `Step ${i + 1}: ${s}\n`; });
+                          text += `\n`;
+                        }
+                        text += `Answer: ${puzzle.lock_code}\n`;
+                        if (puzzle.story_transition) text += `\nTRANSITION: ${puzzle.story_transition}\n`;
+                        text += `\nForm Setup: ${puzzle.form_section_instructions}`;
                         copyToClipboard(text, `Room ${puzzle.room_number}`);
                       }}>
                         <Copy className="h-3 w-3" /> Copy This Room
