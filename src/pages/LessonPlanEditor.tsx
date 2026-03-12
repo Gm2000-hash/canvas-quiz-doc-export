@@ -241,7 +241,7 @@ const LessonPlanEditor = () => {
                       value={act.duration}
                       onChange={e => updateActivity(idx, "duration", parseInt(e.target.value) || 0)}
                       className="w-20 text-sm h-8"
-                      suffix="min"
+                      placeholder="min"
                     />
                   </div>
                   <Textarea

@@ -91,7 +91,7 @@ const UnitDetail = () => {
     setUnit(unitRes.data);
     setLessons((lessonsRes.data || []).map(l => ({
       ...l,
-      activities: (Array.isArray(l.activities) ? l.activities : []) as Activity[],
+      activities: (Array.isArray(l.activities) ? l.activities : []) as unknown as Activity[],
       standards: standardsMap[l.id] || [],
     })));
     setLoading(false);
