@@ -64,6 +64,39 @@ const UnitDetail = () => {
   const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
   const [newLesson, setNewLesson] = useState({ title: "", lesson_date: "", duration_minutes: 50 });
   const [activeTab, setActiveTab] = useState("list");
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
+  const dragNode = useRef<HTMLDivElement | null>(null);
+
+  const handleDragStart = useCallback((e: React.DragEvent, idx: number) => {
+    setDragIdx(idx);
+    dragNode.current = e.currentTarget as HTMLDivElement;
+    e.dataTransfer.effectAllowed = "move";
+    requestAnimationFrame(() => { if (dragNode.current) dragNode.current.style.opacity = "0.4"; });
+  }, []);
+
+  const handleDragEnd = useCallback(async () => {
+    if (dragNode.current) dragNode.current.style.opacity = "1";
+    if (dragIdx !== null && overIdx !== null && dragIdx !== overIdx) {
+      const reordered = [...lessons];
+      const [moved] = reordered.splice(dragIdx, 1);
+      reordered.splice(overIdx, 0, moved);
+      setLessons(reordered);
+      // Persist new sort_order
+      await Promise.all(reordered.map((l, i) =>
+        supabase.from("lesson_plans").update({ sort_order: i }).eq("id", l.id)
+      ));
+    }
+    setDragIdx(null);
+    setOverIdx(null);
+    dragNode.current = null;
+  }, [dragIdx, overIdx, lessons]);
+
+  const handleDragOver = useCallback((e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setOverIdx(idx);
+  }, []);
 
   const fetchData = async () => {
     if (!user || !id) return;
