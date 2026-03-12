@@ -8,6 +8,9 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import QuestionBank from "./pages/QuestionBank";
 import QuestionEditor from "./pages/QuestionEditor";
+import LessonPlanner from "./pages/LessonPlanner";
+import UnitDetail from "./pages/UnitDetail";
+import LessonPlanEditor from "./pages/LessonPlanEditor";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -38,6 +41,9 @@ const App = () => (
           <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
           <Route path="/question-bank" element={<ProtectedRoute><QuestionBank /></ProtectedRoute>} />
           <Route path="/create-question" element={<ProtectedRoute><QuestionEditor /></ProtectedRoute>} />
+          <Route path="/lesson-planner" element={<ProtectedRoute><LessonPlanner /></ProtectedRoute>} />
+          <Route path="/units/:id" element={<ProtectedRoute><UnitDetail /></ProtectedRoute>} />
+          <Route path="/lessons/:id" element={<ProtectedRoute><LessonPlanEditor /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
