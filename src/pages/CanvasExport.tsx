@@ -1,10 +1,12 @@
 import { SettingsForm } from "@/components/SettingsForm";
 import { QuizBrowser } from "@/components/QuizBrowser";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
-import { FileText } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { Button } from "@/components/ui/button";
 
 const CanvasExport = () => {
   const { config, setConfig, isConfigured } = useCanvasConfig();
