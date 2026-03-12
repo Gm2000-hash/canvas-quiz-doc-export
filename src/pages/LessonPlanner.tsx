@@ -281,61 +281,81 @@ const LessonPlanner = () => {
           </Card>
         ) : (
           <div className="grid gap-3">
-            {units.map(unit => (
-              <Card
+            {units.map((unit, idx) => (
+              <div
                 key={unit.id}
-                className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]"
-                onClick={() => navigate(`/units/${unit.id}`)}
+                draggable
+                onDragStart={e => handleUnitDragStart(e, idx)}
+                onDragEnd={handleUnitDragEnd}
+                onDragOver={e => handleUnitDragOver(e, idx)}
+                onDragEnter={e => e.preventDefault()}
+                className={`transition-all duration-150 ${
+                  overIdx === idx && dragIdx !== null && dragIdx !== idx
+                    ? "ring-2 ring-dashed ring-primary/40 rounded-xl"
+                    : ""
+                }`}
               >
-                <CardContent className="p-4 flex items-center gap-4">
-                  <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                    <FileText className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-foreground truncate">{unit.title}</h3>
-                    <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                      {unit.discipline && <span>{unit.discipline}</span>}
-                      {unit.discipline && unit.grade_level && <span>•</span>}
-                      {unit.grade_level && <span>{unit.grade_level}</span>}
-                      {(unit.discipline || unit.grade_level) && <span>•</span>}
-                      <span>{unit.lesson_count || 0} lessons</span>
-                      {unit.date_start && (
-                        <>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3 w-3" />
-                            {format(new Date(unit.date_start), "MMM d")}
-                            {unit.date_end && ` – ${format(new Date(unit.date_end), "MMM d")}`}
-                          </span>
-                        </>
+                <Card
+                  className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]"
+                  onClick={() => navigate(`/units/${unit.id}`)}
+                >
+                  <CardContent className="p-4 flex items-center gap-4">
+                    <div
+                      className="shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors touch-none"
+                      onMouseDown={e => e.stopPropagation()}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      <GripVertical className="h-4 w-4" />
+                    </div>
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                      <FileText className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-foreground truncate">{unit.title}</h3>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                        {unit.discipline && <span>{unit.discipline}</span>}
+                        {unit.discipline && unit.grade_level && <span>•</span>}
+                        {unit.grade_level && <span>{unit.grade_level}</span>}
+                        {(unit.discipline || unit.grade_level) && <span>•</span>}
+                        <span>{unit.lesson_count || 0} lessons</span>
+                        {unit.date_start && (
+                          <>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              {format(new Date(unit.date_start), "MMM d")}
+                              {unit.date_end && ` – ${format(new Date(unit.date_end), "MMM d")}`}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      {unit.description && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{unit.description}</p>
                       )}
                     </div>
-                    {unit.description && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{unit.description}</p>
-                    )}
-                  </div>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="shrink-0 h-8 w-8 rounded-xl text-muted-foreground"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                      <DropdownMenuItem className="gap-2" onClick={() => handleDuplicate(unit)}>
-                        <Copy className="h-3.5 w-3.5" /> Duplicate Unit
-                      </DropdownMenuItem>
-                      <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleDelete(unit.id)}>
-                        <Trash2 className="h-3.5 w-3.5" /> Delete Unit
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </CardContent>
-              </Card>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="shrink-0 h-8 w-8 rounded-xl text-muted-foreground"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                        <DropdownMenuItem className="gap-2" onClick={() => handleDuplicate(unit)}>
+                          <Copy className="h-3.5 w-3.5" /> Duplicate Unit
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleDelete(unit.id)}>
+                          <Trash2 className="h-3.5 w-3.5" /> Delete Unit
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </CardContent>
+                </Card>
+              </div>
             ))}
           </div>
         )}
