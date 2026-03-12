@@ -358,12 +358,24 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
                                   {i + 1}
                                 </div>
                                 {editingRoom === puzzle.room_number ? (
-                                  <Textarea value={step} onChange={e => updateChallengeStep(puzzle.room_number, i, e.target.value)} className="text-sm min-h-[60px] bg-background flex-1" />
+                                  <div className="flex-1 flex gap-1.5">
+                                    <Textarea value={step} onChange={e => updateChallengeStep(puzzle.room_number, i, e.target.value)} className="text-sm min-h-[60px] bg-background flex-1" />
+                                    <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0 mt-0.5 text-muted-foreground hover:text-destructive" onClick={() => {
+                                      const steps = [...(puzzle.challenge_steps || [])];
+                                      steps.splice(i, 1);
+                                      updatePuzzleField(puzzle.room_number, "challenge_steps", steps);
+                                    }}><X className="h-3.5 w-3.5" /></Button>
+                                  </div>
                                 ) : (
                                   <p className="text-sm text-foreground leading-relaxed">{step}</p>
                                 )}
                               </div>
                             ))}
+                            {editingRoom === puzzle.room_number && (
+                              <Button size="sm" variant="ghost" className="gap-1.5 text-xs text-amber-600 dark:text-amber-400" onClick={() => {
+                                updatePuzzleField(puzzle.room_number, "challenge_steps", [...(puzzle.challenge_steps || []), ""]);
+                              }}><Plus className="h-3 w-3" /> Add Step</Button>
+                            )}
                           </div>
                         </div>
                       ) : null}
