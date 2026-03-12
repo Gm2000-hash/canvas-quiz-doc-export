@@ -132,6 +132,40 @@ const UnitDetail = () => {
     fetchData();
   };
 
+  const handleDuplicateLesson = async (lesson: LessonPlan) => {
+    if (!user || !id) return;
+    const { data, error } = await supabase.from("lesson_plans").insert({
+      user_id: user.id,
+      unit_id: id,
+      title: `${lesson.title} (Copy)`,
+      lesson_date: lesson.lesson_date,
+      duration_minutes: lesson.duration_minutes,
+      objectives: lesson.objectives,
+      activities: lesson.activities as any,
+      materials: lesson.materials,
+      assessment: lesson.assessment,
+      differentiation: lesson.differentiation,
+      notes: lesson.notes,
+      sort_order: lessons.length,
+    }).select().single();
+
+    if (error) {
+      toast({ title: "Error duplicating", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    // Copy standards
+    if (lesson.standards && lesson.standards.length > 0 && data) {
+      await supabase.from("lesson_plan_standards").insert(
+        lesson.standards.map(s => ({ lesson_plan_id: data.id, ngss_code: s.ngss_code, ngss_description: s.ngss_description }))
+      );
+    }
+
+    fetchData();
+    toast({ title: "Lesson duplicated" });
+    if (data) navigate(`/lessons/${data.id}`);
+  };
+
   // NGSS coverage across unit
   const allStandards = useMemo(() => {
     const map = new Map<string, string>();
