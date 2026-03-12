@@ -78,8 +78,17 @@ Make these detailed enough that a substitute teacher with no science background 
                         duration_minutes: { type: "number", description: "Lesson duration in minutes" },
                         objectives: { type: "string", description: "EXACTLY 3 specific, measurable learning objectives using Bloom's taxonomy verbs, one per line" },
                         activities: {
-                          type: "string",
-                          description: "JSON string of AT LEAST 4 activities. Each activity has name (string), duration (number in minutes), and description (string — this MUST be 8-15 sentences including: KEY TALKING POINTS as bullet points, BACKGROUND INFORMATION with 3-5 sentences of deep content knowledge covering scientific explanations/real-world connections/misconceptions/analogies, specific questions to ask with anticipated responses, and step-by-step procedures). Example: [{\"name\":\"Warm-up: Activating Prior Knowledge\",\"duration\":5,\"description\":\"KEY TALKING POINTS:\\n• Energy cannot be created or destroyed...\\n\\nBACKGROUND INFORMATION: Energy transfer is a fundamental concept...\\n\\nAsk students: What happens when you rub your hands together?\"}]",
+                          type: "array",
+                          description: "AT LEAST 4 activities per lesson. Each activity MUST have detailed talking points and background info.",
+                          items: {
+                            type: "object",
+                            properties: {
+                              name: { type: "string", description: "Activity name, e.g. 'Warm-up: Activating Prior Knowledge'" },
+                              duration: { type: "number", description: "Duration in minutes" },
+                              description: { type: "string", description: "DETAILED teacher script of 8-15 sentences. MUST include: KEY TALKING POINTS as bullet points of main ideas to communicate, BACKGROUND INFORMATION with 3-5 sentences of deep content knowledge covering scientific explanations, real-world connections, common misconceptions and corrections, and analogies. Also include specific questions to ask with anticipated student responses, and step-by-step procedures for labs/activities." },
+                            },
+                            required: ["name", "duration", "description"],
+                          },
                         },
                         materials: { type: "string", description: "Detailed materials list with quantities" },
                         assessment: { type: "string", description: "Specific formative and summative assessment strategies with example questions, exit ticket prompts, or rubric criteria" },
