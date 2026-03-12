@@ -13,16 +13,33 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert middle school science teacher creating detailed NGSS-aligned lesson plans.
+    const systemPrompt = `You are an expert middle school science teacher creating FULLY SCRIPTED, classroom-ready lesson plans aligned to NGSS.
 You must return structured lesson plans using the provided tool.
 Each lesson should be practical, engaging, and age-appropriate for ${gradeLevel || "middle school"} students.
 Focus on ${discipline || "science"} content.
-Include a variety of activities: direct instruction, labs, group work, discussions, and assessments.
-Map each lesson to relevant NGSS Middle School performance expectations (MS-LS, MS-PS, MS-ESS, MS-ETS codes).`;
 
-    const userPrompt = `Create ${numLessons} sequential lesson plans for a unit called "${unitTitle}" focused on "${topic}".
+CRITICAL REQUIREMENTS FOR DETAIL:
+- OBJECTIVES: Write 3-5 specific, measurable learning objectives using Bloom's taxonomy verbs. Include the FULL TEXT of each aligned NGSS performance expectation (not just the code).
+- ACTIVITIES: Script out each activity in detail. For direct instruction, include the key talking points, questions to ask, and example explanations the teacher should give. For labs/investigations, include step-by-step procedures. For discussions, include specific discussion prompts and expected student responses. For group work, include specific tasks and roles. Each activity description should be 3-8 sentences minimum — think of it as a teacher script.
+- MATERIALS: List every specific material with quantities (e.g., "30 copies of Cell Diagram handout", "1 microscope per lab group of 4").
+- ASSESSMENT: Describe specific formative and summative assessment strategies with example questions or rubric criteria.
+- DIFFERENTIATION: Provide specific accommodations for ELL students, students with IEPs, gifted learners, and struggling readers.
+- NOTES: Include teacher tips, common misconceptions students may have, and how to address them.
+
+Include a variety of activities: direct instruction, labs, group work, discussions, and assessments.
+Map each lesson to relevant NGSS Middle School performance expectations (MS-LS, MS-PS, MS-ESS, MS-ETS codes). Always include the COMPLETE standard text.`;
+
+    const userPrompt = `Create ${numLessons} sequential, FULLY SCRIPTED lesson plans for a unit called "${unitTitle}" focused on "${topic}".
 ${additionalContext ? `Additional instructions: ${additionalContext}` : ""}
-Each lesson should be 50 minutes and include objectives, timed activities, materials, assessment strategies, and differentiation.`;
+
+Each lesson should be 50 minutes. For EVERY activity, write it as if you are scripting what the teacher says and does minute-by-minute. Include:
+- Exact questions the teacher should ask students
+- Key vocabulary with definitions
+- Transition phrases between activities
+- Anticipated student questions and how to respond
+- Specific examples and analogies to use when explaining concepts
+
+Make these detailed enough that a substitute teacher could pick them up and teach effectively.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
