@@ -7,7 +7,8 @@ import { Menu, FileText, BookOpen, Layers, PenLine, Settings, LogOut, Home } fro
 import { useState } from "react";
 
 const navItems = [
-  { label: "Home", path: "/", icon: Home, description: "Dashboard & Quiz Export" },
+  { label: "Home", path: "/", icon: Home, description: "Dashboard" },
+  { label: "Canvas Export", path: "/canvas", icon: FileText, description: "Export quizzes from Canvas" },
   { label: "Question Bank", path: "/question-bank", icon: BookOpen, description: "Browse & manage questions" },
   { label: "Create Question", path: "/create-question", icon: PenLine, description: "Build a new question" },
   { label: "Lesson Planner", path: "/lesson-planner", icon: Layers, description: "Units, lessons & pacing" },
