@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { exportLessonToDocx } from "@/lib/export-lesson-docx";
 import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import type { Json } from "@/integrations/supabase/types";
 
 interface Activity {
