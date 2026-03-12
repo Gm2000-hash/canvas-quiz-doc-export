@@ -102,20 +102,21 @@ const LessonPlanEditor = () => {
   const handleSave = async () => {
     if (!lesson || !user) return;
     setSaving(true);
-    const { error } = await supabase.from("lesson_plans").update({
+    const updateData: Record<string, any> = {
       title: lesson.title,
       lesson_date: lesson.lesson_date || null,
       duration_minutes: lesson.duration_minutes,
       objectives: lesson.objectives,
-      activities: lesson.activities as unknown as Json,
+      activities: lesson.activities,
       materials: lesson.materials,
       assessment: lesson.assessment,
       differentiation: lesson.differentiation,
       notes: lesson.notes,
-      vocabulary: lesson.vocabulary as unknown as Json,
-      resources: lesson.resources as unknown as Json,
+      vocabulary: lesson.vocabulary,
+      resources: lesson.resources,
       updated_at: new Date().toISOString(),
-    } as any).eq("id", lesson.id);
+    };
+    const { error } = await (supabase.from("lesson_plans") as any).update(updateData).eq("id", lesson.id);
 
     setSaving(false);
     if (error) {
