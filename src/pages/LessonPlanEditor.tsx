@@ -225,6 +225,7 @@ const LessonPlanEditor = () => {
         <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg" onClick={() => lesson.unit_id ? navigate(`/units/${lesson.unit_id}`) : navigate("/lesson-planner")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
+        <div className="flex-1 min-w-0">
           <Input
             value={lesson.title}
             onChange={e => setLesson({ ...lesson, title: e.target.value })}
