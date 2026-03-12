@@ -236,6 +236,7 @@ const LessonPlanEditor = () => {
             standards: standards.map(s => s.ngss_code).join(", ") || "None",
             duration: lesson.duration_minutes,
           }}
+          onCopyToField={handleCopyToField}
         />
         <Button
           size="sm"
