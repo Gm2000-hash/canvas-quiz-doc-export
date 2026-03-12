@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText } from "lucide-react";
+import { ArrowLeft, Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText, Copy } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { WeeklyDashboard } from "@/components/WeeklyDashboard";
 import { useToast } from "@/hooks/use-toast";
