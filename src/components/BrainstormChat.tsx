@@ -85,8 +85,19 @@ interface LessonContext {
   duration: number;
 }
 
+export type LessonField = "objectives" | "assessment" | "differentiation" | "notes" | "activities";
+
+const FIELD_OPTIONS: { field: LessonField; label: string; icon: React.ElementType }[] = [
+  { field: "objectives", label: "Objectives", icon: Target },
+  { field: "activities", label: "Activities", icon: Clock },
+  { field: "assessment", label: "Assessment", icon: CheckCircle },
+  { field: "differentiation", label: "Differentiation", icon: Users },
+  { field: "notes", label: "Notes", icon: StickyNote },
+];
+
 interface Props {
   lessonContext: LessonContext;
+  onCopyToField?: (field: LessonField, content: string) => void;
 }
 
 const QUICK_PROMPTS = [
