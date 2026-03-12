@@ -9,12 +9,13 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2 } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { BrainstormChat } from "@/components/BrainstormChat";
 import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { exportLessonToDocx } from "@/lib/export-lesson-docx";
+import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
 import type { Json } from "@/integrations/supabase/types";
 
 interface Activity {
@@ -73,6 +74,7 @@ const LessonPlanEditor = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [standardsOpen, setStandardsOpen] = useState(false);
+  const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
 
   useEffect(() => {
     if (!user || !id) return;
@@ -219,6 +221,15 @@ const LessonPlanEditor = () => {
             duration: lesson.duration_minutes,
           }}
         />
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5 rounded-xl"
+          onClick={() => setEscapeRoomOpen(true)}
+        >
+          <Lock className="h-4 w-4" />
+          <span className="hidden sm:inline">Escape Room</span>
+        </Button>
         <Button
           size="sm"
           variant="outline"
@@ -434,6 +445,17 @@ const LessonPlanEditor = () => {
 
         <div className="h-8" />
       </main>
+
+      <GenerateEscapeRoomDialog
+        open={escapeRoomOpen}
+        onOpenChange={setEscapeRoomOpen}
+        context={{
+          title: lesson.title,
+          topic: lesson.title,
+          objectives: lesson.objectives,
+          vocabulary: lesson.vocabulary.map(v => v.term).join(", "),
+        }}
+      />
     </div>
   );
 };

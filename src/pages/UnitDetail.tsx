@@ -10,8 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Calendar, List, Trash2, GripVertical, Clock, Sparkles, Download } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, List, Trash2, GripVertical, Clock, Sparkles, Download, Lock } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
 import { useToast } from "@/hooks/use-toast";
 import { format, eachDayOfInterval, isWeekend, isSameDay, parseISO, addDays } from "date-fns";
 import { GenerateLessonDialog } from "@/components/GenerateLessonDialog";
@@ -59,6 +60,7 @@ const UnitDetail = () => {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
   const [newLesson, setNewLesson] = useState({ title: "", lesson_date: "", duration_minutes: 50 });
   const [activeTab, setActiveTab] = useState("list");
 
@@ -173,6 +175,9 @@ const UnitDetail = () => {
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" className="text-primary rounded-xl gap-1.5 text-sm" onClick={() => setGenerateOpen(true)}>
             <Sparkles className="h-4 w-4" /> AI Generate
+          </Button>
+          <Button variant="ghost" size="sm" className="text-primary rounded-xl gap-1.5 text-sm" onClick={() => setEscapeRoomOpen(true)}>
+            <Lock className="h-4 w-4" /> Escape Room
           </Button>
           <Button
             variant="ghost"
@@ -329,6 +334,17 @@ const UnitDetail = () => {
         discipline={unit.discipline}
         gradeLevel={unit.grade_level}
         onGenerated={fetchData}
+      />
+
+      <GenerateEscapeRoomDialog
+        open={escapeRoomOpen}
+        onOpenChange={setEscapeRoomOpen}
+        context={{
+          title: unit.title,
+          topic: unit.title,
+          gradeLevel: unit.grade_level,
+          discipline: unit.discipline,
+        }}
       />
     </div>
   );

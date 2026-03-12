@@ -67,6 +67,7 @@ export function GenerateLessonDialog({ open, onOpenChange, unitId, unitTitle, di
           differentiation: lesson.differentiation || "",
           notes: lesson.notes || "",
           vocabulary: lesson.vocabulary || [],
+          resources: lesson.resources || [],
           sort_order: i,
         } as any).select().single();
 

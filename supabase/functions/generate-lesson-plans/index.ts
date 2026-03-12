@@ -25,6 +25,7 @@ CRITICAL REQUIREMENTS FOR DETAIL:
 - ASSESSMENT: Describe specific formative and summative assessment strategies with example questions or rubric criteria.
 - DIFFERENTIATION: Provide specific accommodations for ELL students, students with IEPs, gifted learners, and struggling readers.
 - NOTES: Include teacher tips, common misconceptions students may have, and how to address them.
+- RESOURCES: For EVERY lesson, provide at least 3 real, reputable online resources with working URLs. Include a mix of videos (YouTube, Khan Academy, etc.), articles (National Geographic, NASA, Smithsonian, CK-12, etc.), and interactive activities (PhET simulations, BrainPOP, etc.). These should be real URLs that teachers can actually use.
 
 Include a variety of activities: direct instruction, labs, group work, discussions, and assessments.
 Map each lesson to relevant NGSS Middle School performance expectations (MS-LS, MS-PS, MS-ESS, MS-ETS codes). Always include the COMPLETE standard text.`;
@@ -38,6 +39,7 @@ Each lesson should be 50 minutes. For EVERY activity, write it as if you are scr
 - Transition phrases between activities
 - Anticipated student questions and how to respond
 - Specific examples and analogies to use when explaining concepts
+- At least 3 online resources per lesson (videos, readings, interactive activities) with real URLs
 
 Make these detailed enough that a substitute teacher could pick them up and teach effectively.`;
 
@@ -72,22 +74,26 @@ Make these detailed enough that a substitute teacher could pick them up and teac
                         objectives: { type: "string", description: "Learning objectives, one per line" },
                         activities: {
                           type: "string",
-                          description: "JSON string of activities array. Each activity has name (string), duration (number in minutes), and description (string — this MUST be a detailed teacher script of 3-8 sentences including what to say, questions to ask, and step-by-step instructions). Example: [{\"name\":\"Warm-up: Activating Prior Knowledge\",\"duration\":5,\"description\":\"Begin by projecting the question: 'What do you think all living things have in common?' Give students 2 minutes to write in their journals. Then cold-call 3-4 students to share. Record responses on the board. Look for answers mentioning cells, growth, reproduction. Say: 'Today we are going to investigate one of the most fundamental ideas in biology — that all living things are made of cells.'\"}]",
+                          description: "JSON string of activities array. Each activity has name (string), duration (number in minutes), and description (string — this MUST be a detailed teacher script of 3-8 sentences including what to say, questions to ask, and step-by-step instructions). Example: [{\"name\":\"Warm-up: Activating Prior Knowledge\",\"duration\":5,\"description\":\"Begin by projecting the question...\"}]",
                         },
-                        materials: { type: "string", description: "Detailed materials list with quantities, e.g. '30 copies of Cell Diagram handout\\n1 microscope per lab group\\nWhiteboard markers (4 colors)'" },
+                        materials: { type: "string", description: "Detailed materials list with quantities" },
                         assessment: { type: "string", description: "Specific formative and summative assessment strategies with example questions, exit ticket prompts, or rubric criteria" },
                         differentiation: { type: "string", description: "Specific strategies for ELL students, IEP accommodations, gifted extensions, and struggling readers" },
                         notes: { type: "string", description: "Teacher tips, common student misconceptions, and how to address them" },
                         vocabulary_json: {
                           type: "string",
-                          description: "JSON string of vocabulary array. Each item has term (string) and definition (string). Include 5-10 key science vocabulary terms for the lesson. Example: [{\"term\":\"Photosynthesis\",\"definition\":\"The process by which green plants use sunlight to synthesize food from carbon dioxide and water.\"}]",
+                          description: "JSON string of vocabulary array. Each item has term (string) and definition (string). Include 5-10 key science vocabulary terms. Example: [{\"term\":\"Photosynthesis\",\"definition\":\"The process by which green plants use sunlight...\"}]",
+                        },
+                        resources_json: {
+                          type: "string",
+                          description: "JSON string of at least 3 online resources. Each has title (string), url (string — a real working URL), and type (string — one of: video, article, activity, other). Include a mix of videos, readings, and interactive activities from reputable sources like Khan Academy, YouTube edu channels, CK-12, PhET, BrainPOP, National Geographic, NASA, Smithsonian, etc. Example: [{\"title\":\"Khan Academy: Photosynthesis\",\"url\":\"https://www.khanacademy.org/science/biology/photosynthesis-in-plants\",\"type\":\"video\"},{\"title\":\"CK-12: Plant Biology\",\"url\":\"https://www.ck12.org/biology/plant-biology/\",\"type\":\"article\"},{\"title\":\"PhET: Photosynthesis Lab\",\"url\":\"https://phet.colorado.edu/en/simulations/photosynthesis\",\"type\":\"activity\"}]",
                         },
                         standards_json: {
                           type: "string",
-                          description: "JSON string of NGSS standards array. Each standard has code (string like MS-LS1-1) and description (the FULL COMPLETE text of the performance expectation). Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation to provide evidence that living things are made of cells; either one cell or many different numbers and types of cells.\"}]",
+                          description: "JSON string of NGSS standards array. Each standard has code (string like MS-LS1-1) and description (the FULL COMPLETE text of the performance expectation). Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation to provide evidence that living things are made of cells...\"}]",
                         },
                       },
-                      required: ["title", "duration_minutes", "objectives", "activities", "materials", "assessment", "differentiation"],
+                      required: ["title", "duration_minutes", "objectives", "activities", "materials", "assessment", "differentiation", "resources_json"],
                       additionalProperties: false,
                     },
                   },
@@ -105,14 +111,12 @@ Make these detailed enough that a substitute teacher could pick them up and teac
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
         return new Response(JSON.stringify({ error: "Usage limit reached. Please add credits." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const text = await response.text();
@@ -126,7 +130,6 @@ Make these detailed enough that a substitute teacher could pick them up and teac
 
     const parsed = JSON.parse(toolCall.function.arguments);
 
-    // Parse stringified JSON fields
     const lessons = parsed.lessons.map((l: any) => {
       let activities = [];
       try { activities = typeof l.activities === "string" ? JSON.parse(l.activities) : l.activities; } catch { activities = []; }
@@ -134,7 +137,9 @@ Make these detailed enough that a substitute teacher could pick them up and teac
       try { standards = typeof l.standards_json === "string" ? JSON.parse(l.standards_json) : (l.standards_json || []); } catch { standards = []; }
       let vocabulary = [];
       try { vocabulary = typeof l.vocabulary_json === "string" ? JSON.parse(l.vocabulary_json) : (l.vocabulary_json || []); } catch { vocabulary = []; }
-      return { ...l, activities, standards, vocabulary };
+      let resources = [];
+      try { resources = typeof l.resources_json === "string" ? JSON.parse(l.resources_json) : (l.resources_json || []); } catch { resources = []; }
+      return { ...l, activities, standards, vocabulary, resources };
     });
 
     return new Response(JSON.stringify({ lessons }), {
@@ -143,8 +148,7 @@ Make these detailed enough that a substitute teacher could pick them up and teac
   } catch (e) {
     console.error("generate-lesson-plans error:", e);
     return new Response(JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }), {
-      status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 });
