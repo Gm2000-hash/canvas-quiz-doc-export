@@ -103,6 +103,55 @@ const LessonPlanner = () => {
     toast({ title: "Unit deleted" });
   };
 
+  const handleDuplicate = async (unit: Unit) => {
+    if (!user) return;
+    // Duplicate the unit
+    const { data: newUnit, error } = await supabase.from("units").insert({
+      user_id: user.id,
+      title: `${unit.title} (Copy)`,
+      description: unit.description,
+      grade_level: unit.grade_level,
+      discipline: unit.discipline,
+      date_start: unit.date_start,
+      date_end: unit.date_end,
+    }).select().single();
+
+    if (error || !newUnit) {
+      toast({ title: "Error duplicating unit", description: error?.message, variant: "destructive" });
+      return;
+    }
+
+    // Duplicate all lessons in the unit
+    const { data: lessons } = await supabase
+      .from("lesson_plans")
+      .select("*")
+      .eq("unit_id", unit.id)
+      .eq("user_id", user.id);
+
+    if (lessons && lessons.length > 0) {
+      const newLessons = lessons.map(l => ({
+        user_id: user.id,
+        unit_id: newUnit.id,
+        title: l.title,
+        lesson_date: l.lesson_date,
+        duration_minutes: l.duration_minutes,
+        objectives: l.objectives,
+        activities: l.activities,
+        materials: l.materials,
+        assessment: l.assessment,
+        differentiation: l.differentiation,
+        notes: l.notes,
+        vocabulary: l.vocabulary,
+        resources: l.resources,
+        sort_order: l.sort_order,
+      }));
+      await supabase.from("lesson_plans").insert(newLessons);
+    }
+
+    fetchUnits();
+    toast({ title: "Unit duplicated" });
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
