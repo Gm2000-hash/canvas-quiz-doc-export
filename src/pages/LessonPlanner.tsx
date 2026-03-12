@@ -281,14 +281,26 @@ const LessonPlanner = () => {
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{unit.description}</p>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive"
-                    onClick={(e) => { e.stopPropagation(); handleDelete(unit.id); }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 h-8 w-8 rounded-xl text-muted-foreground"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                      <DropdownMenuItem className="gap-2" onClick={() => handleDuplicate(unit)}>
+                        <Copy className="h-3.5 w-3.5" /> Duplicate Unit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleDelete(unit.id)}>
+                        <Trash2 className="h-3.5 w-3.5" /> Delete Unit
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </CardContent>
               </Card>
             ))}
