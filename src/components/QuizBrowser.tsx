@@ -349,18 +349,53 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
     <div className="max-w-5xl mx-auto">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {courses.map((course, idx) => {
-          const colorClass = COURSE_COLORS[idx % COURSE_COLORS.length];
+          const colorClass = getColorForCourse(course.id, idx);
           return (
             <Card
               key={course.id}
-              className="overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 group"
+              className="overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 group relative"
               onClick={() => handleSelectCourse(course)}
             >
               <div className={`${colorClass} p-5 pb-12 text-primary-foreground relative`}>
-                <h3 className="text-lg font-bold leading-tight line-clamp-2">{course.name}</h3>
+                <h3 className="text-lg font-bold leading-tight line-clamp-2 pr-8">{course.name}</h3>
                 {course.course_code && (
                   <p className="text-sm opacity-80 mt-1">{course.course_code}</p>
                 )}
+                {/* Color picker button */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute top-3 right-3 h-7 w-7 rounded-lg bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors backdrop-blur-sm"
+                      title="Change tile color"
+                    >
+                      <Palette className="h-3.5 w-3.5 text-white" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-48 p-3"
+                    align="end"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Tile Color</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {ALL_COLORS.map((c) => (
+                        <button
+                          key={c.label}
+                          title={c.label}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCourseColor(course.id, c.class);
+                          }}
+                          className={`h-8 w-8 rounded-lg transition-all duration-150 hover:scale-110 ring-offset-2 ring-offset-background ${
+                            colorClass === c.class ? 'ring-2 ring-primary scale-110' : ''
+                          }`}
+                          style={{ backgroundColor: c.swatch }}
+                        />
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
               <CardContent className="p-4 flex items-center justify-between -mt-6 relative">
                 <div className="h-12 w-12 rounded-full bg-card border-2 border-background shadow flex items-center justify-center">
