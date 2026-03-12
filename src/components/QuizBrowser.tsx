@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getCourses, getQuizzes, getQuiz, getQuizQuestions, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from '@/lib/canvas-api';
 import { tagQuestionsWithNGSS, type NGSSStandard } from '@/lib/ngss-api';
 import { exportQuizToDocx } from '@/lib/export-docx';
 import { saveQuestionsToBank } from '@/lib/question-bank';
 import { toast } from 'sonner';
-import { BookOpen, FileText, Download, Loader2, ArrowLeft, ChevronRight, FlaskConical, Sparkles } from 'lucide-react';
+import { BookOpen, FileText, Download, Loader2, ArrowLeft, ChevronRight, FlaskConical, Sparkles, Palette } from 'lucide-react';
 
 interface QuizBrowserProps {
   config: CanvasConfig;
