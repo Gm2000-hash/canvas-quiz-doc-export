@@ -38,15 +38,15 @@ Map each lesson to relevant NGSS Middle School performance expectations (MS-LS, 
     const userPrompt = `Create ${numLessons} sequential, FULLY SCRIPTED lesson plans for a unit called "${unitTitle}" focused on "${topic}".
 ${additionalContext ? `Additional instructions: ${additionalContext}` : ""}
 
-Each lesson should be 50 minutes. For EVERY activity, write it as if you are scripting what the teacher says and does minute-by-minute. Include:
-- Exact questions the teacher should ask students
+Each lesson should be 50 minutes with EXACTLY 3 learning objectives and AT LEAST 4 activities. For EVERY activity, write it as if you are scripting what the teacher says and does minute-by-minute. Include:
+- KEY TALKING POINTS as a bulleted list of main ideas to communicate
+- BACKGROUND INFORMATION: deep content knowledge (3-5 sentences) covering scientific explanations, real-world connections, common misconceptions with corrections, and analogies
+- Exact questions the teacher should ask students with anticipated responses
 - Key vocabulary with definitions
 - Transition phrases between activities
-- Anticipated student questions and how to respond
-- Specific examples and analogies to use when explaining concepts
 - At least 3 online resources per lesson (videos, readings, interactive activities) with real URLs
 
-Make these detailed enough that a substitute teacher could pick them up and teach effectively.`;
+Make these detailed enough that a substitute teacher with no science background could pick them up and teach effectively.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
