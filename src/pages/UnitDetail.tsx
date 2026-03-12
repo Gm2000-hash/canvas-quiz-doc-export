@@ -380,6 +380,7 @@ const UnitDetail = () => {
         unitTitle={unit.title}
         discipline={unit.discipline}
         gradeLevel={unit.grade_level}
+        existingLessonCount={lessons.length}
         onGenerated={fetchData}
       />
 
