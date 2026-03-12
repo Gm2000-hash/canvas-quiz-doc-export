@@ -73,6 +73,12 @@ export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
+  const todayTip = useMemo(() => {
+    const now = new Date();
+    const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
+    return dailyTips[dayOfYear % dailyTips.length];
+  }, []);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
