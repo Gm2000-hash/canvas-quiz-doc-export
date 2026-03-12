@@ -66,8 +66,9 @@ export function GenerateLessonDialog({ open, onOpenChange, unitId, unitTitle, di
           assessment: lesson.assessment || "",
           differentiation: lesson.differentiation || "",
           notes: lesson.notes || "",
+          vocabulary: lesson.vocabulary || [],
           sort_order: i,
-        }).select().single();
+        } as any).select().single();
 
         if (insertError) throw insertError;
 

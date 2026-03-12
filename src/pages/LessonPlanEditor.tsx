@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
@@ -18,6 +18,11 @@ interface Activity {
   name: string;
   duration: number;
   description: string;
+}
+
+interface VocabularyItem {
+  term: string;
+  definition: string;
 }
 
 interface LessonPlan {
@@ -32,6 +37,7 @@ interface LessonPlan {
   assessment: string;
   differentiation: string;
   notes: string;
+  vocabulary: VocabularyItem[];
 }
 
 interface Standard {
@@ -66,6 +72,7 @@ const LessonPlanEditor = () => {
       setLesson({
         ...lessonRes.data,
         activities: (Array.isArray(lessonRes.data.activities) ? lessonRes.data.activities : []) as unknown as Activity[],
+        vocabulary: (Array.isArray((lessonRes.data as any).vocabulary) ? (lessonRes.data as any).vocabulary : []) as VocabularyItem[],
       });
       setStandards(stdsRes.data || []);
       setLoading(false);
@@ -86,8 +93,9 @@ const LessonPlanEditor = () => {
       assessment: lesson.assessment,
       differentiation: lesson.differentiation,
       notes: lesson.notes,
+      vocabulary: lesson.vocabulary as unknown as Json,
       updated_at: new Date().toISOString(),
-    }).eq("id", lesson.id);
+    } as any).eq("id", lesson.id);
 
     setSaving(false);
     if (error) {
@@ -115,6 +123,23 @@ const LessonPlanEditor = () => {
   const removeActivity = (idx: number) => {
     if (!lesson) return;
     setLesson({ ...lesson, activities: lesson.activities.filter((_, i) => i !== idx) });
+  };
+
+  const addVocabulary = () => {
+    if (!lesson) return;
+    setLesson({ ...lesson, vocabulary: [...lesson.vocabulary, { term: "", definition: "" }] });
+  };
+
+  const updateVocabulary = (idx: number, field: keyof VocabularyItem, value: string) => {
+    if (!lesson) return;
+    const vocab = [...lesson.vocabulary];
+    vocab[idx] = { ...vocab[idx], [field]: value };
+    setLesson({ ...lesson, vocabulary: vocab });
+  };
+
+  const removeVocabulary = (idx: number) => {
+    if (!lesson) return;
+    setLesson({ ...lesson, vocabulary: lesson.vocabulary.filter((_, i) => i !== idx) });
   };
 
   const handleStandardsChange = async (selected: { code: string; description: string }[]) => {
@@ -211,7 +236,43 @@ const LessonPlanEditor = () => {
           </CardContent>
         </Card>
 
-        {/* Activities & Timing */}
+        {/* Key Vocabulary */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2"><GraduationCap className="h-4 w-4 text-primary" /> Key Vocabulary</CardTitle>
+              <span className="text-xs text-muted-foreground">{lesson.vocabulary.length} terms</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {lesson.vocabulary.map((v, idx) => (
+              <div key={idx} className="flex gap-2 items-start p-2.5 rounded-xl bg-accent/50">
+                <div className="flex-1 space-y-1.5">
+                  <Input
+                    placeholder="Term"
+                    value={v.term}
+                    onChange={e => updateVocabulary(idx, "term", e.target.value)}
+                    className="text-sm h-8 font-medium"
+                  />
+                  <Textarea
+                    placeholder="Definition..."
+                    value={v.definition}
+                    onChange={e => updateVocabulary(idx, "definition", e.target.value)}
+                    rows={2}
+                    className="text-sm"
+                  />
+                </div>
+                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeVocabulary(idx)}>
+                  <Trash2 className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            ))}
+            <Button variant="outline" size="sm" className="w-full rounded-xl gap-1.5" onClick={addVocabulary}>
+              <Plus className="h-3.5 w-3.5" /> Add Term
+            </Button>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">

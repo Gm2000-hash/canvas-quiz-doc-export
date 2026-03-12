@@ -78,6 +78,10 @@ Make these detailed enough that a substitute teacher could pick them up and teac
                         assessment: { type: "string", description: "Specific formative and summative assessment strategies with example questions, exit ticket prompts, or rubric criteria" },
                         differentiation: { type: "string", description: "Specific strategies for ELL students, IEP accommodations, gifted extensions, and struggling readers" },
                         notes: { type: "string", description: "Teacher tips, common student misconceptions, and how to address them" },
+                        vocabulary_json: {
+                          type: "string",
+                          description: "JSON string of vocabulary array. Each item has term (string) and definition (string). Include 5-10 key science vocabulary terms for the lesson. Example: [{\"term\":\"Photosynthesis\",\"definition\":\"The process by which green plants use sunlight to synthesize food from carbon dioxide and water.\"}]",
+                        },
                         standards_json: {
                           type: "string",
                           description: "JSON string of NGSS standards array. Each standard has code (string like MS-LS1-1) and description (the FULL COMPLETE text of the performance expectation). Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation to provide evidence that living things are made of cells; either one cell or many different numbers and types of cells.\"}]",
@@ -128,7 +132,9 @@ Make these detailed enough that a substitute teacher could pick them up and teac
       try { activities = typeof l.activities === "string" ? JSON.parse(l.activities) : l.activities; } catch { activities = []; }
       let standards = [];
       try { standards = typeof l.standards_json === "string" ? JSON.parse(l.standards_json) : (l.standards_json || []); } catch { standards = []; }
-      return { ...l, activities, standards };
+      let vocabulary = [];
+      try { vocabulary = typeof l.vocabulary_json === "string" ? JSON.parse(l.vocabulary_json) : (l.vocabulary_json || []); } catch { vocabulary = []; }
+      return { ...l, activities, standards, vocabulary };
     });
 
     return new Response(JSON.stringify({ lessons }), {
