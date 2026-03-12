@@ -225,6 +225,15 @@ const LessonPlanEditor = () => {
           size="sm"
           variant="outline"
           className="gap-1.5 rounded-xl"
+          onClick={() => setEscapeRoomOpen(true)}
+        >
+          <Lock className="h-4 w-4" />
+          <span className="hidden sm:inline">Escape Room</span>
+        </Button>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5 rounded-xl"
           onClick={() => {
             if (!lesson) return;
             exportLessonToDocx({
