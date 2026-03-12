@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.suggest-dok-blooms]
 verify_jwt = false
+
+[functions.generate-lesson-plans]
+verify_jwt = false
