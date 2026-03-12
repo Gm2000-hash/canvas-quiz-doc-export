@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
+import { exportLessonToDocx } from "@/lib/export-lesson-docx";
 import type { Json } from "@/integrations/supabase/types";
 
 interface Activity {
@@ -177,6 +178,21 @@ const LessonPlanEditor = () => {
             placeholder="Lesson title..."
           />
         </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5 rounded-xl"
+          onClick={() => {
+            if (!lesson) return;
+            exportLessonToDocx({
+              ...lesson,
+              standards: standards.map(s => ({ ngss_code: s.ngss_code, ngss_description: s.ngss_description })),
+            });
+          }}
+        >
+          <FileDown className="h-4 w-4" />
+          Export
+        </Button>
         <Button size="sm" className="gap-1.5 rounded-xl" onClick={handleSave} disabled={saving}>
           <Save className="h-4 w-4" />
           {saving ? "Saving..." : "Save"}
