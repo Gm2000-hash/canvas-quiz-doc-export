@@ -69,7 +69,7 @@ export function GenerateLessonDialog({ open, onOpenChange, unitId, unitTitle, di
           notes: lesson.notes || "",
           vocabulary: lesson.vocabulary || [],
           resources: lesson.resources || [],
-          sort_order: i,
+          sort_order: existingLessonCount + i,
         } as any).select().single();
 
         if (insertError) throw insertError;
