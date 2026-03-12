@@ -5,13 +5,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Loader2, Lock, Key, Copy, ChevronDown, ChevronUp, Lightbulb, FileText } from "lucide-react";
+import { Sparkles, Loader2, Lock, Key, Copy, ChevronDown, ChevronUp, Lightbulb, FileText, FileDown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { exportEscapeRoomToDocx } from "@/lib/export-escape-room-docx";
 
 interface Puzzle {
   room_number: number;
@@ -207,13 +209,31 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
               </div>
 
               {/* Actions */}
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button size="sm" variant="outline" className="rounded-xl gap-1.5 flex-1" onClick={copyFullEscapeRoom}>
                   <Copy className="h-3.5 w-3.5" /> Copy All
                 </Button>
                 <Button size="sm" variant="outline" className="rounded-xl gap-1.5 flex-1" onClick={() => setShowSetup(!showSetup)}>
                   <FileText className="h-3.5 w-3.5" /> {showSetup ? "Hide" : "Show"} Setup Guide
                 </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline" className="rounded-xl gap-1.5 flex-1">
+                      <FileDown className="h-3.5 w-3.5" /> Export Word
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => exportEscapeRoomToDocx(escapeRoom, "both")}>
+                      📄 Full Document (Student + Teacher)
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportEscapeRoomToDocx(escapeRoom, "student")}>
+                      📝 Student Version Only
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => exportEscapeRoomToDocx(escapeRoom, "teacher")}>
+                      🗝️ Teacher Answer Key Only
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {/* Setup Guide */}
