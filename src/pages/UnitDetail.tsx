@@ -10,7 +10,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Calendar, List, Trash2, GripVertical, Clock, Sparkles, Download, Lock } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, List, Trash2, GripVertical, Clock, Sparkles, Download, Lock, Copy } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -129,6 +130,40 @@ const UnitDetail = () => {
       return;
     }
     fetchData();
+  };
+
+  const handleDuplicateLesson = async (lesson: LessonPlan) => {
+    if (!user || !id) return;
+    const { data, error } = await supabase.from("lesson_plans").insert({
+      user_id: user.id,
+      unit_id: id,
+      title: `${lesson.title} (Copy)`,
+      lesson_date: lesson.lesson_date,
+      duration_minutes: lesson.duration_minutes,
+      objectives: lesson.objectives,
+      activities: lesson.activities as any,
+      materials: lesson.materials,
+      assessment: lesson.assessment,
+      differentiation: lesson.differentiation,
+      notes: lesson.notes,
+      sort_order: lessons.length,
+    }).select().single();
+
+    if (error) {
+      toast({ title: "Error duplicating", description: error.message, variant: "destructive" });
+      return;
+    }
+
+    // Copy standards
+    if (lesson.standards && lesson.standards.length > 0 && data) {
+      await supabase.from("lesson_plan_standards").insert(
+        lesson.standards.map(s => ({ lesson_plan_id: data.id, ngss_code: s.ngss_code, ngss_description: s.ngss_description }))
+      );
+    }
+
+    fetchData();
+    toast({ title: "Lesson duplicated" });
+    if (data) navigate(`/lessons/${data.id}`);
   };
 
   // NGSS coverage across unit
@@ -273,13 +308,25 @@ const UnitDetail = () => {
                       {lesson.objectives && (
                         <p className="text-xs text-muted-foreground max-w-[200px] truncate hidden md:block">{lesson.objectives}</p>
                       )}
-                      <Button
-                        variant="ghost" size="icon"
-                        className="shrink-0 h-7 w-7 rounded-lg text-muted-foreground hover:text-destructive"
-                        onClick={e => { e.stopPropagation(); handleDeleteLesson(lesson.id); }}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost" size="icon"
+                            className="shrink-0 h-7 w-7 rounded-lg text-muted-foreground"
+                            onClick={e => e.stopPropagation()}
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                          <DropdownMenuItem className="gap-2" onClick={() => handleDuplicateLesson(lesson)}>
+                            <Copy className="h-3.5 w-3.5" /> Duplicate Lesson
+                          </DropdownMenuItem>
+                          <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleDeleteLesson(lesson.id)}>
+                            <Trash2 className="h-3.5 w-3.5" /> Delete Lesson
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </CardContent>
                   </Card>
                 ))}

@@ -9,7 +9,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText } from "lucide-react";
+import { ArrowLeft, Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText, Copy } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { WeeklyDashboard } from "@/components/WeeklyDashboard";
 import { useToast } from "@/hooks/use-toast";
@@ -100,6 +101,55 @@ const LessonPlanner = () => {
     }
     fetchUnits();
     toast({ title: "Unit deleted" });
+  };
+
+  const handleDuplicate = async (unit: Unit) => {
+    if (!user) return;
+    // Duplicate the unit
+    const { data: newUnit, error } = await supabase.from("units").insert({
+      user_id: user.id,
+      title: `${unit.title} (Copy)`,
+      description: unit.description,
+      grade_level: unit.grade_level,
+      discipline: unit.discipline,
+      date_start: unit.date_start,
+      date_end: unit.date_end,
+    }).select().single();
+
+    if (error || !newUnit) {
+      toast({ title: "Error duplicating unit", description: error?.message, variant: "destructive" });
+      return;
+    }
+
+    // Duplicate all lessons in the unit
+    const { data: lessons } = await supabase
+      .from("lesson_plans")
+      .select("*")
+      .eq("unit_id", unit.id)
+      .eq("user_id", user.id);
+
+    if (lessons && lessons.length > 0) {
+      const newLessons = lessons.map(l => ({
+        user_id: user.id,
+        unit_id: newUnit.id,
+        title: l.title,
+        lesson_date: l.lesson_date,
+        duration_minutes: l.duration_minutes,
+        objectives: l.objectives,
+        activities: l.activities,
+        materials: l.materials,
+        assessment: l.assessment,
+        differentiation: l.differentiation,
+        notes: l.notes,
+        vocabulary: l.vocabulary,
+        resources: l.resources,
+        sort_order: l.sort_order,
+      }));
+      await supabase.from("lesson_plans").insert(newLessons);
+    }
+
+    fetchUnits();
+    toast({ title: "Unit duplicated" });
   };
 
   return (
@@ -231,14 +281,26 @@ const LessonPlanner = () => {
                       <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{unit.description}</p>
                     )}
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="shrink-0 h-8 w-8 rounded-xl text-muted-foreground hover:text-destructive"
-                    onClick={(e) => { e.stopPropagation(); handleDelete(unit.id); }}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 h-8 w-8 rounded-xl text-muted-foreground"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                      <DropdownMenuItem className="gap-2" onClick={() => handleDuplicate(unit)}>
+                        <Copy className="h-3.5 w-3.5" /> Duplicate Unit
+                      </DropdownMenuItem>
+                      <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleDelete(unit.id)}>
+                        <Trash2 className="h-3.5 w-3.5" /> Delete Unit
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </CardContent>
               </Card>
             ))}
