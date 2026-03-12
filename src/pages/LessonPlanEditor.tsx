@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote } from "lucide-react";
+import { AppNavSheet } from "@/components/AppNavSheet";
 import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import type { Json } from "@/integrations/supabase/types";
@@ -142,12 +143,7 @@ const LessonPlanEditor = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
-        <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9" onClick={() => {
-          if (lesson.unit_id) navigate(`/units/${lesson.unit_id}`);
-          else navigate("/lesson-planner");
-        }}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+        <AppNavSheet />
         <div className="flex-1 min-w-0">
           <Input
             value={lesson.title}

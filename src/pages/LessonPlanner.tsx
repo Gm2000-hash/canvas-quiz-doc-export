@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText } from "lucide-react";
+import { AppNavSheet } from "@/components/AppNavSheet";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -103,23 +104,12 @@ const LessonPlanner = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
-        <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9" onClick={() => navigate("/")}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+        <AppNavSheet />
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <Layers className="h-4 w-4 text-primary" />
           </div>
           <span className="text-base font-semibold text-foreground">Lesson Planner</span>
-        </div>
-        <div className="ml-auto flex items-center gap-1">
-          <Button variant="ghost" size="sm" className="text-primary hover:bg-accent rounded-xl gap-2 font-medium" onClick={() => navigate("/question-bank")}>
-            <BookOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">Question Bank</span>
-          </Button>
-          <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-accent rounded-xl h-9 w-9" onClick={signOut} title="Sign out">
-            <LogOut className="h-4 w-4" />
-          </Button>
         </div>
       </header>
 

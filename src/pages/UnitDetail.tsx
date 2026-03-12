@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Plus, Calendar, List, Trash2, GripVertical, Clock, Sparkles, Download } from "lucide-react";
+import { AppNavSheet } from "@/components/AppNavSheet";
 import { useToast } from "@/hooks/use-toast";
 import { format, eachDayOfInterval, isWeekend, isSameDay, parseISO, addDays } from "date-fns";
 import { GenerateLessonDialog } from "@/components/GenerateLessonDialog";
@@ -162,9 +163,7 @@ const UnitDetail = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
-        <Button variant="ghost" size="icon" className="rounded-xl h-9 w-9" onClick={() => navigate("/lesson-planner")}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+        <AppNavSheet />
         <div className="flex-1 min-w-0">
           <span className="text-base font-semibold text-foreground truncate block">{unit.title}</span>
           <span className="text-xs text-muted-foreground">

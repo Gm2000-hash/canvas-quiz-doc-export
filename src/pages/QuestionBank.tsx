@@ -15,6 +15,7 @@ import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { toast } from "sonner";
 import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb } from "lucide-react";
+import { AppNavSheet } from "@/components/AppNavSheet";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateQuestionsDialog from "@/components/GenerateQuestionsDialog";
 import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
@@ -389,25 +390,12 @@ const QuestionBank = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-3">
-        <Button variant="ghost" size="icon" className="text-primary hover:bg-accent rounded-xl h-9 w-9" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+        <AppNavSheet />
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <BookOpen className="h-4 w-4 text-primary" />
           </div>
           <span className="text-base font-semibold text-foreground">Question Bank</span>
-        </div>
-        <div className="ml-auto flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-primary hover:bg-accent rounded-xl gap-2 font-medium"
-            onClick={() => navigate("/")}
-          >
-            <FileText className="h-4 w-4" />
-            <span className="hidden sm:inline">Quiz Exporter</span>
-          </Button>
         </div>
       </header>
 
