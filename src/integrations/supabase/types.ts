@@ -14,6 +14,97 @@ export type Database = {
   }
   public: {
     Tables: {
+      lesson_plan_standards: {
+        Row: {
+          id: string
+          lesson_plan_id: string
+          ngss_code: string
+          ngss_description: string
+        }
+        Insert: {
+          id?: string
+          lesson_plan_id: string
+          ngss_code: string
+          ngss_description: string
+        }
+        Update: {
+          id?: string
+          lesson_plan_id?: string
+          ngss_code?: string
+          ngss_description?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_plan_standards_lesson_plan_id_fkey"
+            columns: ["lesson_plan_id"]
+            isOneToOne: false
+            referencedRelation: "lesson_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lesson_plans: {
+        Row: {
+          activities: Json | null
+          assessment: string | null
+          created_at: string
+          differentiation: string | null
+          duration_minutes: number | null
+          id: string
+          lesson_date: string | null
+          materials: string | null
+          notes: string | null
+          objectives: string | null
+          sort_order: number | null
+          title: string
+          unit_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activities?: Json | null
+          assessment?: string | null
+          created_at?: string
+          differentiation?: string | null
+          duration_minutes?: number | null
+          id?: string
+          lesson_date?: string | null
+          materials?: string | null
+          notes?: string | null
+          objectives?: string | null
+          sort_order?: number | null
+          title: string
+          unit_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activities?: Json | null
+          assessment?: string | null
+          created_at?: string
+          differentiation?: string | null
+          duration_minutes?: number | null
+          id?: string
+          lesson_date?: string | null
+          materials?: string | null
+          notes?: string | null
+          objectives?: string | null
+          sort_order?: number | null
+          title?: string
+          unit_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lesson_plans_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       question_bank: {
         Row: {
           answers: Json | null
@@ -87,6 +178,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      units: {
+        Row: {
+          created_at: string
+          date_end: string | null
+          date_start: string | null
+          description: string | null
+          discipline: string | null
+          grade_level: string | null
+          id: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_end?: string | null
+          date_start?: string | null
+          description?: string | null
+          discipline?: string | null
+          grade_level?: string | null
+          id?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date_end?: string | null
+          date_start?: string | null
+          description?: string | null
+          discipline?: string | null
+          grade_level?: string | null
+          id?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {
