@@ -217,7 +217,39 @@ const UnitDetail = () => {
     } catch { return []; }
   }, [unit]);
 
-  const getLessonForDay = (day: Date) => {
+  const handleSuggestPacing = useCallback(async () => {
+    if (calendarDays.length === 0 || lessons.length === 0) return;
+    setPacingSaving(true);
+    try {
+      const totalDays = calendarDays.length;
+      const totalLessons = lessons.length;
+      const spacing = Math.max(1, Math.floor(totalDays / totalLessons));
+      const updates = lessons.map((lesson, i) => {
+        const dayIndex = Math.min(i * spacing, totalDays - 1);
+        const date = format(calendarDays[dayIndex], "yyyy-MM-dd");
+        return supabase.from("lesson_plans").update({ lesson_date: date }).eq("id", lesson.id);
+      });
+      await Promise.all(updates);
+      await fetchData();
+      toast({ title: "Pacing suggested", description: `${totalLessons} lessons distributed across your unit dates.` });
+    } finally {
+      setPacingSaving(false);
+    }
+  }, [calendarDays, lessons, toast]);
+
+  const handleClearPacing = useCallback(async () => {
+    setPacingSaving(true);
+    try {
+      await Promise.all(
+        lessons.map(l => supabase.from("lesson_plans").update({ lesson_date: null }).eq("id", l.id))
+      );
+      await fetchData();
+      toast({ title: "Dates cleared" });
+    } finally {
+      setPacingSaving(false);
+    }
+  }, [lessons, toast]);
+
     return lessons.find(l => l.lesson_date && isSameDay(parseISO(l.lesson_date), day));
   };
 
