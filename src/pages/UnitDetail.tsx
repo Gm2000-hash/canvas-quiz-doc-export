@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Plus, Calendar, List, Trash2, GripVertical, Clock, Sparkles, Download } from "lucide-react";
+import { AppNavSheet } from "@/components/AppNavSheet";
 import { useToast } from "@/hooks/use-toast";
 import { format, eachDayOfInterval, isWeekend, isSameDay, parseISO, addDays } from "date-fns";
 import { GenerateLessonDialog } from "@/components/GenerateLessonDialog";
