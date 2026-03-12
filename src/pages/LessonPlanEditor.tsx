@@ -125,6 +125,23 @@ const LessonPlanEditor = () => {
     setLesson({ ...lesson, activities: lesson.activities.filter((_, i) => i !== idx) });
   };
 
+  const addVocabulary = () => {
+    if (!lesson) return;
+    setLesson({ ...lesson, vocabulary: [...lesson.vocabulary, { term: "", definition: "" }] });
+  };
+
+  const updateVocabulary = (idx: number, field: keyof VocabularyItem, value: string) => {
+    if (!lesson) return;
+    const vocab = [...lesson.vocabulary];
+    vocab[idx] = { ...vocab[idx], [field]: value };
+    setLesson({ ...lesson, vocabulary: vocab });
+  };
+
+  const removeVocabulary = (idx: number) => {
+    if (!lesson) return;
+    setLesson({ ...lesson, vocabulary: lesson.vocabulary.filter((_, i) => i !== idx) });
+  };
+
   const handleStandardsChange = async (selected: { code: string; description: string }[]) => {
     if (!id) return;
     // Delete existing then insert new
