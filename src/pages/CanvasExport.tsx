@@ -20,6 +20,7 @@ const CanvasExport = () => {
         <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg" onClick={() => navigate("/home")}>
           <ArrowLeft className="h-4 w-4" />
         </Button>
+        <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <FileText className="h-4 w-4 text-primary" />
           </div>
