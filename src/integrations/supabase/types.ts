@@ -55,6 +55,7 @@ export type Database = {
           materials: string | null
           notes: string | null
           objectives: string | null
+          resources: Json | null
           sort_order: number | null
           title: string
           unit_id: string | null
@@ -73,6 +74,7 @@ export type Database = {
           materials?: string | null
           notes?: string | null
           objectives?: string | null
+          resources?: Json | null
           sort_order?: number | null
           title: string
           unit_id?: string | null
@@ -91,6 +93,7 @@ export type Database = {
           materials?: string | null
           notes?: string | null
           objectives?: string | null
+          resources?: Json | null
           sort_order?: number | null
           title?: string
           unit_id?: string | null
