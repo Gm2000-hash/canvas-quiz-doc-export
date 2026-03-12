@@ -250,6 +250,7 @@ const UnitDetail = () => {
     }
   }, [lessons, toast]);
 
+  const getLessonForDay = (day: Date) => {
     return lessons.find(l => l.lesson_date && isSameDay(parseISO(l.lesson_date), day));
   };
 
