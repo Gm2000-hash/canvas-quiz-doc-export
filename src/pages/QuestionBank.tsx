@@ -390,7 +390,7 @@ const QuestionBank = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-3">
+      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
         <Breadcrumbs items={[{ label: "Question Bank" }]} />
       </header>
