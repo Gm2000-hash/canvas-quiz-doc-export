@@ -101,6 +101,19 @@ export default function Home() {
           </p>
         </div>
 
+        <div className="mb-8 mx-auto max-w-lg rounded-2xl border border-primary/15 bg-primary/5 p-5 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Lightbulb className="h-4 w-4 text-primary" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+              {todayTip.author === "Tip" ? "Daily Teaching Tip" : "Daily Inspiration"}
+            </span>
+          </div>
+          <p className="text-sm text-foreground leading-relaxed italic">"{todayTip.text}"</p>
+          {todayTip.author !== "Tip" && (
+            <p className="text-xs text-muted-foreground mt-2">— {todayTip.author}</p>
+          )}
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
           {tiles.map((tile) => (
             <button
