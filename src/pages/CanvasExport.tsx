@@ -1,19 +1,25 @@
 import { SettingsForm } from "@/components/SettingsForm";
 import { QuizBrowser } from "@/components/QuizBrowser";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
-import { FileText } from "lucide-react";
+import { ArrowLeft, FileText } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { Button } from "@/components/ui/button";
 
 const CanvasExport = () => {
   const { config, setConfig, isConfigured } = useCanvasConfig();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
         <AppNavSheet showSettings={isConfigured} onOpenSettings={() => setSettingsOpen(true)} />
+        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg" onClick={() => navigate("/home")}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <FileText className="h-4 w-4 text-primary" />

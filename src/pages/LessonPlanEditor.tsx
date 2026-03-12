@@ -222,6 +222,9 @@ const LessonPlanEditor = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-2">
         <AppNavSheet />
+        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg" onClick={() => lesson.unit_id ? navigate(`/units/${lesson.unit_id}`) : navigate("/lesson-planner")}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
         <div className="flex-1 min-w-0">
           <Input
             value={lesson.title}

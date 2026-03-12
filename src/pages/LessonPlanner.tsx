@@ -189,6 +189,9 @@ const LessonPlanner = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
+        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg" onClick={() => navigate("/home")}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <Layers className="h-4 w-4 text-primary" />
