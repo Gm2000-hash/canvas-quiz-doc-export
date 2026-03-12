@@ -55,6 +55,15 @@ const Index = () => {
             variant="ghost"
             size="sm"
             className="text-primary hover:bg-accent rounded-xl gap-2 font-medium"
+            onClick={() => navigate("/lesson-planner")}
+          >
+            <Layers className="h-4 w-4" />
+            <span className="hidden sm:inline">Lesson Planner</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-primary hover:bg-accent rounded-xl gap-2 font-medium"
             onClick={() => navigate("/question-bank")}
           >
             <BookOpen className="h-4 w-4" />
