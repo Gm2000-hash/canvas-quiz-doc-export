@@ -25,6 +25,31 @@ const COURSE_COLORS = [
   'bg-[hsl(190,70%,42%)]',
 ];
 
+const ALL_COLORS = [
+  { label: 'Blue', class: 'bg-primary', swatch: 'hsl(211,100%,50%)' },
+  { label: 'Sky', class: 'bg-[hsl(210,70%,50%)]', swatch: 'hsl(210,70%,50%)' },
+  { label: 'Rose', class: 'bg-[hsl(340,65%,47%)]', swatch: 'hsl(340,65%,47%)' },
+  { label: 'Purple', class: 'bg-[hsl(262,60%,50%)]', swatch: 'hsl(262,60%,50%)' },
+  { label: 'Orange', class: 'bg-[hsl(25,85%,55%)]', swatch: 'hsl(25,85%,55%)' },
+  { label: 'Teal', class: 'bg-[hsl(190,70%,42%)]', swatch: 'hsl(190,70%,42%)' },
+  { label: 'Green', class: 'bg-[hsl(142,60%,40%)]', swatch: 'hsl(142,60%,40%)' },
+  { label: 'Amber', class: 'bg-[hsl(45,90%,48%)]', swatch: 'hsl(45,90%,48%)' },
+  { label: 'Indigo', class: 'bg-[hsl(230,65%,52%)]', swatch: 'hsl(230,65%,52%)' },
+  { label: 'Slate', class: 'bg-[hsl(215,20%,40%)]', swatch: 'hsl(215,20%,40%)' },
+  { label: 'Fuchsia', class: 'bg-[hsl(292,60%,50%)]', swatch: 'hsl(292,60%,50%)' },
+  { label: 'Red', class: 'bg-[hsl(0,70%,50%)]', swatch: 'hsl(0,70%,50%)' },
+];
+
+function loadCourseColors(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem('course-tile-colors') || '{}');
+  } catch { return {}; }
+}
+
+function saveCourseColors(map: Record<string, string>) {
+  localStorage.setItem('course-tile-colors', JSON.stringify(map));
+}
+
 export function QuizBrowser({ config }: QuizBrowserProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
