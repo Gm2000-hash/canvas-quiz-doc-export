@@ -6,12 +6,10 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sh
 import { useState } from "react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 const CanvasExport = () => {
   const { config, setConfig, isConfigured } = useCanvasConfig();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
