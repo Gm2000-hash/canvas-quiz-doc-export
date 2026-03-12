@@ -445,6 +445,17 @@ const LessonPlanEditor = () => {
 
         <div className="h-8" />
       </main>
+
+      <GenerateEscapeRoomDialog
+        open={escapeRoomOpen}
+        onOpenChange={setEscapeRoomOpen}
+        context={{
+          title: lesson.title,
+          topic: lesson.title,
+          objectives: lesson.objectives,
+          vocabulary: lesson.vocabulary.map(v => v.term).join(", "),
+        }}
+      />
     </div>
   );
 };
