@@ -64,7 +64,7 @@ const LessonPlanEditor = () => {
       }
       setLesson({
         ...lessonRes.data,
-        activities: (Array.isArray(lessonRes.data.activities) ? lessonRes.data.activities : []) as Activity[],
+        activities: (Array.isArray(lessonRes.data.activities) ? lessonRes.data.activities : []) as unknown as Activity[],
       });
       setStandards(stdsRes.data || []);
       setLoading(false);
