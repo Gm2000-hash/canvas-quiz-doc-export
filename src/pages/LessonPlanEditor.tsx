@@ -357,25 +357,13 @@ const LessonPlanEditor = () => {
               </span>
             </div>
           </CardHeader>
-          <CardContent className="space-y-3">
-            {lesson.activities.map((act, idx) => (
-              <div key={idx} className="flex gap-2 items-start p-3 rounded-xl bg-accent/50">
-                <div className="flex-1 space-y-2">
-                  <div className="flex gap-2">
-                    <Input placeholder="Activity name" value={act.name} onChange={e => updateActivity(idx, "name", e.target.value)} className="text-sm h-8" />
-                    <Input type="number" value={act.duration} onChange={e => updateActivity(idx, "duration", parseInt(e.target.value) || 0)} className="w-20 text-sm h-8" placeholder="min" />
-                  </div>
-                  <Textarea placeholder="Description..." value={act.description} onChange={e => updateActivity(idx, "description", e.target.value)} rows={2} className="text-sm" />
-                </div>
-                <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeActivity(idx)}>
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            ))}
-            <Button variant="outline" size="sm" className="w-full rounded-xl gap-1.5" onClick={addActivity}>
-              <Plus className="h-3.5 w-3.5" /> Add Activity
-            </Button>
-          </CardContent>
+          <ActivityList
+            activities={lesson.activities}
+            onReorder={(acts) => setLesson({ ...lesson, activities: acts })}
+            onUpdate={updateActivity}
+            onRemove={removeActivity}
+            onAdd={addActivity}
+          />
         </Card>
 
         {/* Resources & Links */}
