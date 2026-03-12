@@ -225,26 +225,30 @@ export function WeeklyDashboard() {
                   <div className="h-16 rounded-xl bg-muted/50 animate-pulse" />
                 ) : (
                   <>
-                    {dayLessons.map(lesson => (
-                      <Card
-                        key={lesson.id}
-                        className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] border-primary/15 bg-primary/[0.03]"
-                        onClick={() => navigate(`/lessons/${lesson.id}`)}
-                      >
-                        <CardContent className="p-2">
-                          <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug">{lesson.title}</p>
-                          <div className="flex items-center gap-1 mt-1">
-                            <Clock className="h-2.5 w-2.5 text-muted-foreground" />
-                            <span className="text-[10px] text-muted-foreground">{lesson.duration_minutes}m</span>
-                          </div>
-                          {lesson.unit_title && (
-                            <Badge variant="secondary" className="text-[9px] px-1 py-0 mt-1 max-w-full truncate">
-                              {lesson.unit_title}
-                            </Badge>
-                          )}
-                        </CardContent>
-                      </Card>
-                    ))}
+                    {dayLessons.map(lesson => {
+                      const color = getUnitColor(lesson.unit_id);
+                      return (
+                        <Card
+                          key={lesson.id}
+                          className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] border ${color.border} ${color.bg}`}
+                          onClick={() => navigate(`/lessons/${lesson.id}`)}
+                        >
+                          <CardContent className="p-2">
+                            <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug">{lesson.title}</p>
+                            <div className="flex items-center gap-1 mt-1">
+                              <Clock className="h-2.5 w-2.5 text-muted-foreground" />
+                              <span className="text-[10px] text-muted-foreground">{lesson.duration_minutes}m</span>
+                            </div>
+                            {lesson.unit_title && (
+                              <div className="flex items-center gap-1 mt-1">
+                                <div className={`h-1.5 w-1.5 rounded-full shrink-0 ${color.dot}`} />
+                                <span className={`text-[9px] truncate ${color.text}`}>{lesson.unit_title}</span>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                     <button
                       onClick={() => openQuickAdd(day)}
                       className="w-full h-7 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-colors"
