@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Lightbulb, Send, Loader2, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Lightbulb, Send, Loader2, Trash2, ArrowRight, Target, CheckCircle, Users, StickyNote, Clock, Copy } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 function renderMarkdown(text: string) {
   // Split into lines, process block-level elements
