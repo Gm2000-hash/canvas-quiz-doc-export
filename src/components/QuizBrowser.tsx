@@ -184,8 +184,8 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
 
   // Course detail / quiz view
   if (selectedCourse) {
-    const colorIdx = courses.indexOf(selectedCourse) % COURSE_COLORS.length;
-    const colorClass = COURSE_COLORS[colorIdx];
+    const colorIdx = courses.indexOf(selectedCourse);
+    const colorClass = getColorForCourse(selectedCourse.id, colorIdx);
     const filteredQuestions = questions.filter(q => q.question_type !== 'text_only_question');
 
     return (
