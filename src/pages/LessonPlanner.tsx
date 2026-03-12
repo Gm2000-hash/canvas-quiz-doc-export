@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { WeeklyDashboard } from "@/components/WeeklyDashboard";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
