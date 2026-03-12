@@ -116,7 +116,7 @@ export function WeeklyDashboard() {
     setQuickAddSaving(true);
     const { data, error } = await supabase.from("lesson_plans").insert({
       user_id: user.id,
-      unit_id: quickAddUnitId || null,
+      unit_id: quickAddUnitId && quickAddUnitId !== "none" ? quickAddUnitId : null,
       title: quickAddTitle.trim(),
       lesson_date: quickAddDate,
       duration_minutes: 50,
