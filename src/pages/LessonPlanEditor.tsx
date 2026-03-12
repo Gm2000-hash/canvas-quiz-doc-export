@@ -93,8 +93,9 @@ const LessonPlanEditor = () => {
       assessment: lesson.assessment,
       differentiation: lesson.differentiation,
       notes: lesson.notes,
+      vocabulary: lesson.vocabulary as unknown as Json,
       updated_at: new Date().toISOString(),
-    }).eq("id", lesson.id);
+    } as any).eq("id", lesson.id);
 
     setSaving(false);
     if (error) {
