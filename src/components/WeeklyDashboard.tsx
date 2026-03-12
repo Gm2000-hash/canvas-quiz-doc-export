@@ -297,12 +297,19 @@ export function WeeklyDashboard() {
                   </div>
                   {!loading && !isWeekend && inMonth && (
                     <>
-                      {dayLessons.slice(0, 2).map(lesson => (
-                        <div
-                          key={lesson.id}
-                          onClick={() => navigate(`/lessons/${lesson.id}`)}
-                          className="text-[9px] leading-tight px-1 py-0.5 rounded bg-primary/10 text-foreground cursor-pointer hover:bg-primary/20 transition-colors truncate mb-0.5"
-                          title={lesson.title}
+                      {dayLessons.slice(0, 2).map(lesson => {
+                        const color = getUnitColor(lesson.unit_id);
+                        return (
+                          <div
+                            key={lesson.id}
+                            onClick={() => navigate(`/lessons/${lesson.id}`)}
+                            className={`text-[9px] leading-tight px-1 py-0.5 rounded cursor-pointer transition-colors truncate mb-0.5 ${color.bg} ${color.text} hover:opacity-80`}
+                            title={lesson.title}
+                          >
+                            {lesson.title}
+                          </div>
+                        );
+                      })}
                         >
                           {lesson.title}
                         </div>
