@@ -83,6 +83,7 @@ const LessonPlanner = () => {
       .from("units")
       .select("*")
       .eq("user_id", user.id)
+      .order("sort_order", { ascending: true })
       .order("created_at", { ascending: false });
     if (error) {
       toast({ title: "Error loading units", description: error.message, variant: "destructive" });
