@@ -17,6 +17,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { exportLessonToDocx } from "@/lib/export-lesson-docx";
 import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import type { Json } from "@/integrations/supabase/types";
 
 interface Activity {
@@ -222,17 +223,12 @@ const LessonPlanEditor = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-2">
         <AppNavSheet />
-        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg" onClick={() => lesson.unit_id ? navigate(`/units/${lesson.unit_id}`) : navigate("/lesson-planner")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1 min-w-0">
-          <Input
-            value={lesson.title}
-            onChange={e => setLesson({ ...lesson, title: e.target.value })}
-            className="border-none bg-transparent text-base font-semibold h-8 px-0 focus-visible:ring-0"
-            placeholder="Lesson title..."
-          />
-        </div>
+        <Breadcrumbs items={[
+          { label: "Lesson Planner", path: "/lesson-planner" },
+          ...(lesson.unit_id ? [{ label: "Unit", path: `/units/${lesson.unit_id}` }] : []),
+          { label: lesson.title || "Untitled Lesson" },
+        ]} />
+        <div className="flex-1" />
         <BrainstormChat
           lessonContext={{
             title: lesson.title,
@@ -273,6 +269,13 @@ const LessonPlanEditor = () => {
       </header>
 
       <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto w-full space-y-4">
+        {/* Title */}
+        <Input
+          value={lesson.title}
+          onChange={e => setLesson({ ...lesson, title: e.target.value })}
+          className="text-lg font-semibold h-10 border-none bg-transparent px-0 focus-visible:ring-0"
+          placeholder="Lesson title..."
+        />
         {/* Meta row */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div className="space-y-1.5">

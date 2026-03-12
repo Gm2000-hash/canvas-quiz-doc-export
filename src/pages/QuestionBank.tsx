@@ -19,6 +19,7 @@ import { AppNavSheet } from "@/components/AppNavSheet";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateQuestionsDialog from "@/components/GenerateQuestionsDialog";
 import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
@@ -391,27 +392,8 @@ const QuestionBank = () => {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-3">
         <AppNavSheet />
-        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg" onClick={() => navigate("/")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
-            <BookOpen className="h-4 w-4 text-primary" />
-          </div>
-          <span className="text-base font-semibold text-foreground">Question Bank</span>
-        </div>
+        <Breadcrumbs items={[{ label: "Question Bank" }]} />
       </header>
-
-      {/* Breadcrumb navigation */}
-      <nav className="max-w-5xl mx-auto px-4 sm:px-6 pt-3 pb-0">
-        <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <li>
-            <button className="hover:text-primary transition-colors" onClick={() => navigate("/")}>Home</button>
-          </li>
-          <li><ChevronRight className="h-3.5 w-3.5" /></li>
-          <li className="font-medium text-foreground">Question Bank</li>
-        </ol>
-      </nav>
 
       <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-6">
         <div className="flex flex-col sm:flex-row gap-3">

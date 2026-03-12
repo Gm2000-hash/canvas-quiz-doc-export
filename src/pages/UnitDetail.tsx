@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format, eachDayOfInterval, isWeekend, isSameDay, parseISO, addDays } from "date-fns";
 import { GenerateLessonDialog } from "@/components/GenerateLessonDialog";
 import { exportUnitToDocx } from "@/lib/export-lesson-docx";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import type { Json } from "@/integrations/supabase/types";
 
 interface Unit {
@@ -268,15 +269,10 @@ const UnitDetail = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
-        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg" onClick={() => navigate("/lesson-planner")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex-1 min-w-0">
-          <span className="text-base font-semibold text-foreground truncate block">{unit.title}</span>
-          <span className="text-xs text-muted-foreground">
-            {[unit.discipline, unit.grade_level].filter(Boolean).join(" • ")}
-          </span>
-        </div>
+        <Breadcrumbs items={[
+          { label: "Lesson Planner", path: "/lesson-planner" },
+          { label: unit.title },
+        ]} />
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="sm" className="text-primary rounded-xl gap-1.5 text-sm" onClick={() => setGenerateOpen(true)}>
             <Sparkles className="h-4 w-4" /> AI Generate

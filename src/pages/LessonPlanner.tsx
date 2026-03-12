@@ -13,6 +13,7 @@ import { ArrowLeft, Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText, 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { WeeklyDashboard } from "@/components/WeeklyDashboard";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -189,15 +190,7 @@ const LessonPlanner = () => {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
-        <Button variant="ghost" size="icon" className="shrink-0 h-8 w-8 rounded-lg" onClick={() => navigate("/")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
-            <Layers className="h-4 w-4 text-primary" />
-          </div>
-          <span className="text-base font-semibold text-foreground">Lesson Planner</span>
-        </div>
+        <Breadcrumbs items={[{ label: "Lesson Planner" }]} />
       </header>
 
       <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
