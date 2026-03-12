@@ -127,7 +127,7 @@ const UnitDetail = () => {
     }
   }, [lessons, toast]);
 
-
+  const handleDragOver = useCallback((e: React.DragEvent, idx: number) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
     setOverIdx(idx);
