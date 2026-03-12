@@ -3,94 +3,44 @@ import { QuizBrowser } from "@/components/QuizBrowser";
 import { WeeklyDashboard } from "@/components/WeeklyDashboard";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { useAuth } from "@/hooks/useAuth";
-import { Settings, Menu, FileText, BookOpen, LogOut, Layers } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { FileText } from "lucide-react";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { AppNavSheet } from "@/components/AppNavSheet";
 
 const Index = () => {
   const { config, setConfig, isConfigured } = useCanvasConfig();
-  const { signOut } = useAuth();
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
-        {isConfigured && (
-          <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="text-foreground hover:bg-accent rounded-xl h-9 w-9">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-80 p-0">
-              <SheetHeader className="p-6 pb-2">
-                <SheetTitle>Settings</SheetTitle>
-              </SheetHeader>
-              <div className="p-4">
-                <SettingsForm
-                  config={config}
-                  onSave={(c) => {
-                    setConfig(c);
-                    setSettingsOpen(false);
-                  }}
-                  onDisconnect={() => {
-                    setConfig(null);
-                    setSettingsOpen(false);
-                  }}
-                />
-              </div>
-            </SheetContent>
-          </Sheet>
-        )}
+        <AppNavSheet showSettings={isConfigured} onOpenSettings={() => setSettingsOpen(true)} />
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
             <FileText className="h-4 w-4 text-primary" />
           </div>
           <span className="text-base font-semibold text-foreground">Canvas Quiz Exporter</span>
         </div>
-        <div className="ml-auto flex items-center gap-1">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-primary hover:bg-accent rounded-xl gap-2 font-medium"
-            onClick={() => navigate("/lesson-planner")}
-          >
-            <Layers className="h-4 w-4" />
-            <span className="hidden sm:inline">Lesson Planner</span>
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-primary hover:bg-accent rounded-xl gap-2 font-medium"
-            onClick={() => navigate("/question-bank")}
-          >
-            <BookOpen className="h-4 w-4" />
-            <span className="hidden sm:inline">Question Bank</span>
-          </Button>
-          {isConfigured && (
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-muted-foreground hover:bg-accent rounded-xl h-9 w-9"
-              onClick={() => setSettingsOpen(true)}
-            >
-              <Settings className="h-4.5 w-4.5" />
-            </Button>
-          )}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-muted-foreground hover:bg-accent rounded-xl h-9 w-9"
-            onClick={signOut}
-            title="Sign out"
-          >
-            <LogOut className="h-4.5 w-4.5" />
-          </Button>
-        </div>
       </header>
+
+      {/* Settings sheet (separate from nav) */}
+      {isConfigured && (
+        <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
+          <SheetContent side="left" className="w-80 p-0">
+            <SheetHeader className="p-6 pb-2">
+              <SheetTitle>Settings</SheetTitle>
+            </SheetHeader>
+            <div className="p-4">
+              <SettingsForm
+                config={config}
+                onSave={(c) => { setConfig(c); setSettingsOpen(false); }}
+                onDisconnect={() => { setConfig(null); setSettingsOpen(false); }}
+              />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
 
       <main className="flex-1">
         {!isConfigured ? (
