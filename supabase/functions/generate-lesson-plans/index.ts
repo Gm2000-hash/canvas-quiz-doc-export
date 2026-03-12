@@ -76,10 +76,10 @@ Make these detailed enough that a substitute teacher with no science background 
                       properties: {
                         title: { type: "string", description: "Lesson title" },
                         duration_minutes: { type: "number", description: "Lesson duration in minutes" },
-                        objectives: { type: "string", description: "Learning objectives, one per line" },
+                        objectives: { type: "string", description: "EXACTLY 3 specific, measurable learning objectives using Bloom's taxonomy verbs, one per line" },
                         activities: {
                           type: "string",
-                          description: "JSON string of activities array. Each activity has name (string), duration (number in minutes), and description (string — this MUST be a detailed teacher script of 3-8 sentences including what to say, questions to ask, and step-by-step instructions). Example: [{\"name\":\"Warm-up: Activating Prior Knowledge\",\"duration\":5,\"description\":\"Begin by projecting the question...\"}]",
+                          description: "JSON string of AT LEAST 4 activities. Each activity has name (string), duration (number in minutes), and description (string — this MUST be 8-15 sentences including: KEY TALKING POINTS as bullet points, BACKGROUND INFORMATION with 3-5 sentences of deep content knowledge covering scientific explanations/real-world connections/misconceptions/analogies, specific questions to ask with anticipated responses, and step-by-step procedures). Example: [{\"name\":\"Warm-up: Activating Prior Knowledge\",\"duration\":5,\"description\":\"KEY TALKING POINTS:\\n• Energy cannot be created or destroyed...\\n\\nBACKGROUND INFORMATION: Energy transfer is a fundamental concept...\\n\\nAsk students: What happens when you rub your hands together?\"}]",
                         },
                         materials: { type: "string", description: "Detailed materials list with quantities" },
                         assessment: { type: "string", description: "Specific formative and summative assessment strategies with example questions, exit ticket prompts, or rubric criteria" },
