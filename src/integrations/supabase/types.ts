@@ -194,6 +194,7 @@ export type Database = {
           discipline: string | null
           grade_level: string | null
           id: string
+          sort_order: number | null
           title: string
           updated_at: string
           user_id: string
@@ -206,6 +207,7 @@ export type Database = {
           discipline?: string | null
           grade_level?: string | null
           id?: string
+          sort_order?: number | null
           title: string
           updated_at?: string
           user_id: string
@@ -218,6 +220,7 @@ export type Database = {
           discipline?: string | null
           grade_level?: string | null
           id?: string
+          sort_order?: number | null
           title?: string
           updated_at?: string
           user_id?: string
