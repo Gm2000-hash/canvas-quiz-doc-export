@@ -335,6 +335,17 @@ const UnitDetail = () => {
         gradeLevel={unit.grade_level}
         onGenerated={fetchData}
       />
+
+      <GenerateEscapeRoomDialog
+        open={escapeRoomOpen}
+        onOpenChange={setEscapeRoomOpen}
+        context={{
+          title: unit.title,
+          topic: unit.title,
+          gradeLevel: unit.grade_level,
+          discipline: unit.discipline,
+        }}
+      />
     </div>
   );
 };

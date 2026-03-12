@@ -17,3 +17,6 @@ verify_jwt = false
 
 [functions.lesson-brainstorm]
 verify_jwt = false
+
+[functions.generate-escape-room]
+verify_jwt = false
