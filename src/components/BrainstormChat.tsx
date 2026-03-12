@@ -109,12 +109,13 @@ const QUICK_PROMPTS = [
   "What are common student misconceptions about this topic?",
 ];
 
-export function BrainstormChat({ lessonContext }: Props) {
+export function BrainstormChat({ lessonContext, onCopyToField }: Props) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (scrollRef.current) {
