@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Plus, Trash2, Loader2, GripVertical, Highlighter, MousePointerClick, Lightbulb, ChevronRight } from "lucide-react";
+import { AppNavSheet } from "@/components/AppNavSheet";
 import { QUESTION_TYPE_CATEGORIES, ALL_QUESTION_TYPES, createDefaultAnswers, isISATType, getQuestionTypeLabel } from "@/lib/question-types";
 import { createQuestion, suggestDokAndBlooms } from "@/lib/question-bank";
 import { StandardsPicker, CognitiveLevelPicker } from "@/components/QuestionTagPickers";
