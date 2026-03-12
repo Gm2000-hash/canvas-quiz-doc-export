@@ -2,7 +2,7 @@ import { SettingsForm } from "@/components/SettingsForm";
 import { QuizBrowser } from "@/components/QuizBrowser";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { useAuth } from "@/hooks/useAuth";
-import { Settings, Menu, FileText, BookOpen, LogOut } from "lucide-react";
+import { Settings, Menu, FileText, BookOpen, LogOut, Layers } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
