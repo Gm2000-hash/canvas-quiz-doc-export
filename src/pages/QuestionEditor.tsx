@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, Plus, Trash2, Loader2, GripVertical, Highlighter, MousePointerClick, Lightbulb, ChevronRight } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 
 import { QUESTION_TYPE_CATEGORIES, ALL_QUESTION_TYPES, createDefaultAnswers, isISATType, getQuestionTypeLabel } from "@/lib/question-types";
 import { createQuestion, suggestDokAndBlooms } from "@/lib/question-bank";
@@ -70,7 +71,7 @@ export default function QuestionEditor() {
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
-        <span className="text-base font-semibold text-foreground">Question Editor</span>
+        <Breadcrumbs items={[{ label: "Question Bank", path: "/question-bank" }, { label: "Create Question" }]} />
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={saving} className="rounded-xl font-medium">
             {saving && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
