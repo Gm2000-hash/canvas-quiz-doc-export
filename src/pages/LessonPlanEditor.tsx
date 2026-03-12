@@ -193,6 +193,22 @@ const LessonPlanEditor = () => {
 
   const totalActivityTime = lesson?.activities.reduce((s, a) => s + (a.duration || 0), 0) || 0;
 
+  const handleCopyToField = (field: LessonField, content: string) => {
+    if (!lesson) return;
+    if (field === "activities") {
+      // Add as a new activity with the AI content as description
+      setLesson({
+        ...lesson,
+        activities: [...lesson.activities, { name: "AI Suggestion", duration: 10, description: content }],
+      });
+    } else {
+      // Append to existing text fields
+      const current = lesson[field] || "";
+      const separator = current.trim() ? "\n\n" : "";
+      setLesson({ ...lesson, [field]: current + separator + content });
+    }
+  };
+
   if (loading || !lesson) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
