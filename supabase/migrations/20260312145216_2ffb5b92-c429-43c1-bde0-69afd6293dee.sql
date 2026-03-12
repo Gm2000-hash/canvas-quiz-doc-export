@@ -1,0 +1,1 @@
+ALTER TABLE public.lesson_plans ADD COLUMN resources jsonb DEFAULT '[]'::jsonb;

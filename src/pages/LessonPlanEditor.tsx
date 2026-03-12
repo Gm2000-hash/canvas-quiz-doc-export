@@ -8,8 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2 } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { BrainstormChat } from "@/components/BrainstormChat";
 import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { exportLessonToDocx } from "@/lib/export-lesson-docx";
@@ -26,6 +28,12 @@ interface VocabularyItem {
   definition: string;
 }
 
+interface ResourceItem {
+  title: string;
+  url: string;
+  type: "video" | "article" | "activity" | "other";
+}
+
 interface LessonPlan {
   id: string;
   unit_id: string | null;
@@ -39,6 +47,7 @@ interface LessonPlan {
   differentiation: string;
   notes: string;
   vocabulary: VocabularyItem[];
+  resources: ResourceItem[];
 }
 
 interface Standard {
@@ -46,6 +55,13 @@ interface Standard {
   ngss_code: string;
   ngss_description: string;
 }
+
+const RESOURCE_TYPE_ICONS = {
+  video: Video,
+  article: FileText,
+  activity: Gamepad2,
+  other: Link2,
+};
 
 const LessonPlanEditor = () => {
   const { id } = useParams<{ id: string }>();
@@ -60,7 +76,7 @@ const LessonPlanEditor = () => {
 
   useEffect(() => {
     if (!user || !id) return;
-    const fetch = async () => {
+    const fetchData = async () => {
       const [lessonRes, stdsRes] = await Promise.all([
         supabase.from("lesson_plans").select("*").eq("id", id).eq("user_id", user.id).single(),
         supabase.from("lesson_plan_standards").select("*").eq("lesson_plan_id", id),
@@ -70,15 +86,17 @@ const LessonPlanEditor = () => {
         navigate(-1);
         return;
       }
+      const d = lessonRes.data as any;
       setLesson({
         ...lessonRes.data,
-        activities: (Array.isArray(lessonRes.data.activities) ? lessonRes.data.activities : []) as unknown as Activity[],
-        vocabulary: (Array.isArray((lessonRes.data as any).vocabulary) ? (lessonRes.data as any).vocabulary : []) as VocabularyItem[],
+        activities: (Array.isArray(d.activities) ? d.activities : []) as Activity[],
+        vocabulary: (Array.isArray(d.vocabulary) ? d.vocabulary : []) as VocabularyItem[],
+        resources: (Array.isArray(d.resources) ? d.resources : []) as ResourceItem[],
       });
       setStandards(stdsRes.data || []);
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, [user, id]);
 
   const handleSave = async () => {
@@ -95,6 +113,7 @@ const LessonPlanEditor = () => {
       differentiation: lesson.differentiation,
       notes: lesson.notes,
       vocabulary: lesson.vocabulary as unknown as Json,
+      resources: lesson.resources as unknown as Json,
       updated_at: new Date().toISOString(),
     } as any).eq("id", lesson.id);
 
@@ -108,10 +127,7 @@ const LessonPlanEditor = () => {
 
   const addActivity = () => {
     if (!lesson) return;
-    setLesson({
-      ...lesson,
-      activities: [...lesson.activities, { name: "", duration: 10, description: "" }],
-    });
+    setLesson({ ...lesson, activities: [...lesson.activities, { name: "", duration: 10, description: "" }] });
   };
 
   const updateActivity = (idx: number, field: keyof Activity, value: string | number) => {
@@ -143,9 +159,25 @@ const LessonPlanEditor = () => {
     setLesson({ ...lesson, vocabulary: lesson.vocabulary.filter((_, i) => i !== idx) });
   };
 
+  const addResource = () => {
+    if (!lesson) return;
+    setLesson({ ...lesson, resources: [...lesson.resources, { title: "", url: "", type: "other" }] });
+  };
+
+  const updateResource = (idx: number, field: keyof ResourceItem, value: string) => {
+    if (!lesson) return;
+    const res = [...lesson.resources];
+    res[idx] = { ...res[idx], [field]: value };
+    setLesson({ ...lesson, resources: res });
+  };
+
+  const removeResource = (idx: number) => {
+    if (!lesson) return;
+    setLesson({ ...lesson, resources: lesson.resources.filter((_, i) => i !== idx) });
+  };
+
   const handleStandardsChange = async (selected: { code: string; description: string }[]) => {
     if (!id) return;
-    // Delete existing then insert new
     await supabase.from("lesson_plan_standards").delete().eq("lesson_plan_id", id);
     if (selected.length > 0) {
       await supabase.from("lesson_plan_standards").insert(
@@ -168,7 +200,7 @@ const LessonPlanEditor = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
+      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-2">
         <AppNavSheet />
         <div className="flex-1 min-w-0">
           <Input
@@ -178,6 +210,14 @@ const LessonPlanEditor = () => {
             placeholder="Lesson title..."
           />
         </div>
+        <BrainstormChat
+          lessonContext={{
+            title: lesson.title,
+            objectives: lesson.objectives,
+            standards: standards.map(s => s.ngss_code).join(", ") || "None",
+            duration: lesson.duration_minutes,
+          }}
+        />
         <Button
           size="sm"
           variant="outline"
@@ -264,19 +304,8 @@ const LessonPlanEditor = () => {
             {lesson.vocabulary.map((v, idx) => (
               <div key={idx} className="flex gap-2 items-start p-2.5 rounded-xl bg-accent/50">
                 <div className="flex-1 space-y-1.5">
-                  <Input
-                    placeholder="Term"
-                    value={v.term}
-                    onChange={e => updateVocabulary(idx, "term", e.target.value)}
-                    className="text-sm h-8 font-medium"
-                  />
-                  <Textarea
-                    placeholder="Definition..."
-                    value={v.definition}
-                    onChange={e => updateVocabulary(idx, "definition", e.target.value)}
-                    rows={2}
-                    className="text-sm"
-                  />
+                  <Input placeholder="Term" value={v.term} onChange={e => updateVocabulary(idx, "term", e.target.value)} className="text-sm h-8 font-medium" />
+                  <Textarea placeholder="Definition..." value={v.definition} onChange={e => updateVocabulary(idx, "definition", e.target.value)} rows={2} className="text-sm" />
                 </div>
                 <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeVocabulary(idx)}>
                   <Trash2 className="h-3.5 w-3.5" />
@@ -289,6 +318,7 @@ const LessonPlanEditor = () => {
           </CardContent>
         </Card>
 
+        {/* Activities & Timing */}
         <Card>
           <CardHeader className="pb-3">
             <div className="flex items-center justify-between">
@@ -303,27 +333,10 @@ const LessonPlanEditor = () => {
               <div key={idx} className="flex gap-2 items-start p-3 rounded-xl bg-accent/50">
                 <div className="flex-1 space-y-2">
                   <div className="flex gap-2">
-                    <Input
-                      placeholder="Activity name"
-                      value={act.name}
-                      onChange={e => updateActivity(idx, "name", e.target.value)}
-                      className="text-sm h-8"
-                    />
-                    <Input
-                      type="number"
-                      value={act.duration}
-                      onChange={e => updateActivity(idx, "duration", parseInt(e.target.value) || 0)}
-                      className="w-20 text-sm h-8"
-                      placeholder="min"
-                    />
+                    <Input placeholder="Activity name" value={act.name} onChange={e => updateActivity(idx, "name", e.target.value)} className="text-sm h-8" />
+                    <Input type="number" value={act.duration} onChange={e => updateActivity(idx, "duration", parseInt(e.target.value) || 0)} className="w-20 text-sm h-8" placeholder="min" />
                   </div>
-                  <Textarea
-                    placeholder="Description..."
-                    value={act.description}
-                    onChange={e => updateActivity(idx, "description", e.target.value)}
-                    rows={2}
-                    className="text-sm"
-                  />
+                  <Textarea placeholder="Description..." value={act.description} onChange={e => updateActivity(idx, "description", e.target.value)} rows={2} className="text-sm" />
                 </div>
                 <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeActivity(idx)}>
                   <Trash2 className="h-3.5 w-3.5" />
@@ -336,18 +349,55 @@ const LessonPlanEditor = () => {
           </CardContent>
         </Card>
 
+        {/* Resources & Links */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2"><Link2 className="h-4 w-4 text-primary" /> Resources & Links</CardTitle>
+              <span className="text-xs text-muted-foreground">{lesson.resources.length} links</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {lesson.resources.map((res, idx) => {
+              const Icon = RESOURCE_TYPE_ICONS[res.type] || Link2;
+              return (
+                <div key={idx} className="flex gap-2 items-start p-2.5 rounded-xl bg-accent/50">
+                  <div className="flex-1 space-y-1.5">
+                    <div className="flex gap-2">
+                      <Input placeholder="Resource title" value={res.title} onChange={e => updateResource(idx, "title", e.target.value)} className="text-sm h-8" />
+                      <Select value={res.type} onValueChange={v => updateResource(idx, "type", v)}>
+                        <SelectTrigger className="w-28 h-8 text-xs">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="video"><span className="flex items-center gap-1.5"><Video className="h-3 w-3" /> Video</span></SelectItem>
+                          <SelectItem value="article"><span className="flex items-center gap-1.5"><FileText className="h-3 w-3" /> Article</span></SelectItem>
+                          <SelectItem value="activity"><span className="flex items-center gap-1.5"><Gamepad2 className="h-3 w-3" /> Activity</span></SelectItem>
+                          <SelectItem value="other"><span className="flex items-center gap-1.5"><Link2 className="h-3 w-3" /> Other</span></SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <Input placeholder="https://..." value={res.url} onChange={e => updateResource(idx, "url", e.target.value)} className="text-sm h-8" />
+                  </div>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeResource(idx)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              );
+            })}
+            <Button variant="outline" size="sm" className="w-full rounded-xl gap-1.5" onClick={addResource}>
+              <Plus className="h-3.5 w-3.5" /> Add Resource
+            </Button>
+          </CardContent>
+        </Card>
+
         {/* Materials */}
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /> Materials & Resources</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea
-              placeholder="List materials, links, handouts..."
-              value={lesson.materials}
-              onChange={e => setLesson({ ...lesson, materials: e.target.value })}
-              rows={3}
-            />
+            <Textarea placeholder="List materials, links, handouts..." value={lesson.materials} onChange={e => setLesson({ ...lesson, materials: e.target.value })} rows={3} />
           </CardContent>
         </Card>
 
@@ -357,12 +407,7 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Assessment</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea
-              placeholder="How will you assess student understanding?"
-              value={lesson.assessment}
-              onChange={e => setLesson({ ...lesson, assessment: e.target.value })}
-              rows={3}
-            />
+            <Textarea placeholder="How will you assess student understanding?" value={lesson.assessment} onChange={e => setLesson({ ...lesson, assessment: e.target.value })} rows={3} />
           </CardContent>
         </Card>
 
@@ -372,12 +417,7 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> Differentiation</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea
-              placeholder="Accommodations, extensions, ELL support..."
-              value={lesson.differentiation}
-              onChange={e => setLesson({ ...lesson, differentiation: e.target.value })}
-              rows={3}
-            />
+            <Textarea placeholder="Accommodations, extensions, ELL support..." value={lesson.differentiation} onChange={e => setLesson({ ...lesson, differentiation: e.target.value })} rows={3} />
           </CardContent>
         </Card>
 
@@ -387,12 +427,7 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><StickyNote className="h-4 w-4 text-primary" /> Teacher Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea
-              placeholder="Additional notes, reminders..."
-              value={lesson.notes}
-              onChange={e => setLesson({ ...lesson, notes: e.target.value })}
-              rows={3}
-            />
+            <Textarea placeholder="Additional notes, reminders..." value={lesson.notes} onChange={e => setLesson({ ...lesson, notes: e.target.value })} rows={3} />
           </CardContent>
         </Card>
 
