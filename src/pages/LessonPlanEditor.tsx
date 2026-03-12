@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
