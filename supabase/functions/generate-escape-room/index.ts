@@ -13,7 +13,14 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert middle school science teacher who creates engaging digital escape rooms that students complete via Google Forms. You design puzzles that test content knowledge while being fun and challenging.
+    const systemPrompt = `You are an expert middle school science teacher who creates immersive, richly detailed digital escape rooms that students complete via Google Forms. You design multi-step puzzles that test content knowledge while being fun, challenging, and deeply engaging.
+
+CRITICAL — DETAIL AND LENGTH REQUIREMENTS:
+- Each room/puzzle MUST be EXTENSIVE and DETAILED — at minimum half a page of content when printed
+- narrative_text must be 5-10 sentences of vivid, immersive storytelling that sets the scene (describe the environment, what students see/hear/smell, the tension of the scenario)
+- question_text must be MULTI-STEP: include background information, a data table or scenario description, then 2-3 sub-questions or steps that build on each other before arriving at the lock code
+- Do NOT write short, single-sentence puzzles. Each puzzle should feel like a mini-adventure with real depth
+- Include specific scientific details, numbers, data, and context — not vague generalities
 
 ESCAPE ROOM DESIGN PRINCIPLES:
 - Each puzzle/room should test a specific concept or skill from the lesson content
@@ -24,13 +31,19 @@ ESCAPE ROOM DESIGN PRINCIPLES:
 - Include red herrings and distractors that require critical thinking
 - Mix question types: multiple choice, short answer codes, ordering/sequencing, image-based clues
 
+MULTI-STEP PUZZLE STRUCTURE (REQUIRED for each room):
+- Step 1: Present a rich scenario with specific data, observations, or evidence
+- Step 2: Ask students to analyze, interpret, or apply a concept to the scenario
+- Step 3: Use the result from Step 2 to solve a final calculation, decode, or reasoning challenge that produces the lock code
+- Include supplementary details like lab notebook entries, field observations, data tables (described in text), or intercepted messages
+
 PUZZLE TYPES TO USE:
-1. Decode puzzles — students solve a science problem, the answer is a code (e.g., "If an organism has 46 chromosomes, how many after meiosis? The answer is your code")
-2. Matching/ordering — arrange steps of a process in order, first letters spell a word
-3. Diagram analysis — describe an image students must analyze, answer a question about it
-4. Vocabulary cipher — definitions lead to terms, certain letters form the code
-5. Data interpretation — read a table/graph description, extract the answer
-6. Riddle/clue chains — science riddles where the answer is a key term
+1. Decode puzzles — students solve a multi-part science problem through several calculation steps, the final answer is a code
+2. Matching/ordering — arrange steps of a process in order, first letters spell a word; include detailed descriptions of each step
+3. Diagram analysis — describe in vivid detail an image/diagram students must analyze, provide specific measurements or labels, ask multi-part questions
+4. Vocabulary cipher — provide rich context paragraphs where definitions lead to terms, certain letters form the code
+5. Data interpretation — present a detailed data table or graph description with multiple data points, ask students to identify patterns and extract the answer
+6. Riddle/clue chains — multi-clue science riddles where students must solve each clue sequentially to build the final answer
 
 For Google Forms implementation:
 - Each puzzle = one Form section
@@ -46,7 +59,9 @@ ${vocabulary ? `Key Vocabulary to incorporate: ${vocabulary}` : ""}
 Difficulty: ${difficulty || "medium"}
 ${additionalContext ? `Additional instructions: ${additionalContext}` : ""}
 
-Design an engaging narrative theme and create puzzles that test understanding of the content. Each puzzle should have clear Google Form setup instructions.`;
+IMPORTANT: Each room must be EXTENSIVE and RICHLY DETAILED. The narrative_text should be 5-10 sentences of vivid scene-setting. The question_text should be MULTI-STEP with background information, data/evidence, and 2-3 progressive steps that lead to the lock code. Each room should fill at least half a page when printed. Do NOT create short or shallow puzzles.
+
+Design an engaging narrative theme and create puzzles that test deep understanding of the content. Each puzzle should have clear Google Form setup instructions.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -70,11 +85,11 @@ Design an engaging narrative theme and create puzzles that test understanding of
                 type: "object",
                 properties: {
                   theme_title: { type: "string", description: "Creative title for the escape room (e.g., 'Escape the Mutant Lab!')" },
-                  narrative_intro: { type: "string", description: "The story/scenario that sets up the escape room. 3-5 sentences that hook students and explain the mission." },
+                  narrative_intro: { type: "string", description: "The story/scenario that sets up the escape room. 5-8 sentences that hook students, explain the mission, and build tension with vivid sensory details." },
                   google_form_setup: { type: "string", description: "Step-by-step instructions for the teacher on how to create this escape room in Google Forms, including how to use section navigation and response validation." },
                   puzzles_json: {
                     type: "string",
-                    description: "JSON string of puzzles array. Each puzzle has: room_number (number), room_name (string — creative name like 'The Specimen Chamber'), narrative_text (string — story text students see that sets up the puzzle, 2-4 sentences), puzzle_type (string — one of: decode, matching, diagram, vocabulary, data, riddle), question_text (string — the actual question/puzzle students must solve, detailed enough to stand alone), hints (array of strings — 2-3 progressive hints), lock_code (string — the correct answer that unlocks the next room), lock_code_explanation (string — why this is the answer, for teacher reference), form_section_instructions (string — exact instructions for setting up this puzzle in Google Forms including response validation settings), distractors (array of strings — 3-4 wrong answer options for multiple choice puzzles). Example: [{\"room_number\":1,\"room_name\":\"The Specimen Chamber\",\"narrative_text\":\"You enter the lab and find a locked cabinet...\",\"puzzle_type\":\"decode\",\"question_text\":\"The specimen label reads...\",\"hints\":[\"Think about cell division...\",\"Count the chromosomes...\"],\"lock_code\":\"23\",\"lock_code_explanation\":\"Meiosis halves the chromosome number from 46 to 23\",\"form_section_instructions\":\"Create a new section titled 'Room 1: The Specimen Chamber'. Add the narrative text as a description. Add a short answer question with response validation: Number - Equal to - 23. Set 'Go to section based on answer' to advance to Section 2 on correct answer.\",\"distractors\":[\"46\",\"92\",\"12\"]}]",
+                    description: "JSON string of puzzles array. Each puzzle has: room_number (number), room_name (string — creative name like 'The Specimen Chamber'), narrative_text (string — MUST be 5-10 sentences of vivid, immersive storytelling describing the environment, what students discover, sensory details, and building tension), puzzle_type (string — one of: decode, matching, diagram, vocabulary, data, riddle), question_text (string — MUST be a MULTI-STEP challenge: first provide background context or data (a paragraph), then present Step 1, Step 2, and Step 3 that build on each other to reach the lock code; include specific numbers, data tables described in text, scientific details), hints (array of strings — 3-4 progressive hints from vague to specific), lock_code (string — the correct answer that unlocks the next room), lock_code_explanation (string — detailed explanation of the solution process for each step, for teacher reference), form_section_instructions (string — exact instructions for setting up this puzzle in Google Forms including response validation settings), distractors (array of strings — 3-4 wrong answer options for multiple choice puzzles). IMPORTANT: narrative_text and question_text must each be LONG and DETAILED — at minimum 150 words each.",
                   },
                   answer_key_summary: { type: "string", description: "A quick-reference answer key listing all room codes in order, formatted for the teacher" },
                   estimated_time_minutes: { type: "number", description: "Estimated time for students to complete the escape room" },
