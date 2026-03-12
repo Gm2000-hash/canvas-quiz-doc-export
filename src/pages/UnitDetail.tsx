@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,6 +64,39 @@ const UnitDetail = () => {
   const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
   const [newLesson, setNewLesson] = useState({ title: "", lesson_date: "", duration_minutes: 50 });
   const [activeTab, setActiveTab] = useState("list");
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
+  const dragNode = useRef<HTMLDivElement | null>(null);
+
+  const handleDragStart = useCallback((e: React.DragEvent, idx: number) => {
+    setDragIdx(idx);
+    dragNode.current = e.currentTarget as HTMLDivElement;
+    e.dataTransfer.effectAllowed = "move";
+    requestAnimationFrame(() => { if (dragNode.current) dragNode.current.style.opacity = "0.4"; });
+  }, []);
+
+  const handleDragEnd = useCallback(async () => {
+    if (dragNode.current) dragNode.current.style.opacity = "1";
+    if (dragIdx !== null && overIdx !== null && dragIdx !== overIdx) {
+      const reordered = [...lessons];
+      const [moved] = reordered.splice(dragIdx, 1);
+      reordered.splice(overIdx, 0, moved);
+      setLessons(reordered);
+      // Persist new sort_order
+      await Promise.all(reordered.map((l, i) =>
+        supabase.from("lesson_plans").update({ sort_order: i }).eq("id", l.id)
+      ));
+    }
+    setDragIdx(null);
+    setOverIdx(null);
+    dragNode.current = null;
+  }, [dragIdx, overIdx, lessons]);
+
+  const handleDragOver = useCallback((e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setOverIdx(idx);
+  }, []);
 
   const fetchData = async () => {
     if (!user || !id) return;
@@ -286,49 +319,69 @@ const UnitDetail = () => {
             ) : (
               <div className="space-y-2">
                 {lessons.map((lesson, idx) => (
-                  <Card
+                  <div
                     key={lesson.id}
-                    className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]"
-                    onClick={() => navigate(`/lessons/${lesson.id}`)}
+                    draggable
+                    onDragStart={e => handleDragStart(e, idx)}
+                    onDragEnd={handleDragEnd}
+                    onDragOver={e => handleDragOver(e, idx)}
+                    onDragEnter={e => e.preventDefault()}
+                    className={`transition-all duration-150 ${
+                      overIdx === idx && dragIdx !== null && dragIdx !== idx
+                        ? "ring-2 ring-dashed ring-primary/40"
+                        : ""
+                    }`}
                   >
-                    <CardContent className="p-4 flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
-                        {idx + 1}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-medium text-foreground text-sm truncate">{lesson.title}</h4>
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                          {lesson.lesson_date && <span>{format(parseISO(lesson.lesson_date), "MMM d")}</span>}
-                          <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{lesson.duration_minutes}m</span>
-                          {lesson.standards && lesson.standards.length > 0 && (
-                            <span>{lesson.standards.length} standard{lesson.standards.length > 1 ? "s" : ""}</span>
-                          )}
+                    <Card
+                      className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]"
+                      onClick={() => navigate(`/lessons/${lesson.id}`)}
+                    >
+                      <CardContent className="p-4 flex items-center gap-3">
+                        <div
+                          className="shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors touch-none"
+                          onMouseDown={e => e.stopPropagation()}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <GripVertical className="h-4 w-4" />
                         </div>
-                      </div>
-                      {lesson.objectives && (
-                        <p className="text-xs text-muted-foreground max-w-[200px] truncate hidden md:block">{lesson.objectives}</p>
-                      )}
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="ghost" size="icon"
-                            className="shrink-0 h-7 w-7 rounded-lg text-muted-foreground"
-                            onClick={e => e.stopPropagation()}
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                          <DropdownMenuItem className="gap-2" onClick={() => handleDuplicateLesson(lesson)}>
-                            <Copy className="h-3.5 w-3.5" /> Duplicate Lesson
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleDeleteLesson(lesson.id)}>
-                            <Trash2 className="h-3.5 w-3.5" /> Delete Lesson
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </CardContent>
-                  </Card>
+                        <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">
+                          {idx + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium text-foreground text-sm truncate">{lesson.title}</h4>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                            {lesson.lesson_date && <span>{format(parseISO(lesson.lesson_date), "MMM d")}</span>}
+                            <span className="flex items-center gap-0.5"><Clock className="h-3 w-3" />{lesson.duration_minutes}m</span>
+                            {lesson.standards && lesson.standards.length > 0 && (
+                              <span>{lesson.standards.length} standard{lesson.standards.length > 1 ? "s" : ""}</span>
+                            )}
+                          </div>
+                        </div>
+                        {lesson.objectives && (
+                          <p className="text-xs text-muted-foreground max-w-[200px] truncate hidden md:block">{lesson.objectives}</p>
+                        )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost" size="icon"
+                              className="shrink-0 h-7 w-7 rounded-lg text-muted-foreground"
+                              onClick={e => e.stopPropagation()}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                            <DropdownMenuItem className="gap-2" onClick={() => handleDuplicateLesson(lesson)}>
+                              <Copy className="h-3.5 w-3.5" /> Duplicate Lesson
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleDeleteLesson(lesson.id)}>
+                              <Trash2 className="h-3.5 w-3.5" /> Delete Lesson
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </CardContent>
+                    </Card>
+                  </div>
                 ))}
               </div>
             )}
@@ -380,6 +433,7 @@ const UnitDetail = () => {
         unitTitle={unit.title}
         discipline={unit.discipline}
         gradeLevel={unit.grade_level}
+        existingLessonCount={lessons.length}
         onGenerated={fetchData}
       />
 
