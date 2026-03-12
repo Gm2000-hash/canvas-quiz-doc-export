@@ -60,6 +60,7 @@ const UnitDetail = () => {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
   const [newLesson, setNewLesson] = useState({ title: "", lesson_date: "", duration_minutes: 50 });
   const [activeTab, setActiveTab] = useState("list");
 
