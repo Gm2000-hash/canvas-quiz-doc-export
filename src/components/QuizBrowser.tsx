@@ -1,15 +1,16 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getCourses, getQuizzes, getQuiz, getQuizQuestions, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from '@/lib/canvas-api';
 import { tagQuestionsWithNGSS, type NGSSStandard } from '@/lib/ngss-api';
 import { exportQuizToDocx } from '@/lib/export-docx';
 import { saveQuestionsToBank } from '@/lib/question-bank';
 import { toast } from 'sonner';
-import { BookOpen, FileText, Download, Loader2, ArrowLeft, ChevronRight, FlaskConical, Sparkles } from 'lucide-react';
+import { BookOpen, FileText, Download, Loader2, ArrowLeft, ChevronRight, FlaskConical, Sparkles, Palette } from 'lucide-react';
 
 interface QuizBrowserProps {
   config: CanvasConfig;
@@ -24,6 +25,31 @@ const COURSE_COLORS = [
   'bg-[hsl(190,70%,42%)]',
 ];
 
+const ALL_COLORS = [
+  { label: 'Blue', class: 'bg-primary', swatch: 'hsl(211,100%,50%)' },
+  { label: 'Sky', class: 'bg-[hsl(210,70%,50%)]', swatch: 'hsl(210,70%,50%)' },
+  { label: 'Rose', class: 'bg-[hsl(340,65%,47%)]', swatch: 'hsl(340,65%,47%)' },
+  { label: 'Purple', class: 'bg-[hsl(262,60%,50%)]', swatch: 'hsl(262,60%,50%)' },
+  { label: 'Orange', class: 'bg-[hsl(25,85%,55%)]', swatch: 'hsl(25,85%,55%)' },
+  { label: 'Teal', class: 'bg-[hsl(190,70%,42%)]', swatch: 'hsl(190,70%,42%)' },
+  { label: 'Green', class: 'bg-[hsl(142,60%,40%)]', swatch: 'hsl(142,60%,40%)' },
+  { label: 'Amber', class: 'bg-[hsl(45,90%,48%)]', swatch: 'hsl(45,90%,48%)' },
+  { label: 'Indigo', class: 'bg-[hsl(230,65%,52%)]', swatch: 'hsl(230,65%,52%)' },
+  { label: 'Slate', class: 'bg-[hsl(215,20%,40%)]', swatch: 'hsl(215,20%,40%)' },
+  { label: 'Fuchsia', class: 'bg-[hsl(292,60%,50%)]', swatch: 'hsl(292,60%,50%)' },
+  { label: 'Red', class: 'bg-[hsl(0,70%,50%)]', swatch: 'hsl(0,70%,50%)' },
+];
+
+function loadCourseColors(): Record<string, string> {
+  try {
+    return JSON.parse(localStorage.getItem('course-tile-colors') || '{}');
+  } catch { return {}; }
+}
+
+function saveCourseColors(map: Record<string, string>) {
+  localStorage.setItem('course-tile-colors', JSON.stringify(map));
+}
+
 export function QuizBrowser({ config }: QuizBrowserProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -34,6 +60,19 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [courseColors, setCourseColors] = useState<Record<string, string>>(loadCourseColors);
+
+  const getColorForCourse = useCallback((courseId: number, idx: number) => {
+    return courseColors[String(courseId)] || COURSE_COLORS[idx % COURSE_COLORS.length];
+  }, [courseColors]);
+
+  const setCourseColor = useCallback((courseId: number, colorClass: string) => {
+    setCourseColors(prev => {
+      const next = { ...prev, [String(courseId)]: colorClass };
+      saveCourseColors(next);
+      return next;
+    });
+  }, []);
 
   // NGSS tagging state
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -145,8 +184,8 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
 
   // Course detail / quiz view
   if (selectedCourse) {
-    const colorIdx = courses.indexOf(selectedCourse) % COURSE_COLORS.length;
-    const colorClass = COURSE_COLORS[colorIdx];
+    const colorIdx = courses.indexOf(selectedCourse);
+    const colorClass = getColorForCourse(selectedCourse.id, colorIdx);
     const filteredQuestions = questions.filter(q => q.question_type !== 'text_only_question');
 
     return (
@@ -310,18 +349,53 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
     <div className="max-w-5xl mx-auto">
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {courses.map((course, idx) => {
-          const colorClass = COURSE_COLORS[idx % COURSE_COLORS.length];
+          const colorClass = getColorForCourse(course.id, idx);
           return (
             <Card
               key={course.id}
-              className="overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 group"
+              className="overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 group relative"
               onClick={() => handleSelectCourse(course)}
             >
               <div className={`${colorClass} p-5 pb-12 text-primary-foreground relative`}>
-                <h3 className="text-lg font-bold leading-tight line-clamp-2">{course.name}</h3>
+                <h3 className="text-lg font-bold leading-tight line-clamp-2 pr-8">{course.name}</h3>
                 {course.course_code && (
                   <p className="text-sm opacity-80 mt-1">{course.course_code}</p>
                 )}
+                {/* Color picker button */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      onClick={(e) => e.stopPropagation()}
+                      className="absolute top-3 right-3 h-7 w-7 rounded-lg bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors backdrop-blur-sm"
+                      title="Change tile color"
+                    >
+                      <Palette className="h-3.5 w-3.5 text-white" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-48 p-3"
+                    align="end"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Tile Color</p>
+                    <div className="grid grid-cols-4 gap-2">
+                      {ALL_COLORS.map((c) => (
+                        <button
+                          key={c.label}
+                          title={c.label}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setCourseColor(course.id, c.class);
+                          }}
+                          className={`h-8 w-8 rounded-lg transition-all duration-150 hover:scale-110 ring-offset-2 ring-offset-background ${
+                            colorClass === c.class ? 'ring-2 ring-primary scale-110' : ''
+                          }`}
+                          style={{ backgroundColor: c.swatch }}
+                        />
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
               <CardContent className="p-4 flex items-center justify-between -mt-6 relative">
                 <div className="h-12 w-12 rounded-full bg-card border-2 border-background shadow flex items-center justify-center">
