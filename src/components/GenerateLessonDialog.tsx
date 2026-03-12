@@ -21,7 +21,7 @@ interface Props {
   onGenerated: () => void;
 }
 
-export function GenerateLessonDialog({ open, onOpenChange, unitId, unitTitle, discipline, gradeLevel, onGenerated }: Props) {
+export function GenerateLessonDialog({ open, onOpenChange, unitId, unitTitle, discipline, gradeLevel, existingLessonCount, onGenerated }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [numLessons, setNumLessons] = useState(5);
