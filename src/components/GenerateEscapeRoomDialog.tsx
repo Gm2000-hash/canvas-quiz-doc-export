@@ -423,14 +423,24 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
                       </div>
 
                       {/* Hints */}
-                      {puzzle.hints?.length > 0 && (
+                      {(puzzle.hints?.length > 0 || editingRoom === puzzle.room_number) && (
                         <div>
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1 flex items-center gap-1"><Lightbulb className="h-3 w-3" /> Hints</p>
                           {editingRoom === puzzle.room_number ? (
                             <div className="space-y-1.5">
-                              {puzzle.hints.map((h, i) => (
-                                <Input key={i} value={h} onChange={e => { const hints = [...puzzle.hints]; hints[i] = e.target.value; updatePuzzleField(puzzle.room_number, "hints", hints); }} className="h-8 text-sm" placeholder={`Hint ${i + 1}`} />
+                              {(puzzle.hints || []).map((h, i) => (
+                                <div key={i} className="flex gap-1.5 items-center">
+                                  <Input value={h} onChange={e => { const hints = [...(puzzle.hints || [])]; hints[i] = e.target.value; updatePuzzleField(puzzle.room_number, "hints", hints); }} className="h-8 text-sm flex-1" placeholder={`Hint ${i + 1}`} />
+                                  <Button size="icon" variant="ghost" className="h-6 w-6 shrink-0 text-muted-foreground hover:text-destructive" onClick={() => {
+                                    const hints = [...(puzzle.hints || [])];
+                                    hints.splice(i, 1);
+                                    updatePuzzleField(puzzle.room_number, "hints", hints);
+                                  }}><X className="h-3.5 w-3.5" /></Button>
+                                </div>
                               ))}
+                              <Button size="sm" variant="ghost" className="gap-1.5 text-xs" onClick={() => {
+                                updatePuzzleField(puzzle.room_number, "hints", [...(puzzle.hints || []), ""]);
+                              }}><Plus className="h-3 w-3" /> Add Hint</Button>
                             </div>
                           ) : (
                             <ol className="list-decimal list-inside text-sm space-y-0.5">
