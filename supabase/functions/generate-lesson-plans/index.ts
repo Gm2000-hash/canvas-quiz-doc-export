@@ -13,16 +13,33 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert middle school science teacher creating detailed NGSS-aligned lesson plans.
+    const systemPrompt = `You are an expert middle school science teacher creating FULLY SCRIPTED, classroom-ready lesson plans aligned to NGSS.
 You must return structured lesson plans using the provided tool.
 Each lesson should be practical, engaging, and age-appropriate for ${gradeLevel || "middle school"} students.
 Focus on ${discipline || "science"} content.
-Include a variety of activities: direct instruction, labs, group work, discussions, and assessments.
-Map each lesson to relevant NGSS Middle School performance expectations (MS-LS, MS-PS, MS-ESS, MS-ETS codes).`;
 
-    const userPrompt = `Create ${numLessons} sequential lesson plans for a unit called "${unitTitle}" focused on "${topic}".
+CRITICAL REQUIREMENTS FOR DETAIL:
+- OBJECTIVES: Write 3-5 specific, measurable learning objectives using Bloom's taxonomy verbs. Include the FULL TEXT of each aligned NGSS performance expectation (not just the code).
+- ACTIVITIES: Script out each activity in detail. For direct instruction, include the key talking points, questions to ask, and example explanations the teacher should give. For labs/investigations, include step-by-step procedures. For discussions, include specific discussion prompts and expected student responses. For group work, include specific tasks and roles. Each activity description should be 3-8 sentences minimum — think of it as a teacher script.
+- MATERIALS: List every specific material with quantities (e.g., "30 copies of Cell Diagram handout", "1 microscope per lab group of 4").
+- ASSESSMENT: Describe specific formative and summative assessment strategies with example questions or rubric criteria.
+- DIFFERENTIATION: Provide specific accommodations for ELL students, students with IEPs, gifted learners, and struggling readers.
+- NOTES: Include teacher tips, common misconceptions students may have, and how to address them.
+
+Include a variety of activities: direct instruction, labs, group work, discussions, and assessments.
+Map each lesson to relevant NGSS Middle School performance expectations (MS-LS, MS-PS, MS-ESS, MS-ETS codes). Always include the COMPLETE standard text.`;
+
+    const userPrompt = `Create ${numLessons} sequential, FULLY SCRIPTED lesson plans for a unit called "${unitTitle}" focused on "${topic}".
 ${additionalContext ? `Additional instructions: ${additionalContext}` : ""}
-Each lesson should be 50 minutes and include objectives, timed activities, materials, assessment strategies, and differentiation.`;
+
+Each lesson should be 50 minutes. For EVERY activity, write it as if you are scripting what the teacher says and does minute-by-minute. Include:
+- Exact questions the teacher should ask students
+- Key vocabulary with definitions
+- Transition phrases between activities
+- Anticipated student questions and how to respond
+- Specific examples and analogies to use when explaining concepts
+
+Make these detailed enough that a substitute teacher could pick them up and teach effectively.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -31,7 +48,7 @@ Each lesson should be 50 minutes and include objectives, timed activities, mater
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: "google/gemini-2.5-flash",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -55,15 +72,15 @@ Each lesson should be 50 minutes and include objectives, timed activities, mater
                         objectives: { type: "string", description: "Learning objectives, one per line" },
                         activities: {
                           type: "string",
-                          description: "JSON string of activities array. Each activity has name (string), duration (number in minutes), and description (string). Example: [{\"name\":\"Warm-up\",\"duration\":5,\"description\":\"Review...\"}]",
+                          description: "JSON string of activities array. Each activity has name (string), duration (number in minutes), and description (string — this MUST be a detailed teacher script of 3-8 sentences including what to say, questions to ask, and step-by-step instructions). Example: [{\"name\":\"Warm-up: Activating Prior Knowledge\",\"duration\":5,\"description\":\"Begin by projecting the question: 'What do you think all living things have in common?' Give students 2 minutes to write in their journals. Then cold-call 3-4 students to share. Record responses on the board. Look for answers mentioning cells, growth, reproduction. Say: 'Today we are going to investigate one of the most fundamental ideas in biology — that all living things are made of cells.'\"}]",
                         },
-                        materials: { type: "string", description: "Materials and resources needed, one per line" },
-                        assessment: { type: "string", description: "Assessment strategies" },
-                        differentiation: { type: "string", description: "Differentiation strategies for diverse learners" },
-                        notes: { type: "string", description: "Additional teacher notes" },
+                        materials: { type: "string", description: "Detailed materials list with quantities, e.g. '30 copies of Cell Diagram handout\\n1 microscope per lab group\\nWhiteboard markers (4 colors)'" },
+                        assessment: { type: "string", description: "Specific formative and summative assessment strategies with example questions, exit ticket prompts, or rubric criteria" },
+                        differentiation: { type: "string", description: "Specific strategies for ELL students, IEP accommodations, gifted extensions, and struggling readers" },
+                        notes: { type: "string", description: "Teacher tips, common student misconceptions, and how to address them" },
                         standards_json: {
                           type: "string",
-                          description: "JSON string of NGSS standards array. Each standard has code (string like MS-LS1-1) and description (string). Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation...\"}]",
+                          description: "JSON string of NGSS standards array. Each standard has code (string like MS-LS1-1) and description (the FULL COMPLETE text of the performance expectation). Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation to provide evidence that living things are made of cells; either one cell or many different numbers and types of cells.\"}]",
                         },
                       },
                       required: ["title", "duration_minutes", "objectives", "activities", "materials", "assessment", "differentiation"],
