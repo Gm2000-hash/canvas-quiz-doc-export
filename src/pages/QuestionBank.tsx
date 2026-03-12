@@ -393,18 +393,6 @@ const QuestionBank = () => {
         <AppNavSheet />
         <Breadcrumbs items={[{ label: "Question Bank" }]} />
       </header>
-      </header>
-
-      {/* Breadcrumb navigation */}
-      <nav className="max-w-5xl mx-auto px-4 sm:px-6 pt-3 pb-0">
-        <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <li>
-            <button className="hover:text-primary transition-colors" onClick={() => navigate("/")}>Home</button>
-          </li>
-          <li><ChevronRight className="h-3.5 w-3.5" /></li>
-          <li className="font-medium text-foreground">Question Bank</li>
-        </ol>
-      </nav>
 
       <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-6">
         <div className="flex flex-col sm:flex-row gap-3">

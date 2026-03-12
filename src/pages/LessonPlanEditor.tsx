@@ -228,7 +228,6 @@ const LessonPlanEditor = () => {
           { label: lesson.title || "Untitled Lesson" },
         ]} />
         <div className="flex-1" />
-        </div>
         <BrainstormChat
           lessonContext={{
             title: lesson.title,
