@@ -1,5 +1,6 @@
 import { SettingsForm } from "@/components/SettingsForm";
 import { QuizBrowser } from "@/components/QuizBrowser";
+import { WeeklyDashboard } from "@/components/WeeklyDashboard";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { Settings, Menu, FileText, BookOpen, LogOut, Layers } from "lucide-react";
