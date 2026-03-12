@@ -18,6 +18,7 @@ interface LessonPlan {
   assessment: string;
   differentiation: string;
   notes: string;
+  vocabulary?: { term: string; definition: string }[];
   standards?: { ngss_code: string; ngss_description: string }[];
 }
 
