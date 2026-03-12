@@ -17,6 +17,7 @@ interface Props {
   unitTitle: string;
   discipline: string;
   gradeLevel: string;
+  existingLessonCount: number;
   onGenerated: () => void;
 }
 
