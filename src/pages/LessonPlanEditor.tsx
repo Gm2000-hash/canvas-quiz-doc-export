@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
-import { BrainstormChat } from "@/components/BrainstormChat";
+import { BrainstormChat, type LessonField } from "@/components/BrainstormChat";
 import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { exportLessonToDocx } from "@/lib/export-lesson-docx";
