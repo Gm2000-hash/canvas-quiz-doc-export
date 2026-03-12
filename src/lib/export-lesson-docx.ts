@@ -211,3 +211,37 @@ export async function exportUnitToDocx(unit: Unit, lessons: LessonPlan[]) {
   const safeName = unit.title.replace(/[^a-zA-Z0-9]/g, "_");
   saveAs(blob, `${safeName}_Unit_Plan.docx`);
 }
+
+export async function exportLessonToDocx(lesson: LessonPlan) {
+  const children: Paragraph[] = [];
+
+  // Title
+  children.push(new Paragraph({
+    heading: HeadingLevel.HEADING_1,
+    spacing: { after: 100 },
+    children: [new TextRun({ text: lesson.title, bold: true, size: 36 })],
+  }));
+
+  // Meta line
+  const metaParts: string[] = [];
+  if (lesson.lesson_date) metaParts.push(lesson.lesson_date);
+  metaParts.push(`${lesson.duration_minutes} minutes`);
+  children.push(new Paragraph({
+    spacing: { after: 200 },
+    children: [new TextRun({ text: metaParts.join("  •  "), size: 22, color: "666666" })],
+  }));
+
+  // Separator
+  children.push(new Paragraph({
+    border: { bottom: { style: BorderStyle.SINGLE, size: 2, color: "333333", space: 1 } },
+    spacing: { after: 100 },
+    children: [],
+  }));
+
+  children.push(...buildLessonParagraphs(lesson, 0).slice(2)); // skip heading + separator since we already have them
+
+  const doc = new Document({ sections: [{ children }] });
+  const blob = await Packer.toBlob(doc);
+  const safeName = lesson.title.replace(/[^a-zA-Z0-9]/g, "_");
+  saveAs(blob, `${safeName}_Lesson_Plan.docx`);
+}
