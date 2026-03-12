@@ -1,8 +1,10 @@
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Lightbulb, Send, Loader2, Trash2 } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Lightbulb, Send, Loader2, Trash2, ArrowRight, Target, CheckCircle, Users, StickyNote, Clock, Copy } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 function renderMarkdown(text: string) {
   // Split into lines, process block-level elements
@@ -83,8 +85,19 @@ interface LessonContext {
   duration: number;
 }
 
+export type LessonField = "objectives" | "assessment" | "differentiation" | "notes" | "activities";
+
+const FIELD_OPTIONS: { field: LessonField; label: string; icon: React.ElementType }[] = [
+  { field: "objectives", label: "Objectives", icon: Target },
+  { field: "activities", label: "Activities", icon: Clock },
+  { field: "assessment", label: "Assessment", icon: CheckCircle },
+  { field: "differentiation", label: "Differentiation", icon: Users },
+  { field: "notes", label: "Notes", icon: StickyNote },
+];
+
 interface Props {
   lessonContext: LessonContext;
+  onCopyToField?: (field: LessonField, content: string) => void;
 }
 
 const QUICK_PROMPTS = [
@@ -96,12 +109,13 @@ const QUICK_PROMPTS = [
   "What are common student misconceptions about this topic?",
 ];
 
-export function BrainstormChat({ lessonContext }: Props) {
+export function BrainstormChat({ lessonContext, onCopyToField }: Props) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -272,6 +286,48 @@ export function BrainstormChat({ lessonContext }: Props) {
                   : "bg-accent/70 text-foreground"
               }`}>
                 {msg.role === "assistant" ? renderMarkdown(msg.content) : msg.content}
+                {msg.role === "assistant" && msg.content && !isLoading && (
+                  <div className="flex items-center gap-1 mt-2 pt-1.5 border-t border-border/40">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-foreground gap-1"
+                      onClick={() => {
+                        navigator.clipboard.writeText(msg.content);
+                        toast({ title: "Copied to clipboard" });
+                      }}
+                    >
+                      <Copy className="h-3 w-3" /> Copy
+                    </Button>
+                    {onCopyToField && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-foreground gap-1"
+                          >
+                            <ArrowRight className="h-3 w-3" /> Send to field
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="min-w-[160px]">
+                          {FIELD_OPTIONS.map(({ field, label, icon: Icon }) => (
+                            <DropdownMenuItem
+                              key={field}
+                              onClick={() => {
+                                onCopyToField(field, msg.content);
+                                toast({ title: `Added to ${label}` });
+                              }}
+                              className="gap-2 text-xs"
+                            >
+                              <Icon className="h-3.5 w-3.5" /> {label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}

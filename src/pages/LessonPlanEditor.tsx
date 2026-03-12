@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
-import { BrainstormChat } from "@/components/BrainstormChat";
+import { BrainstormChat, type LessonField } from "@/components/BrainstormChat";
 import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { exportLessonToDocx } from "@/lib/export-lesson-docx";
@@ -193,6 +193,22 @@ const LessonPlanEditor = () => {
 
   const totalActivityTime = lesson?.activities.reduce((s, a) => s + (a.duration || 0), 0) || 0;
 
+  const handleCopyToField = (field: LessonField, content: string) => {
+    if (!lesson) return;
+    if (field === "activities") {
+      // Add as a new activity with the AI content as description
+      setLesson({
+        ...lesson,
+        activities: [...lesson.activities, { name: "AI Suggestion", duration: 10, description: content }],
+      });
+    } else {
+      // Append to existing text fields
+      const current = lesson[field] || "";
+      const separator = current.trim() ? "\n\n" : "";
+      setLesson({ ...lesson, [field]: current + separator + content });
+    }
+  };
+
   if (loading || !lesson) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -220,6 +236,7 @@ const LessonPlanEditor = () => {
             standards: standards.map(s => s.ngss_code).join(", ") || "None",
             duration: lesson.duration_minutes,
           }}
+          onCopyToField={handleCopyToField}
         />
         <Button
           size="sm"
