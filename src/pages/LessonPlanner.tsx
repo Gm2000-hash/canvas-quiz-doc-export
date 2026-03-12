@@ -44,6 +44,38 @@ const LessonPlanner = () => {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [newUnit, setNewUnit] = useState({ title: "", description: "", grade_level: "", discipline: "", date_start: "", date_end: "" });
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
+  const dragNode = useRef<HTMLDivElement | null>(null);
+
+  const handleUnitDragStart = useCallback((e: React.DragEvent, idx: number) => {
+    setDragIdx(idx);
+    dragNode.current = e.currentTarget as HTMLDivElement;
+    e.dataTransfer.effectAllowed = "move";
+    requestAnimationFrame(() => { if (dragNode.current) dragNode.current.style.opacity = "0.4"; });
+  }, []);
+
+  const handleUnitDragEnd = useCallback(async () => {
+    if (dragNode.current) dragNode.current.style.opacity = "1";
+    if (dragIdx !== null && overIdx !== null && dragIdx !== overIdx) {
+      const reordered = [...units];
+      const [moved] = reordered.splice(dragIdx, 1);
+      reordered.splice(overIdx, 0, moved);
+      setUnits(reordered);
+      await Promise.all(reordered.map((u, i) =>
+        supabase.from("units").update({ sort_order: i } as any).eq("id", u.id)
+      ));
+    }
+    setDragIdx(null);
+    setOverIdx(null);
+    dragNode.current = null;
+  }, [dragIdx, overIdx, units]);
+
+  const handleUnitDragOver = useCallback((e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setOverIdx(idx);
+  }, []);
 
   const fetchUnits = async () => {
     if (!user) return;
