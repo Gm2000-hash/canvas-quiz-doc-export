@@ -10,7 +10,7 @@ import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Sparkles, Loader2, Lock, Key, Copy, ChevronDown, ChevronUp, Lightbulb, FileText, FileDown, BookOpen, FlaskConical, ListOrdered, ArrowRight } from "lucide-react";
+import { Sparkles, Loader2, Lock, Key, Copy, ChevronDown, ChevronUp, Lightbulb, FileText, FileDown, BookOpen, FlaskConical, ListOrdered, ArrowRight, Pencil, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { exportEscapeRoomToDocx } from "@/lib/export-escape-room-docx";
@@ -73,6 +73,30 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
   const [escapeRoom, setEscapeRoom] = useState<EscapeRoom | null>(null);
   const [expandedPuzzle, setExpandedPuzzle] = useState<number | null>(null);
   const [showSetup, setShowSetup] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<number | null>(null);
+
+  const updatePuzzleField = (roomNumber: number, field: keyof Puzzle, value: any) => {
+    if (!escapeRoom) return;
+    setEscapeRoom({
+      ...escapeRoom,
+      puzzles: escapeRoom.puzzles.map(p =>
+        p.room_number === roomNumber ? { ...p, [field]: value } : p
+      ),
+    });
+  };
+
+  const updateChallengeStep = (roomNumber: number, stepIndex: number, value: string) => {
+    if (!escapeRoom) return;
+    setEscapeRoom({
+      ...escapeRoom,
+      puzzles: escapeRoom.puzzles.map(p => {
+        if (p.room_number !== roomNumber) return p;
+        const steps = [...(p.challenge_steps || [])];
+        steps[stepIndex] = value;
+        return { ...p, challenge_steps: steps };
+      }),
+    });
+  };
 
   const handleGenerate = async () => {
     setGenerating(true);
@@ -283,48 +307,76 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
                   </button>
                   {expandedPuzzle === puzzle.room_number && (
                     <div className="px-4 pb-4 space-y-4 border-t border-border/60 pt-3">
+                      {/* Edit toggle */}
+                      <div className="flex justify-end">
+                        <Button
+                          size="sm"
+                          variant={editingRoom === puzzle.room_number ? "default" : "outline"}
+                          className="gap-1.5 text-xs rounded-xl"
+                          onClick={() => setEditingRoom(editingRoom === puzzle.room_number ? null : puzzle.room_number)}
+                        >
+                          {editingRoom === puzzle.room_number ? <><Check className="h-3 w-3" /> Done Editing</> : <><Pencil className="h-3 w-3" /> Edit Room</>}
+                        </Button>
+                      </div>
+
                       {/* Narrative */}
                       <div className="p-3 rounded-lg bg-accent/30 border border-accent/50">
                         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                           <BookOpen className="h-3.5 w-3.5" /> Story
                         </p>
-                        <p className="text-sm text-foreground leading-relaxed">{puzzle.narrative_text}</p>
+                        {editingRoom === puzzle.room_number ? (
+                          <Textarea value={puzzle.narrative_text} onChange={e => updatePuzzleField(puzzle.room_number, "narrative_text", e.target.value)} className="text-sm min-h-[120px] bg-background" />
+                        ) : (
+                          <p className="text-sm text-foreground leading-relaxed">{puzzle.narrative_text}</p>
+                        )}
                       </div>
 
                       {/* Scientific Scenario */}
-                      {puzzle.scenario_text && (
+                      {(puzzle.scenario_text || editingRoom === puzzle.room_number) && (
                         <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
                           <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                             <FlaskConical className="h-3.5 w-3.5" /> Scientific Scenario
                           </p>
-                          <p className="text-sm text-foreground leading-relaxed">{puzzle.scenario_text}</p>
+                          {editingRoom === puzzle.room_number ? (
+                            <Textarea value={puzzle.scenario_text || ""} onChange={e => updatePuzzleField(puzzle.room_number, "scenario_text", e.target.value)} className="text-sm min-h-[100px] bg-background" />
+                          ) : (
+                            <p className="text-sm text-foreground leading-relaxed">{puzzle.scenario_text}</p>
+                          )}
                         </div>
                       )}
 
                       {/* Challenge Steps */}
-                      {puzzle.challenge_steps && puzzle.challenge_steps.length > 0 && (
+                      {(puzzle.challenge_steps?.length || editingRoom === puzzle.room_number) ? (
                         <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
                           <p className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
                             <ListOrdered className="h-3.5 w-3.5" /> Challenge Steps
                           </p>
                           <div className="space-y-2.5">
-                            {puzzle.challenge_steps.map((step, i) => (
+                            {(puzzle.challenge_steps || []).map((step, i) => (
                               <div key={i} className="flex gap-2.5">
                                 <div className="h-6 w-6 rounded-full bg-amber-500/15 flex items-center justify-center text-xs font-bold text-amber-700 dark:text-amber-300 shrink-0 mt-0.5">
                                   {i + 1}
                                 </div>
-                                <p className="text-sm text-foreground leading-relaxed">{step}</p>
+                                {editingRoom === puzzle.room_number ? (
+                                  <Textarea value={step} onChange={e => updateChallengeStep(puzzle.room_number, i, e.target.value)} className="text-sm min-h-[60px] bg-background flex-1" />
+                                ) : (
+                                  <p className="text-sm text-foreground leading-relaxed">{step}</p>
+                                )}
                               </div>
                             ))}
                           </div>
                         </div>
-                      )}
+                      ) : null}
 
                       {/* Legacy question_text fallback */}
                       {!puzzle.challenge_steps?.length && puzzle.question_text && (
                         <div>
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1">Puzzle</p>
-                          <p className="text-sm text-foreground">{puzzle.question_text}</p>
+                          {editingRoom === puzzle.room_number ? (
+                            <Textarea value={puzzle.question_text} onChange={e => updatePuzzleField(puzzle.room_number, "question_text", e.target.value)} className="text-sm min-h-[60px] bg-background" />
+                          ) : (
+                            <p className="text-sm text-foreground">{puzzle.question_text}</p>
+                          )}
                         </div>
                       )}
 
@@ -345,26 +397,48 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
                       {/* Lock Code */}
                       <div className="p-2.5 rounded-lg bg-accent/50">
                         <p className="text-xs font-medium text-muted-foreground mb-1 flex items-center gap-1"><Key className="h-3 w-3" /> Lock Code & Explanation</p>
-                        <p className="text-sm"><span className="font-bold text-primary">{puzzle.lock_code}</span> — {puzzle.lock_code_explanation}</p>
+                        {editingRoom === puzzle.room_number ? (
+                          <div className="space-y-2">
+                            <div className="flex gap-2 items-center">
+                              <Label className="text-xs shrink-0">Code:</Label>
+                              <Input value={puzzle.lock_code} onChange={e => updatePuzzleField(puzzle.room_number, "lock_code", e.target.value)} className="h-8 text-sm" />
+                            </div>
+                            <Textarea value={puzzle.lock_code_explanation} onChange={e => updatePuzzleField(puzzle.room_number, "lock_code_explanation", e.target.value)} className="text-sm min-h-[60px] bg-background" placeholder="Explanation..." />
+                          </div>
+                        ) : (
+                          <p className="text-sm"><span className="font-bold text-primary">{puzzle.lock_code}</span> — {puzzle.lock_code_explanation}</p>
+                        )}
                       </div>
 
                       {/* Hints */}
                       {puzzle.hints?.length > 0 && (
                         <div>
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide mb-1 flex items-center gap-1"><Lightbulb className="h-3 w-3" /> Hints</p>
-                          <ol className="list-decimal list-inside text-sm space-y-0.5">
-                            {puzzle.hints.map((h, i) => <li key={i} className="text-muted-foreground">{h}</li>)}
-                          </ol>
+                          {editingRoom === puzzle.room_number ? (
+                            <div className="space-y-1.5">
+                              {puzzle.hints.map((h, i) => (
+                                <Input key={i} value={h} onChange={e => { const hints = [...puzzle.hints]; hints[i] = e.target.value; updatePuzzleField(puzzle.room_number, "hints", hints); }} className="h-8 text-sm" placeholder={`Hint ${i + 1}`} />
+                              ))}
+                            </div>
+                          ) : (
+                            <ol className="list-decimal list-inside text-sm space-y-0.5">
+                              {puzzle.hints.map((h, i) => <li key={i} className="text-muted-foreground">{h}</li>)}
+                            </ol>
+                          )}
                         </div>
                       )}
 
                       {/* Story Transition */}
-                      {puzzle.story_transition && (
+                      {(puzzle.story_transition || editingRoom === puzzle.room_number) && (
                         <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
                           <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-1 flex items-center gap-1.5">
                             <ArrowRight className="h-3 w-3" /> What Happens Next
                           </p>
-                          <p className="text-sm text-foreground italic">{puzzle.story_transition}</p>
+                          {editingRoom === puzzle.room_number ? (
+                            <Textarea value={puzzle.story_transition || ""} onChange={e => updatePuzzleField(puzzle.room_number, "story_transition", e.target.value)} className="text-sm min-h-[60px] bg-background" />
+                          ) : (
+                            <p className="text-sm text-foreground italic">{puzzle.story_transition}</p>
+                          )}
                         </div>
                       )}
 
