@@ -395,32 +395,57 @@ const UnitDetail = () => {
                 </CardContent>
               </Card>
             ) : (
-              <div className="grid grid-cols-5 gap-1.5">
-                {["Mon", "Tue", "Wed", "Thu", "Fri"].map(d => (
-                  <div key={d} className="text-xs font-medium text-muted-foreground text-center py-1">{d}</div>
-                ))}
-                {/* Pad to correct weekday (Mon=0) */}
-                {Array.from({ length: (calendarDays[0].getDay() + 6) % 7 }).map((_, i) => (
-                  <div key={`pad-${i}`} />
-                ))}
-                {calendarDays.map(day => {
-                  const lesson = getLessonForDay(day);
-                  return (
-                    <Card
-                      key={day.toISOString()}
-                      className={`min-h-[72px] cursor-pointer transition-all duration-150 hover:shadow-sm ${lesson ? "bg-primary/5 border-primary/20" : ""}`}
-                      onClick={() => lesson && navigate(`/lessons/${lesson.id}`)}
-                    >
-                      <CardContent className="p-2">
-                        <div className="text-xs text-muted-foreground">{format(day, "MMM d")}</div>
-                        {lesson && (
-                          <div className="mt-1 text-xs font-medium text-foreground line-clamp-2">{lesson.title}</div>
-                        )}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
+              <>
+                <div className="flex items-center gap-2 mb-4">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="gap-1.5 rounded-xl"
+                    disabled={lessons.length === 0 || pacingSaving}
+                    onClick={handleSuggestPacing}
+                  >
+                    <Sparkles className="h-3.5 w-3.5" />
+                    {pacingSaving ? "Saving…" : "Suggest Pacing"}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="gap-1.5 rounded-xl text-muted-foreground"
+                    disabled={lessons.every(l => !l.lesson_date) || pacingSaving}
+                    onClick={handleClearPacing}
+                  >
+                    Clear Dates
+                  </Button>
+                  <span className="text-xs text-muted-foreground ml-auto">
+                    {lessons.filter(l => l.lesson_date).length}/{lessons.length} scheduled
+                  </span>
+                </div>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {["Mon", "Tue", "Wed", "Thu", "Fri"].map(d => (
+                    <div key={d} className="text-xs font-medium text-muted-foreground text-center py-1">{d}</div>
+                  ))}
+                  {Array.from({ length: (calendarDays[0].getDay() + 6) % 7 }).map((_, i) => (
+                    <div key={`pad-${i}`} />
+                  ))}
+                  {calendarDays.map(day => {
+                    const lesson = getLessonForDay(day);
+                    return (
+                      <Card
+                        key={day.toISOString()}
+                        className={`min-h-[72px] cursor-pointer transition-all duration-150 hover:shadow-sm ${lesson ? "bg-primary/5 border-primary/20" : ""}`}
+                        onClick={() => lesson && navigate(`/lessons/${lesson.id}`)}
+                      >
+                        <CardContent className="p-2">
+                          <div className="text-xs text-muted-foreground">{format(day, "MMM d")}</div>
+                          {lesson && (
+                            <div className="mt-1 text-xs font-medium text-foreground line-clamp-2">{lesson.title}</div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </>
             )}
           </TabsContent>
         </Tabs>
