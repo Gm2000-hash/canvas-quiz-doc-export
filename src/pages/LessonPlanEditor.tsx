@@ -269,6 +269,13 @@ const LessonPlanEditor = () => {
       </header>
 
       <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto w-full space-y-4">
+        {/* Title */}
+        <Input
+          value={lesson.title}
+          onChange={e => setLesson({ ...lesson, title: e.target.value })}
+          className="text-lg font-semibold h-10 border-none bg-transparent px-0 focus-visible:ring-0"
+          placeholder="Lesson title..."
+        />
         {/* Meta row */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
           <div className="space-y-1.5">
