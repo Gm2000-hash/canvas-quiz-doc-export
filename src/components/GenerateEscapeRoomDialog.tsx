@@ -73,6 +73,30 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
   const [escapeRoom, setEscapeRoom] = useState<EscapeRoom | null>(null);
   const [expandedPuzzle, setExpandedPuzzle] = useState<number | null>(null);
   const [showSetup, setShowSetup] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<number | null>(null);
+
+  const updatePuzzleField = (roomNumber: number, field: keyof Puzzle, value: any) => {
+    if (!escapeRoom) return;
+    setEscapeRoom({
+      ...escapeRoom,
+      puzzles: escapeRoom.puzzles.map(p =>
+        p.room_number === roomNumber ? { ...p, [field]: value } : p
+      ),
+    });
+  };
+
+  const updateChallengeStep = (roomNumber: number, stepIndex: number, value: string) => {
+    if (!escapeRoom) return;
+    setEscapeRoom({
+      ...escapeRoom,
+      puzzles: escapeRoom.puzzles.map(p => {
+        if (p.room_number !== roomNumber) return p;
+        const steps = [...(p.challenge_steps || [])];
+        steps[stepIndex] = value;
+        return { ...p, challenge_steps: steps };
+      }),
+    });
+  };
 
   const handleGenerate = async () => {
     setGenerating(true);
