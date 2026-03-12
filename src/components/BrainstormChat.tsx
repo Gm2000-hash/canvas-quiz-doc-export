@@ -1,8 +1,75 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Lightbulb, Send, Loader2, Trash2 } from "lucide-react";
+
+function renderMarkdown(text: string) {
+  // Split into lines, process block-level elements
+  const lines = text.split("\n");
+  const elements: React.ReactNode[] = [];
+  let listItems: string[] = [];
+  let listType: "ul" | "ol" | null = null;
+  let key = 0;
+
+  const flushList = () => {
+    if (listItems.length === 0) return;
+    const Tag = listType === "ol" ? "ol" : "ul";
+    const cls = listType === "ol" ? "list-decimal" : "list-disc";
+    elements.push(
+      <Tag key={key++} className={`${cls} ml-4 space-y-0.5`}>
+        {listItems.map((item, i) => (
+          <li key={i} dangerouslySetInnerHTML={{ __html: inlineMarkdown(item) }} />
+        ))}
+      </Tag>
+    );
+    listItems = [];
+    listType = null;
+  };
+
+  for (const line of lines) {
+    // Headers
+    const h3Match = line.match(/^###\s+(.+)/);
+    const h2Match = line.match(/^##\s+(.+)/);
+    const h1Match = line.match(/^#\s+(.+)/);
+    // Unordered list
+    const ulMatch = line.match(/^[-*]\s+(.+)/);
+    // Ordered list
+    const olMatch = line.match(/^\d+\.\s+(.+)/);
+
+    if (ulMatch) {
+      if (listType !== "ul") flushList();
+      listType = "ul";
+      listItems.push(ulMatch[1]);
+    } else if (olMatch) {
+      if (listType !== "ol") flushList();
+      listType = "ol";
+      listItems.push(olMatch[1]);
+    } else {
+      flushList();
+      if (h3Match) {
+        elements.push(<h4 key={key++} className="font-semibold text-sm mt-2 mb-0.5" dangerouslySetInnerHTML={{ __html: inlineMarkdown(h3Match[1]) }} />);
+      } else if (h2Match) {
+        elements.push(<h3 key={key++} className="font-semibold text-sm mt-2 mb-0.5" dangerouslySetInnerHTML={{ __html: inlineMarkdown(h2Match[1]) }} />);
+      } else if (h1Match) {
+        elements.push(<h3 key={key++} className="font-bold text-sm mt-2 mb-0.5" dangerouslySetInnerHTML={{ __html: inlineMarkdown(h1Match[1]) }} />);
+      } else if (line.trim() === "") {
+        elements.push(<div key={key++} className="h-1.5" />);
+      } else {
+        elements.push(<p key={key++} className="leading-relaxed" dangerouslySetInnerHTML={{ __html: inlineMarkdown(line) }} />);
+      }
+    }
+  }
+  flushList();
+  return <div className="space-y-0.5">{elements}</div>;
+}
+
+function inlineMarkdown(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.+?)\*/g, "<em>$1</em>")
+    .replace(/`(.+?)`/g, '<code class="bg-background/50 px-1 py-0.5 rounded text-xs font-mono">$1</code>');
+}
 
 interface Message {
   role: "user" | "assistant";
@@ -199,12 +266,12 @@ export function BrainstormChat({ lessonContext }: Props) {
 
           {messages.map((msg, i) => (
             <div key={i} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-              <div className={`max-w-[85%] rounded-xl px-3 py-2 text-sm whitespace-pre-wrap ${
+              <div className={`max-w-[85%] rounded-xl px-3 py-2 text-sm ${
                 msg.role === "user"
-                  ? "bg-primary text-primary-foreground"
+                  ? "bg-primary text-primary-foreground whitespace-pre-wrap"
                   : "bg-accent/70 text-foreground"
               }`}>
-                {msg.content}
+                {msg.role === "assistant" ? renderMarkdown(msg.content) : msg.content}
               </div>
             </div>
           ))}
