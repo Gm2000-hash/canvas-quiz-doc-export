@@ -132,7 +132,9 @@ Make these detailed enough that a substitute teacher could pick them up and teac
       try { activities = typeof l.activities === "string" ? JSON.parse(l.activities) : l.activities; } catch { activities = []; }
       let standards = [];
       try { standards = typeof l.standards_json === "string" ? JSON.parse(l.standards_json) : (l.standards_json || []); } catch { standards = []; }
-      return { ...l, activities, standards };
+      let vocabulary = [];
+      try { vocabulary = typeof l.vocabulary_json === "string" ? JSON.parse(l.vocabulary_json) : (l.vocabulary_json || []); } catch { vocabulary = []; }
+      return { ...l, activities, standards, vocabulary };
     });
 
     return new Response(JSON.stringify({ lessons }), {
