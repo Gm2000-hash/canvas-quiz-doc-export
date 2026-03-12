@@ -178,6 +178,21 @@ const LessonPlanEditor = () => {
             placeholder="Lesson title..."
           />
         </div>
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5 rounded-xl"
+          onClick={() => {
+            if (!lesson) return;
+            exportLessonToDocx({
+              ...lesson,
+              standards: standards.map(s => ({ ngss_code: s.ngss_code, ngss_description: s.ngss_description })),
+            });
+          }}
+        >
+          <FileDown className="h-4 w-4" />
+          Export
+        </Button>
         <Button size="sm" className="gap-1.5 rounded-xl" onClick={handleSave} disabled={saving}>
           <Save className="h-4 w-4" />
           {saving ? "Saving..." : "Save"}
