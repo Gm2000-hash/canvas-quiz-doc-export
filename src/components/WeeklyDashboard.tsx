@@ -9,18 +9,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ChevronLeft, ChevronRight, Clock, Layers, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Clock, CalendarDays, CalendarRange, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
   startOfWeek,
   endOfWeek,
+  startOfMonth,
+  endOfMonth,
   eachDayOfInterval,
   format,
   addWeeks,
   subWeeks,
+  addMonths,
+  subMonths,
   isSameDay,
+  isSameMonth,
   parseISO,
   isToday,
+  getDay,
 } from "date-fns";
 
 interface LessonRow {
@@ -37,11 +43,14 @@ interface UnitOption {
   title: string;
 }
 
+type ViewMode = "week" | "month";
+
 export function WeeklyDashboard() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [viewMode, setViewMode] = useState<ViewMode>("week");
+  const [currentDate, setCurrentDate] = useState(new Date());
   const [lessons, setLessons] = useState<LessonRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [units, setUnits] = useState<UnitOption[]>([]);
@@ -53,17 +62,32 @@ export function WeeklyDashboard() {
   const [quickAddUnitId, setQuickAddUnitId] = useState<string>("");
   const [quickAddSaving, setQuickAddSaving] = useState(false);
 
-  const weekEnd = useMemo(() => endOfWeek(weekStart, { weekStartsOn: 1 }), [weekStart]);
+  const weekStart = useMemo(() => startOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
+  const weekEnd = useMemo(() => endOfWeek(currentDate, { weekStartsOn: 1 }), [currentDate]);
+  const monthStart = useMemo(() => startOfMonth(currentDate), [currentDate]);
+  const monthEnd = useMemo(() => endOfMonth(currentDate), [currentDate]);
+
+  const rangeStart = viewMode === "week" ? weekStart : monthStart;
+  const rangeEnd = viewMode === "week" ? weekEnd : monthEnd;
+
+  // Week days (Mon-Fri)
   const weekDays = useMemo(
     () => eachDayOfInterval({ start: weekStart, end: weekEnd }).filter(d => d.getDay() !== 0 && d.getDay() !== 6),
     [weekStart, weekEnd]
   );
 
+  // Month grid: full weeks covering the month, starting Monday
+  const monthGridDays = useMemo(() => {
+    const firstDay = startOfWeek(monthStart, { weekStartsOn: 1 });
+    const lastDay = endOfWeek(monthEnd, { weekStartsOn: 1 });
+    return eachDayOfInterval({ start: firstDay, end: lastDay });
+  }, [monthStart, monthEnd]);
+
   const fetchLessons = async () => {
     if (!user) return;
     setLoading(true);
-    const startStr = format(weekStart, "yyyy-MM-dd");
-    const endStr = format(weekEnd, "yyyy-MM-dd");
+    const startStr = viewMode === "week" ? format(weekStart, "yyyy-MM-dd") : format(startOfWeek(monthStart, { weekStartsOn: 1 }), "yyyy-MM-dd");
+    const endStr = viewMode === "week" ? format(weekEnd, "yyyy-MM-dd") : format(endOfWeek(monthEnd, { weekStartsOn: 1 }), "yyyy-MM-dd");
 
     const { data } = await supabase
       .from("lesson_plans")
@@ -90,9 +114,8 @@ export function WeeklyDashboard() {
     setLoading(false);
   };
 
-  useEffect(() => { fetchLessons(); }, [user, weekStart]);
+  useEffect(() => { fetchLessons(); }, [user, currentDate, viewMode]);
 
-  // Fetch units once for the quick-add picker
   useEffect(() => {
     if (!user) return;
     supabase.from("units").select("id, title").eq("user_id", user.id).order("created_at", { ascending: false })
@@ -102,7 +125,15 @@ export function WeeklyDashboard() {
   const getLessonsForDay = (day: Date) =>
     lessons.filter(l => l.lesson_date && isSameDay(parseISO(l.lesson_date), day));
 
-  const hasAnyLessons = lessons.length > 0;
+  const navigate_ = (dir: -1 | 1) => {
+    if (viewMode === "week") {
+      setCurrentDate(dir === 1 ? addWeeks(currentDate, 1) : subWeeks(currentDate, 1));
+    } else {
+      setCurrentDate(dir === 1 ? addMonths(currentDate, 1) : subMonths(currentDate, 1));
+    }
+  };
+
+  const goToday = () => setCurrentDate(new Date());
 
   const openQuickAdd = (day: Date) => {
     setQuickAddDate(format(day, "yyyy-MM-dd"));
@@ -134,82 +165,166 @@ export function WeeklyDashboard() {
     if (data) navigate(`/lessons/${data.id}`);
   };
 
+  const headerLabel = viewMode === "week"
+    ? `${format(weekStart, "MMM d")} – ${format(weekEnd, "MMM d, yyyy")}`
+    : format(currentDate, "MMMM yyyy");
+
   return (
     <div className="mb-6">
+      {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-          <Layers className="h-5 w-5 text-primary" />
-          Weekly Overview
-        </h2>
+        <div className="flex items-center gap-3">
+          <h2 className="text-lg font-semibold text-foreground">{headerLabel}</h2>
+        </div>
         <div className="flex items-center gap-1">
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setWeekStart(subWeeks(weekStart, 1))}>
+          {/* View toggle */}
+          <div className="flex items-center border border-border/60 rounded-lg p-0.5 mr-2">
+            <Button
+              variant={viewMode === "week" ? "secondary" : "ghost"}
+              size="sm"
+              className="h-7 px-2.5 rounded-md text-xs gap-1"
+              onClick={() => setViewMode("week")}
+            >
+              <CalendarDays className="h-3.5 w-3.5" /> Week
+            </Button>
+            <Button
+              variant={viewMode === "month" ? "secondary" : "ghost"}
+              size="sm"
+              className="h-7 px-2.5 rounded-md text-xs gap-1"
+              onClick={() => setViewMode("month")}
+            >
+              <CalendarRange className="h-3.5 w-3.5" /> Month
+            </Button>
+          </div>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => navigate_(-1)}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="rounded-lg text-xs font-medium px-2 h-8"
-            onClick={() => setWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}
-          >
+          <Button variant="ghost" size="sm" className="rounded-lg text-xs font-medium px-2 h-8" onClick={goToday}>
             Today
           </Button>
-          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => setWeekStart(addWeeks(weekStart, 1))}>
+          <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => navigate_(1)}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-5 gap-2">
-        {weekDays.map(day => {
-          const dayLessons = getLessonsForDay(day);
-          const today = isToday(day);
-
-          return (
-            <div key={day.toISOString()} className="space-y-1.5">
-              <div className={`text-center text-xs font-medium py-1 rounded-lg ${today ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-                <div>{format(day, "EEE")}</div>
-                <div className={`text-sm font-semibold ${today ? "" : "text-foreground"}`}>{format(day, "d")}</div>
-              </div>
-              {loading ? (
-                <div className="h-16 rounded-xl bg-muted/50 animate-pulse" />
-              ) : (
-                <>
-                  {dayLessons.map(lesson => (
-                    <Card
-                      key={lesson.id}
-                      className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] border-primary/15 bg-primary/[0.03]"
-                      onClick={() => navigate(`/lessons/${lesson.id}`)}
+      {/* Weekly View */}
+      {viewMode === "week" && (
+        <div className="grid grid-cols-5 gap-2">
+          {weekDays.map(day => {
+            const dayLessons = getLessonsForDay(day);
+            const today = isToday(day);
+            return (
+              <div key={day.toISOString()} className="space-y-1.5">
+                <div className={`text-center text-xs font-medium py-1 rounded-lg ${today ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+                  <div>{format(day, "EEE")}</div>
+                  <div className={`text-sm font-semibold ${today ? "" : "text-foreground"}`}>{format(day, "d")}</div>
+                </div>
+                {loading ? (
+                  <div className="h-16 rounded-xl bg-muted/50 animate-pulse" />
+                ) : (
+                  <>
+                    {dayLessons.map(lesson => (
+                      <Card
+                        key={lesson.id}
+                        className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] border-primary/15 bg-primary/[0.03]"
+                        onClick={() => navigate(`/lessons/${lesson.id}`)}
+                      >
+                        <CardContent className="p-2">
+                          <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug">{lesson.title}</p>
+                          <div className="flex items-center gap-1 mt-1">
+                            <Clock className="h-2.5 w-2.5 text-muted-foreground" />
+                            <span className="text-[10px] text-muted-foreground">{lesson.duration_minutes}m</span>
+                          </div>
+                          {lesson.unit_title && (
+                            <Badge variant="secondary" className="text-[9px] px-1 py-0 mt-1 max-w-full truncate">
+                              {lesson.unit_title}
+                            </Badge>
+                          )}
+                        </CardContent>
+                      </Card>
+                    ))}
+                    <button
+                      onClick={() => openQuickAdd(day)}
+                      className="w-full h-7 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-colors"
                     >
-                      <CardContent className="p-2">
-                        <p className="text-xs font-medium text-foreground line-clamp-2 leading-snug">{lesson.title}</p>
-                        <div className="flex items-center gap-1 mt-1">
-                          <Clock className="h-2.5 w-2.5 text-muted-foreground" />
-                          <span className="text-[10px] text-muted-foreground">{lesson.duration_minutes}m</span>
-                        </div>
-                        {lesson.unit_title && (
-                          <Badge variant="secondary" className="text-[9px] px-1 py-0 mt-1 max-w-full truncate">
-                            {lesson.unit_title}
-                          </Badge>
-                        )}
-                      </CardContent>
-                    </Card>
-                  ))}
-                  <button
-                    onClick={() => openQuickAdd(day)}
-                    className="w-full h-7 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-colors"
-                  >
-                    <Plus className="h-3 w-3" />
-                  </button>
-                </>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
 
-      {!loading && !hasAnyLessons && (
+      {/* Monthly View */}
+      {viewMode === "month" && (
+        <div>
+          {/* Day headers */}
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
+              <div key={d} className="text-center text-[10px] font-medium text-muted-foreground py-1">{d}</div>
+            ))}
+          </div>
+          {/* Day grid */}
+          <div className="grid grid-cols-7 gap-1">
+            {monthGridDays.map(day => {
+              const dayLessons = getLessonsForDay(day);
+              const today = isToday(day);
+              const inMonth = isSameMonth(day, currentDate);
+              const isWeekend = day.getDay() === 0 || day.getDay() === 6;
+
+              return (
+                <div
+                  key={day.toISOString()}
+                  className={`min-h-[72px] rounded-lg border p-1 transition-colors ${
+                    !inMonth ? "opacity-30 border-transparent" :
+                    isWeekend ? "bg-muted/30 border-border/30" :
+                    today ? "border-primary/40 bg-primary/5" :
+                    "border-border/40 hover:border-border/60"
+                  }`}
+                >
+                  <div className={`text-[10px] font-medium mb-0.5 ${
+                    today ? "text-primary font-bold" : inMonth ? "text-foreground" : "text-muted-foreground"
+                  }`}>
+                    {format(day, "d")}
+                  </div>
+                  {!loading && !isWeekend && inMonth && (
+                    <>
+                      {dayLessons.slice(0, 2).map(lesson => (
+                        <div
+                          key={lesson.id}
+                          onClick={() => navigate(`/lessons/${lesson.id}`)}
+                          className="text-[9px] leading-tight px-1 py-0.5 rounded bg-primary/10 text-foreground cursor-pointer hover:bg-primary/20 transition-colors truncate mb-0.5"
+                          title={lesson.title}
+                        >
+                          {lesson.title}
+                        </div>
+                      ))}
+                      {dayLessons.length > 2 && (
+                        <div className="text-[9px] text-muted-foreground px-1">+{dayLessons.length - 2} more</div>
+                      )}
+                      {dayLessons.length === 0 && (
+                        <button
+                          onClick={() => openQuickAdd(day)}
+                          className="w-full h-5 rounded border border-dashed border-transparent hover:border-border/60 flex items-center justify-center text-muted-foreground/50 hover:text-primary transition-colors"
+                        >
+                          <Plus className="h-2.5 w-2.5" />
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {!loading && lessons.length === 0 && (
         <p className="text-xs text-muted-foreground text-center mt-2">
-          No lessons scheduled for {format(weekStart, "MMM d")} – {format(weekEnd, "MMM d")}
+          No lessons scheduled for this {viewMode === "week" ? "week" : "month"}
         </p>
       )}
 

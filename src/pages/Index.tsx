@@ -1,6 +1,5 @@
 import { SettingsForm } from "@/components/SettingsForm";
 import { QuizBrowser } from "@/components/QuizBrowser";
-import { WeeklyDashboard } from "@/components/WeeklyDashboard";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { FileText } from "lucide-react";
@@ -24,7 +23,6 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Settings sheet (separate from nav) */}
       {isConfigured && (
         <Sheet open={settingsOpen} onOpenChange={setSettingsOpen}>
           <SheetContent side="left" className="w-80 p-0">
@@ -60,7 +58,6 @@ const Index = () => {
           </div>
         ) : (
           <div className="py-6 px-4 sm:px-6 lg:px-8">
-            <WeeklyDashboard />
             <QuizBrowser config={config!} />
           </div>
         )}

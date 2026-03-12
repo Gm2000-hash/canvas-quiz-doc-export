@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ArrowLeft, Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { WeeklyDashboard } from "@/components/WeeklyDashboard";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
@@ -113,11 +114,14 @@ const LessonPlanner = () => {
         </div>
       </header>
 
-      <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">
+      <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
+        {/* Calendar Overview */}
+        <WeeklyDashboard />
+
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">Units & Pacing</h1>
-            <p className="text-sm text-muted-foreground mt-1">Organize lesson plans into units with pacing guides</p>
+            <h2 className="text-xl font-bold text-foreground">Units</h2>
+            <p className="text-sm text-muted-foreground mt-0.5">Organize lesson plans into units with pacing guides</p>
           </div>
           <Dialog open={createOpen} onOpenChange={setCreateOpen}>
             <DialogTrigger asChild>
