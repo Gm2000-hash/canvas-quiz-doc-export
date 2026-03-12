@@ -79,20 +79,6 @@ export default function QuestionEditor() {
         </div>
       </header>
 
-      {/* Breadcrumb navigation */}
-      <nav className="max-w-5xl mx-auto px-4 sm:px-6 pt-3 pb-0">
-        <ol className="flex items-center gap-1.5 text-sm text-muted-foreground">
-          <li>
-            <button className="hover:text-primary transition-colors" onClick={() => navigate("/")}>Home</button>
-          </li>
-          <li><ChevronRight className="h-3.5 w-3.5" /></li>
-          <li>
-            <button className="hover:text-primary transition-colors" onClick={() => navigate("/question-bank")}>Question Bank</button>
-          </li>
-          <li><ChevronRight className="h-3.5 w-3.5" /></li>
-          <li className="font-medium text-foreground">Create Question</li>
-        </ol>
-      </nav>
 
       <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
