@@ -68,9 +68,7 @@ export default function QuestionEditor() {
   return (
     <div className="min-h-screen bg-background">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-3">
-        <Button variant="ghost" size="icon" className="text-primary hover:bg-accent rounded-xl h-9 w-9" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+        <AppNavSheet />
         <span className="text-base font-semibold text-foreground">Question Editor</span>
         <div className="ml-auto">
           <Button onClick={handleSave} disabled={saving} className="rounded-xl font-medium">
