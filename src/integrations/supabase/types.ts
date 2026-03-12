@@ -60,6 +60,7 @@ export type Database = {
           unit_id: string | null
           updated_at: string
           user_id: string
+          vocabulary: Json | null
         }
         Insert: {
           activities?: Json | null
@@ -77,6 +78,7 @@ export type Database = {
           unit_id?: string | null
           updated_at?: string
           user_id: string
+          vocabulary?: Json | null
         }
         Update: {
           activities?: Json | null
@@ -94,6 +96,7 @@ export type Database = {
           unit_id?: string | null
           updated_at?: string
           user_id?: string
+          vocabulary?: Json | null
         }
         Relationships: [
           {

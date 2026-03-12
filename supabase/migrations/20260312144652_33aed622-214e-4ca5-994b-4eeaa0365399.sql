@@ -1,0 +1,1 @@
+ALTER TABLE public.lesson_plans ADD COLUMN vocabulary jsonb DEFAULT '[]'::jsonb;
