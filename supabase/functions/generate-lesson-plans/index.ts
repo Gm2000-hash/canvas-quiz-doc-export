@@ -137,13 +137,30 @@ Make these detailed enough that a substitute teacher with no science background 
 
     const lessons = parsed.lessons.map((l: any) => {
       let activities = [];
-      try { activities = typeof l.activities === "string" ? JSON.parse(l.activities) : l.activities; } catch { activities = []; }
+      try {
+        if (typeof l.activities === "string") {
+          activities = JSON.parse(l.activities);
+        } else if (Array.isArray(l.activities)) {
+          activities = l.activities;
+        }
+      } catch (e) {
+        console.error("Failed to parse activities:", e, "Raw:", typeof l.activities, JSON.stringify(l.activities)?.substring(0, 200));
+        activities = [];
+      }
+      // Ensure each activity has required fields
+      activities = activities.map((a: any) => ({
+        name: a.name || "Untitled Activity",
+        duration: a.duration || 10,
+        description: a.description || "",
+      }));
       let standards = [];
       try { standards = typeof l.standards_json === "string" ? JSON.parse(l.standards_json) : (l.standards_json || []); } catch { standards = []; }
       let vocabulary = [];
       try { vocabulary = typeof l.vocabulary_json === "string" ? JSON.parse(l.vocabulary_json) : (l.vocabulary_json || []); } catch { vocabulary = []; }
       let resources = [];
       try { resources = typeof l.resources_json === "string" ? JSON.parse(l.resources_json) : (l.resources_json || []); } catch { resources = []; }
+      
+      console.log(`Lesson "${l.title}": ${activities.length} activities parsed`);
       return { ...l, activities, standards, vocabulary, resources };
     });
 
