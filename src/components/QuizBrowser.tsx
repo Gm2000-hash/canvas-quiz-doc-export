@@ -60,6 +60,19 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
   const [loadingCourses, setLoadingCourses] = useState(true);
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [courseColors, setCourseColors] = useState<Record<string, string>>(loadCourseColors);
+
+  const getColorForCourse = useCallback((courseId: number, idx: number) => {
+    return courseColors[String(courseId)] || COURSE_COLORS[idx % COURSE_COLORS.length];
+  }, [courseColors]);
+
+  const setCourseColor = useCallback((courseId: number, colorClass: string) => {
+    setCourseColors(prev => {
+      const next = { ...prev, [String(courseId)]: colorClass };
+      saveCourseColors(next);
+      return next;
+    });
+  }, []);
 
   // NGSS tagging state
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
