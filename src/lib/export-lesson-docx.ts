@@ -85,6 +85,21 @@ function buildLessonParagraphs(lesson: LessonPlan, index: number): Paragraph[] {
     lesson.objectives.split("\n").filter(Boolean).forEach(line => paras.push(bodyText(line)));
   }
 
+  // Key Vocabulary
+  if (lesson.vocabulary && lesson.vocabulary.length > 0) {
+    paras.push(sectionTitle("Key Vocabulary"));
+    lesson.vocabulary.forEach(v => {
+      paras.push(new Paragraph({
+        spacing: { before: 40, after: 40 },
+        indent: { left: 360 },
+        children: [
+          new TextRun({ text: v.term, bold: true, size: 22 }),
+          new TextRun({ text: ` — ${v.definition}`, size: 22 }),
+        ],
+      }));
+    });
+  }
+
   // Activities
   if (lesson.activities.length > 0) {
     paras.push(sectionTitle("Activities & Timing"));
