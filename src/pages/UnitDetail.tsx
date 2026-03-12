@@ -66,6 +66,7 @@ const UnitDetail = () => {
   const [activeTab, setActiveTab] = useState("list");
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
+  const [pacingSaving, setPacingSaving] = useState(false);
   const dragNode = useRef<HTMLDivElement | null>(null);
 
   const handleDragStart = useCallback((e: React.DragEvent, idx: number) => {
