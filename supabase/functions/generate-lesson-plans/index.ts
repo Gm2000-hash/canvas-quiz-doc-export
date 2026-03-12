@@ -19,8 +19,13 @@ Each lesson should be practical, engaging, and age-appropriate for ${gradeLevel 
 Focus on ${discipline || "science"} content.
 
 CRITICAL REQUIREMENTS FOR DETAIL:
-- OBJECTIVES: Write 3-5 specific, measurable learning objectives using Bloom's taxonomy verbs. Include the FULL TEXT of each aligned NGSS performance expectation (not just the code).
-- ACTIVITIES: Script out each activity in detail. For direct instruction, include the key talking points, questions to ask, and example explanations the teacher should give. For labs/investigations, include step-by-step procedures. For discussions, include specific discussion prompts and expected student responses. For group work, include specific tasks and roles. Each activity description should be 3-8 sentences minimum — think of it as a teacher script.
+- OBJECTIVES: Write EXACTLY 3 specific, measurable learning objectives using Bloom's taxonomy verbs. No more than 3. Include the FULL TEXT of each aligned NGSS performance expectation (not just the code).
+- ACTIVITIES: Include AT LEAST 4 distinct activities per lesson (e.g., warm-up, direct instruction, guided practice, lab/investigation, group work, discussion, assessment, closing). For EVERY activity, provide:
+  1. KEY TALKING POINTS: A bulleted list of the main ideas the teacher should communicate, written as if scripting what to say.
+  2. BACKGROUND INFORMATION: 3-5 sentences of deep content knowledge the teacher needs to understand and convey — include scientific explanations, real-world connections, common misconceptions and how to correct them, and relevant analogies.
+  3. STUDENT ENGAGEMENT: Specific questions to ask, anticipated student responses, and follow-up probes.
+  4. STEP-BY-STEP PROCEDURE: For labs/investigations, include numbered steps. For discussions, include prompts. For group work, include tasks and roles.
+  Each activity description should be 8-15 sentences minimum — think of it as a comprehensive teacher script with embedded content knowledge.
 - MATERIALS: List every specific material with quantities (e.g., "30 copies of Cell Diagram handout", "1 microscope per lab group of 4").
 - ASSESSMENT: Describe specific formative and summative assessment strategies with example questions or rubric criteria.
 - DIFFERENTIATION: Provide specific accommodations for ELL students, students with IEPs, gifted learners, and struggling readers.
@@ -33,15 +38,15 @@ Map each lesson to relevant NGSS Middle School performance expectations (MS-LS, 
     const userPrompt = `Create ${numLessons} sequential, FULLY SCRIPTED lesson plans for a unit called "${unitTitle}" focused on "${topic}".
 ${additionalContext ? `Additional instructions: ${additionalContext}` : ""}
 
-Each lesson should be 50 minutes. For EVERY activity, write it as if you are scripting what the teacher says and does minute-by-minute. Include:
-- Exact questions the teacher should ask students
+Each lesson should be 50 minutes with EXACTLY 3 learning objectives and AT LEAST 4 activities. For EVERY activity, write it as if you are scripting what the teacher says and does minute-by-minute. Include:
+- KEY TALKING POINTS as a bulleted list of main ideas to communicate
+- BACKGROUND INFORMATION: deep content knowledge (3-5 sentences) covering scientific explanations, real-world connections, common misconceptions with corrections, and analogies
+- Exact questions the teacher should ask students with anticipated responses
 - Key vocabulary with definitions
 - Transition phrases between activities
-- Anticipated student questions and how to respond
-- Specific examples and analogies to use when explaining concepts
 - At least 3 online resources per lesson (videos, readings, interactive activities) with real URLs
 
-Make these detailed enough that a substitute teacher could pick them up and teach effectively.`;
+Make these detailed enough that a substitute teacher with no science background could pick them up and teach effectively.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -71,10 +76,10 @@ Make these detailed enough that a substitute teacher could pick them up and teac
                       properties: {
                         title: { type: "string", description: "Lesson title" },
                         duration_minutes: { type: "number", description: "Lesson duration in minutes" },
-                        objectives: { type: "string", description: "Learning objectives, one per line" },
+                        objectives: { type: "string", description: "EXACTLY 3 specific, measurable learning objectives using Bloom's taxonomy verbs, one per line" },
                         activities: {
                           type: "string",
-                          description: "JSON string of activities array. Each activity has name (string), duration (number in minutes), and description (string — this MUST be a detailed teacher script of 3-8 sentences including what to say, questions to ask, and step-by-step instructions). Example: [{\"name\":\"Warm-up: Activating Prior Knowledge\",\"duration\":5,\"description\":\"Begin by projecting the question...\"}]",
+                          description: "JSON string of AT LEAST 4 activities. Each activity has name (string), duration (number in minutes), and description (string — this MUST be 8-15 sentences including: KEY TALKING POINTS as bullet points, BACKGROUND INFORMATION with 3-5 sentences of deep content knowledge covering scientific explanations/real-world connections/misconceptions/analogies, specific questions to ask with anticipated responses, and step-by-step procedures). Example: [{\"name\":\"Warm-up: Activating Prior Knowledge\",\"duration\":5,\"description\":\"KEY TALKING POINTS:\\n• Energy cannot be created or destroyed...\\n\\nBACKGROUND INFORMATION: Energy transfer is a fundamental concept...\\n\\nAsk students: What happens when you rub your hands together?\"}]",
                         },
                         materials: { type: "string", description: "Detailed materials list with quantities" },
                         assessment: { type: "string", description: "Specific formative and summative assessment strategies with example questions, exit ticket prompts, or rubric criteria" },
