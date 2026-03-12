@@ -286,6 +286,48 @@ export function BrainstormChat({ lessonContext, onCopyToField }: Props) {
                   : "bg-accent/70 text-foreground"
               }`}>
                 {msg.role === "assistant" ? renderMarkdown(msg.content) : msg.content}
+                {msg.role === "assistant" && msg.content && !isLoading && (
+                  <div className="flex items-center gap-1 mt-2 pt-1.5 border-t border-border/40">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-foreground gap-1"
+                      onClick={() => {
+                        navigator.clipboard.writeText(msg.content);
+                        toast({ title: "Copied to clipboard" });
+                      }}
+                    >
+                      <Copy className="h-3 w-3" /> Copy
+                    </Button>
+                    {onCopyToField && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-1.5 text-[10px] text-muted-foreground hover:text-foreground gap-1"
+                          >
+                            <ArrowRight className="h-3 w-3" /> Send to field
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="start" className="min-w-[160px]">
+                          {FIELD_OPTIONS.map(({ field, label, icon: Icon }) => (
+                            <DropdownMenuItem
+                              key={field}
+                              onClick={() => {
+                                onCopyToField(field, msg.content);
+                                toast({ title: `Added to ${label}` });
+                              }}
+                              className="gap-2 text-xs"
+                            >
+                              <Icon className="h-3.5 w-3.5" /> {label}
+                            </DropdownMenuItem>
+                          ))}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           ))}
