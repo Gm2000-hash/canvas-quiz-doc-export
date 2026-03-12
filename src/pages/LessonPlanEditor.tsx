@@ -20,6 +20,11 @@ interface Activity {
   description: string;
 }
 
+interface VocabularyItem {
+  term: string;
+  definition: string;
+}
+
 interface LessonPlan {
   id: string;
   unit_id: string | null;
@@ -32,6 +37,7 @@ interface LessonPlan {
   assessment: string;
   differentiation: string;
   notes: string;
+  vocabulary: VocabularyItem[];
 }
 
 interface Standard {
