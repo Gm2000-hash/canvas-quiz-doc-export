@@ -13,7 +13,14 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const systemPrompt = `You are an expert middle school science teacher who creates engaging digital escape rooms that students complete via Google Forms. You design puzzles that test content knowledge while being fun and challenging.
+    const systemPrompt = `You are an expert middle school science teacher who creates immersive, richly detailed digital escape rooms that students complete via Google Forms. You design multi-step puzzles that test content knowledge while being fun, challenging, and deeply engaging.
+
+CRITICAL — DETAIL AND LENGTH REQUIREMENTS:
+- Each room/puzzle MUST be EXTENSIVE and DETAILED — at minimum half a page of content when printed
+- narrative_text must be 5-10 sentences of vivid, immersive storytelling that sets the scene (describe the environment, what students see/hear/smell, the tension of the scenario)
+- question_text must be MULTI-STEP: include background information, a data table or scenario description, then 2-3 sub-questions or steps that build on each other before arriving at the lock code
+- Do NOT write short, single-sentence puzzles. Each puzzle should feel like a mini-adventure with real depth
+- Include specific scientific details, numbers, data, and context — not vague generalities
 
 ESCAPE ROOM DESIGN PRINCIPLES:
 - Each puzzle/room should test a specific concept or skill from the lesson content
@@ -24,13 +31,19 @@ ESCAPE ROOM DESIGN PRINCIPLES:
 - Include red herrings and distractors that require critical thinking
 - Mix question types: multiple choice, short answer codes, ordering/sequencing, image-based clues
 
+MULTI-STEP PUZZLE STRUCTURE (REQUIRED for each room):
+- Step 1: Present a rich scenario with specific data, observations, or evidence
+- Step 2: Ask students to analyze, interpret, or apply a concept to the scenario
+- Step 3: Use the result from Step 2 to solve a final calculation, decode, or reasoning challenge that produces the lock code
+- Include supplementary details like lab notebook entries, field observations, data tables (described in text), or intercepted messages
+
 PUZZLE TYPES TO USE:
-1. Decode puzzles — students solve a science problem, the answer is a code (e.g., "If an organism has 46 chromosomes, how many after meiosis? The answer is your code")
-2. Matching/ordering — arrange steps of a process in order, first letters spell a word
-3. Diagram analysis — describe an image students must analyze, answer a question about it
-4. Vocabulary cipher — definitions lead to terms, certain letters form the code
-5. Data interpretation — read a table/graph description, extract the answer
-6. Riddle/clue chains — science riddles where the answer is a key term
+1. Decode puzzles — students solve a multi-part science problem through several calculation steps, the final answer is a code
+2. Matching/ordering — arrange steps of a process in order, first letters spell a word; include detailed descriptions of each step
+3. Diagram analysis — describe in vivid detail an image/diagram students must analyze, provide specific measurements or labels, ask multi-part questions
+4. Vocabulary cipher — provide rich context paragraphs where definitions lead to terms, certain letters form the code
+5. Data interpretation — present a detailed data table or graph description with multiple data points, ask students to identify patterns and extract the answer
+6. Riddle/clue chains — multi-clue science riddles where students must solve each clue sequentially to build the final answer
 
 For Google Forms implementation:
 - Each puzzle = one Form section
@@ -46,7 +59,9 @@ ${vocabulary ? `Key Vocabulary to incorporate: ${vocabulary}` : ""}
 Difficulty: ${difficulty || "medium"}
 ${additionalContext ? `Additional instructions: ${additionalContext}` : ""}
 
-Design an engaging narrative theme and create puzzles that test understanding of the content. Each puzzle should have clear Google Form setup instructions.`;
+IMPORTANT: Each room must be EXTENSIVE and RICHLY DETAILED. The narrative_text should be 5-10 sentences of vivid scene-setting. The question_text should be MULTI-STEP with background information, data/evidence, and 2-3 progressive steps that lead to the lock code. Each room should fill at least half a page when printed. Do NOT create short or shallow puzzles.
+
+Design an engaging narrative theme and create puzzles that test deep understanding of the content. Each puzzle should have clear Google Form setup instructions.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
