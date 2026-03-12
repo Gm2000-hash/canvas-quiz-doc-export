@@ -176,6 +176,9 @@ const UnitDetail = () => {
           <Button variant="ghost" size="sm" className="text-primary rounded-xl gap-1.5 text-sm" onClick={() => setGenerateOpen(true)}>
             <Sparkles className="h-4 w-4" /> AI Generate
           </Button>
+          <Button variant="ghost" size="sm" className="text-primary rounded-xl gap-1.5 text-sm" onClick={() => setEscapeRoomOpen(true)}>
+            <Lock className="h-4 w-4" /> Escape Room
+          </Button>
           <Button
             variant="ghost"
             size="sm"
