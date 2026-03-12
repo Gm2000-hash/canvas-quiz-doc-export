@@ -310,10 +310,6 @@ export function WeeklyDashboard() {
                           </div>
                         );
                       })}
-                        >
-                          {lesson.title}
-                        </div>
-                      ))}
                       {dayLessons.length > 2 && (
                         <div className="text-[9px] text-muted-foreground px-1">+{dayLessons.length - 2} more</div>
                       )}
