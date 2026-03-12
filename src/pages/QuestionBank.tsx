@@ -15,6 +15,7 @@ import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { toast } from "sonner";
 import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb } from "lucide-react";
+import { AppNavSheet } from "@/components/AppNavSheet";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateQuestionsDialog from "@/components/GenerateQuestionsDialog";
 import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
