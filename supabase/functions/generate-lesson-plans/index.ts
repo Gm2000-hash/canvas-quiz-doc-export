@@ -19,8 +19,13 @@ Each lesson should be practical, engaging, and age-appropriate for ${gradeLevel 
 Focus on ${discipline || "science"} content.
 
 CRITICAL REQUIREMENTS FOR DETAIL:
-- OBJECTIVES: Write 3-5 specific, measurable learning objectives using Bloom's taxonomy verbs. Include the FULL TEXT of each aligned NGSS performance expectation (not just the code).
-- ACTIVITIES: Script out each activity in detail. For direct instruction, include the key talking points, questions to ask, and example explanations the teacher should give. For labs/investigations, include step-by-step procedures. For discussions, include specific discussion prompts and expected student responses. For group work, include specific tasks and roles. Each activity description should be 3-8 sentences minimum — think of it as a teacher script.
+- OBJECTIVES: Write EXACTLY 3 specific, measurable learning objectives using Bloom's taxonomy verbs. No more than 3. Include the FULL TEXT of each aligned NGSS performance expectation (not just the code).
+- ACTIVITIES: Include AT LEAST 4 distinct activities per lesson (e.g., warm-up, direct instruction, guided practice, lab/investigation, group work, discussion, assessment, closing). For EVERY activity, provide:
+  1. KEY TALKING POINTS: A bulleted list of the main ideas the teacher should communicate, written as if scripting what to say.
+  2. BACKGROUND INFORMATION: 3-5 sentences of deep content knowledge the teacher needs to understand and convey — include scientific explanations, real-world connections, common misconceptions and how to correct them, and relevant analogies.
+  3. STUDENT ENGAGEMENT: Specific questions to ask, anticipated student responses, and follow-up probes.
+  4. STEP-BY-STEP PROCEDURE: For labs/investigations, include numbered steps. For discussions, include prompts. For group work, include tasks and roles.
+  Each activity description should be 8-15 sentences minimum — think of it as a comprehensive teacher script with embedded content knowledge.
 - MATERIALS: List every specific material with quantities (e.g., "30 copies of Cell Diagram handout", "1 microscope per lab group of 4").
 - ASSESSMENT: Describe specific formative and summative assessment strategies with example questions or rubric criteria.
 - DIFFERENTIATION: Provide specific accommodations for ELL students, students with IEPs, gifted learners, and struggling readers.
