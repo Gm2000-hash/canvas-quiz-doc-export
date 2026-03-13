@@ -95,7 +95,7 @@ export default function Home() {
       <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            Welcome back{user?.email ? `, ${user.email.split("@")[0]}` : ""}!
+            Welcome back{profile?.display_name ? `, ${profile.display_name}` : user?.email ? `, ${user.email.split("@")[0]}` : ""}!
           </h1>
           <p className="text-muted-foreground mt-2 text-base">
             What would you like to work on today?
