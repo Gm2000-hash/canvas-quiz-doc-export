@@ -13,8 +13,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getQuestionBank, deleteFromBank, updateQuestion, backfillDokAndBlooms, type QuestionBankItem } from "@/lib/question-bank";
 import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
+import { exportToQTI } from "@/lib/export-qti";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb, Upload } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateQuestionsDialog from "@/components/GenerateQuestionsDialog";
@@ -269,6 +270,21 @@ const QuestionBank = () => {
       setShowExportDialog(false);
     } catch {
       toast.error("Failed to export quiz");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handleExportQTI = async () => {
+    const selectedQuestions = questions.filter(q => selected.has(q.id));
+    if (selectedQuestions.length === 0) return;
+    setExporting(true);
+    try {
+      await exportToQTI(quizTitle, selectedQuestions);
+      toast.success("QTI package exported! Import this .zip file into Mastery Connect.");
+      setShowExportDialog(false);
+    } catch {
+      toast.error("Failed to export QTI package");
     } finally {
       setExporting(false);
     }
@@ -873,11 +889,15 @@ const QuestionBank = () => {
             </div>
             <p className="text-sm text-muted-foreground">{selected.size} question{selected.size !== 1 ? "s" : ""} selected</p>
           </div>
-          <DialogFooter>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setShowExportDialog(false)}>Cancel</Button>
-            <Button onClick={handleExport} disabled={exporting || !quizTitle.trim()}>
-              {exporting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <FileText className="h-4 w-4 mr-2" />}
-              Export
+            <Button variant="secondary" onClick={handleExportQTI} disabled={exporting || !quizTitle.trim()} className="gap-2">
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              Mastery Connect (QTI)
+            </Button>
+            <Button onClick={handleExport} disabled={exporting || !quizTitle.trim()} className="gap-2">
+              {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
+              Word Document
             </Button>
           </DialogFooter>
         </DialogContent>
