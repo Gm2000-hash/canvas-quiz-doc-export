@@ -74,6 +74,17 @@ export function AppNavSheet({ onOpenSettings, showSettings }: AppNavSheetProps) 
         </nav>
 
         <div className="p-3 space-y-0.5 border-t border-border/60">
+          <button
+            onClick={() => go("/profile")}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+              location.pathname === "/profile"
+                ? "bg-primary/10 text-primary font-medium"
+                : "text-foreground hover:bg-accent"
+            }`}
+          >
+            <UserCircle className={`h-5 w-5 shrink-0 ${location.pathname === "/profile" ? "text-primary" : "text-muted-foreground"}`} />
+            <span className="text-sm font-medium">Profile</span>
+          </button>
           {isAdmin && (
             <button
               onClick={() => go("/admin")}
