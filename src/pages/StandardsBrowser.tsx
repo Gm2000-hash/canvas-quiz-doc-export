@@ -107,6 +107,11 @@ export default function StandardsBrowser() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        <PageBanner
+          compact
+          greeting="Standards Browser"
+          subtitle="Browse Idaho and NGSS standards organized by subject, grade, and category"
+        />
         {/* Framework toggle */}
         <Tabs value={framework} onValueChange={v => { setFramework(v as any); setGradeFilter("all"); setCategoryFilter("all"); setSearch(""); }}>
           <TabsList className="w-full max-w-sm">

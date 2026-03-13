@@ -205,7 +205,13 @@ const LessonPlanner = () => {
         <Breadcrumbs items={[{ label: "Lesson Planner" }]} />
       </header>
 
-      <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
+      <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-6">
+        <PageBanner
+          compact
+          greeting="Lesson Planner"
+          subtitle="Organize units, generate AI lesson plans, and export pacing guides"
+          stats={[{ label: "Units", value: units.length }]}
+        />
         {/* Calendar Overview */}
         <WeeklyDashboard />
 
