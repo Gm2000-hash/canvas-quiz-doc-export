@@ -20,6 +20,7 @@ export const PRESET_AVATARS = [
   { src: avatarButterfly, label: "Butterfly" },
   { src: avatarSun, label: "Sun" },
   { src: avatarTree, label: "Tree" },
+  { src: avatarFish, label: "Fish" },
   { src: avatarMan, label: "Man" },
   { src: avatarWoman, label: "Woman" },
   { src: avatarTurtle, label: "Turtle" },
