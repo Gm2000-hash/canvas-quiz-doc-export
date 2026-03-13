@@ -32,6 +32,15 @@ export default function Onboarding() {
       return;
     }
     setSaving(true);
+
+    // Save avatar if selected
+    if (selectedAvatar && user) {
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: selectedAvatar, updated_at: new Date().toISOString() } as any)
+        .eq("user_id", user.id);
+    }
+
     const { error } = (await updateProfile({
       display_name: displayName.trim(),
       subjects: selectedSubjects,
