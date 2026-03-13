@@ -18,7 +18,7 @@ export function PageBanner({
   avatarUrl, avatarFallback, avatarPosition = "left", avatarSize = "default",
 }: PageBannerProps) {
   const sizeClass = avatarSize === "large"
-    ? "h-20 w-20 sm:h-24 sm:w-24"
+    ? "h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32"
     : compact ? "h-10 w-10" : "h-14 w-14 sm:h-16 sm:w-16";
 
   const avatarEl = avatarUrl !== undefined ? (
