@@ -16,6 +16,7 @@ import UnitDetail from "./pages/UnitDetail";
 import LessonPlanEditor from "./pages/LessonPlanEditor";
 import AdminDashboard from "./pages/AdminDashboard";
 import StandardsBrowser from "./pages/StandardsBrowser";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
