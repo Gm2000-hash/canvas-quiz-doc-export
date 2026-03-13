@@ -120,13 +120,13 @@
     --chart-5: 220 9% 55%;
     --sidebar: 220 13% 12%;
 
-    /* Warm earth tone theme (dark) */
-    --earth-terracotta: 15 65% 50%;
-    --earth-sage: 150 22% 42%;
-    --earth-sand: 35 30% 25%;
-    --earth-warm: 30 20% 18%;
-    --earth-clay: 20 45% 50%;
-    --earth-moss: 140 18% 35%;
+    /* Tropical bright theme (dark) */
+    --earth-terracotta: 145 70% 50%;
+    --earth-sage: 195 80% 45%;
+    --earth-sand: 50 60% 25%;
+    --earth-warm: 55 40% 15%;
+    --earth-clay: 145 60% 55%;
+    --earth-moss: 200 60% 45%;
     --shadow-2xs: 0 0 1px 0 hsl(0 0% 0% / 0.06);
     --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.08);
     --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.12), 0 1px 2px -1px hsl(0 0% 0% / 0.08);
