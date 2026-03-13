@@ -22,6 +22,8 @@ import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateQuestionsDialog from "@/components/GenerateQuestionsDialog";
 import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import PushToCanvasDialog from "@/components/PushToCanvasDialog";
+import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { PageBanner } from "@/components/PageBanner";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
@@ -112,10 +114,12 @@ const QuestionBank = () => {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [showPushToCanvas, setShowPushToCanvas] = useState(false);
   const [quizTitle, setQuizTitle] = useState("Custom Quiz");
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
   const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
+  const { config: canvasConfig, isConfigured: canvasConnected } = useCanvasConfig();
   const { profile } = useProfile();
   const teacherSubjects = profile?.subjects ?? [];
   const showNGSS = teacherSubjects.length === 0 || teacherSubjects.includes("Science");
@@ -569,10 +573,18 @@ const QuestionBank = () => {
             </Button>
           )}
           {selected.size > 0 && (
-            <Button onClick={() => setShowExportDialog(true)} className="gap-2">
-              <FileText className="h-4 w-4" />
-              Create Quiz ({selected.size})
-            </Button>
+            <>
+              <Button onClick={() => setShowExportDialog(true)} className="gap-2">
+                <FileText className="h-4 w-4" />
+                Create Quiz ({selected.size})
+              </Button>
+              {canvasConnected && (
+                <Button variant="outline" onClick={() => setShowPushToCanvas(true)} className="gap-2">
+                  <Upload className="h-4 w-4" />
+                  Push to Canvas ({selected.size})
+                </Button>
+              )}
+            </>
           )}
         </div>
 
@@ -1492,6 +1504,14 @@ const QuestionBank = () => {
           }
         }}
       />
+      {canvasConnected && canvasConfig && (
+        <PushToCanvasDialog
+          open={showPushToCanvas}
+          onOpenChange={setShowPushToCanvas}
+          questions={questions.filter(q => selected.has(q.id))}
+          config={canvasConfig}
+        />
+      )}
     </div>
   );
 };

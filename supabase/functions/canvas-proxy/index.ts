@@ -11,7 +11,7 @@ serve(async (req) => {
   }
 
   try {
-    const { action, canvasUrl, apiToken, courseId, quizId } = await req.json();
+    const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData } = await req.json();
 
     if (!canvasUrl || !apiToken) {
       return new Response(JSON.stringify({ error: 'Canvas URL and API token are required' }), {
@@ -21,9 +21,11 @@ serve(async (req) => {
     }
 
     const baseUrl = canvasUrl.replace(/\/+$/, '');
-    const headers = { 'Authorization': `Bearer ${apiToken}` };
+    const headers: Record<string, string> = { 'Authorization': `Bearer ${apiToken}` };
 
     let url: string;
+    let method = 'GET';
+    let body: string | undefined;
 
     switch (action) {
       case 'get_courses':
@@ -41,11 +43,25 @@ serve(async (req) => {
         if (!courseId || !quizId) throw new Error('courseId and quizId are required');
         url = `${baseUrl}/api/v1/courses/${courseId}/quizzes/${quizId}`;
         break;
+      case 'create_quiz':
+        if (!courseId || !quizData) throw new Error('courseId and quizData are required');
+        url = `${baseUrl}/api/v1/courses/${courseId}/quizzes`;
+        method = 'POST';
+        headers['Content-Type'] = 'application/json';
+        body = JSON.stringify({ quiz: quizData });
+        break;
+      case 'create_quiz_question':
+        if (!courseId || !quizId || !questionData) throw new Error('courseId, quizId, and questionData are required');
+        url = `${baseUrl}/api/v1/courses/${courseId}/quizzes/${quizId}/questions`;
+        method = 'POST';
+        headers['Content-Type'] = 'application/json';
+        body = JSON.stringify({ question: questionData });
+        break;
       default:
         throw new Error(`Unknown action: ${action}`);
     }
 
-    const response = await fetch(url, { headers });
+    const response = await fetch(url, { method, headers, body });
 
     if (!response.ok) {
       const errorText = await response.text();

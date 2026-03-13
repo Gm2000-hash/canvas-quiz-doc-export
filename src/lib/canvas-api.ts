@@ -61,3 +61,33 @@ export async function getQuiz(config: CanvasConfig, courseId: number, quizId: nu
 export async function getQuizQuestions(config: CanvasConfig, courseId: number, quizId: number): Promise<QuizQuestion[]> {
   return canvasRequest(config, 'get_quiz_questions', { courseId, quizId });
 }
+
+export interface CreateQuizParams {
+  title: string;
+  description?: string;
+  quiz_type?: 'practice_quiz' | 'assignment' | 'graded_survey' | 'survey';
+  time_limit?: number | null;
+  shuffle_answers?: boolean;
+  published?: boolean;
+}
+
+export async function createCanvasQuiz(config: CanvasConfig, courseId: number, quizData: CreateQuizParams): Promise<Quiz> {
+  return canvasRequest(config, 'create_quiz', { courseId, quizData });
+}
+
+export interface CreateQuizQuestionParams {
+  question_name: string;
+  question_text: string;
+  question_type: string;
+  points_possible: number;
+  answers?: any[];
+}
+
+export async function createCanvasQuizQuestion(
+  config: CanvasConfig,
+  courseId: number,
+  quizId: number,
+  questionData: CreateQuizQuestionParams
+): Promise<QuizQuestion> {
+  return canvasRequest(config, 'create_quiz_question', { courseId, quizId, questionData });
+}
