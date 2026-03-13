@@ -407,11 +407,26 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
           return (
             <Card
               key={course.id}
-              className="overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 group relative"
+              draggable
+              onDragStart={() => handleDragStart(idx)}
+              onDragOver={(e) => handleDragOver(e, idx)}
+              onDrop={() => handleDrop(idx)}
+              onDragEnd={handleDragEnd}
+              className={`overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 group relative ${
+                dragIdx === idx ? 'opacity-50 scale-95' : ''
+              } ${dragOverIdx === idx && dragIdx !== idx ? 'ring-2 ring-primary ring-offset-2' : ''}`}
               onClick={() => handleSelectCourse(course)}
             >
               <div className={`${colorClass} p-5 pb-12 text-primary-foreground relative`}>
-                <h3 className="text-lg font-bold leading-tight line-clamp-2 pr-8">{course.name}</h3>
+                {/* Drag handle */}
+                <button
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="absolute top-3 left-3 h-7 w-7 rounded-lg bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors backdrop-blur-sm cursor-grab active:cursor-grabbing"
+                  title="Drag to reorder"
+                >
+                  <GripVertical className="h-3.5 w-3.5 text-white" />
+                </button>
+                <h3 className="text-lg font-bold leading-tight line-clamp-2 pr-8 pl-8">{course.name}</h3>
                 {course.course_code && (
                   <p className="text-sm opacity-80 mt-1">{course.course_code}</p>
                 )}
