@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom, BookOp
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS, type IdahoGradeStandards } from "@/lib/idaho-standards-data";
 import { generateForCoreIdea, generateForDiscipline, generateForStandards, type GenerationProgress } from "@/lib/question-generator";
+import { useProfileDefaults } from "@/hooks/useProfileDefaults";
 import { toast } from "sonner";
 
 interface Props {
