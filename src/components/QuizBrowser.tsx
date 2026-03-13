@@ -261,49 +261,7 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
           )}
         </div>
 
-        {/* Quizzes list */}
-        <div>
-          <h3 className="text-lg font-semibold text-foreground mb-4">Quizzes</h3>
-          {loadingQuizzes ? (
-            <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Loading quizzes...
-            </div>
-          ) : quizzes.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                <p>No quizzes found in this course.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {quizzes.map((quiz) => {
-                const isSelected = selectedQuizId === String(quiz.id);
-                return (
-                  <Card
-                    key={quiz.id}
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] ${isSelected ? 'ring-2 ring-primary' : ''}`}
-                    onClick={() => handleSelectQuiz(String(quiz.id))}
-                  >
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                        <FileText className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">{quiz.title}</p>
-                        <p className="text-xs text-muted-foreground">{quiz.question_count} questions</p>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* NGSS Standards Preview */}
+        {/* NGSS Standards Preview & Export — moved to top */}
         {selectedQuizId && (
           <>
             {loadingNGSS ? (
@@ -394,6 +352,48 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
             </Card>
           </>
         )}
+
+        {/* Quizzes list */}
+        <div>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Quizzes</h3>
+          {loadingQuizzes ? (
+            <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Loading quizzes...
+            </div>
+          ) : quizzes.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                <p>No quizzes found in this course.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-2">
+              {quizzes.map((quiz) => {
+                const isSelected = selectedQuizId === String(quiz.id);
+                return (
+                  <Card
+                    key={quiz.id}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                    onClick={() => handleSelectQuiz(String(quiz.id))}
+                  >
+                    <CardContent className="flex items-center gap-4 p-4">
+                      <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground truncate">{quiz.title}</p>
+                        <p className="text-xs text-muted-foreground">{quiz.question_count} questions</p>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
