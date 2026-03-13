@@ -1,4 +1,5 @@
 import { ReactNode } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface PageBannerProps {
   greeting?: string;
@@ -6,41 +7,49 @@ interface PageBannerProps {
   stats?: { label: string; value: string | number }[];
   children?: ReactNode;
   compact?: boolean;
+  avatarUrl?: string;
+  avatarFallback?: string;
 }
 
-export function PageBanner({ greeting, subtitle, stats, children, compact = false }: PageBannerProps) {
+export function PageBanner({ greeting, subtitle, stats, children, compact = false, avatarUrl, avatarFallback }: PageBannerProps) {
   return (
     <div className={`relative overflow-hidden rounded-2xl bg-earth-warm border border-earth-sand ${compact ? "p-5" : "p-6 sm:p-8"}`}>
       {/* Abstract shapes */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Large circle top-right */}
         <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-earth-terracotta/10" />
-        {/* Medium circle bottom-left */}
         <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-earth-sage/10" />
-        {/* Small rectangle rotated */}
         <div className="absolute top-6 right-1/4 w-16 h-16 rounded-xl bg-earth-terracotta/[0.06] rotate-12" />
-        {/* Tiny circle */}
         <div className="absolute bottom-4 right-1/3 w-8 h-8 rounded-full bg-earth-moss/10" />
-        {/* Horizontal bar */}
         <div className="absolute top-1/2 -left-4 w-24 h-3 rounded-full bg-earth-sage/[0.06] -rotate-6" />
-        {/* Dot cluster */}
         <div className="absolute top-3 left-1/3 w-3 h-3 rounded-full bg-earth-clay/10" />
         <div className="absolute top-8 left-[38%] w-2 h-2 rounded-full bg-earth-terracotta/10" />
       </div>
 
       {/* Content */}
       <div className="relative z-10">
-        {greeting && (
-          <h1 className={`font-bold text-earth-clay ${compact ? "text-lg" : "text-xl sm:text-2xl"}`}>
-            {greeting}
-          </h1>
-        )}
-        {subtitle && (
-          <p className="text-sm text-earth-moss mt-1">{subtitle}</p>
-        )}
+        <div className="flex items-start gap-4">
+          {avatarUrl !== undefined && (
+            <Avatar className={`${compact ? "h-10 w-10" : "h-14 w-14 sm:h-16 sm:w-16"} ring-2 ring-earth-sand shrink-0`}>
+              <AvatarImage src={avatarUrl} alt="Profile" />
+              <AvatarFallback className="bg-earth-sand text-earth-clay font-semibold">
+                {avatarFallback || "?"}
+              </AvatarFallback>
+            </Avatar>
+          )}
+          <div className="flex-1 min-w-0">
+            {greeting && (
+              <h1 className={`font-bold text-earth-clay ${compact ? "text-lg" : "text-xl sm:text-2xl"}`}>
+                {greeting}
+              </h1>
+            )}
+            {subtitle && (
+              <p className="text-sm text-earth-moss mt-1">{subtitle}</p>
+            )}
+          </div>
+        </div>
 
         {stats && stats.length > 0 && (
-          <div className={`flex flex-wrap gap-4 sm:gap-6 ${greeting ? "mt-4" : ""}`}>
+          <div className={`flex flex-wrap gap-4 sm:gap-6 ${greeting || avatarUrl ? "mt-4" : ""}`}>
             {stats.map((stat) => (
               <div key={stat.label} className="flex flex-col">
                 <span className="text-2xl sm:text-3xl font-bold text-earth-clay tabular-nums">
