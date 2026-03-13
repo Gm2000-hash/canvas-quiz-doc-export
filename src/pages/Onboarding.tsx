@@ -7,11 +7,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, GraduationCap } from "lucide-react";
 import { SUBJECT_OPTIONS, useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { AvatarPicker } from "@/components/AvatarPicker";
 
 export default function Onboarding() {
+  const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
   const [displayName, setDisplayName] = useState(profile?.display_name || "");
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [selectedAvatar, setSelectedAvatar] = useState("");
   const [saving, setSaving] = useState(false);
 
   const toggleSubject = (value: string) => {
