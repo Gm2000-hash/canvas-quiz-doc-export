@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom, BookOp
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS, type IdahoGradeStandards } from "@/lib/idaho-standards-data";
 import { generateForCoreIdea, generateForDiscipline, generateForStandards, type GenerationProgress } from "@/lib/question-generator";
+import { useProfileDefaults } from "@/hooks/useProfileDefaults";
 import { toast } from "sonner";
 
 interface Props {
@@ -40,16 +41,23 @@ type GenerateTarget =
   | { type: "idaho"; standards: { code: string; description: string }[]; subject: string };
 
 export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete }: Props) {
+  const { defaultFramework, defaultIdahoFilter } = useProfileDefaults();
   const [questionsPerSub, setQuestionsPerSub] = useState(10);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
-  const [framework, setFramework] = useState<"ngss" | "idaho">("idaho");
-  const [idahoGradeFilter, setIdahoGradeFilter] = useState<string>("all");
+  const [framework, setFramework] = useState<"ngss" | "idaho">(defaultFramework);
+  const [idahoGradeFilter, setIdahoGradeFilter] = useState<string>(defaultIdahoFilter);
   const [idahoCategoryFilter, setIdahoCategoryFilter] = useState<string>("essential");
   const [selectedIdahoStandards, setSelectedIdahoStandards] = useState<Set<string>>(new Set());
   const abortRef = useRef(false);
   const latestProgressRef = useRef<GenerationProgress | null>(null);
+
+  // Sync defaults when profile loads
+  useEffect(() => {
+    setFramework(defaultFramework);
+    setIdahoGradeFilter(defaultIdahoFilter);
+  }, [defaultFramework, defaultIdahoFilter]);
 
   const handleProgressUpdate = (p: GenerationProgress) => {
     latestProgressRef.current = p;

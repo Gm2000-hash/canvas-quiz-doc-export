@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
+import { useProfileDefaults } from "@/hooks/useProfileDefaults";
 import { Search } from "lucide-react";
 
 interface Props {
@@ -19,13 +20,20 @@ interface Props {
 }
 
 export function LessonStandardsPicker({ open, onOpenChange, selected, onSave }: Props) {
+  const { defaultFramework, defaultIdahoFilter } = useProfileDefaults();
   const [search, setSearch] = useState("");
-  const [framework, setFramework] = useState<"ngss" | "idaho">("idaho");
-  const [idahoFilter, setIdahoFilter] = useState<string>("all");
+  const [framework, setFramework] = useState<"ngss" | "idaho">(defaultFramework);
+  const [idahoFilter, setIdahoFilter] = useState<string>(defaultIdahoFilter);
   const [idahoCategoryFilter, setIdahoCategoryFilter] = useState<string>("all");
   const [localSelected, setLocalSelected] = useState<Map<string, string>>(
     new Map(selected.map(s => [s.code, s.description]))
   );
+
+  // Sync defaults when profile loads
+  useEffect(() => {
+    setFramework(defaultFramework);
+    setIdahoFilter(defaultIdahoFilter);
+  }, [defaultFramework, defaultIdahoFilter]);
 
   const handleOpenChange = (isOpen: boolean) => {
     if (isOpen) {
