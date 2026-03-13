@@ -6,10 +6,17 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Search, X, Sparkles, Loader2 } from "lucide-react";
 import { ALL_SUBSTANDARDS, DOK_LEVELS, BLOOMS_LEVELS } from "@/lib/ngss-data";
+import { ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
 import { tagQuestionsWithNGSS } from "@/lib/ngss-api";
 import { toast } from "sonner";
 
-// ─── NGSS Standards Picker ───
+// Combined standards list for searching
+const ALL_COMBINED_STANDARDS = [
+  ...Object.values(ALL_SUBSTANDARDS).flat().map(s => ({ ...s, framework: "NGSS" as const })),
+  ...ALL_IDAHO_STANDARDS_FLAT.map(s => ({ code: s.code, description: s.description, framework: "Idaho" as const, category: s.category })),
+];
+
+// ─── Standards Picker (supports both NGSS and Idaho) ───
 
 interface StandardsPickerProps {
   standards: { ngss_code: string; ngss_description: string }[];
@@ -63,8 +70,7 @@ export function StandardsPicker({ standards, onChange, questionText }: Standards
   };
 
   const filteredStandards = search.trim()
-    ? Object.values(ALL_SUBSTANDARDS)
-        .flat()
+    ? ALL_COMBINED_STANDARDS
         .filter(sub => {
           const q = search.toLowerCase();
           return (
@@ -72,13 +78,13 @@ export function StandardsPicker({ standards, onChange, questionText }: Standards
             !standards.some(s => s.ngss_code === sub.code)
           );
         })
-        .slice(0, 20)
+        .slice(0, 25)
     : [];
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label>NGSS Standards</Label>
+        <Label>Standards</Label>
         {questionText !== undefined && (
           <Button
             variant="outline"
@@ -108,7 +114,7 @@ export function StandardsPicker({ standards, onChange, questionText }: Standards
       <div className="relative">
         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
         <Input
-          placeholder="Search standards (e.g. MS-ESS2-3 or 'plate')..."
+          placeholder="Search standards (NGSS or Idaho, e.g. MS-ESS2-3 or RC.7.3)..."
           value={search}
           onChange={e => setSearch(e.target.value)}
           className="pl-8 text-sm h-9"
@@ -117,14 +123,17 @@ export function StandardsPicker({ standards, onChange, questionText }: Standards
       {search.trim() && (
         <div className="max-h-40 overflow-y-auto border rounded-md divide-y">
           {filteredStandards.length > 0 ? (
-            filteredStandards.map(sub => (
+            filteredStandards.map((sub, idx) => (
               <button
-                key={sub.code}
+                key={`${sub.code}-${idx}`}
                 type="button"
                 className="w-full flex items-start gap-2 px-3 py-2 hover:bg-muted/50 text-left transition-colors"
                 onClick={() => addStandard(sub.code, sub.description)}
               >
-                <Badge variant="outline" className="text-xs shrink-0 mt-0.5">{sub.code}</Badge>
+                <div className="flex items-center gap-1 shrink-0 mt-0.5">
+                  <Badge variant="outline" className="text-xs">{sub.code}</Badge>
+                  <Badge variant="secondary" className="text-[10px] px-1 py-0">{sub.framework}</Badge>
+                </div>
                 <span className="text-xs text-muted-foreground">{sub.description}</span>
               </button>
             ))
