@@ -85,7 +85,8 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [courseColors, setCourseColors] = useState<Record<string, string>>(loadCourseColors);
-
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const getColorForCourse = useCallback((courseId: number, idx: number) => {
     return courseColors[String(courseId)] || COURSE_COLORS[idx % COURSE_COLORS.length];
   }, [courseColors]);
