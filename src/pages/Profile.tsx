@@ -224,6 +224,7 @@ export default function Profile() {
                 </Button>
               </div>
             </div>
+            <AvatarPicker selected={avatarUrl} onSelect={handlePresetAvatar} />
           </CardContent>
         </Card>
 
