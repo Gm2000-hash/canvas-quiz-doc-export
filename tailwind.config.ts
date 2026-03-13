@@ -51,6 +51,14 @@ export default {
   				DEFAULT: 'hsl(var(--success))',
   				foreground: 'hsl(var(--success-foreground))'
   			},
+  			earth: {
+  				terracotta: 'hsl(var(--earth-terracotta))',
+  				sage: 'hsl(var(--earth-sage))',
+  				sand: 'hsl(var(--earth-sand))',
+  				warm: 'hsl(var(--earth-warm))',
+  				clay: 'hsl(var(--earth-clay))',
+  				moss: 'hsl(var(--earth-moss))'
+  			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',
