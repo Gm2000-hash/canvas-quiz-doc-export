@@ -80,8 +80,7 @@ export interface CreateQuizQuestionParams {
   question_text: string;
   question_type: string;
   points_possible: number;
-  answers?: { answer_text: string; answer_weight: number }[];
-}
+  answers?: any[];
 
 export async function createCanvasQuizQuestion(
   config: CanvasConfig,
