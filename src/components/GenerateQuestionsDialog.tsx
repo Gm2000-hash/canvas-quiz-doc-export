@@ -41,16 +41,23 @@ type GenerateTarget =
   | { type: "idaho"; standards: { code: string; description: string }[]; subject: string };
 
 export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete }: Props) {
+  const { defaultFramework, defaultIdahoFilter } = useProfileDefaults();
   const [questionsPerSub, setQuestionsPerSub] = useState(10);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
-  const [framework, setFramework] = useState<"ngss" | "idaho">("idaho");
-  const [idahoGradeFilter, setIdahoGradeFilter] = useState<string>("all");
+  const [framework, setFramework] = useState<"ngss" | "idaho">(defaultFramework);
+  const [idahoGradeFilter, setIdahoGradeFilter] = useState<string>(defaultIdahoFilter);
   const [idahoCategoryFilter, setIdahoCategoryFilter] = useState<string>("essential");
   const [selectedIdahoStandards, setSelectedIdahoStandards] = useState<Set<string>>(new Set());
   const abortRef = useRef(false);
   const latestProgressRef = useRef<GenerationProgress | null>(null);
+
+  // Sync defaults when profile loads
+  useEffect(() => {
+    setFramework(defaultFramework);
+    setIdahoGradeFilter(defaultIdahoFilter);
+  }, [defaultFramework, defaultIdahoFilter]);
 
   const handleProgressUpdate = (p: GenerationProgress) => {
     latestProgressRef.current = p;

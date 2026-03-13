@@ -20,13 +20,20 @@ interface Props {
 }
 
 export function LessonStandardsPicker({ open, onOpenChange, selected, onSave }: Props) {
+  const { defaultFramework, defaultIdahoFilter } = useProfileDefaults();
   const [search, setSearch] = useState("");
-  const [framework, setFramework] = useState<"ngss" | "idaho">("idaho");
-  const [idahoFilter, setIdahoFilter] = useState<string>("all");
+  const [framework, setFramework] = useState<"ngss" | "idaho">(defaultFramework);
+  const [idahoFilter, setIdahoFilter] = useState<string>(defaultIdahoFilter);
   const [idahoCategoryFilter, setIdahoCategoryFilter] = useState<string>("all");
   const [localSelected, setLocalSelected] = useState<Map<string, string>>(
     new Map(selected.map(s => [s.code, s.description]))
   );
+
+  // Sync defaults when profile loads
+  useEffect(() => {
+    setFramework(defaultFramework);
+    setIdahoFilter(defaultIdahoFilter);
+  }, [defaultFramework, defaultIdahoFilter]);
 
   const handleOpenChange = (isOpen: boolean) => {
     if (isOpen) {

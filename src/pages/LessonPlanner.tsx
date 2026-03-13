@@ -40,13 +40,25 @@ const GRADE_LEVELS = [
 
 const LessonPlanner = () => {
   const { user, signOut } = useAuth();
+  const { defaultGradeLevel, defaultDiscipline } = useProfileDefaults();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
-  const [newUnit, setNewUnit] = useState({ title: "", description: "", grade_level: "", discipline: "", date_start: "", date_end: "" });
+  const [newUnit, setNewUnit] = useState({ title: "", description: "", grade_level: defaultGradeLevel, discipline: defaultDiscipline, date_start: "", date_end: "" });
   const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
+  const dragNode = useRef<HTMLDivElement | null>(null);
+
+  // Sync defaults when profile loads
+  useEffect(() => {
+    setNewUnit(prev => ({
+      ...prev,
+      grade_level: prev.grade_level || defaultGradeLevel,
+      discipline: prev.discipline || defaultDiscipline,
+    }));
+  }, [defaultGradeLevel, defaultDiscipline]);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const dragNode = useRef<HTMLDivElement | null>(null);
 
