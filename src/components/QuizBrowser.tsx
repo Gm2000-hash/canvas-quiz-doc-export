@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,7 +10,7 @@ import { tagQuestionsWithNGSS, type NGSSStandard } from '@/lib/ngss-api';
 import { exportQuizToDocx } from '@/lib/export-docx';
 import { saveQuestionsToBank } from '@/lib/question-bank';
 import { toast } from 'sonner';
-import { BookOpen, FileText, Download, Loader2, ArrowLeft, ChevronRight, FlaskConical, Sparkles, Palette } from 'lucide-react';
+import { BookOpen, FileText, Download, Loader2, ArrowLeft, ChevronRight, FlaskConical, Sparkles, Palette, GripVertical } from 'lucide-react';
 
 interface QuizBrowserProps {
   config: CanvasConfig;
@@ -50,6 +50,30 @@ function saveCourseColors(map: Record<string, string>) {
   localStorage.setItem('course-tile-colors', JSON.stringify(map));
 }
 
+function loadCourseOrder(): number[] {
+  try {
+    return JSON.parse(localStorage.getItem('course-tile-order') || '[]');
+  } catch { return []; }
+}
+
+function saveCourseOrder(order: number[]) {
+  localStorage.setItem('course-tile-order', JSON.stringify(order));
+}
+
+function applyStoredOrder(courses: Course[]): Course[] {
+  const order = loadCourseOrder();
+  if (order.length === 0) return courses;
+  const map = new Map(courses.map(c => [c.id, c]));
+  const ordered: Course[] = [];
+  for (const id of order) {
+    const c = map.get(id);
+    if (c) { ordered.push(c); map.delete(id); }
+  }
+  // Append any new courses not in stored order
+  for (const c of map.values()) ordered.push(c);
+  return ordered;
+}
+
 export function QuizBrowser({ config }: QuizBrowserProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -61,7 +85,8 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [courseColors, setCourseColors] = useState<Record<string, string>>(loadCourseColors);
-
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const getColorForCourse = useCallback((courseId: number, idx: number) => {
     return courseColors[String(courseId)] || COURSE_COLORS[idx % COURSE_COLORS.length];
   }, [courseColors]);
@@ -83,10 +108,39 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
   useEffect(() => {
     setLoadingCourses(true);
     getCourses(config)
-      .then(setCourses)
+      .then(c => setCourses(applyStoredOrder(c)))
       .catch(() => toast.error('Failed to load courses'))
       .finally(() => setLoadingCourses(false));
   }, [config]);
+
+  const handleDragStart = (idx: number) => {
+    setDragIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    setDragOverIdx(idx);
+  };
+
+  const handleDrop = (idx: number) => {
+    if (dragIdx === null || dragIdx === idx) {
+      setDragIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+    const reordered = [...courses];
+    const [moved] = reordered.splice(dragIdx, 1);
+    reordered.splice(idx, 0, moved);
+    setCourses(reordered);
+    saveCourseOrder(reordered.map(c => c.id));
+    setDragIdx(null);
+    setDragOverIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragIdx(null);
+    setDragOverIdx(null);
+  };
 
   const handleSelectCourse = (course: Course) => {
     setSelectedCourse(course);
@@ -207,49 +261,7 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
           )}
         </div>
 
-        {/* Quizzes list */}
-        <div>
-          <h3 className="text-lg font-semibold text-foreground mb-4">Quizzes</h3>
-          {loadingQuizzes ? (
-            <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Loading quizzes...
-            </div>
-          ) : quizzes.length === 0 ? (
-            <Card>
-              <CardContent className="py-12 text-center text-muted-foreground">
-                <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
-                <p>No quizzes found in this course.</p>
-              </CardContent>
-            </Card>
-          ) : (
-            <div className="space-y-2">
-              {quizzes.map((quiz) => {
-                const isSelected = selectedQuizId === String(quiz.id);
-                return (
-                  <Card
-                    key={quiz.id}
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] ${isSelected ? 'ring-2 ring-primary' : ''}`}
-                    onClick={() => handleSelectQuiz(String(quiz.id))}
-                  >
-                    <CardContent className="flex items-center gap-4 p-4">
-                      <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
-                        <FileText className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-foreground truncate">{quiz.title}</p>
-                        <p className="text-xs text-muted-foreground">{quiz.question_count} questions</p>
-                      </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* NGSS Standards Preview */}
+        {/* NGSS Standards Preview & Export — moved to top */}
         {selectedQuizId && (
           <>
             {loadingNGSS ? (
@@ -340,6 +352,48 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
             </Card>
           </>
         )}
+
+        {/* Quizzes list */}
+        <div>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Quizzes</h3>
+          {loadingQuizzes ? (
+            <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Loading quizzes...
+            </div>
+          ) : quizzes.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
+                <p>No quizzes found in this course.</p>
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-2">
+              {quizzes.map((quiz) => {
+                const isSelected = selectedQuizId === String(quiz.id);
+                return (
+                  <Card
+                    key={quiz.id}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99] ${isSelected ? 'ring-2 ring-primary' : ''}`}
+                    onClick={() => handleSelectQuiz(String(quiz.id))}
+                  >
+                    <CardContent className="flex items-center gap-4 p-4">
+                      <div className={`h-10 w-10 rounded-full flex items-center justify-center shrink-0 ${isSelected ? 'bg-primary text-primary-foreground' : 'bg-muted'}`}>
+                        <FileText className="h-5 w-5" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-foreground truncate">{quiz.title}</p>
+                        <p className="text-xs text-muted-foreground">{quiz.question_count} questions</p>
+                      </div>
+                      <ChevronRight className="h-5 w-5 text-muted-foreground shrink-0" />
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
     );
   }
@@ -353,11 +407,26 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
           return (
             <Card
               key={course.id}
-              className="overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 group relative"
+              draggable
+              onDragStart={() => handleDragStart(idx)}
+              onDragOver={(e) => handleDragOver(e, idx)}
+              onDrop={() => handleDrop(idx)}
+              onDragEnd={handleDragEnd}
+              className={`overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 group relative ${
+                dragIdx === idx ? 'opacity-50 scale-95' : ''
+              } ${dragOverIdx === idx && dragIdx !== idx ? 'ring-2 ring-primary ring-offset-2' : ''}`}
               onClick={() => handleSelectCourse(course)}
             >
               <div className={`${colorClass} p-5 pb-12 text-primary-foreground relative`}>
-                <h3 className="text-lg font-bold leading-tight line-clamp-2 pr-8">{course.name}</h3>
+                {/* Drag handle */}
+                <button
+                  onMouseDown={(e) => e.stopPropagation()}
+                  className="absolute top-3 left-3 h-7 w-7 rounded-lg bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors backdrop-blur-sm cursor-grab active:cursor-grabbing"
+                  title="Drag to reorder"
+                >
+                  <GripVertical className="h-3.5 w-3.5 text-white" />
+                </button>
+                <h3 className="text-lg font-bold leading-tight line-clamp-2 pr-8 pl-8">{course.name}</h3>
                 {course.course_code && (
                   <p className="text-sm opacity-80 mt-1">{course.course_code}</p>
                 )}
