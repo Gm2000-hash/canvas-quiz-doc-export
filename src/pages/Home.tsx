@@ -1,9 +1,15 @@
-import { useMemo } from "react";
+import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { useAuth } from "@/hooks/useAuth";
-import { useProfile } from "@/hooks/useProfile";
-import { GraduationCap, Lightbulb } from "lucide-react";
+import { useProfile, SUBJECT_OPTIONS } from "@/hooks/useProfile";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  GraduationCap, Lightbulb, FileText, BookOpen, PenLine, Layers,
+  Library, GripVertical, UserCircle, ArrowRight,
+} from "lucide-react";
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
 import sketchQuestionBank from "@/assets/sketch-question-bank.png";
 import sketchLessonPlanner from "@/assets/sketch-lesson-planner.png";
@@ -43,42 +49,108 @@ const dailyTips = [
   { text: "End class with a one-sentence summary: 'Today I learned that...' — it consolidates learning.", author: "Tip" },
 ];
 
-const tiles = [
-  {
-    title: "Canvas Quiz Exporter",
-    description: "Connect to Canvas LMS and export quizzes as formatted Word documents.",
-    path: "/canvas",
-    image: sketchCanvas,
-  },
-  {
-    title: "Question Bank",
-    description: "Browse, search, and manage your library of assessment questions.",
-    path: "/question-bank",
-    image: sketchQuestionBank,
-  },
-  {
-    title: "Create Question",
-    description: "Build new questions with DOK levels, Bloom's taxonomy, and NGSS tags.",
-    path: "/create-question",
-    image: sketchCreateQuestion,
-  },
-  {
-    title: "Lesson Planner",
-    description: "Organize units, generate AI lesson plans, and export pacing guides.",
-    path: "/lesson-planner",
-    image: sketchLessonPlanner,
-  },
+interface DashboardCard {
+  id: string;
+  title: string;
+  description: string;
+  path: string;
+  icon: React.ElementType;
+  image?: string;
+}
+
+const ALL_CARDS: DashboardCard[] = [
+  { id: "canvas", title: "Canvas Quiz Exporter", description: "Connect to Canvas LMS and export quizzes as formatted Word documents.", path: "/canvas", icon: FileText, image: sketchCanvas },
+  { id: "question-bank", title: "Question Bank", description: "Browse, search, and manage your library of assessment questions.", path: "/question-bank", icon: BookOpen, image: sketchQuestionBank },
+  { id: "create-question", title: "Create Question", description: "Build new questions with DOK levels, Bloom's taxonomy, and standards tags.", path: "/create-question", icon: PenLine, image: sketchCreateQuestion },
+  { id: "lesson-planner", title: "Lesson Planner", description: "Organize units, generate AI lesson plans, and export pacing guides.", path: "/lesson-planner", icon: Layers, image: sketchLessonPlanner },
+  { id: "standards", title: "Standards Browser", description: "Browse Idaho and NGSS standards organized by subject, grade, and category.", path: "/standards", icon: Library },
+  { id: "profile", title: "Profile Settings", description: "Update your photo, contact info, and teaching preferences.", path: "/profile", icon: UserCircle },
 ];
+
+const STORAGE_KEY = "dashboard-card-order";
+
+function getStoredOrder(): string[] | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+
+function storeOrder(ids: string[]) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(ids));
+}
+
+function orderCards(cards: DashboardCard[]): DashboardCard[] {
+  const stored = getStoredOrder();
+  if (!stored) return cards;
+  const map = new Map(cards.map(c => [c.id, c]));
+  const ordered: DashboardCard[] = [];
+  for (const id of stored) {
+    const card = map.get(id);
+    if (card) { ordered.push(card); map.delete(id); }
+  }
+  // append any new cards not in stored order
+  map.forEach(c => ordered.push(c));
+  return ordered;
+}
 
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile } = useProfile();
+  const [cards, setCards] = useState(() => orderCards(ALL_CARDS));
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
+  const dragNode = useRef<HTMLDivElement | null>(null);
+
   const todayTip = useMemo(() => {
     const now = new Date();
     const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
     return dailyTips[dayOfYear % dailyTips.length];
   }, []);
+
+  const initials = profile?.display_name
+    ? profile.display_name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+    : "?";
+
+  const handleDragStart = useCallback((e: React.DragEvent, idx: number) => {
+    setDragIdx(idx);
+    dragNode.current = e.currentTarget as HTMLDivElement;
+    e.dataTransfer.effectAllowed = "move";
+    requestAnimationFrame(() => {
+      if (dragNode.current) dragNode.current.style.opacity = "0.4";
+    });
+  }, []);
+
+  const handleDragEnd = useCallback(() => {
+    if (dragNode.current) dragNode.current.style.opacity = "1";
+    if (dragIdx !== null && overIdx !== null && dragIdx !== overIdx) {
+      setCards(prev => {
+        const reordered = [...prev];
+        const [moved] = reordered.splice(dragIdx, 1);
+        reordered.splice(overIdx, 0, moved);
+        storeOrder(reordered.map(c => c.id));
+        return reordered;
+      });
+    }
+    setDragIdx(null);
+    setOverIdx(null);
+    dragNode.current = null;
+  }, [dragIdx, overIdx]);
+
+  const handleDragOver = useCallback((e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setOverIdx(idx);
+  }, []);
+
+  const subjectLabels = (profile?.subjects || []).map(s => {
+    const opt = SUBJECT_OPTIONS.find(o => o.value === s);
+    return opt?.label || s;
+  });
+
+  const gradeLabels = ((profile as any)?.grade_levels || []).map((g: string) => `Grade ${g}`);
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -92,17 +164,47 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            Welcome back{profile?.display_name ? `, ${profile.display_name}` : user?.email ? `, ${user.email.split("@")[0]}` : ""}!
-          </h1>
-          <p className="text-muted-foreground mt-2 text-base">
-            What would you like to work on today?
-          </p>
+      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-8">
+        {/* Profile Summary Card */}
+        <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
+          <div className="flex items-center gap-4 sm:gap-5">
+            <button onClick={() => navigate("/profile")} className="shrink-0 group">
+              <Avatar className="h-16 w-16 ring-2 ring-border group-hover:ring-primary transition-colors">
+                <AvatarImage src={(profile as any)?.avatar_url} alt={profile?.display_name} />
+                <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
+                Welcome back{profile?.display_name ? `, ${profile.display_name}` : ""}!
+              </h1>
+              <p className="text-sm text-muted-foreground mt-0.5 truncate">{user?.email}</p>
+              {(subjectLabels.length > 0 || gradeLabels.length > 0) && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {subjectLabels.map(s => (
+                    <Badge key={s} variant="secondary" className="rounded-lg text-[11px]">{s}</Badge>
+                  ))}
+                  {gradeLabels.map((g: string) => (
+                    <Badge key={g} variant="outline" className="rounded-lg text-[11px]">{g}</Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden sm:flex gap-1.5 text-xs text-muted-foreground hover:text-primary rounded-xl shrink-0"
+              onClick={() => navigate("/profile")}
+            >
+              Edit Profile <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
         </div>
 
-        <div className="mb-8 mx-auto max-w-lg rounded-2xl border border-primary/15 bg-primary/5 p-5 text-center">
+        {/* Daily Tip */}
+        <div className="mx-auto max-w-lg rounded-2xl border border-primary/15 bg-primary/5 p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Lightbulb className="h-4 w-4 text-primary" />
             <span className="text-xs font-semibold uppercase tracking-wider text-primary">
@@ -115,33 +217,64 @@ export default function Home() {
           )}
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-          {tiles.map((tile) => (
-            <button
-              key={tile.path}
-              onClick={() => navigate(tile.path)}
-              className="group relative overflow-hidden rounded-2xl border border-border/60 bg-card p-6 text-left transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            >
-              <div className="flex items-start gap-5">
-                <div className="shrink-0 h-20 w-20 rounded-xl bg-accent/60 flex items-center justify-center overflow-hidden">
-                  <img
-                    src={tile.image}
-                    alt={tile.title}
-                    className="h-16 w-16 object-contain transition-transform duration-200 group-hover:scale-110"
-                    loading="lazy"
-                  />
+        {/* Draggable Dashboard Cards */}
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-foreground">Your Dashboard</h2>
+            <p className="text-xs text-muted-foreground">Drag to rearrange</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {cards.map((card, idx) => {
+              const Icon = card.icon;
+              return (
+                <div
+                  key={card.id}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, idx)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  className={`group relative rounded-2xl border bg-card text-left transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 cursor-grab active:cursor-grabbing ${
+                    overIdx === idx && dragIdx !== null && dragIdx !== idx
+                      ? "ring-2 ring-primary/40 border-primary/40"
+                      : "border-border/60"
+                  }`}
+                >
+                  {/* Drag grip */}
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-60 transition-opacity">
+                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                  </div>
+
+                  <button
+                    onClick={() => navigate(card.path)}
+                    className="w-full p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
+                  >
+                    <div className="flex items-start gap-4">
+                      <div className="shrink-0 h-14 w-14 rounded-xl bg-accent/60 flex items-center justify-center overflow-hidden">
+                        {card.image ? (
+                          <img
+                            src={card.image}
+                            alt={card.title}
+                            className="h-10 w-10 object-contain transition-transform duration-200 group-hover:scale-110"
+                            loading="lazy"
+                          />
+                        ) : (
+                          <Icon className="h-6 w-6 text-primary transition-transform duration-200 group-hover:scale-110" />
+                        )}
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                          {card.title}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
+                          {card.description}
+                        </p>
+                      </div>
+                    </div>
+                  </button>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                    {tile.title}
-                  </h2>
-                  <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                    {tile.description}
-                  </p>
-                </div>
-              </div>
-            </button>
-          ))}
+              );
+            })}
+          </div>
         </div>
       </main>
     </div>
