@@ -22,6 +22,7 @@ import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateQuestionsDialog from "@/components/GenerateQuestionsDialog";
 import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageBanner } from "@/components/PageBanner";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 
@@ -417,6 +418,12 @@ const QuestionBank = () => {
       </header>
 
       <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-6">
+        <PageBanner
+          compact
+          greeting="Question Bank"
+          subtitle="Browse, search, and manage your library of assessment questions"
+          stats={[{ label: "Total Questions", value: questions.length }]}
+        />
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
