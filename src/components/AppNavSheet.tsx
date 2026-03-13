@@ -25,6 +25,7 @@ export function AppNavSheet({ onOpenSettings, showSettings }: AppNavSheetProps) 
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
+  const { isAdmin } = useProfile();
 
   const go = (path: string) => {
     setOpen(false);
