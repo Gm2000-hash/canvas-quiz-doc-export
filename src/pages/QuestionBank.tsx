@@ -217,11 +217,15 @@ const QuestionBank = () => {
       if (filterStandard === "untagged") {
         if (q.standards.length > 0) return false;
       } else if (filterStandard.startsWith("disc:")) {
-        // Filter by discipline (e.g., "disc:LS")
         const discKey = filterStandard.replace("disc:", "");
         if (!q.standards.some(s => getDisciplineForCode(s.ngss_code) === discKey)) return false;
+      } else if (filterStandard.startsWith("idaho:")) {
+        const [subject, grade] = filterStandard.replace("idaho:", "").split("|");
+        const idahoCodes = ALL_IDAHO_STANDARDS_FLAT
+          .filter(s => s.subject === subject && s.grade === grade)
+          .map(s => s.code);
+        if (!q.standards.some(s => idahoCodes.includes(s.ngss_code))) return false;
       } else {
-        // Filter by specific core idea (e.g., "MS-LS1")
         if (!q.standards.some(s => getCoreIdeaFromCode(s.ngss_code) === filterStandard)) return false;
       }
     }
