@@ -85,6 +85,8 @@ export default function Onboarding() {
                 />
               </div>
 
+              <AvatarPicker selected={selectedAvatar} onSelect={setSelectedAvatar} />
+
               <div className="space-y-2">
                 <Label className="text-sm">Content Area(s)</Label>
                 <p className="text-xs text-muted-foreground">Select all subjects you teach</p>
