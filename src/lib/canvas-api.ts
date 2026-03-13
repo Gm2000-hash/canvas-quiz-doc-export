@@ -81,6 +81,7 @@ export interface CreateQuizQuestionParams {
   question_type: string;
   points_possible: number;
   answers?: any[];
+}
 
 export async function createCanvasQuizQuestion(
   config: CanvasConfig,
