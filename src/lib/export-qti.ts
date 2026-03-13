@@ -179,6 +179,64 @@ function buildEssayItem(q: QuestionBankItem, itemId: string): string {
   </item>`;
 }
 
+function buildMatchingItem(q: QuestionBankItem, itemId: string): string {
+  const answers = q.answers || [];
+  // Matching answers typically have: { left: string, right: string } or { text: string, match_id/right: string }
+  const pairs = answers.map((a: any, i: number) => ({
+    id: `pair_${i}`,
+    left: stripHtml(a.left || a.text || ''),
+    right: stripHtml(a.right || a.match || ''),
+  }));
+
+  // Unique right-side options (targets)
+  const uniqueRights = [...new Set(pairs.map(p => p.right))];
+
+  const responseLids = pairs.map(p => `
+      <response_lid ident="response_${p.id}">
+        <material>
+          <mattext texttype="text/plain">${escapeXml(p.left)}</mattext>
+        </material>
+        <render_choice>
+          ${uniqueRights.map((r, ri) => `
+          <response_label ident="right_${ri}">
+            <material>
+              <mattext texttype="text/plain">${escapeXml(r)}</mattext>
+            </material>
+          </response_label>`).join('')}
+        </render_choice>
+      </response_lid>`).join('');
+
+  const respconditions = pairs.map(p => {
+    const rightIndex = uniqueRights.indexOf(p.right);
+    return `
+      <respcondition>
+        <conditionvar>
+          <varequal respident="response_${p.id}">right_${rightIndex}</varequal>
+        </conditionvar>
+        <setvar action="Add" varname="SCORE">${(100 / pairs.length).toFixed(2)}</setvar>
+      </respcondition>`;
+  }).join('');
+
+  return `
+  <item ident="${itemId}" title="${escapeXml(stripHtml(q.question_text).slice(0, 80))}">
+    <itemmetadata>
+      <qtimetadata>${buildMetadataXml(q)}${buildStandardsXml(q)}
+      </qtimetadata>
+    </itemmetadata>
+    <presentation>
+      <material>
+        <mattext texttype="text/html"><![CDATA[${q.question_text}]]></mattext>
+      </material>
+      ${responseLids}
+    </presentation>
+    <resprocessing>
+      <outcomes>
+        <decvar maxvalue="100" minvalue="0" varname="SCORE" vartype="Decimal"/>
+      </outcomes>${respconditions}
+    </resprocessing>
+  </item>`;
+}
+
 function buildItemXml(q: QuestionBankItem, index: number): string {
   const itemId = `item_${index + 1}_${q.id.slice(0, 8)}`;
   
@@ -187,6 +245,8 @@ function buildItemXml(q: QuestionBankItem, index: number): string {
     case 'true_false_question':
     case 'multiple_answers_question':
       return buildMultipleChoiceItem(q, itemId);
+    case 'matching_question':
+      return buildMatchingItem(q, itemId);
     case 'short_answer_question':
     case 'fill_in_multiple_blanks_question':
     case 'numerical_question':
@@ -194,7 +254,6 @@ function buildItemXml(q: QuestionBankItem, index: number): string {
     case 'essay_question':
       return buildEssayItem(q, itemId);
     default:
-      // Fallback: treat as essay/open response
       return buildEssayItem(q, itemId);
   }
 }
