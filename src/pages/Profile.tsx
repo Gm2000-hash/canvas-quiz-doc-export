@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { AvatarPicker, PRESET_AVATARS } from "@/components/AvatarPicker";
 
 const GRADE_OPTIONS = [
   { value: "6", label: "Grade 6" },
@@ -105,6 +106,18 @@ export default function Profile() {
 
     toast.success("Profile photo updated!");
     setUploading(false);
+  };
+
+  const handlePresetAvatar = async (src: string) => {
+    if (!user) return;
+    setAvatarUrl(src);
+
+    await supabase
+      .from("profiles")
+      .update({ avatar_url: src, updated_at: new Date().toISOString() } as any)
+      .eq("user_id", user.id);
+
+    toast.success("Avatar updated!");
   };
 
   const handleSave = async () => {
@@ -211,6 +224,7 @@ export default function Profile() {
                 </Button>
               </div>
             </div>
+            <AvatarPicker selected={avatarUrl} onSelect={handlePresetAvatar} />
           </CardContent>
         </Card>
 
