@@ -108,10 +108,39 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
   useEffect(() => {
     setLoadingCourses(true);
     getCourses(config)
-      .then(setCourses)
+      .then(c => setCourses(applyStoredOrder(c)))
       .catch(() => toast.error('Failed to load courses'))
       .finally(() => setLoadingCourses(false));
   }, [config]);
+
+  const handleDragStart = (idx: number) => {
+    setDragIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    setDragOverIdx(idx);
+  };
+
+  const handleDrop = (idx: number) => {
+    if (dragIdx === null || dragIdx === idx) {
+      setDragIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+    const reordered = [...courses];
+    const [moved] = reordered.splice(dragIdx, 1);
+    reordered.splice(idx, 0, moved);
+    setCourses(reordered);
+    saveCourseOrder(reordered.map(c => c.id));
+    setDragIdx(null);
+    setDragOverIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragIdx(null);
+    setDragOverIdx(null);
+  };
 
   const handleSelectCourse = (course: Course) => {
     setSelectedCourse(course);
