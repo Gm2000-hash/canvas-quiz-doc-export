@@ -40,12 +40,12 @@ export function AppNavSheet({ onOpenSettings, showSettings }: AppNavSheetProps) 
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-72 p-0 flex flex-col">
-        <SheetHeader className="p-5 pb-3">
+         <SheetHeader className="p-5 pb-3">
           <SheetTitle className="flex items-center gap-2.5 text-base">
             <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
               <FileText className="h-4 w-4 text-primary" />
             </div>
-            Canvas Quiz Exporter
+            Teaching Toolkit
           </SheetTitle>
         </SheetHeader>
 
