@@ -7,11 +7,16 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import { Loader2, GraduationCap } from "lucide-react";
 import { SUBJECT_OPTIONS, useProfile } from "@/hooks/useProfile";
+import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
+import { AvatarPicker } from "@/components/AvatarPicker";
 
 export default function Onboarding() {
+  const { user } = useAuth();
   const { profile, updateProfile } = useProfile();
   const [displayName, setDisplayName] = useState(profile?.display_name || "");
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
+  const [selectedAvatar, setSelectedAvatar] = useState("");
   const [saving, setSaving] = useState(false);
 
   const toggleSubject = (value: string) => {
@@ -27,6 +32,15 @@ export default function Onboarding() {
       return;
     }
     setSaving(true);
+
+    // Save avatar if selected
+    if (selectedAvatar && user) {
+      await supabase
+        .from("profiles")
+        .update({ avatar_url: selectedAvatar, updated_at: new Date().toISOString() } as any)
+        .eq("user_id", user.id);
+    }
+
     const { error } = (await updateProfile({
       display_name: displayName.trim(),
       subjects: selectedSubjects,
@@ -70,6 +84,8 @@ export default function Onboarding() {
                   className="h-11 rounded-xl"
                 />
               </div>
+
+              <AvatarPicker selected={selectedAvatar} onSelect={setSelectedAvatar} />
 
               <div className="space-y-2">
                 <Label className="text-sm">Content Area(s)</Label>
