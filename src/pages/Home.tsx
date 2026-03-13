@@ -187,11 +187,22 @@ export default function Home() {
       </header>
 
       <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-8">
+        {/* Welcome Banner */}
+        <PageBanner
+          greeting={`Good ${new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}${profile?.display_name ? `, ${profile.display_name}` : ""}`}
+          subtitle={new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+          stats={[
+            { label: "Questions", value: questionCount },
+            { label: "Lessons", value: lessonCount },
+            { label: "Units", value: unitCount },
+          ]}
+        />
+
         {/* Daily Tip */}
-        <div className="mx-auto max-w-lg rounded-2xl border border-primary/15 bg-primary/5 p-5 text-center">
+        <div className="mx-auto max-w-lg rounded-2xl border border-earth-sand bg-earth-warm/50 p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Lightbulb className="h-4 w-4 text-primary" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+            <Lightbulb className="h-4 w-4 text-earth-terracotta" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-earth-terracotta">
               {todayTip.author === "Tip" ? "Daily Teaching Tip" : "Daily Inspiration"}
             </span>
           </div>
@@ -217,9 +228,9 @@ export default function Home() {
                   onDragStart={(e) => handleDragStart(e, idx)}
                   onDragEnd={handleDragEnd}
                   onDragOver={(e) => handleDragOver(e, idx)}
-                  className={`group relative rounded-2xl border bg-card text-left transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 cursor-grab active:cursor-grabbing ${
+                  className={`group relative rounded-2xl border bg-card text-left transition-all duration-200 hover:shadow-lg hover:border-earth-terracotta/30 hover:-translate-y-0.5 cursor-grab active:cursor-grabbing ${
                     overIdx === idx && dragIdx !== null && dragIdx !== idx
-                      ? "ring-2 ring-primary/40 border-primary/40"
+                      ? "ring-2 ring-earth-terracotta/40 border-earth-terracotta/40"
                       : "border-border/60"
                   }`}
                 >
@@ -233,7 +244,7 @@ export default function Home() {
                     className="w-full p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="shrink-0 h-14 w-14 rounded-xl bg-accent/60 flex items-center justify-center overflow-hidden">
+                      <div className="shrink-0 h-14 w-14 rounded-xl bg-earth-sand/60 flex items-center justify-center overflow-hidden">
                         {card.image ? (
                           <img
                             src={card.image}
@@ -242,11 +253,11 @@ export default function Home() {
                             loading="lazy"
                           />
                         ) : (
-                          <Icon className="h-6 w-6 text-primary transition-transform duration-200 group-hover:scale-110" />
+                          <Icon className="h-6 w-6 text-earth-terracotta transition-transform duration-200 group-hover:scale-110" />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                        <h3 className="text-sm font-semibold text-foreground group-hover:text-earth-terracotta transition-colors">
                           {card.title}
                         </h3>
                         <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
@@ -258,44 +269,6 @@ export default function Home() {
                 </div>
               );
             })}
-          </div>
-        </div>
-
-        {/* Profile Summary Card */}
-        <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
-          <div className="flex items-center gap-4 sm:gap-5">
-            <button onClick={() => navigate("/profile")} className="shrink-0 group">
-              <Avatar className="h-16 w-16 ring-2 ring-border group-hover:ring-primary transition-colors">
-                <AvatarImage src={(profile as any)?.avatar_url} alt={profile?.display_name} />
-                <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
-                  {initials}
-                </AvatarFallback>
-              </Avatar>
-            </button>
-            <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
-                Welcome back{profile?.display_name ? `, ${profile.display_name}` : ""}!
-              </h1>
-              <p className="text-sm text-muted-foreground mt-0.5 truncate">{user?.email}</p>
-              {(subjectLabels.length > 0 || gradeLabels.length > 0) && (
-                <div className="flex flex-wrap gap-1.5 mt-2">
-                  {subjectLabels.map(s => (
-                    <Badge key={s} variant="secondary" className="rounded-lg text-[11px]">{s}</Badge>
-                  ))}
-                  {gradeLabels.map((g: string) => (
-                    <Badge key={g} variant="outline" className="rounded-lg text-[11px]">{g}</Badge>
-                  ))}
-                </div>
-              )}
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="hidden sm:flex gap-1.5 text-xs text-muted-foreground hover:text-primary rounded-xl shrink-0"
-              onClick={() => navigate("/profile")}
-            >
-              Edit Profile <ArrowRight className="h-3.5 w-3.5" />
-            </Button>
           </div>
         </div>
       </main>
