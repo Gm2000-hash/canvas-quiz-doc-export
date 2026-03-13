@@ -59,8 +59,6 @@ const LessonPlanner = () => {
       discipline: prev.discipline || defaultDiscipline,
     }));
   }, [defaultGradeLevel, defaultDiscipline]);
-  const [overIdx, setOverIdx] = useState<number | null>(null);
-  const dragNode = useRef<HTMLDivElement | null>(null);
 
   const handleUnitDragStart = useCallback((e: React.DragEvent, idx: number) => {
     setDragIdx(idx);
