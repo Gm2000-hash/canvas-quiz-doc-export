@@ -114,10 +114,12 @@ const QuestionBank = () => {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [showPushToCanvas, setShowPushToCanvas] = useState(false);
   const [quizTitle, setQuizTitle] = useState("Custom Quiz");
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
   const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
+  const { config: canvasConfig, isConfigured: canvasConnected } = useCanvasConfig();
   const { profile } = useProfile();
   const teacherSubjects = profile?.subjects ?? [];
   const showNGSS = teacherSubjects.length === 0 || teacherSubjects.includes("Science");
