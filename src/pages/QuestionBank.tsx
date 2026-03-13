@@ -275,6 +275,21 @@ const QuestionBank = () => {
     }
   };
 
+  const handleExportQTI = async () => {
+    const selectedQuestions = questions.filter(q => selected.has(q.id));
+    if (selectedQuestions.length === 0) return;
+    setExporting(true);
+    try {
+      await exportToQTI(quizTitle, selectedQuestions);
+      toast.success("QTI package exported! Import this .zip file into Mastery Connect.");
+      setShowExportDialog(false);
+    } catch {
+      toast.error("Failed to export QTI package");
+    } finally {
+      setExporting(false);
+    }
+  };
+
   // Build discipline → coreIdea → questions hierarchy
   // HS standards are grouped under their MS counterpart core idea
   const buildHierarchy = () => {
