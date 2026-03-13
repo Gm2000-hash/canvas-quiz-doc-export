@@ -14,6 +14,7 @@ import QuestionEditor from "./pages/QuestionEditor";
 import LessonPlanner from "./pages/LessonPlanner";
 import UnitDetail from "./pages/UnitDetail";
 import LessonPlanEditor from "./pages/LessonPlanEditor";
+import AdminDashboard from "./pages/AdminDashboard";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
