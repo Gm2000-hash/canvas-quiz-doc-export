@@ -5,9 +5,14 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom, BookOpen, Calculator, Landmark } from "lucide-react";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
-import { generateForCoreIdea, generateForDiscipline, type GenerationProgress } from "@/lib/question-generator";
+import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS, type IdahoGradeStandards } from "@/lib/idaho-standards-data";
+import { generateForCoreIdea, generateForDiscipline, generateForStandards, type GenerationProgress } from "@/lib/question-generator";
 import { toast } from "sonner";
 
 interface Props {
@@ -22,13 +27,27 @@ const DISCIPLINES = [
   { key: "PS", label: "Physical Science", icon: Atom, coreIdeas: ["MS-PS1", "MS-PS2", "MS-PS3", "MS-PS4"] },
 ];
 
-type GenerateTarget = { type: "coreIdea"; id: string } | { type: "discipline"; key: string } | { type: "all" };
+const IDAHO_SUBJECT_ICONS: Record<string, React.ElementType> = {
+  "ELA": BookOpen,
+  "Math": Calculator,
+  "Social Studies": Landmark,
+};
+
+type GenerateTarget =
+  | { type: "coreIdea"; id: string }
+  | { type: "discipline"; key: string }
+  | { type: "all" }
+  | { type: "idaho"; standards: { code: string; description: string }[]; subject: string };
 
 export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete }: Props) {
   const [questionsPerSub, setQuestionsPerSub] = useState(10);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
+  const [framework, setFramework] = useState<"ngss" | "idaho">("idaho");
+  const [idahoGradeFilter, setIdahoGradeFilter] = useState<string>("all");
+  const [idahoCategoryFilter, setIdahoCategoryFilter] = useState<string>("essential");
+  const [selectedIdahoStandards, setSelectedIdahoStandards] = useState<Set<string>>(new Set());
   const abortRef = useRef(false);
   const latestProgressRef = useRef<GenerationProgress | null>(null);
 
@@ -36,6 +55,35 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
     latestProgressRef.current = p;
     setProgress(p);
   };
+
+  const getFilteredIdahoStandards = () => {
+    let standards = ALL_IDAHO_STANDARDS_FLAT;
+    if (idahoGradeFilter !== "all") {
+      const [subject, grade] = idahoGradeFilter.split("|");
+      standards = standards.filter(s => s.subject === subject && s.grade === grade);
+    }
+    if (idahoCategoryFilter !== "all") {
+      standards = standards.filter(s => s.category === idahoCategoryFilter);
+    }
+    return standards;
+  };
+
+  const filteredIdaho = getFilteredIdahoStandards();
+
+  const toggleIdahoStandard = (code: string) => {
+    const next = new Set(selectedIdahoStandards);
+    if (next.has(code)) next.delete(code);
+    else next.add(code);
+    setSelectedIdahoStandards(next);
+  };
+
+  const selectAllFiltered = () => {
+    const next = new Set(selectedIdahoStandards);
+    filteredIdaho.forEach(s => next.add(s.code));
+    setSelectedIdahoStandards(next);
+  };
+
+  const clearSelected = () => setSelectedIdahoStandards(new Set());
 
   const handleGenerate = async (target: GenerateTarget) => {
     setGenerating(true);
@@ -49,6 +97,11 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
       } else if (target.type === "discipline") {
         const disc = DISCIPLINES.find(d => d.key === target.key);
         if (disc) await generateForDiscipline(disc.coreIdeas, questionsPerSub, handleProgressUpdate);
+      } else if (target.type === "idaho") {
+        await generateForStandards(target.standards, questionsPerSub, handleProgressUpdate, {
+          framework: "Idaho",
+          subject: target.subject,
+        });
       } else {
         const allCoreIdeas = DISCIPLINES.flatMap(d => d.coreIdeas);
         await generateForDiscipline(allCoreIdeas, questionsPerSub, handleProgressUpdate);
@@ -62,6 +115,21 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
     } finally {
       setGenerating(false);
     }
+  };
+
+  const handleIdahoGenerate = () => {
+    const standards = ALL_IDAHO_STANDARDS_FLAT.filter(s => selectedIdahoStandards.has(s.code));
+    if (standards.length === 0) {
+      toast.error("Select at least one standard");
+      return;
+    }
+    // Determine subject from the first selected standard
+    const subject = standards[0].subject;
+    handleGenerate({
+      type: "idaho",
+      standards: standards.map(s => ({ code: s.code, description: s.description })),
+      subject,
+    });
   };
 
   const reset = () => {
@@ -80,7 +148,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
             Generate Sample Questions
           </DialogTitle>
           <DialogDescription>
-            Use AI to generate ISAT-style questions for each NGSS substandard. Questions include multi-step, multiple choice, drag-and-drop, and multi-select types.
+            Use AI to generate ISAT-style questions aligned to NGSS or Idaho Content Standards.
           </DialogDescription>
         </DialogHeader>
 
@@ -133,7 +201,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
           /* Selection view */
           <div className="space-y-4">
             <div className="space-y-1.5">
-              <Label className="text-xs">Questions per substandard</Label>
+              <Label className="text-xs">Questions per standard</Label>
               <Input
                 type="number"
                 min={1}
@@ -142,65 +210,151 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                 onChange={(e) => setQuestionsPerSub(Math.max(1, Math.min(50, parseInt(e.target.value) || 1)))}
                 className="w-32 h-9 text-sm"
               />
-              <p className="text-[10px] text-muted-foreground">1–50 questions per substandard</p>
             </div>
 
-            {/* Generate All */}
-            <Button
-              variant="default"
-              className="w-full gap-2"
-              onClick={() => handleGenerate({ type: "all" })}
-              disabled={generating}
-            >
-              <Sparkles className="h-4 w-4" />
-              Generate All ({Object.values(ALL_SUBSTANDARDS).reduce((s, a) => s + a.length, 0) * questionsPerSub} questions)
-            </Button>
+            <Tabs value={framework} onValueChange={v => setFramework(v as "ngss" | "idaho")}>
+              <TabsList className="w-full">
+                <TabsTrigger value="idaho" className="flex-1">Idaho Standards</TabsTrigger>
+                <TabsTrigger value="ngss" className="flex-1">NGSS (Science)</TabsTrigger>
+              </TabsList>
+            </Tabs>
 
-            <div className="text-xs text-muted-foreground text-center">— or generate by discipline / core idea —</div>
+            {framework === "idaho" ? (
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <Select value={idahoGradeFilter} onValueChange={v => { setIdahoGradeFilter(v); setSelectedIdahoStandards(new Set()); }}>
+                    <SelectTrigger className="h-8 text-xs flex-1">
+                      <SelectValue placeholder="All subjects" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Subjects & Grades</SelectItem>
+                      {ALL_IDAHO_STANDARDS.map(gs => (
+                        <SelectItem key={`${gs.subject}|${gs.grade}`} value={`${gs.subject}|${gs.grade}`}>
+                          {gs.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Select value={idahoCategoryFilter} onValueChange={setIdahoCategoryFilter}>
+                    <SelectTrigger className="h-8 text-xs w-[130px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {Object.entries(IDAHO_CATEGORY_LABELS).map(([key, label]) => (
+                        <SelectItem key={key} value={key}>{label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
 
-            {/* Per discipline */}
-            {DISCIPLINES.map(disc => {
-              const Icon = disc.icon;
-              const subCount = disc.coreIdeas.reduce((s, ci) => s + (ALL_SUBSTANDARDS[ci]?.length || 0), 0);
-              return (
-                <div key={disc.key} className="border rounded-lg p-3 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Icon className="h-4 w-4 text-primary" />
-                      <span className="font-medium text-sm">{disc.label}</span>
-                      <Badge variant="secondary" className="text-xs">{subCount} standards</Badge>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="gap-1 text-xs h-7"
-                      onClick={() => handleGenerate({ type: "discipline", key: disc.key })}
-                      disabled={generating}
-                    >
-                      <Sparkles className="h-3 w-3" /> Generate All
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">
+                    {selectedIdahoStandards.size} selected · {filteredIdaho.length} shown
+                  </span>
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2" onClick={selectAllFiltered}>
+                      Select All
+                    </Button>
+                    <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2" onClick={clearSelected}>
+                      Clear
                     </Button>
                   </div>
-                  <div className="grid grid-cols-2 gap-1.5">
-                    {disc.coreIdeas.map(ci => {
-                      const count = ALL_SUBSTANDARDS[ci]?.length || 0;
-                      return (
+                </div>
+
+                <ScrollArea className="h-[200px] border rounded-md">
+                  <div className="p-1 space-y-0.5">
+                    {filteredIdaho.map(s => (
+                      <label key={s.code} className="flex items-start gap-2 px-2 py-1.5 rounded hover:bg-accent/50 cursor-pointer">
+                        <Checkbox
+                          checked={selectedIdahoStandards.has(s.code)}
+                          onCheckedChange={() => toggleIdahoStandard(s.code)}
+                          className="mt-0.5"
+                        />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs font-semibold">{s.code}</span>
+                            <Badge variant="secondary" className="text-[9px] px-1 py-0">{s.subject} {s.grade}</Badge>
+                          </div>
+                          <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">{s.description}</p>
+                        </div>
+                      </label>
+                    ))}
+                    {filteredIdaho.length === 0 && (
+                      <p className="text-xs text-muted-foreground p-4 text-center">No standards match filters</p>
+                    )}
+                  </div>
+                </ScrollArea>
+
+                <Button
+                  className="w-full gap-2"
+                  onClick={handleIdahoGenerate}
+                  disabled={generating || selectedIdahoStandards.size === 0}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Generate {selectedIdahoStandards.size * questionsPerSub} Questions
+                  ({selectedIdahoStandards.size} standards × {questionsPerSub})
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Generate All NGSS */}
+                <Button
+                  variant="default"
+                  className="w-full gap-2"
+                  onClick={() => handleGenerate({ type: "all" })}
+                  disabled={generating}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  Generate All ({Object.values(ALL_SUBSTANDARDS).reduce((s, a) => s + a.length, 0) * questionsPerSub} questions)
+                </Button>
+
+                <div className="text-xs text-muted-foreground text-center">— or generate by discipline / core idea —</div>
+
+                {DISCIPLINES.map(disc => {
+                  const Icon = disc.icon;
+                  const subCount = disc.coreIdeas.reduce((s, ci) => s + (ALL_SUBSTANDARDS[ci]?.length || 0), 0);
+                  return (
+                    <div key={disc.key} className="border rounded-lg p-3 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <Icon className="h-4 w-4 text-primary" />
+                          <span className="font-medium text-sm">{disc.label}</span>
+                          <Badge variant="secondary" className="text-xs">{subCount} standards</Badge>
+                        </div>
                         <Button
-                          key={ci}
-                          variant="ghost"
+                          variant="outline"
                           size="sm"
-                          className="justify-start text-xs h-8 gap-1.5"
-                          onClick={() => handleGenerate({ type: "coreIdea", id: ci })}
+                          className="gap-1 text-xs h-7"
+                          onClick={() => handleGenerate({ type: "discipline", key: disc.key })}
                           disabled={generating}
                         >
-                          <Badge variant="outline" className="text-[10px] px-1.5">{ci}</Badge>
-                          <span className="text-muted-foreground">{count} subs</span>
+                          <Sparkles className="h-3 w-3" /> Generate All
                         </Button>
-                      );
-                    })}
-                  </div>
-                </div>
-              );
-            })}
+                      </div>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {disc.coreIdeas.map(ci => {
+                          const count = ALL_SUBSTANDARDS[ci]?.length || 0;
+                          return (
+                            <Button
+                              key={ci}
+                              variant="ghost"
+                              size="sm"
+                              className="justify-start text-xs h-8 gap-1.5"
+                              onClick={() => handleGenerate({ type: "coreIdea", id: ci })}
+                              disabled={generating}
+                            >
+                              <Badge variant="outline" className="text-[10px] px-1.5">{ci}</Badge>
+                              <span className="text-muted-foreground">{count} subs</span>
+                            </Button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
       </DialogContent>

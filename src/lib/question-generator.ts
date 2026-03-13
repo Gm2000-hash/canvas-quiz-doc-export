@@ -11,20 +11,31 @@ export interface GenerationProgress {
 
 export type ProgressCallback = (progress: GenerationProgress) => void;
 
+interface GenerateOptions {
+  framework?: "NGSS" | "Idaho";
+  subject?: string;
+}
+
 /**
- * Generate ISAT-style questions for a specific substandard and save to bank.
+ * Generate ISAT-style questions for a specific standard and save to bank.
  */
 async function generateForSubstandard(
   code: string,
   description: string,
-  count: number
+  count: number,
+  options: GenerateOptions = {}
 ): Promise<{ saved: number; error?: string }> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Must be logged in");
 
-  // Call the edge function
   const { data, error } = await supabase.functions.invoke('generate-questions', {
-    body: { standard_code: code, standard_description: description, count },
+    body: {
+      standard_code: code,
+      standard_description: description,
+      count,
+      framework: options.framework || "NGSS",
+      subject: options.subject || "Science",
+    },
   });
 
   if (error) return { saved: 0, error: error.message || 'Edge function error' };
@@ -35,9 +46,7 @@ async function generateForSubstandard(
 
   for (const q of questions) {
     try {
-      // Normalize answers for DB storage
       let answers = q.answers;
-      // MC/multi-answer should be an array of {text, weight}
       if (Array.isArray(answers)) {
         answers = answers.map((a: any, i: number) => ({
           id: Date.now() + i,
@@ -45,6 +54,8 @@ async function generateForSubstandard(
           weight: a.weight ?? (a.correct ? 100 : 0),
         }));
       }
+
+      const sourceLabel = options.framework === "Idaho" ? `Idaho ${options.subject}` : "NGSS Science";
 
       const { data: inserted, error: insertError } = await supabase
         .from("question_bank")
@@ -56,7 +67,7 @@ async function generateForSubstandard(
           answers: answers as any,
           dok_level: q.dok_level || 1,
           blooms_level: q.blooms_level || 'Remember',
-          source_course: 'AI Generated',
+          source_course: `AI Generated (${sourceLabel})`,
           source_quiz: `ISAT Sample - ${code}`,
         })
         .select("id")
@@ -67,7 +78,6 @@ async function generateForSubstandard(
         continue;
       }
 
-      // Tag with the standard
       if (inserted) {
         await supabase.from("question_bank_standards").insert({
           question_bank_id: inserted.id,
@@ -85,16 +95,16 @@ async function generateForSubstandard(
 }
 
 /**
- * Generate questions for all substandards in a core idea (e.g. "MS-LS1").
+ * Generate questions for a list of standards.
  */
-export async function generateForCoreIdea(
-  coreIdea: string,
-  questionsPerSubstandard: number,
-  onProgress: ProgressCallback
+export async function generateForStandards(
+  standards: { code: string; description: string }[],
+  questionsPerStandard: number,
+  onProgress: ProgressCallback,
+  options: GenerateOptions = {}
 ): Promise<void> {
-  const substandards = ALL_SUBSTANDARDS[coreIdea] || [];
   const progress: GenerationProgress = {
-    total: substandards.length,
+    total: standards.length,
     completed: 0,
     current: null,
     errors: [],
@@ -103,11 +113,11 @@ export async function generateForCoreIdea(
 
   onProgress({ ...progress });
 
-  for (const sub of substandards) {
+  for (const sub of standards) {
     progress.current = sub.code;
     onProgress({ ...progress });
 
-    const result = await generateForSubstandard(sub.code, sub.description, questionsPerSubstandard);
+    const result = await generateForSubstandard(sub.code, sub.description, questionsPerStandard, options);
 
     if (result.error) {
       progress.errors.push(`${sub.code}: ${result.error}`);
@@ -117,11 +127,22 @@ export async function generateForCoreIdea(
     progress.current = null;
     onProgress({ ...progress });
 
-    // Small delay between calls to avoid rate limiting
     if (progress.completed < progress.total) {
       await new Promise(r => setTimeout(r, 1000));
     }
   }
+}
+
+/**
+ * Generate questions for all substandards in a core idea (e.g. "MS-LS1").
+ */
+export async function generateForCoreIdea(
+  coreIdea: string,
+  questionsPerSubstandard: number,
+  onProgress: ProgressCallback
+): Promise<void> {
+  const substandards = ALL_SUBSTANDARDS[coreIdea] || [];
+  return generateForStandards(substandards, questionsPerSubstandard, onProgress, { framework: "NGSS", subject: "Science" });
 }
 
 /**
@@ -132,35 +153,8 @@ export async function generateForDiscipline(
   questionsPerSubstandard: number,
   onProgress: ProgressCallback
 ): Promise<void> {
-  const allSubs = coreIdeas.flatMap(ci => (ALL_SUBSTANDARDS[ci] || []).map(s => ({ ...s, coreIdea: ci })));
-  const progress: GenerationProgress = {
-    total: allSubs.length,
-    completed: 0,
-    current: null,
-    errors: [],
-    questionsGenerated: 0,
-  };
-
-  onProgress({ ...progress });
-
-  for (const sub of allSubs) {
-    progress.current = sub.code;
-    onProgress({ ...progress });
-
-    const result = await generateForSubstandard(sub.code, sub.description, questionsPerSubstandard);
-
-    if (result.error) {
-      progress.errors.push(`${sub.code}: ${result.error}`);
-    }
-    progress.questionsGenerated += result.saved;
-    progress.completed++;
-    progress.current = null;
-    onProgress({ ...progress });
-
-    if (progress.completed < progress.total) {
-      await new Promise(r => setTimeout(r, 1000));
-    }
-  }
+  const allSubs = coreIdeas.flatMap(ci => (ALL_SUBSTANDARDS[ci] || []));
+  return generateForStandards(allSubs, questionsPerSubstandard, onProgress, { framework: "NGSS", subject: "Science" });
 }
 
 /**
