@@ -1122,57 +1122,35 @@ const QuestionBank = () => {
                   </div>
                 ))}
               </div>
-              {/* Searchable standard picker */}
-              <div className="space-y-2">
-                <div className="relative">
-                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
-                  <Input
-                    placeholder="Search standards (e.g. MS-ESS2-3 or 'plate')..."
-                    value={standardSearch}
-                    onChange={e => setStandardSearch(e.target.value)}
-                    className="pl-8 text-sm h-9"
-                  />
-                </div>
-                {standardSearch.trim() && (
-                  <div className="max-h-40 overflow-y-auto border rounded-md divide-y">
-                    {Object.entries(ALL_SUBSTANDARDS)
-                      .flatMap(([, subs]) => subs)
-                      .filter(sub => {
-                        const q = standardSearch.toLowerCase();
-                        return (
-                          sub.code.toLowerCase().includes(q) ||
-                          sub.description.toLowerCase().includes(q)
-                        ) && !editStandards.some(es => es.ngss_code === sub.code);
-                      })
-                      .slice(0, 20)
-                      .map(sub => (
-                        <button
-                          key={sub.code}
-                          type="button"
-                          className="w-full flex items-start gap-2 px-3 py-2 hover:bg-muted/50 text-left transition-colors"
-                          onClick={() => {
-                            setEditStandards(prev => [...prev, { ngss_code: sub.code, ngss_description: sub.description }]);
-                            setStandardSearch("");
-                          }}
-                        >
-                          <Badge variant="outline" className="text-xs shrink-0 mt-0.5">{sub.code}</Badge>
-                          <span className="text-xs text-muted-foreground">{sub.description}</span>
-                        </button>
-                      ))}
-                    {Object.entries(ALL_SUBSTANDARDS)
-                      .flatMap(([, subs]) => subs)
-                      .filter(sub => {
-                        const q = standardSearch.toLowerCase();
-                        return (
-                          sub.code.toLowerCase().includes(q) ||
-                          sub.description.toLowerCase().includes(q)
-                        ) && !editStandards.some(es => es.ngss_code === sub.code);
-                      }).length === 0 && (
-                      <p className="text-xs text-muted-foreground p-3">No matching standards found</p>
-                    )}
-                  </div>
-                )}
-              </div>
+              <Select
+                value=""
+                onValueChange={(code) => {
+                  const allSubs = Object.values(ALL_SUBSTANDARDS).flat();
+                  const match = allSubs.find(s => s.code === code);
+                  if (match && !editStandards.some(es => es.ngss_code === code)) {
+                    setEditStandards(prev => [...prev, { ngss_code: match.code, ngss_description: match.description }]);
+                  }
+                }}
+              >
+                <SelectTrigger className="h-9 text-sm">
+                  <SelectValue placeholder="Add a standard..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-64">
+                  {Object.entries(ALL_SUBSTANDARDS).map(([group, subs]) => (
+                    <React.Fragment key={group}>
+                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase sticky top-0 bg-card">{group}</div>
+                      {subs
+                        .filter(sub => !editStandards.some(es => es.ngss_code === sub.code))
+                        .map(sub => (
+                          <SelectItem key={sub.code} value={sub.code} className="text-xs">
+                            <span className="font-medium">{sub.code}</span>
+                            <span className="text-muted-foreground ml-1.5">{sub.description.length > 60 ? sub.description.slice(0, 60) + "…" : sub.description}</span>
+                          </SelectItem>
+                        ))}
+                    </React.Fragment>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
