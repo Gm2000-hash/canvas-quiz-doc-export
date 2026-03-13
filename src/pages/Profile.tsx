@@ -108,6 +108,18 @@ export default function Profile() {
     setUploading(false);
   };
 
+  const handlePresetAvatar = async (src: string) => {
+    if (!user) return;
+    setAvatarUrl(src);
+
+    await supabase
+      .from("profiles")
+      .update({ avatar_url: src, updated_at: new Date().toISOString() } as any)
+      .eq("user_id", user.id);
+
+    toast.success("Avatar updated!");
+  };
+
   const handleSave = async () => {
     if (selectedSubjects.length === 0) {
       toast.error("Please select at least one content area.");
