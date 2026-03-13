@@ -1,9 +1,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Menu, FileText, BookOpen, Layers, PenLine, Settings, LogOut, Home } from "lucide-react";
+import { Menu, FileText, BookOpen, Layers, PenLine, Settings, LogOut, Home, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
