@@ -133,7 +133,7 @@ const LessonPlanner = () => {
       return;
     }
     setCreateOpen(false);
-    setNewUnit({ title: "", description: "", grade_level: "", discipline: "", date_start: "", date_end: "" });
+    setNewUnit({ title: "", description: "", grade_level: defaultGradeLevel, discipline: defaultDiscipline, date_start: "", date_end: "" });
     fetchUnits();
     toast({ title: "Unit created" });
   };
