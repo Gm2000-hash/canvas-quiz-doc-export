@@ -73,7 +73,7 @@ const tiles = [
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
-
+  const { profile } = useProfile();
   const todayTip = useMemo(() => {
     const now = new Date();
     const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
