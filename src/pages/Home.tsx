@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { GraduationCap, Lightbulb } from "lucide-react";
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
 import sketchQuestionBank from "@/assets/sketch-question-bank.png";
@@ -72,7 +73,7 @@ const tiles = [
 export default function Home() {
   const navigate = useNavigate();
   const { user } = useAuth();
-
+  const { profile } = useProfile();
   const todayTip = useMemo(() => {
     const now = new Date();
     const dayOfYear = Math.floor((now.getTime() - new Date(now.getFullYear(), 0, 0).getTime()) / 86400000);
@@ -94,7 +95,7 @@ export default function Home() {
       <main className="flex-1 py-10 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            Welcome back{user?.email ? `, ${user.email.split("@")[0]}` : ""}!
+            Welcome back{profile?.display_name ? `, ${profile.display_name}` : user?.email ? `, ${user.email.split("@")[0]}` : ""}!
           </h1>
           <p className="text-muted-foreground mt-2 text-base">
             What would you like to work on today?
