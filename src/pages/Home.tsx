@@ -65,8 +65,8 @@ const ALL_CARDS: DashboardCard[] = [
   { id: "question-bank", title: "Question Bank", description: "Browse, search, and manage your library of assessment questions.", path: "/question-bank", icon: BookOpen, image: sketchQuestionBank },
   { id: "create-question", title: "Create Question", description: "Build new questions with DOK levels, Bloom's taxonomy, and standards tags.", path: "/create-question", icon: PenLine, image: sketchCreateQuestion },
   { id: "lesson-planner", title: "Lesson Planner", description: "Organize units, generate AI lesson plans, and export pacing guides.", path: "/lesson-planner", icon: Layers, image: sketchLessonPlanner },
-  { id: "standards", title: "Standards Browser", description: "Browse Idaho and NGSS standards organized by subject, grade, and category.", path: "/standards", icon: Library },
-  { id: "profile", title: "Profile Settings", description: "Update your photo, contact info, and teaching preferences.", path: "/profile", icon: UserCircle },
+  { id: "standards", title: "Standards Browser", description: "Browse Idaho and NGSS standards organized by subject, grade, and category.", path: "/standards", icon: Library, image: sketchStandardsBrowser },
+  { id: "profile", title: "Profile Settings", description: "Update your photo, contact info, and teaching preferences.", path: "/profile", icon: UserCircle, image: sketchProfileSettings },
 ];
 
 const STORAGE_KEY = "dashboard-card-order";
