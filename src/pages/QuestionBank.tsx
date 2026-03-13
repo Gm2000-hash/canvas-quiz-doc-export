@@ -47,7 +47,28 @@ const DISCIPLINES: DisciplineConfig[] = [
   { key: "PS", label: "Physical Science", icon: Atom, coreIdeas: ["MS-PS1", "MS-PS2", "MS-PS3", "MS-PS4"] },
 ];
 
-// ALL_SUBSTANDARDS imported from @/lib/ngss-data
+// Idaho subject categories for tiles
+interface IdahoSubjectConfig {
+  key: string;
+  label: string;
+  icon: typeof BookOpen;
+}
+
+const IDAHO_SUBJECTS: IdahoSubjectConfig[] = [
+  { key: "ELA", label: "English Language Arts", icon: BookOpen },
+  { key: "Math", label: "Mathematics", icon: Hash },
+  { key: "Social Studies", label: "Social Studies", icon: Landmark },
+];
+
+function getIdahoSubjectGrade(code: string): { subject: string; grade: string } | null {
+  const match = ALL_IDAHO_STANDARDS_FLAT.find(s => s.code === code);
+  return match ? { subject: match.subject, grade: match.grade } : null;
+}
+
+function isIdahoCode(code: string): boolean {
+  return ALL_IDAHO_STANDARDS_FLAT.some(s => s.code === code);
+}
+
 
 // Parse a standard code like "MS-LS1-3" into { discipline: "LS", coreIdea: "MS-LS1", full: "MS-LS1-3" }
 function parseStandardCode(code: string) {
