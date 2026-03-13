@@ -45,7 +45,7 @@ export function PageBanner({
 
       {/* Content */}
       <div className="relative z-10">
-        <div className="flex items-start gap-4">
+        <div className="flex items-center gap-4 sm:gap-6">
           {avatarPosition === "left" && avatarEl}
           <div className="flex-1 min-w-0">
             {greeting && (
@@ -57,7 +57,11 @@ export function PageBanner({
               <p className="text-sm text-earth-moss mt-1">{subtitle}</p>
             )}
           </div>
-          {avatarPosition === "right" && avatarEl}
+          {avatarPosition === "right" && (
+            <div className="shrink-0 mr-4 sm:mr-10 lg:mr-16">
+              {avatarEl}
+            </div>
+          )}
         </div>
 
         {stats && stats.length > 0 && (
