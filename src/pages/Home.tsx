@@ -197,38 +197,22 @@ export default function Home() {
           subtitle={new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
           avatarUrl={(profile as any)?.avatar_url || ""}
           avatarFallback={initials}
-          stats={[
-            { label: "Questions", value: questionCount },
-            { label: "Lessons", value: lessonCount },
-            { label: "Units", value: unitCount },
-          ]}
+          avatarPosition="right"
+          avatarSize="large"
         >
-          <div className="space-y-3">
-            {/* Today's Lessons */}
-            {todayLessons.length > 0 ? (
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-xs font-semibold text-earth-clay uppercase tracking-wider">Today's Lessons:</span>
-                {todayLessons.map(l => (
-                  <Badge key={l.id} variant="secondary" className="rounded-lg text-xs bg-earth-sand text-earth-clay border-earth-sand">
-                    {l.title}
-                  </Badge>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-earth-moss italic">No lessons scheduled for today</p>
-            )}
-
-            {/* Inspirational Quote */}
-            <div className="flex items-start gap-2 pt-2 border-t border-earth-sand/60">
-              <Lightbulb className="h-3.5 w-3.5 text-earth-terracotta mt-0.5 shrink-0" />
-              <div>
-                <p className="text-xs text-earth-clay leading-relaxed italic">"{todayTip.text}"</p>
-                {todayTip.author !== "Tip" && (
-                  <p className="text-[11px] text-earth-moss mt-0.5">— {todayTip.author}</p>
-                )}
-              </div>
+          {/* Today's Lessons */}
+          {todayLessons.length > 0 ? (
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-xs font-semibold text-earth-clay uppercase tracking-wider">Today's Lessons:</span>
+              {todayLessons.map(l => (
+                <Badge key={l.id} variant="secondary" className="rounded-lg text-xs bg-earth-sand text-earth-clay border-earth-sand">
+                  {l.title}
+                </Badge>
+              ))}
             </div>
-          </div>
+          ) : (
+            <p className="text-xs text-earth-moss italic">No lessons scheduled for today</p>
+          )}
         </PageBanner>
 
         {/* Draggable Dashboard Cards */}
