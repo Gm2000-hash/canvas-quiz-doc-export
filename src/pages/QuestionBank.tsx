@@ -1110,7 +1110,7 @@ const QuestionBank = () => {
             )}
 
             <div className="space-y-2">
-              <Label>NGSS Standards</Label>
+              <Label>NGSS Standards (Middle School)</Label>
               <div className="space-y-2">
                 {editStandards.map((s, idx) => (
                   <div key={idx} className="flex items-start gap-2 bg-muted/50 rounded-md px-3 py-2 min-w-0">
