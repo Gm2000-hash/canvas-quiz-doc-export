@@ -18,7 +18,7 @@ export function PageBanner({
   avatarUrl, avatarFallback, avatarPosition = "left", avatarSize = "default",
 }: PageBannerProps) {
   const sizeClass = avatarSize === "large"
-    ? "h-20 w-20 sm:h-24 sm:w-24"
+    ? "h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32"
     : compact ? "h-10 w-10" : "h-14 w-14 sm:h-16 sm:w-16";
 
   const avatarEl = avatarUrl !== undefined ? (
@@ -45,7 +45,7 @@ export function PageBanner({
 
       {/* Content */}
       <div className="relative z-10">
-        <div className="flex items-start gap-4">
+        <div className="flex items-center gap-4 sm:gap-6">
           {avatarPosition === "left" && avatarEl}
           <div className="flex-1 min-w-0">
             {greeting && (
@@ -57,7 +57,11 @@ export function PageBanner({
               <p className="text-sm text-earth-moss mt-1">{subtitle}</p>
             )}
           </div>
-          {avatarPosition === "right" && avatarEl}
+          {avatarPosition === "right" && (
+            <div className="shrink-0 mr-4 sm:mr-10 lg:mr-16">
+              {avatarEl}
+            </div>
+          )}
         </div>
 
         {stats && stats.length > 0 && (
