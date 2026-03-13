@@ -47,14 +47,14 @@ export function PageBanner({
       <div className="relative z-10">
         <div className="flex items-center gap-4 sm:gap-6">
           {avatarPosition === "left" && avatarEl}
-          <div className="flex-1 min-w-0">
+          <div className="flex-1 min-w-0 text-right pr-4 sm:pr-8">
             {greeting && (
-              <h1 className={`font-bold text-earth-clay ${compact ? "text-lg" : "text-xl sm:text-2xl"}`}>
+              <h1 className={`font-bold text-earth-clay ${compact ? "text-xl" : "text-2xl sm:text-3xl lg:text-4xl"}`}>
                 {greeting}
               </h1>
             )}
             {subtitle && (
-              <p className="text-sm text-earth-moss mt-1">{subtitle}</p>
+              <p className="text-base sm:text-lg text-earth-moss mt-1">{subtitle}</p>
             )}
           </div>
           {avatarPosition === "right" && (
