@@ -198,20 +198,6 @@ export default function Home() {
           ]}
         />
 
-        {/* Daily Tip */}
-        <div className="mx-auto max-w-lg rounded-2xl border border-earth-sand bg-earth-warm/50 p-5 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Lightbulb className="h-4 w-4 text-earth-terracotta" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-earth-terracotta">
-              {todayTip.author === "Tip" ? "Daily Teaching Tip" : "Daily Inspiration"}
-            </span>
-          </div>
-          <p className="text-sm text-foreground leading-relaxed italic">"{todayTip.text}"</p>
-          {todayTip.author !== "Tip" && (
-            <p className="text-xs text-muted-foreground mt-2">— {todayTip.author}</p>
-          )}
-        </div>
-
         {/* Draggable Dashboard Cards */}
         <div>
           <div className="flex items-center justify-between mb-4">
@@ -234,11 +220,9 @@ export default function Home() {
                       : "border-border/60"
                   }`}
                 >
-                  {/* Drag grip */}
                   <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-60 transition-opacity">
                     <GripVertical className="h-4 w-4 text-muted-foreground" />
                   </div>
-
                   <button
                     onClick={() => navigate(card.path)}
                     className="w-full p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
@@ -270,6 +254,20 @@ export default function Home() {
               );
             })}
           </div>
+        </div>
+
+        {/* Daily Tip */}
+        <div className="mx-auto max-w-lg rounded-2xl border border-earth-sand bg-earth-warm/50 p-5 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Lightbulb className="h-4 w-4 text-earth-terracotta" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-earth-terracotta">
+              {todayTip.author === "Tip" ? "Daily Teaching Tip" : "Daily Inspiration"}
+            </span>
+          </div>
+          <p className="text-sm text-foreground leading-relaxed italic">"{todayTip.text}"</p>
+          {todayTip.author !== "Tip" && (
+            <p className="text-xs text-muted-foreground mt-2">— {todayTip.author}</p>
+          )}
         </div>
       </main>
     </div>
