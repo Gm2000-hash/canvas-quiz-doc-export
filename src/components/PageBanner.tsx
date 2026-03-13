@@ -58,7 +58,7 @@ export function PageBanner({
             )}
           </div>
           {avatarPosition === "right" && (
-            <div className="shrink-0 mr-4 sm:mr-10 lg:mr-16">
+            <div className="shrink-0 mr-8 sm:mr-20 lg:mr-32">
               {avatarEl}
             </div>
           )}
