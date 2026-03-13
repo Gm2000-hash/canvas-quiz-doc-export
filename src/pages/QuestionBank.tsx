@@ -573,10 +573,18 @@ const QuestionBank = () => {
             </Button>
           )}
           {selected.size > 0 && (
-            <Button onClick={() => setShowExportDialog(true)} className="gap-2">
-              <FileText className="h-4 w-4" />
-              Create Quiz ({selected.size})
-            </Button>
+            <>
+              <Button onClick={() => setShowExportDialog(true)} className="gap-2">
+                <FileText className="h-4 w-4" />
+                Create Quiz ({selected.size})
+              </Button>
+              {canvasConnected && (
+                <Button variant="outline" onClick={() => setShowPushToCanvas(true)} className="gap-2">
+                  <Upload className="h-4 w-4" />
+                  Push to Canvas ({selected.size})
+                </Button>
+              )}
+            </>
           )}
         </div>
 
