@@ -110,20 +110,24 @@ export default function Home() {
   const [questionCount, setQuestionCount] = useState(0);
   const [lessonCount, setLessonCount] = useState(0);
   const [unitCount, setUnitCount] = useState(0);
+  const [todayLessons, setTodayLessons] = useState<{ id: string; title: string }[]>([]);
 
   useEffect(() => {
     if (!user) return;
-    const fetchCounts = async () => {
-      const [qRes, lRes, uRes] = await Promise.all([
+    const today = new Date().toISOString().split("T")[0];
+    const fetchData = async () => {
+      const [qRes, lRes, uRes, tlRes] = await Promise.all([
         supabase.from("question_bank").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("lesson_plans").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("units").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("lesson_plans").select("id, title").eq("user_id", user.id).eq("lesson_date", today),
       ]);
       setQuestionCount(qRes.count ?? 0);
       setLessonCount(lRes.count ?? 0);
       setUnitCount(uRes.count ?? 0);
+      setTodayLessons(tlRes.data ?? []);
     };
-    fetchCounts();
+    fetchData();
   }, [user]);
 
   const todayTip = useMemo(() => {
