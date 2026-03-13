@@ -110,20 +110,24 @@ export default function Home() {
   const [questionCount, setQuestionCount] = useState(0);
   const [lessonCount, setLessonCount] = useState(0);
   const [unitCount, setUnitCount] = useState(0);
+  const [todayLessons, setTodayLessons] = useState<{ id: string; title: string }[]>([]);
 
   useEffect(() => {
     if (!user) return;
-    const fetchCounts = async () => {
-      const [qRes, lRes, uRes] = await Promise.all([
+    const today = new Date().toISOString().split("T")[0];
+    const fetchData = async () => {
+      const [qRes, lRes, uRes, tlRes] = await Promise.all([
         supabase.from("question_bank").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("lesson_plans").select("id", { count: "exact", head: true }).eq("user_id", user.id),
         supabase.from("units").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("lesson_plans").select("id, title").eq("user_id", user.id).eq("lesson_date", today),
       ]);
       setQuestionCount(qRes.count ?? 0);
       setLessonCount(lRes.count ?? 0);
       setUnitCount(uRes.count ?? 0);
+      setTodayLessons(tlRes.data ?? []);
     };
-    fetchCounts();
+    fetchData();
   }, [user]);
 
   const todayTip = useMemo(() => {
@@ -191,12 +195,41 @@ export default function Home() {
         <PageBanner
           greeting={`Good ${new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}${profile?.display_name ? `, ${profile.display_name}` : ""}`}
           subtitle={new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
+          avatarUrl={(profile as any)?.avatar_url || ""}
+          avatarFallback={initials}
           stats={[
             { label: "Questions", value: questionCount },
             { label: "Lessons", value: lessonCount },
             { label: "Units", value: unitCount },
           ]}
-        />
+        >
+          <div className="space-y-3">
+            {/* Today's Lessons */}
+            {todayLessons.length > 0 ? (
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-xs font-semibold text-earth-clay uppercase tracking-wider">Today's Lessons:</span>
+                {todayLessons.map(l => (
+                  <Badge key={l.id} variant="secondary" className="rounded-lg text-xs bg-earth-sand text-earth-clay border-earth-sand">
+                    {l.title}
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-earth-moss italic">No lessons scheduled for today</p>
+            )}
+
+            {/* Inspirational Quote */}
+            <div className="flex items-start gap-2 pt-2 border-t border-earth-sand/60">
+              <Lightbulb className="h-3.5 w-3.5 text-earth-terracotta mt-0.5 shrink-0" />
+              <div>
+                <p className="text-xs text-earth-clay leading-relaxed italic">"{todayTip.text}"</p>
+                {todayTip.author !== "Tip" && (
+                  <p className="text-[11px] text-earth-moss mt-0.5">— {todayTip.author}</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </PageBanner>
 
         {/* Draggable Dashboard Cards */}
         <div>
@@ -254,20 +287,6 @@ export default function Home() {
               );
             })}
           </div>
-        </div>
-
-        {/* Daily Tip */}
-        <div className="mx-auto max-w-lg rounded-2xl border border-earth-sand bg-earth-warm/50 p-5 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Lightbulb className="h-4 w-4 text-earth-terracotta" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-earth-terracotta">
-              {todayTip.author === "Tip" ? "Daily Teaching Tip" : "Daily Inspiration"}
-            </span>
-          </div>
-          <p className="text-sm text-foreground leading-relaxed italic">"{todayTip.text}"</p>
-          {todayTip.author !== "Tip" && (
-            <p className="text-xs text-muted-foreground mt-2">— {todayTip.author}</p>
-          )}
         </div>
       </main>
     </div>
