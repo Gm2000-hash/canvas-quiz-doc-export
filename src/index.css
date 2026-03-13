@@ -53,13 +53,13 @@
     --chart-5: 220 9% 46%;
     --sidebar: 0 0% 100%;
 
-    /* Warm earth tone theme */
-    --earth-terracotta: 15 70% 55%;
-    --earth-sage: 150 25% 50%;
-    --earth-sand: 35 40% 88%;
-    --earth-warm: 30 30% 95%;
-    --earth-clay: 20 50% 42%;
-    --earth-moss: 140 20% 40%;
+    /* Tropical bright theme */
+    --earth-terracotta: 145 75% 42%;
+    --earth-sage: 195 90% 50%;
+    --earth-sand: 50 95% 88%;
+    --earth-warm: 55 80% 96%;
+    --earth-clay: 145 65% 30%;
+    --earth-moss: 200 70% 40%;
 
     --shadow-2xs: 0 0 1px 0 hsl(0 0% 0% / 0.03);
     --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.04);
