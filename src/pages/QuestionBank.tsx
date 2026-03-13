@@ -16,7 +16,7 @@ import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT } from "@/lib/idaho-stand
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { exportToQTI } from "@/lib/export-qti";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb, Upload } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb, Upload, Hash, Landmark } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateQuestionsDialog from "@/components/GenerateQuestionsDialog";
@@ -25,6 +25,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageBanner } from "@/components/PageBanner";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
+import { useProfile } from "@/hooks/useProfile";
 
 function stripHtml(html: string): string {
   const div = document.createElement("div");
@@ -46,7 +47,28 @@ const DISCIPLINES: DisciplineConfig[] = [
   { key: "PS", label: "Physical Science", icon: Atom, coreIdeas: ["MS-PS1", "MS-PS2", "MS-PS3", "MS-PS4"] },
 ];
 
-// ALL_SUBSTANDARDS imported from @/lib/ngss-data
+// Idaho subject categories for tiles
+interface IdahoSubjectConfig {
+  key: string;
+  label: string;
+  icon: typeof BookOpen;
+}
+
+const IDAHO_SUBJECTS: IdahoSubjectConfig[] = [
+  { key: "ELA", label: "English Language Arts", icon: BookOpen },
+  { key: "Math", label: "Mathematics", icon: Hash },
+  { key: "Social Studies", label: "Social Studies", icon: Landmark },
+];
+
+function getIdahoSubjectGrade(code: string): { subject: string; grade: string } | null {
+  const match = ALL_IDAHO_STANDARDS_FLAT.find(s => s.code === code);
+  return match ? { subject: match.subject, grade: match.grade } : null;
+}
+
+function isIdahoCode(code: string): boolean {
+  return ALL_IDAHO_STANDARDS_FLAT.some(s => s.code === code);
+}
+
 
 // Parse a standard code like "MS-LS1-3" into { discipline: "LS", coreIdea: "MS-LS1", full: "MS-LS1-3" }
 function parseStandardCode(code: string) {
@@ -94,6 +116,13 @@ const QuestionBank = () => {
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
   const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
+  const { profile } = useProfile();
+  const teacherSubjects = profile?.subjects ?? [];
+  const showNGSS = teacherSubjects.length === 0 || teacherSubjects.includes("Science");
+  const activeIdahoSubjects = teacherSubjects.length === 0
+    ? ["ELA", "Math", "Social Studies"]
+    : teacherSubjects.filter(s => s !== "Science");
+  const showIdaho = activeIdahoSubjects.length > 0;
 
   // Drill-down state for grouped view
   const [expandedDiscipline, setExpandedDiscipline] = useState<string | null>(null);
@@ -299,17 +328,30 @@ const QuestionBank = () => {
   // Build discipline → coreIdea → questions hierarchy
   // HS standards are grouped under their MS counterpart core idea
   const buildHierarchy = () => {
-    // Map: discipline key → { coreIdea → { questions: Set<id>, descriptions: Set<string> } }
     const hierarchy: Map<string, Map<string, { questionIds: Set<string>; descriptions: Set<string> }>> = new Map();
     const untagged: QuestionBankItem[] = [];
 
     for (const disc of DISCIPLINES) {
       const discMap = new Map<string, { questionIds: Set<string>; descriptions: Set<string> }>();
-      // Pre-populate all core ideas so they always appear
       for (const ci of disc.coreIdeas) {
         discMap.set(ci, { questionIds: new Set(), descriptions: new Set() });
       }
       hierarchy.set(disc.key, discMap);
+    }
+
+    // Idaho hierarchy: subject → grade → { questionIds, standards map }
+    const idahoHierarchy: Map<string, Map<string, { questionIds: Set<string>; standards: Map<string, { code: string; description: string; questionIds: Set<string> }> }>> = new Map();
+    for (const subj of activeIdahoSubjects) {
+      const subjMap = new Map<string, { questionIds: Set<string>; standards: Map<string, { code: string; description: string; questionIds: Set<string> }> }>();
+      const subjGrades = ALL_IDAHO_STANDARDS.filter(gs => gs.subject === subj);
+      for (const gs of subjGrades) {
+        const stdMap = new Map<string, { code: string; description: string; questionIds: Set<string> }>();
+        for (const std of gs.standards) {
+          stdMap.set(std.code, { code: std.code, description: std.description, questionIds: new Set() });
+        }
+        subjMap.set(gs.grade, { questionIds: new Set(), standards: stdMap });
+      }
+      idahoHierarchy.set(subj, subjMap);
     }
 
     for (const q of filtered) {
@@ -318,45 +360,69 @@ const QuestionBank = () => {
         continue;
       }
 
+      let hasRecognizedTag = false;
+
       for (const s of q.standards) {
+        // Try NGSS
         const discipline = getDisciplineForCode(s.ngss_code);
         const coreIdea = getCoreIdeaFromCode(s.ngss_code);
-        if (!discipline || !coreIdea) {
-          // Non-standard code, treat as untagged if no other standards match
-          continue;
+        if (discipline && coreIdea) {
+          hasRecognizedTag = true;
+          const discMap = hierarchy.get(discipline);
+          if (discMap) {
+            if (!discMap.has(coreIdea)) {
+              discMap.set(coreIdea, { questionIds: new Set(), descriptions: new Set() });
+            }
+            const group = discMap.get(coreIdea)!;
+            group.questionIds.add(q.id);
+            if (s.ngss_description) group.descriptions.add(s.ngss_description);
+          }
         }
 
-        const discMap = hierarchy.get(discipline);
-        if (!discMap) continue;
-
-        if (!discMap.has(coreIdea)) {
-          discMap.set(coreIdea, { questionIds: new Set(), descriptions: new Set() });
+        // Try Idaho
+        const idahoMatch = getIdahoSubjectGrade(s.ngss_code);
+        if (idahoMatch) {
+          hasRecognizedTag = true;
+          const subjMap = idahoHierarchy.get(idahoMatch.subject);
+          if (subjMap) {
+            const gradeGroup = subjMap.get(idahoMatch.grade);
+            if (gradeGroup) {
+              gradeGroup.questionIds.add(q.id);
+              const stdEntry = gradeGroup.standards.get(s.ngss_code);
+              if (stdEntry) stdEntry.questionIds.add(q.id);
+            }
+          }
         }
-        const group = discMap.get(coreIdea)!;
-        group.questionIds.add(q.id);
-        if (s.ngss_description) group.descriptions.add(s.ngss_description);
       }
-    }
 
-    // Check if question has no recognized discipline tags → untagged
-    for (const q of filtered) {
-      if (q.standards.length > 0 && !q.standards.some(s => getDisciplineForCode(s.ngss_code))) {
+      if (!hasRecognizedTag) {
         untagged.push(q);
       }
     }
 
-    return { hierarchy, untagged };
+    return { hierarchy, idahoHierarchy, untagged };
   };
 
-  const { hierarchy, untagged } = buildHierarchy();
+  const { hierarchy, idahoHierarchy, untagged } = buildHierarchy();
 
-  // Count questions per discipline
+  // Count questions per NGSS discipline
   const disciplineCounts = (discKey: string) => {
     const discMap = hierarchy.get(discKey);
     if (!discMap) return 0;
     const ids = new Set<string>();
     for (const group of discMap.values()) {
       group.questionIds.forEach(id => ids.add(id));
+    }
+    return ids.size;
+  };
+
+  // Count questions per Idaho subject
+  const idahoSubjectCounts = (subjKey: string) => {
+    const subjMap = idahoHierarchy.get(subjKey);
+    if (!subjMap) return 0;
+    const ids = new Set<string>();
+    for (const gradeGroup of subjMap.values()) {
+      gradeGroup.questionIds.forEach(id => ids.add(id));
     }
     return ids.size;
   };
@@ -616,8 +682,9 @@ const QuestionBank = () => {
               All Standards
             </button>
             {expandedDiscipline && expandedDiscipline !== "untagged" && (() => {
+              // Check NGSS disciplines
               const disc = DISCIPLINES.find(d => d.key === expandedDiscipline);
-              return disc ? (
+              if (disc) return (
                 <>
                   <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                   <button
@@ -627,7 +694,24 @@ const QuestionBank = () => {
                     {disc.label}
                   </button>
                 </>
-              ) : null;
+              );
+              // Check Idaho subjects
+              if (expandedDiscipline.startsWith("idaho-")) {
+                const subjKey = expandedDiscipline.replace("idaho-", "");
+                const idahoSubj = IDAHO_SUBJECTS.find(s => s.key === subjKey);
+                if (idahoSubj) return (
+                  <>
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                    <button
+                      className={`font-medium ${expandedCoreIdea ? "text-primary hover:underline" : "text-foreground"}`}
+                      onClick={() => setExpandedCoreIdea(null)}
+                    >
+                      {idahoSubj.label}
+                    </button>
+                  </>
+                );
+              }
+              return null;
             })()}
             {expandedDiscipline === "untagged" && (
               <>
@@ -638,7 +722,9 @@ const QuestionBank = () => {
             {expandedCoreIdea && (
               <>
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="font-medium text-foreground">{expandedCoreIdea}</span>
+                <span className="font-medium text-foreground">
+                  {expandedCoreIdea.match(/^\w+-(\d+)$/) ? `Grade ${expandedCoreIdea.split("-").pop()}` : expandedCoreIdea}
+                </span>
               </>
             )}
           </nav>
@@ -661,14 +747,14 @@ const QuestionBank = () => {
               </p>
             </div>
 
-            {/* Discipline tiles */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {DISCIPLINES.map(disc => {
+            {/* Standard tiles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* NGSS discipline tiles */}
+              {showNGSS && DISCIPLINES.map(disc => {
                 const count = disciplineCounts(disc.key);
                 const isExpanded = expandedDiscipline === disc.key;
                 const Icon = disc.icon;
 
-                // Collect all question IDs in this discipline
                 const discQuestionIds: string[] = [];
                 const discMap = hierarchy.get(disc.key);
                 if (discMap) {
@@ -679,7 +765,6 @@ const QuestionBank = () => {
                 const uniqueDiscIds = [...new Set(discQuestionIds)];
                 const allDiscSelected = uniqueDiscIds.length > 0 && uniqueDiscIds.every(id => selected.has(id));
 
-                // Coverage: count substandards with at least one question
                 let totalSubs = 0;
                 let coveredSubs = 0;
                 for (const ci of disc.coreIdeas) {
@@ -706,7 +791,7 @@ const QuestionBank = () => {
                 return (
                   <Card
                     key={disc.key}
-                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] ${isExpanded ? "ring-2 ring-primary col-span-1 sm:col-span-3" : ""} ${count === 0 ? "opacity-50 pointer-events-none" : ""}`}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] ${isExpanded ? "ring-2 ring-primary col-span-1 sm:col-span-2 lg:col-span-3" : ""} ${count === 0 ? "opacity-50 pointer-events-none" : ""}`}
                     onClick={() => {
                       if (count === 0) return;
                       setExpandedDiscipline(isExpanded ? null : disc.key);
@@ -733,7 +818,10 @@ const QuestionBank = () => {
                           <Icon className="h-5 w-5 text-primary" />
                         </div>
                         <div className="flex-1">
-                          <h3 className="font-semibold text-foreground">{disc.label}</h3>
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-foreground">{disc.label}</h3>
+                            <Badge variant="outline" className="text-[10px]">NGSS</Badge>
+                          </div>
                           <p className="text-sm text-muted-foreground">{count} question{count !== 1 ? "s" : ""} · {coveredSubs}/{totalSubs} standards covered ({coveragePct}%)</p>
                         </div>
                         {count > 0 && (
@@ -741,7 +829,6 @@ const QuestionBank = () => {
                         )}
                       </div>
 
-                      {/* Expanded: show core ideas for this discipline */}
                       {isExpanded && (
                         <div className="mt-4 space-y-2 border-t border-border pt-4 overflow-x-hidden min-w-0" onClick={e => e.stopPropagation()}>
                           {Array.from(hierarchy.get(disc.key)?.entries() || [])
@@ -784,14 +871,12 @@ const QuestionBank = () => {
                                     </button>
                                   </div>
 
-                                  {/* Expanded: show substandards with questions */}
                                   {isCoreExpanded && (
                                     <div className="space-y-3 mt-2 ml-6 border-l-2 border-primary/20 pl-4 overflow-x-hidden min-w-0">
                                       {(ALL_SUBSTANDARDS[coreIdea] || []).map(sub => {
                                         const subQuestions = coreQuestions.filter(q =>
                                           q.standards.some(s => s.ngss_code === sub.code) ||
                                           q.standards.some(s => {
-                                            // Also match HS equivalent (e.g., HS-LS1-1 for MS-LS1-1)
                                             const parsed = parseStandardCode(s.ngss_code);
                                             if (!parsed || parsed.level !== "HS") return false;
                                             return `MS-${parsed.discipline}${parsed.coreNum}-${s.ngss_code.match(/-(\d+)$/)?.[1]}` === sub.code;
@@ -816,7 +901,6 @@ const QuestionBank = () => {
                                           </div>
                                         );
                                       })}
-                                      {/* Questions not matching any defined substandard */}
                                       {coreQuestions.filter(q => {
                                         const subCodes = (ALL_SUBSTANDARDS[coreIdea] || []).map(s => s.code);
                                         return !q.standards.some(s => subCodes.includes(s.ngss_code) || (() => {
@@ -839,6 +923,157 @@ const QuestionBank = () => {
                                           </div>
                                         </div>
                                       )}
+                                    </div>
+                                  )}
+                                </div>
+                              );
+                            })}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
+
+              {/* Idaho subject tiles */}
+              {showIdaho && IDAHO_SUBJECTS.filter(s => activeIdahoSubjects.includes(s.key)).map(subj => {
+                const count = idahoSubjectCounts(subj.key);
+                const isExpanded = expandedDiscipline === `idaho-${subj.key}`;
+                const Icon = subj.icon;
+                const subjMap = idahoHierarchy.get(subj.key);
+
+                // Collect all question IDs
+                const subjQuestionIds: string[] = [];
+                if (subjMap) {
+                  for (const gradeGroup of subjMap.values()) {
+                    gradeGroup.questionIds.forEach(id => subjQuestionIds.push(id));
+                  }
+                }
+                const uniqueSubjIds = [...new Set(subjQuestionIds)];
+                const allSubjSelected = uniqueSubjIds.length > 0 && uniqueSubjIds.every(id => selected.has(id));
+
+                // Coverage stats
+                let totalStds = 0;
+                let coveredStds = 0;
+                const subjGrades = ALL_IDAHO_STANDARDS.filter(gs => gs.subject === subj.key);
+                for (const gs of subjGrades) {
+                  totalStds += gs.standards.length;
+                  const gradeGroup = subjMap?.get(gs.grade);
+                  if (gradeGroup) {
+                    for (const [, std] of gradeGroup.standards) {
+                      if (std.questionIds.size > 0) coveredStds++;
+                    }
+                  }
+                }
+                const coveragePct = totalStds > 0 ? Math.round((coveredStds / totalStds) * 100) : 0;
+
+                return (
+                  <Card
+                    key={`idaho-${subj.key}`}
+                    className={`cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.98] ${isExpanded ? "ring-2 ring-primary col-span-1 sm:col-span-2 lg:col-span-3" : ""} ${count === 0 ? "opacity-50 pointer-events-none" : ""}`}
+                    onClick={() => {
+                      if (count === 0) return;
+                      setExpandedDiscipline(isExpanded ? null : `idaho-${subj.key}`);
+                      setExpandedCoreIdea(null);
+                    }}
+                  >
+                    <CardContent className="p-5">
+                      <div className="flex items-center gap-3">
+                        {count > 0 && (
+                          <Checkbox
+                            checked={allSubjSelected}
+                            onCheckedChange={() => {
+                              setSelected(prev => {
+                                const next = new Set(prev);
+                                uniqueSubjIds.forEach(id => allSubjSelected ? next.delete(id) : next.add(id));
+                                return next;
+                              });
+                            }}
+                            onClick={e => e.stopPropagation()}
+                            className="shrink-0"
+                          />
+                        )}
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                          <Icon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold text-foreground">{subj.label}</h3>
+                            <Badge variant="outline" className="text-[10px]">Idaho</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{count} question{count !== 1 ? "s" : ""} · {coveredStds}/{totalStds} standards covered ({coveragePct}%)</p>
+                        </div>
+                        {count > 0 && (
+                          isExpanded ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                        )}
+                      </div>
+
+                      {/* Expanded: show grades */}
+                      {isExpanded && subjMap && (
+                        <div className="mt-4 space-y-2 border-t border-border pt-4 overflow-x-hidden min-w-0" onClick={e => e.stopPropagation()}>
+                          {Array.from(subjMap.entries())
+                            .sort(([a], [b]) => a.localeCompare(b, undefined, { numeric: true }))
+                            .map(([grade, gradeGroup]) => {
+                              const gradeKey = `${subj.key}-${grade}`;
+                              const isGradeExpanded = expandedCoreIdea === gradeKey;
+                              const gradeQuestions = filtered.filter(q => gradeGroup.questionIds.has(q.id));
+
+                              return (
+                                <div key={grade}>
+                                  <div className="flex items-center gap-2">
+                                    {gradeQuestions.length > 0 && (
+                                      <Checkbox
+                                        checked={gradeQuestions.length > 0 && gradeQuestions.every(q => selected.has(q.id))}
+                                        onCheckedChange={() => {
+                                          const allSelected = gradeQuestions.every(q => selected.has(q.id));
+                                          setSelected(prev => {
+                                            const next = new Set(prev);
+                                            gradeQuestions.forEach(q => allSelected ? next.delete(q.id) : next.add(q.id));
+                                            return next;
+                                          });
+                                        }}
+                                        className="shrink-0"
+                                        onClick={e => e.stopPropagation()}
+                                      />
+                                    )}
+                                    <button
+                                      className="flex-1 flex items-center gap-3 p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors text-left"
+                                      onClick={() => setExpandedCoreIdea(isGradeExpanded ? null : gradeKey)}
+                                    >
+                                      {isGradeExpanded ? <ChevronDown className="h-4 w-4 text-primary shrink-0" /> : <ChevronRight className="h-4 w-4 text-primary shrink-0" />}
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-2">
+                                          <Badge variant="default" className="text-xs shrink-0">Grade {grade}</Badge>
+                                          <span className="text-sm text-muted-foreground">({gradeQuestions.length} question{gradeQuestions.length !== 1 ? "s" : ""})</span>
+                                        </div>
+                                      </div>
+                                    </button>
+                                  </div>
+
+                                  {/* Expanded: show individual standards with questions */}
+                                  {isGradeExpanded && (
+                                    <div className="space-y-3 mt-2 ml-6 border-l-2 border-primary/20 pl-4 overflow-x-hidden min-w-0">
+                                      {Array.from(gradeGroup.standards.entries()).map(([code, std]) => {
+                                        const stdQuestions = filtered.filter(q => std.questionIds.has(q.id));
+                                        return (
+                                          <div key={code}>
+                                            <div className="flex items-start gap-2 py-1.5">
+                                              <Badge variant={stdQuestions.length > 0 ? "secondary" : "outline"} className="text-xs shrink-0 mt-0.5">
+                                                {code}
+                                              </Badge>
+                                              <p className="text-xs text-muted-foreground flex-1 break-words">{std.description}</p>
+                                              <span className="text-xs text-muted-foreground shrink-0">
+                                                {stdQuestions.length > 0 ? `${stdQuestions.length} Q` : "—"}
+                                              </span>
+                                            </div>
+                                            {stdQuestions.length > 0 && (
+                                              <div className="space-y-2 mt-1 ml-4">
+                                                {stdQuestions.map(q => questionCard(q, code))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
                                     </div>
                                   )}
                                 </div>
