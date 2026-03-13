@@ -107,6 +107,24 @@ export default function Home() {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const dragNode = useRef<HTMLDivElement | null>(null);
+  const [questionCount, setQuestionCount] = useState(0);
+  const [lessonCount, setLessonCount] = useState(0);
+  const [unitCount, setUnitCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchCounts = async () => {
+      const [qRes, lRes, uRes] = await Promise.all([
+        supabase.from("question_bank").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("lesson_plans").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+        supabase.from("units").select("id", { count: "exact", head: true }).eq("user_id", user.id),
+      ]);
+      setQuestionCount(qRes.count ?? 0);
+      setLessonCount(lRes.count ?? 0);
+      setUnitCount(uRes.count ?? 0);
+    };
+    fetchCounts();
+  }, [user]);
 
   const todayTip = useMemo(() => {
     const now = new Date();
