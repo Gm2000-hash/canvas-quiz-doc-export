@@ -50,6 +50,30 @@ function saveCourseColors(map: Record<string, string>) {
   localStorage.setItem('course-tile-colors', JSON.stringify(map));
 }
 
+function loadCourseOrder(): number[] {
+  try {
+    return JSON.parse(localStorage.getItem('course-tile-order') || '[]');
+  } catch { return []; }
+}
+
+function saveCourseOrder(order: number[]) {
+  localStorage.setItem('course-tile-order', JSON.stringify(order));
+}
+
+function applyStoredOrder(courses: Course[]): Course[] {
+  const order = loadCourseOrder();
+  if (order.length === 0) return courses;
+  const map = new Map(courses.map(c => [c.id, c]));
+  const ordered: Course[] = [];
+  for (const id of order) {
+    const c = map.get(id);
+    if (c) { ordered.push(c); map.delete(id); }
+  }
+  // Append any new courses not in stored order
+  for (const c of map.values()) ordered.push(c);
+  return ordered;
+}
+
 export function QuizBrowser({ config }: QuizBrowserProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
