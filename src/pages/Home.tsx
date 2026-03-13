@@ -286,6 +286,7 @@ export default function Home() {
             <p className="text-xs text-muted-foreground mt-2">— {todayTip.author}</p>
           )}
         </div>
+      </main>
     </div>
   );
 }
