@@ -1,8 +1,10 @@
 import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { PageBanner } from "@/components/PageBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile, SUBJECT_OPTIONS } from "@/hooks/useProfile";
+import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
