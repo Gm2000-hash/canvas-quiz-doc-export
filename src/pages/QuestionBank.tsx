@@ -328,17 +328,30 @@ const QuestionBank = () => {
   // Build discipline → coreIdea → questions hierarchy
   // HS standards are grouped under their MS counterpart core idea
   const buildHierarchy = () => {
-    // Map: discipline key → { coreIdea → { questions: Set<id>, descriptions: Set<string> } }
     const hierarchy: Map<string, Map<string, { questionIds: Set<string>; descriptions: Set<string> }>> = new Map();
     const untagged: QuestionBankItem[] = [];
 
     for (const disc of DISCIPLINES) {
       const discMap = new Map<string, { questionIds: Set<string>; descriptions: Set<string> }>();
-      // Pre-populate all core ideas so they always appear
       for (const ci of disc.coreIdeas) {
         discMap.set(ci, { questionIds: new Set(), descriptions: new Set() });
       }
       hierarchy.set(disc.key, discMap);
+    }
+
+    // Idaho hierarchy: subject → grade → { questionIds, standards map }
+    const idahoHierarchy: Map<string, Map<string, { questionIds: Set<string>; standards: Map<string, { code: string; description: string; questionIds: Set<string> }> }>> = new Map();
+    for (const subj of activeIdahoSubjects) {
+      const subjMap = new Map<string, { questionIds: Set<string>; standards: Map<string, { code: string; description: string; questionIds: Set<string> }> }>();
+      const subjGrades = ALL_IDAHO_STANDARDS.filter(gs => gs.subject === subj);
+      for (const gs of subjGrades) {
+        const stdMap = new Map<string, { code: string; description: string; questionIds: Set<string> }>();
+        for (const std of gs.standards) {
+          stdMap.set(std.code, { code: std.code, description: std.description, questionIds: new Set() });
+        }
+        subjMap.set(gs.grade, { questionIds: new Set(), standards: stdMap });
+      }
+      idahoHierarchy.set(subj, subjMap);
     }
 
     for (const q of filtered) {
@@ -347,45 +360,69 @@ const QuestionBank = () => {
         continue;
       }
 
+      let hasRecognizedTag = false;
+
       for (const s of q.standards) {
+        // Try NGSS
         const discipline = getDisciplineForCode(s.ngss_code);
         const coreIdea = getCoreIdeaFromCode(s.ngss_code);
-        if (!discipline || !coreIdea) {
-          // Non-standard code, treat as untagged if no other standards match
-          continue;
+        if (discipline && coreIdea) {
+          hasRecognizedTag = true;
+          const discMap = hierarchy.get(discipline);
+          if (discMap) {
+            if (!discMap.has(coreIdea)) {
+              discMap.set(coreIdea, { questionIds: new Set(), descriptions: new Set() });
+            }
+            const group = discMap.get(coreIdea)!;
+            group.questionIds.add(q.id);
+            if (s.ngss_description) group.descriptions.add(s.ngss_description);
+          }
         }
 
-        const discMap = hierarchy.get(discipline);
-        if (!discMap) continue;
-
-        if (!discMap.has(coreIdea)) {
-          discMap.set(coreIdea, { questionIds: new Set(), descriptions: new Set() });
+        // Try Idaho
+        const idahoMatch = getIdahoSubjectGrade(s.ngss_code);
+        if (idahoMatch) {
+          hasRecognizedTag = true;
+          const subjMap = idahoHierarchy.get(idahoMatch.subject);
+          if (subjMap) {
+            const gradeGroup = subjMap.get(idahoMatch.grade);
+            if (gradeGroup) {
+              gradeGroup.questionIds.add(q.id);
+              const stdEntry = gradeGroup.standards.get(s.ngss_code);
+              if (stdEntry) stdEntry.questionIds.add(q.id);
+            }
+          }
         }
-        const group = discMap.get(coreIdea)!;
-        group.questionIds.add(q.id);
-        if (s.ngss_description) group.descriptions.add(s.ngss_description);
       }
-    }
 
-    // Check if question has no recognized discipline tags → untagged
-    for (const q of filtered) {
-      if (q.standards.length > 0 && !q.standards.some(s => getDisciplineForCode(s.ngss_code))) {
+      if (!hasRecognizedTag) {
         untagged.push(q);
       }
     }
 
-    return { hierarchy, untagged };
+    return { hierarchy, idahoHierarchy, untagged };
   };
 
-  const { hierarchy, untagged } = buildHierarchy();
+  const { hierarchy, idahoHierarchy, untagged } = buildHierarchy();
 
-  // Count questions per discipline
+  // Count questions per NGSS discipline
   const disciplineCounts = (discKey: string) => {
     const discMap = hierarchy.get(discKey);
     if (!discMap) return 0;
     const ids = new Set<string>();
     for (const group of discMap.values()) {
       group.questionIds.forEach(id => ids.add(id));
+    }
+    return ids.size;
+  };
+
+  // Count questions per Idaho subject
+  const idahoSubjectCounts = (subjKey: string) => {
+    const subjMap = idahoHierarchy.get(subjKey);
+    if (!subjMap) return 0;
+    const ids = new Set<string>();
+    for (const gradeGroup of subjMap.values()) {
+      gradeGroup.questionIds.forEach(id => ids.add(id));
     }
     return ids.size;
   };
