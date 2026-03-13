@@ -14,12 +14,80 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
-    const { standard_code, standard_description, count = 10 } = await req.json();
+    const { standard_code, standard_description, count = 10, subject, framework = "NGSS" } = await req.json();
     if (!standard_code || !standard_description) {
       throw new Error('standard_code and standard_description are required');
     }
 
-    console.log(`Generating ${count} questions for ${standard_code}`);
+    console.log(`Generating ${count} questions for ${standard_code} (${framework})`);
+
+    // Adapt system prompt based on framework/subject
+    const isIdaho = framework === "Idaho";
+    const subjectContext = isIdaho
+      ? subject === "Math"
+        ? "mathematics"
+        : subject === "Social Studies"
+        ? "social studies (world geography and history)"
+        : "English Language Arts (reading comprehension, writing, vocabulary, grammar)"
+      : "science";
+
+    const gradeRange = "middle school, grades 6-8";
+    const testName = isIdaho ? "Idaho Standards Achievement Test (ISAT)" : "Idaho Standards Achievement Test (ISAT)";
+    const frameworkLabel = isIdaho ? `Idaho Content Standard` : `NGSS standard`;
+
+    // For ELA, use different question types
+    const elaQuestionTypes = `
+1. "multiple_choice_question" - 4 options, one correct. Include plausible distractors.
+2. "multiple_answers_question" - 4-5 options, 2-3 correct. Students must select ALL correct answers.
+3. "multi_step_question" - Multi-part (Part A, Part B) where later parts build on earlier reasoning.
+4. "drag_and_drop_question" - 2-3 categories with 4-8 items total that students sort.`;
+
+    const mathQuestionTypes = `
+1. "multiple_choice_question" - 4 options, one correct. Include common computational errors as distractors.
+2. "multiple_answers_question" - 4-5 options, 2-3 correct. Students must select ALL correct answers.
+3. "multi_step_question" - Multi-part (Part A, Part B, optionally Part C) where later parts build on earlier reasoning. Include showing work or explaining reasoning.
+4. "drag_and_drop_question" - 2-3 categories with 4-8 items total that students sort or order.`;
+
+    const scienceQuestionTypes = `
+1. "multiple_choice_question" - 4 options, one correct. Include plausible distractors based on common misconceptions.
+2. "multiple_answers_question" - 4-5 options, 2-3 correct. Students must select ALL correct answers.
+3. "multi_step_question" - Multi-part (Part A, Part B, optionally Part C) where later parts build on earlier reasoning.
+4. "drag_and_drop_question" - 2-3 categories with 4-8 items total that students sort into the correct category.`;
+
+    const questionTypes = subject === "Math" ? mathQuestionTypes
+      : subject === "ELA" ? elaQuestionTypes
+      : scienceQuestionTypes;
+
+    const subjectGuidelines = subject === "Math"
+      ? `- Include real-world mathematical scenarios and word problems
+- Use accurate mathematical notation
+- Vary computational complexity
+- Include problems that require conceptual understanding, not just procedures`
+      : subject === "ELA"
+      ? `- Use grade-appropriate reading passages or excerpts when relevant
+- Include questions about textual evidence, vocabulary in context, and writing skills
+- Focus on critical thinking about texts and language`
+      : subject === "Social Studies"
+      ? `- Use primary sources, maps, timelines, or historical scenarios when relevant
+- Include questions about cause/effect, comparing perspectives, and analyzing evidence
+- Reference real historical events, civilizations, or geographic concepts`
+      : `- Use real-world scenarios and phenomena when possible
+- Make distractors plausible and based on common student misconceptions
+- For multi-step, Part B should require reasoning about Part A's answer`;
+
+    const systemPrompt = `You are an expert ${gradeRange} ${subjectContext} assessment writer specializing in ${testName}-aligned questions. Generate high-quality, rigorous questions that assess the given standard.
+
+Create a MIX of these question types (distribute roughly evenly):
+${questionTypes}
+
+Guidelines:
+- Questions should be grade-appropriate (${gradeRange})
+${subjectGuidelines}
+- Include a range of DOK levels (1-3)
+- Vary Bloom's taxonomy levels (Remember, Understand, Apply, Analyze, Evaluate)
+- For drag-and-drop, categories should be clearly distinct
+
+Use the tool provided to return your questions.`;
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -30,30 +98,10 @@ serve(async (req) => {
       body: JSON.stringify({
         model: 'google/gemini-2.5-flash',
         messages: [
-          {
-            role: 'system',
-            content: `You are an expert 8th-grade science assessment writer specializing in NGSS-aligned questions modeled after the Idaho Standards Achievement Test (ISAT). Generate high-quality, rigorous questions that assess the given performance expectation.
-
-Create a MIX of these question types (distribute roughly evenly):
-1. "multiple_choice_question" - 4 options, one correct. Include plausible distractors based on common misconceptions.
-2. "multiple_answers_question" - 4-5 options, 2-3 correct. Students must select ALL correct answers.
-3. "multi_step_question" - Multi-part (Part A, Part B, optionally Part C) where later parts build on earlier reasoning. Each part can be multiple_choice or short_answer.
-4. "drag_and_drop_question" - 2-3 categories with 4-8 items total that students sort into the correct category.
-
-Guidelines:
-- Questions should be grade-appropriate (middle school, grades 6-8)
-- Use real-world scenarios and phenomena when possible
-- Include a range of DOK levels (1-3)
-- Vary Bloom's taxonomy levels (Remember, Understand, Apply, Analyze, Evaluate)
-- Make distractors plausible and based on common student misconceptions
-- For multi-step, Part B should require reasoning about Part A's answer
-- For drag-and-drop, categories should be clearly distinct
-
-Use the tool provided to return your questions.`
-          },
+          { role: 'system', content: systemPrompt },
           {
             role: 'user',
-            content: `Generate ${count} ISAT-style science questions for this NGSS standard:\n\nStandard: ${standard_code}\nDescription: ${standard_description}\n\nCreate a diverse mix of question types with varying difficulty levels.`
+            content: `Generate ${count} ${testName}-style ${subjectContext} questions for this ${frameworkLabel}:\n\nStandard: ${standard_code}\nDescription: ${standard_description}\n\nCreate a diverse mix of question types with varying difficulty levels.`
           }
         ],
         tools: [
@@ -121,10 +169,8 @@ Use the tool provided to return your questions.`
 
     const parsed = JSON.parse(toolCall.function.arguments);
 
-    // Parse answers_json string back to objects and normalize
     const questions = (parsed.questions || []).map((q: any) => {
       let answers = q.answers;
-      // Parse answers_json if it's a string
       if (q.answers_json) {
         try {
           answers = JSON.parse(q.answers_json);
@@ -134,11 +180,9 @@ Use the tool provided to return your questions.`
         }
       }
 
-      // For MC and multi-answer, ensure answers is an array with weight
       if ((q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') && Array.isArray(answers)) {
         answers = answers.map((a: any) => ({ text: a.text, weight: a.weight ?? (a.correct ? 100 : 0) }));
       }
-      // If answers came as {options: [...]} unwrap it
       if (answers?.options && Array.isArray(answers.options)) {
         if (q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') {
           answers = answers.options.map((o: any) => ({ text: o.text, weight: o.correct ? 100 : 0 }));

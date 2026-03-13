@@ -4,7 +4,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Menu, FileText, BookOpen, Layers, PenLine, Settings, LogOut, Home, ShieldCheck } from "lucide-react";
+import { Menu, FileText, BookOpen, Layers, PenLine, Settings, LogOut, Home, ShieldCheck, Library } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
@@ -13,6 +13,7 @@ const navItems = [
   { label: "Question Bank", path: "/question-bank", icon: BookOpen, description: "Browse & manage questions" },
   { label: "Create Question", path: "/create-question", icon: PenLine, description: "Build a new question" },
   { label: "Lesson Planner", path: "/lesson-planner", icon: Layers, description: "Units, lessons & pacing" },
+  { label: "Standards Browser", path: "/standards", icon: Library, description: "Browse Idaho & NGSS standards" },
 ];
 
 interface AppNavSheetProps {
