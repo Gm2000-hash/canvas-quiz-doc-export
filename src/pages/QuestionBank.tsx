@@ -116,6 +116,13 @@ const QuestionBank = () => {
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
   const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
+  const { profile } = useProfile();
+  const teacherSubjects = profile?.subjects ?? [];
+  const showNGSS = teacherSubjects.length === 0 || teacherSubjects.includes("Science");
+  const activeIdahoSubjects = teacherSubjects.length === 0
+    ? ["ELA", "Math", "Social Studies"]
+    : teacherSubjects.filter(s => s !== "Science");
+  const showIdaho = activeIdahoSubjects.length > 0;
 
   // Drill-down state for grouped view
   const [expandedDiscipline, setExpandedDiscipline] = useState<string | null>(null);
