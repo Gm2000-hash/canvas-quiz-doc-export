@@ -1504,6 +1504,14 @@ const QuestionBank = () => {
           }
         }}
       />
+      {canvasConnected && canvasConfig && (
+        <PushToCanvasDialog
+          open={showPushToCanvas}
+          onOpenChange={setShowPushToCanvas}
+          questions={questions.filter(q => selected.has(q.id))}
+          config={canvasConfig}
+        />
+      )}
     </div>
   );
 };
