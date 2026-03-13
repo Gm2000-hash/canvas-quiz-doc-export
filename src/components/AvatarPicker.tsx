@@ -4,20 +4,22 @@ import { cn } from "@/lib/utils";
 import avatarDog from "@/assets/avatars/dog.png";
 import avatarSquirrel from "@/assets/avatars/squirrel.png";
 import avatarCat from "@/assets/avatars/cat.png";
-import avatarElk from "@/assets/avatars/elk.png";
-import avatarMoose from "@/assets/avatars/moose.png";
+import avatarButterfly from "@/assets/avatars/butterfly.png";
+import avatarSun from "@/assets/avatars/sun.png";
 import avatarFish from "@/assets/avatars/fish.png";
 import avatarMan from "@/assets/avatars/man.png";
 import avatarWoman from "@/assets/avatars/woman.png";
 import avatarTurtle from "@/assets/avatars/turtle.png";
 import avatarSkateboard from "@/assets/avatars/skateboard.png";
+import avatarTree from "@/assets/avatars/tree.png";
 
 export const PRESET_AVATARS = [
   { src: avatarDog, label: "Dog" },
   { src: avatarSquirrel, label: "Squirrel" },
   { src: avatarCat, label: "Cat" },
-  { src: avatarElk, label: "Elk" },
-  { src: avatarMoose, label: "Moose" },
+  { src: avatarButterfly, label: "Butterfly" },
+  { src: avatarSun, label: "Sun" },
+  { src: avatarTree, label: "Tree" },
   { src: avatarFish, label: "Fish" },
   { src: avatarMan, label: "Man" },
   { src: avatarWoman, label: "Woman" },
