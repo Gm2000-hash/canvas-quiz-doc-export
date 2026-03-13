@@ -240,6 +240,44 @@ export default function Home() {
             })}
           </div>
         </div>
+
+        {/* Profile Summary Card */}
+        <div className="rounded-2xl border border-border/60 bg-card p-5 sm:p-6">
+          <div className="flex items-center gap-4 sm:gap-5">
+            <button onClick={() => navigate("/profile")} className="shrink-0 group">
+              <Avatar className="h-16 w-16 ring-2 ring-border group-hover:ring-primary transition-colors">
+                <AvatarImage src={(profile as any)?.avatar_url} alt={profile?.display_name} />
+                <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
+                  {initials}
+                </AvatarFallback>
+              </Avatar>
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground truncate">
+                Welcome back{profile?.display_name ? `, ${profile.display_name}` : ""}!
+              </h1>
+              <p className="text-sm text-muted-foreground mt-0.5 truncate">{user?.email}</p>
+              {(subjectLabels.length > 0 || gradeLabels.length > 0) && (
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {subjectLabels.map(s => (
+                    <Badge key={s} variant="secondary" className="rounded-lg text-[11px]">{s}</Badge>
+                  ))}
+                  {gradeLabels.map((g: string) => (
+                    <Badge key={g} variant="outline" className="rounded-lg text-[11px]">{g}</Badge>
+                  ))}
+                </div>
+              )}
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="hidden sm:flex gap-1.5 text-xs text-muted-foreground hover:text-primary rounded-xl shrink-0"
+              onClick={() => navigate("/profile")}
+            >
+              Edit Profile <ArrowRight className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+        </div>
       </main>
     </div>
   );
