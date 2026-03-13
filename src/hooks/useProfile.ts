@@ -8,6 +8,11 @@ export type Profile = {
   display_name: string;
   email: string;
   subjects: string[];
+  avatar_url: string;
+  bio: string;
+  phone: string;
+  website: string;
+  grade_levels: string[];
   created_at: string;
   updated_at: string;
 };
