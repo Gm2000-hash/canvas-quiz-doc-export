@@ -17,7 +17,7 @@ export const PRESET_AVATARS = [
   { src: avatarDog, label: "Dog" },
   { src: avatarSquirrel, label: "Squirrel" },
   { src: avatarCat, label: "Cat" },
-  { src: avatarButterfly, label: "Butterfly" },
+  { src: avatarButterfly, label: "Deer" },
   { src: avatarSun, label: "Snake" },
   { src: avatarTree, label: "Tree" },
   { src: avatarFish, label: "Fish" },
