@@ -464,11 +464,12 @@ const QuestionBank = () => {
           </Select>
           <Select value={filterStandard} onValueChange={setFilterStandard}>
             <SelectTrigger className="w-[200px] h-9 text-sm">
-              <SelectValue placeholder="NGSS Standard" />
+              <SelectValue placeholder="Standard" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Standards</SelectItem>
               <SelectItem value="untagged">Untagged</SelectItem>
+              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase">NGSS (Science)</div>
               {DISCIPLINES.map(disc => (
                 <React.Fragment key={disc.key}>
                   <SelectItem value={`disc:${disc.key}`}>{disc.label}</SelectItem>
@@ -476,6 +477,12 @@ const QuestionBank = () => {
                     <SelectItem key={ci} value={ci} className="pl-8 text-muted-foreground">{ci}</SelectItem>
                   ))}
                 </React.Fragment>
+              ))}
+              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase mt-1">Idaho Standards</div>
+              {ALL_IDAHO_STANDARDS.map(gs => (
+                <SelectItem key={`${gs.subject}|${gs.grade}`} value={`idaho:${gs.subject}|${gs.grade}`} className="text-muted-foreground">
+                  {gs.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
