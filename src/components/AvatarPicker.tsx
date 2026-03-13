@@ -7,7 +7,7 @@ import avatarCat from "@/assets/avatars/cat.png";
 import avatarButterfly from "@/assets/avatars/butterfly.png";
 import avatarSun from "@/assets/avatars/sun.png";
 import avatarFish from "@/assets/avatars/fish.png";
-import avatarMan from "@/assets/avatars/man.png";
+import avatarBear from "@/assets/avatars/man.png";
 import avatarWoman from "@/assets/avatars/woman.png";
 import avatarTurtle from "@/assets/avatars/turtle.png";
 import avatarSkateboard from "@/assets/avatars/skateboard.png";
@@ -21,7 +21,7 @@ export const PRESET_AVATARS = [
   { src: avatarSun, label: "Sun" },
   { src: avatarTree, label: "Tree" },
   { src: avatarFish, label: "Fish" },
-  { src: avatarMan, label: "Man" },
+  { src: avatarBear, label: "Bear" },
   { src: avatarWoman, label: "Woman" },
   { src: avatarTurtle, label: "Turtle" },
   { src: avatarSkateboard, label: "Skateboard" },
