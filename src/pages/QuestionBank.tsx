@@ -682,8 +682,9 @@ const QuestionBank = () => {
               All Standards
             </button>
             {expandedDiscipline && expandedDiscipline !== "untagged" && (() => {
+              // Check NGSS disciplines
               const disc = DISCIPLINES.find(d => d.key === expandedDiscipline);
-              return disc ? (
+              if (disc) return (
                 <>
                   <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
                   <button
@@ -693,7 +694,24 @@ const QuestionBank = () => {
                     {disc.label}
                   </button>
                 </>
-              ) : null;
+              );
+              // Check Idaho subjects
+              if (expandedDiscipline.startsWith("idaho-")) {
+                const subjKey = expandedDiscipline.replace("idaho-", "");
+                const idahoSubj = IDAHO_SUBJECTS.find(s => s.key === subjKey);
+                if (idahoSubj) return (
+                  <>
+                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+                    <button
+                      className={`font-medium ${expandedCoreIdea ? "text-primary hover:underline" : "text-foreground"}`}
+                      onClick={() => setExpandedCoreIdea(null)}
+                    >
+                      {idahoSubj.label}
+                    </button>
+                  </>
+                );
+              }
+              return null;
             })()}
             {expandedDiscipline === "untagged" && (
               <>
@@ -704,7 +722,9 @@ const QuestionBank = () => {
             {expandedCoreIdea && (
               <>
                 <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
-                <span className="font-medium text-foreground">{expandedCoreIdea}</span>
+                <span className="font-medium text-foreground">
+                  {expandedCoreIdea.match(/^\w+-(\d+)$/) ? `Grade ${expandedCoreIdea.split("-").pop()}` : expandedCoreIdea}
+                </span>
               </>
             )}
           </nav>
