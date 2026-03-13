@@ -22,6 +22,8 @@ import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateQuestionsDialog from "@/components/GenerateQuestionsDialog";
 import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import PushToCanvasDialog from "@/components/PushToCanvasDialog";
+import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { PageBanner } from "@/components/PageBanner";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
