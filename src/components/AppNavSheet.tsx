@@ -73,6 +73,19 @@ export function AppNavSheet({ onOpenSettings, showSettings }: AppNavSheetProps) 
         </nav>
 
         <div className="p-3 space-y-0.5 border-t border-border/60">
+          {isAdmin && (
+            <button
+              onClick={() => go("/admin")}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                location.pathname === "/admin"
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-foreground hover:bg-accent"
+              }`}
+            >
+              <ShieldCheck className={`h-5 w-5 shrink-0 ${location.pathname === "/admin" ? "text-primary" : "text-muted-foreground"}`} />
+              <span className="text-sm font-medium">Admin Dashboard</span>
+            </button>
+          )}
           {showSettings && onOpenSettings && (
             <button
               onClick={() => { setOpen(false); onOpenSettings(); }}
