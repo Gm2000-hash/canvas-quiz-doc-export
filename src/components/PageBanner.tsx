@@ -9,9 +9,27 @@ interface PageBannerProps {
   compact?: boolean;
   avatarUrl?: string;
   avatarFallback?: string;
+  avatarPosition?: "left" | "right";
+  avatarSize?: "default" | "large";
 }
 
-export function PageBanner({ greeting, subtitle, stats, children, compact = false, avatarUrl, avatarFallback }: PageBannerProps) {
+export function PageBanner({
+  greeting, subtitle, stats, children, compact = false,
+  avatarUrl, avatarFallback, avatarPosition = "left", avatarSize = "default",
+}: PageBannerProps) {
+  const sizeClass = avatarSize === "large"
+    ? "h-20 w-20 sm:h-24 sm:w-24"
+    : compact ? "h-10 w-10" : "h-14 w-14 sm:h-16 sm:w-16";
+
+  const avatarEl = avatarUrl !== undefined ? (
+    <Avatar className={`${sizeClass} ring-2 ring-earth-sand shrink-0`}>
+      <AvatarImage src={avatarUrl} alt="Profile" />
+      <AvatarFallback className="bg-earth-sand text-earth-clay font-semibold">
+        {avatarFallback || "?"}
+      </AvatarFallback>
+    </Avatar>
+  ) : null;
+
   return (
     <div className={`relative overflow-hidden rounded-2xl bg-earth-warm border border-earth-sand ${compact ? "p-5" : "p-6 sm:p-8"}`}>
       {/* Abstract shapes */}
@@ -28,14 +46,7 @@ export function PageBanner({ greeting, subtitle, stats, children, compact = fals
       {/* Content */}
       <div className="relative z-10">
         <div className="flex items-start gap-4">
-          {avatarUrl !== undefined && (
-            <Avatar className={`${compact ? "h-10 w-10" : "h-14 w-14 sm:h-16 sm:w-16"} ring-2 ring-earth-sand shrink-0`}>
-              <AvatarImage src={avatarUrl} alt="Profile" />
-              <AvatarFallback className="bg-earth-sand text-earth-clay font-semibold">
-                {avatarFallback || "?"}
-              </AvatarFallback>
-            </Avatar>
-          )}
+          {avatarPosition === "left" && avatarEl}
           <div className="flex-1 min-w-0">
             {greeting && (
               <h1 className={`font-bold text-earth-clay ${compact ? "text-lg" : "text-xl sm:text-2xl"}`}>
@@ -46,6 +57,7 @@ export function PageBanner({ greeting, subtitle, stats, children, compact = fals
               <p className="text-sm text-earth-moss mt-1">{subtitle}</p>
             )}
           </div>
+          {avatarPosition === "right" && avatarEl}
         </div>
 
         {stats && stats.length > 0 && (

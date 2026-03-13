@@ -272,7 +272,20 @@ export default function Home() {
             })}
           </div>
         </div>
-      </main>
+
+        {/* Bottom Inspirational Quote */}
+        <div className="mx-auto max-w-lg rounded-2xl border border-earth-sand bg-earth-warm/50 p-5 text-center">
+          <div className="flex items-center justify-center gap-2 mb-2">
+            <Lightbulb className="h-4 w-4 text-earth-terracotta" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-earth-terracotta">
+              {todayTip.author === "Tip" ? "Daily Teaching Tip" : "Daily Inspiration"}
+            </span>
+          </div>
+          <p className="text-sm text-foreground leading-relaxed italic">"{todayTip.text}"</p>
+          {todayTip.author !== "Tip" && (
+            <p className="text-xs text-muted-foreground mt-2">— {todayTip.author}</p>
+          )}
+        </div>
     </div>
   );
 }
