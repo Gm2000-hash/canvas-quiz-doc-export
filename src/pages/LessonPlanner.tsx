@@ -15,6 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { WeeklyDashboard } from "@/components/WeeklyDashboard";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { PageBanner } from "@/components/PageBanner";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 
