@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { getQuestionBank, deleteFromBank, updateQuestion, backfillDokAndBlooms, type QuestionBankItem } from "@/lib/question-bank";
 import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
+import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT } from "@/lib/idaho-standards-data";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { exportToQTI } from "@/lib/export-qti";
 import { toast } from "sonner";
@@ -216,11 +217,15 @@ const QuestionBank = () => {
       if (filterStandard === "untagged") {
         if (q.standards.length > 0) return false;
       } else if (filterStandard.startsWith("disc:")) {
-        // Filter by discipline (e.g., "disc:LS")
         const discKey = filterStandard.replace("disc:", "");
         if (!q.standards.some(s => getDisciplineForCode(s.ngss_code) === discKey)) return false;
+      } else if (filterStandard.startsWith("idaho:")) {
+        const [subject, grade] = filterStandard.replace("idaho:", "").split("|");
+        const idahoCodes = ALL_IDAHO_STANDARDS_FLAT
+          .filter(s => s.subject === subject && s.grade === grade)
+          .map(s => s.code);
+        if (!q.standards.some(s => idahoCodes.includes(s.ngss_code))) return false;
       } else {
-        // Filter by specific core idea (e.g., "MS-LS1")
         if (!q.standards.some(s => getCoreIdeaFromCode(s.ngss_code) === filterStandard)) return false;
       }
     }
@@ -463,11 +468,12 @@ const QuestionBank = () => {
           </Select>
           <Select value={filterStandard} onValueChange={setFilterStandard}>
             <SelectTrigger className="w-[200px] h-9 text-sm">
-              <SelectValue placeholder="NGSS Standard" />
+              <SelectValue placeholder="Standard" />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Standards</SelectItem>
               <SelectItem value="untagged">Untagged</SelectItem>
+              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase">NGSS (Science)</div>
               {DISCIPLINES.map(disc => (
                 <React.Fragment key={disc.key}>
                   <SelectItem value={`disc:${disc.key}`}>{disc.label}</SelectItem>
@@ -475,6 +481,12 @@ const QuestionBank = () => {
                     <SelectItem key={ci} value={ci} className="pl-8 text-muted-foreground">{ci}</SelectItem>
                   ))}
                 </React.Fragment>
+              ))}
+              <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase mt-1">Idaho Standards</div>
+              {ALL_IDAHO_STANDARDS.map(gs => (
+                <SelectItem key={`${gs.subject}|${gs.grade}`} value={`idaho:${gs.subject}|${gs.grade}`} className="text-muted-foreground">
+                  {gs.label}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -1130,7 +1142,7 @@ const QuestionBank = () => {
             )}
 
             <div className="space-y-2">
-              <Label>NGSS Standards (Middle School)</Label>
+              <Label>Standards</Label>
               <div className="space-y-2">
                 {editStandards.map((s, idx) => (
                   <div key={idx} className="flex items-start gap-2 bg-muted/50 rounded-md px-3 py-2 min-w-0">
@@ -1142,35 +1154,50 @@ const QuestionBank = () => {
                   </div>
                 ))}
               </div>
-              <Select
-                value=""
-                onValueChange={(code) => {
-                  const allSubs = Object.values(ALL_SUBSTANDARDS).flat();
-                  const match = allSubs.find(s => s.code === code);
-                  if (match && !editStandards.some(es => es.ngss_code === code)) {
-                    setEditStandards(prev => [...prev, { ngss_code: match.code, ngss_description: match.description }]);
-                  }
-                }}
-              >
-                <SelectTrigger className="h-9 text-sm">
-                  <SelectValue placeholder="Add a standard..." />
-                </SelectTrigger>
-                <SelectContent className="max-h-64">
-                  {Object.entries(ALL_SUBSTANDARDS).map(([group, subs]) => (
-                    <React.Fragment key={group}>
-                      <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground uppercase sticky top-0 bg-card">{group}</div>
-                      {subs
-                        .filter(sub => !editStandards.some(es => es.ngss_code === sub.code))
-                        .map(sub => (
-                          <SelectItem key={sub.code} value={sub.code} className="text-xs">
-                            <span className="font-medium">{sub.code}</span>
-                            <span className="text-muted-foreground ml-1.5">{sub.description.length > 60 ? sub.description.slice(0, 60) + "…" : sub.description}</span>
-                          </SelectItem>
-                        ))}
-                    </React.Fragment>
-                  ))}
-                </SelectContent>
-              </Select>
+              <div className="relative">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <Input
+                  placeholder="Search standards (NGSS or Idaho)..."
+                  value={standardSearch}
+                  onChange={e => setStandardSearch(e.target.value)}
+                  className="pl-8 text-sm h-9"
+                />
+              </div>
+              {standardSearch.trim() && (() => {
+                const q = standardSearch.toLowerCase();
+                const ngssResults = Object.values(ALL_SUBSTANDARDS).flat()
+                  .filter(s => (s.code.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)) && !editStandards.some(es => es.ngss_code === s.code))
+                  .slice(0, 10)
+                  .map(s => ({ code: s.code, description: s.description, framework: "NGSS" }));
+                const idahoResults = ALL_IDAHO_STANDARDS_FLAT
+                  .filter(s => (s.code.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)) && !editStandards.some(es => es.ngss_code === s.code))
+                  .slice(0, 10)
+                  .map(s => ({ code: s.code, description: s.description, framework: `Idaho ${s.subject} ${s.grade}` }));
+                const results = [...ngssResults, ...idahoResults].slice(0, 15);
+                return results.length > 0 ? (
+                  <div className="max-h-40 overflow-y-auto border rounded-md divide-y">
+                    {results.map((s, i) => (
+                      <button
+                        key={`${s.code}-${i}`}
+                        type="button"
+                        className="w-full flex items-start gap-2 px-3 py-2 hover:bg-muted/50 text-left transition-colors"
+                        onClick={() => {
+                          setEditStandards(prev => [...prev, { ngss_code: s.code, ngss_description: s.description }]);
+                          setStandardSearch("");
+                        }}
+                      >
+                        <div className="flex items-center gap-1 shrink-0 mt-0.5">
+                          <Badge variant="outline" className="text-[10px]">{s.code}</Badge>
+                          <Badge variant="secondary" className="text-[9px] px-1 py-0">{s.framework}</Badge>
+                        </div>
+                        <span className="text-xs text-muted-foreground">{s.description.length > 80 ? s.description.slice(0, 80) + "…" : s.description}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground p-2">No matching standards found</p>
+                );
+              })()}
             </div>
           </div>
           <DialogFooter>
