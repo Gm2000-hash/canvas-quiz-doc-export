@@ -1,9 +1,10 @@
 import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { useProfile } from "@/hooks/useProfile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { Menu, FileText, BookOpen, Layers, PenLine, Settings, LogOut, Home } from "lucide-react";
+import { Menu, FileText, BookOpen, Layers, PenLine, Settings, LogOut, Home, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 
 const navItems = [
@@ -24,6 +25,7 @@ export function AppNavSheet({ onOpenSettings, showSettings }: AppNavSheetProps) 
   const navigate = useNavigate();
   const location = useLocation();
   const { signOut } = useAuth();
+  const { isAdmin } = useProfile();
 
   const go = (path: string) => {
     setOpen(false);
@@ -38,12 +40,12 @@ export function AppNavSheet({ onOpenSettings, showSettings }: AppNavSheetProps) 
         </Button>
       </SheetTrigger>
       <SheetContent side="left" className="w-72 p-0 flex flex-col">
-        <SheetHeader className="p-5 pb-3">
+         <SheetHeader className="p-5 pb-3">
           <SheetTitle className="flex items-center gap-2.5 text-base">
             <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
               <FileText className="h-4 w-4 text-primary" />
             </div>
-            Canvas Quiz Exporter
+            Teaching Toolkit
           </SheetTitle>
         </SheetHeader>
 
@@ -71,6 +73,19 @@ export function AppNavSheet({ onOpenSettings, showSettings }: AppNavSheetProps) 
         </nav>
 
         <div className="p-3 space-y-0.5 border-t border-border/60">
+          {isAdmin && (
+            <button
+              onClick={() => go("/admin")}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+                location.pathname === "/admin"
+                  ? "bg-primary/10 text-primary font-medium"
+                  : "text-foreground hover:bg-accent"
+              }`}
+            >
+              <ShieldCheck className={`h-5 w-5 shrink-0 ${location.pathname === "/admin" ? "text-primary" : "text-muted-foreground"}`} />
+              <span className="text-sm font-medium">Admin Dashboard</span>
+            </button>
+          )}
           {showSettings && onOpenSettings && (
             <button
               onClick={() => { setOpen(false); onOpenSettings(); }}

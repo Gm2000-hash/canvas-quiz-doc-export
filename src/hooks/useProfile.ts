@@ -6,6 +6,7 @@ export type Profile = {
   id: string;
   user_id: string;
   display_name: string;
+  email: string;
   subjects: string[];
   created_at: string;
   updated_at: string;
