@@ -79,7 +79,7 @@ export function PageBanner({
           </div>
         )}
 
-        {children && <div className={greeting || stats ? "mt-4" : ""}>{children}</div>}
+        {children && <div className={`pl-2 sm:pl-4 lg:pl-8 ${greeting || stats ? "mt-4" : ""}`}>{children}</div>}
       </div>
     </div>
   );
