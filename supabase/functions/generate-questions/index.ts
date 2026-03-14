@@ -75,8 +75,29 @@ serve(async (req) => {
 - Make distractors plausible and based on common student misconceptions
 - For multi-step, Part B should require reasoning about Part A's answer`;
 
+    const msStandardsList = `
+ALLOWED Middle School NGSS Standards (use ONLY these):
+
+8th Grade Earth & Space Science:
+MS-ESS1-1, MS-ESS1-2, MS-ESS1-3, MS-ESS1-4
+MS-ESS2-1, MS-ESS2-2, MS-ESS2-3, MS-ESS2-4, MS-ESS2-5, MS-ESS2-6
+MS-ESS3-1, MS-ESS3-2, MS-ESS3-3
+
+7th Grade Life Science:
+MS-LS1-1, MS-LS1-2, MS-LS1-3, MS-LS1-4, MS-LS1-5, MS-LS1-6, MS-LS1-7, MS-LS1-8
+MS-LS2-1, MS-LS2-2, MS-LS2-3, MS-LS2-4, MS-LS2-5
+MS-LS3-1, MS-LS3-2
+MS-LS4-1, MS-LS4-2, MS-LS4-3, MS-LS4-4, MS-LS4-5, MS-LS4-6
+
+6th Grade Physical Science:
+MS-PS1-1, MS-PS1-2, MS-PS1-3, MS-PS1-4, MS-PS1-5, MS-PS1-6
+MS-PS2-1, MS-PS2-2, MS-PS2-3, MS-PS2-4, MS-PS2-5
+MS-PS3-1, MS-PS3-2, MS-PS3-3, MS-PS3-4, MS-PS3-5
+MS-PS4-1, MS-PS4-2, MS-PS4-3`;
+
     const systemPrompt = `You are an expert ${gradeRange} ${subjectContext} assessment writer specializing in ${testName}-aligned questions. Generate high-quality, rigorous questions that assess the given standard.
 
+${framework === "NGSS" ? `IMPORTANT: Only generate questions for valid Middle School NGSS standards. Do NOT reference any High School (HS-) standards.\n${msStandardsList}\n` : ''}
 Create a MIX of these question types (distribute roughly evenly):
 ${questionTypes}
 
