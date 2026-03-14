@@ -286,19 +286,23 @@ export default function CanvasResults() {
     const header = rows[0];
     const questionColumns: { colIndex: number; questionId: number }[] = [];
     for (let i = 0; i < header.length; i++) {
-      const match = header[i].match(/^(\d+):\s*.+/);
+      // Canvas CSV headers for questions look like "12345: Question text" or just contain a colon
+      const match = header[i].match(/^(\d+):/);
       if (match) questionColumns.push({ colIndex: i, questionId: parseInt(match[1]) });
     }
 
-    const nameIdx = header.findIndex(h => h.toLowerCase() === 'name');
-    const idIdx = header.findIndex(h => h.toLowerCase() === 'id');
+    // Try multiple possible name column headers
+    const nameIdx = header.findIndex(h => /^name$/i.test(h.trim()));
+    const idIdx = header.findIndex(h => /^id$/i.test(h.trim()));
+    const sisIdx = header.findIndex(h => /^sis_id$/i.test(h.trim()) || /^sis_user_id$/i.test(h.trim()));
 
+    // Skip summary/metadata rows at the bottom
     const scores: StudentScore[] = [];
     for (let r = 1; r < rows.length; r++) {
       const row = rows[r];
-      const name = nameIdx >= 0 ? row[nameIdx] : `Student ${r}`;
-      const id = idIdx >= 0 ? parseInt(row[idIdx]) : r;
-      if (!name || name === '') continue;
+      const name = nameIdx >= 0 ? row[nameIdx]?.trim() : '';
+      if (!name || name === '' || name.toLowerCase() === 'points possible' || name.toLowerCase() === 'average score') continue;
+      const id = idIdx >= 0 ? parseInt(row[idIdx]) || r : r;
 
       const qScores = new Map<number, { score: number; possible: number }>();
       let totalScore = 0;
