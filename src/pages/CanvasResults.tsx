@@ -261,7 +261,7 @@ export default function CanvasResults() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PageBanner title="Canvas Results" subtitle="Pull student quiz results and analyze performance by standard." />
+      <PageBanner greeting="Canvas Results" subtitle="Pull student quiz results and analyze performance by standard." />
 
       <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
         <div className="flex items-center gap-2">
