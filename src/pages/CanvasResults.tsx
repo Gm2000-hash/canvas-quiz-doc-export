@@ -543,8 +543,8 @@ export default function CanvasResults() {
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {studentStandardMatrix.map(student => (
-                                <TableRow key={student.studentId}>
+                              {studentStandardMatrix.map((student, idx) => (
+                                <TableRow key={student.studentId || idx}>
                                   <TableCell className="sticky left-0 bg-background z-10 font-medium">{student.studentName}</TableCell>
                                   <TableCell className="text-center">
                                     <ScoreCell pct={student.totalPossible > 0 ? (student.totalScore / student.totalPossible) * 100 : 0} />
