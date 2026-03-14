@@ -77,6 +77,7 @@ const App = () => (
           <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/standards" element={<ProtectedRoute><StandardsBrowser /></ProtectedRoute>} />
+          <Route path="/canvas-results" element={<ProtectedRoute><CanvasResults /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
