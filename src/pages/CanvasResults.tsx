@@ -299,7 +299,7 @@ export default function CanvasResults() {
     const idIdx = header.findIndex(h => /^id$/i.test(h.trim()));
     const sisIdx = header.findIndex(h => /^sis_id$/i.test(h.trim()) || /^sis_user_id$/i.test(h.trim()));
 
-    // Skip summary/metadata rows at the bottom
+    // Skip summary/metadata rows at the bottom and students with no data
     const scores: StudentScore[] = [];
     for (let r = 1; r < rows.length; r++) {
       const row = rows[r];
@@ -310,15 +310,23 @@ export default function CanvasResults() {
       const qScores = new Map<number, { score: number; possible: number }>();
       let totalScore = 0;
       let totalPossible = 0;
+      let hasAnyData = false;
 
       for (const qc of questionColumns) {
-        const val = parseFloat(row[qc.colIndex]) || 0;
+        const rawVal = row[qc.colIndex]?.trim();
+        // Skip students who have no answers at all (empty cells)
+        if (rawVal !== undefined && rawVal !== '') hasAnyData = true;
+        const val = parseFloat(rawVal) || 0;
         const cq = canvasQuestions.find(q => q.id === qc.questionId);
         const possible = cq?.points_possible || 1;
         qScores.set(qc.questionId, { score: val, possible });
         totalScore += val;
         totalPossible += possible;
       }
+
+      // Filter out students with zero data (no submissions)
+      if (!hasAnyData || (totalScore === 0 && totalPossible > 0)) continue;
+
       scores.push({ studentId: id, studentName: name, questionScores: qScores, totalScore, totalPossible });
     }
 
