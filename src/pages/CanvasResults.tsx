@@ -619,8 +619,8 @@ export default function CanvasResults() {
                                   <TableCell className="text-center">{s.correct}/{s.total}</TableCell>
                                   <TableCell className="text-center"><ScoreCell pct={s.pct} /></TableCell>
                                   <TableCell className="text-center">
-                                    <Badge variant={s.pct >= 80 ? 'default' : s.pct >= 60 ? 'secondary' : 'destructive'}>
-                                      {s.pct >= 80 ? 'Mastered' : s.pct >= 60 ? 'Developing' : 'Needs Support'}
+                                     <Badge variant={s.pct >= 75 ? 'default' : s.pct >= 50 ? 'secondary' : 'destructive'}>
+                                       {s.pct >= 75 ? 'Mastered' : s.pct >= 50 ? 'Developing' : 'Needs Support'}
                                     </Badge>
                                   </TableCell>
                                 </TableRow>
