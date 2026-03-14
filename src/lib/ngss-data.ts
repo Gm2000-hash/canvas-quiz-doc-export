@@ -67,8 +67,6 @@ export const ALL_SUBSTANDARDS: Record<string, { code: string; description: strin
     { code: "MS-ESS3-1", description: "Construct a scientific explanation based on evidence for how the uneven distributions of Earth's mineral, energy, and groundwater resources are the result of past and current geoscience processes" },
     { code: "MS-ESS3-2", description: "Analyze and interpret data on natural hazards to forecast future catastrophic events and inform the development of technologies to mitigate their effects" },
     { code: "MS-ESS3-3", description: "Apply scientific principles to design a method for monitoring and minimizing a human impact on the environment" },
-    { code: "MS-ESS3-4", description: "Construct an argument supported by evidence for how increases in human population and per-capita consumption of natural resources impact Earth's systems" },
-    { code: "MS-ESS3-5", description: "Ask questions to clarify evidence of the factors that have caused the rise in global temperatures over the past century" },
   ],
   "MS-PS1": [
     { code: "MS-PS1-1", description: "Develop models to describe the atomic composition of simple molecules and extended structures" },
