@@ -361,7 +361,7 @@ export default function CanvasResults() {
                           <TableRow className="border-t-2 font-medium">
                             <TableCell className="sticky left-0 bg-background z-10">Class Average</TableCell>
                             <TableCell className="text-center">
-                              <ScoreCell pct={studentScores.reduce((sum, s) => sum + (s.totalPossible > 0 ? (s.totalScore / s.totalPossible) * 100 : 0), 0) / studentScores.length} />
+                              <ScoreCell pct={studentScores.reduce((sum: number, s) => sum + (s.totalPossible > 0 ? (s.totalScore / s.totalPossible) * 100 : 0), 0 as number) / studentScores.length} />
                             </TableCell>
                             {allStandards.map(s => {
                               const sp = standardPerformances.find(p => p.standardCode === s.code);
