@@ -16,6 +16,7 @@ import UnitDetail from "./pages/UnitDetail";
 import LessonPlanEditor from "./pages/LessonPlanEditor";
 import AdminDashboard from "./pages/AdminDashboard";
 import StandardsBrowser from "./pages/StandardsBrowser";
+import CanvasResults from "./pages/CanvasResults";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
@@ -76,6 +77,7 @@ const App = () => (
           <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/standards" element={<ProtectedRoute><StandardsBrowser /></ProtectedRoute>} />
+          <Route path="/canvas-results" element={<ProtectedRoute><CanvasResults /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

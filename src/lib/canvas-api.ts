@@ -91,3 +91,41 @@ export async function createCanvasQuizQuestion(
 ): Promise<QuizQuestion> {
   return canvasRequest(config, 'create_quiz_question', { courseId, quizId, questionData });
 }
+
+// ── Pull Results ──
+
+export interface Enrollment {
+  user_id: number;
+  user: { id: number; name: string; sortable_name: string };
+}
+
+export interface QuizSubmission {
+  id: number;
+  user_id: number;
+  quiz_id: number;
+  score: number | null;
+  kept_score: number | null;
+  attempt: number;
+  workflow_state: string;
+}
+
+export interface QuizSubmissionsResponse {
+  quiz_submissions: QuizSubmission[];
+}
+
+export async function getEnrollments(config: CanvasConfig, courseId: number): Promise<Enrollment[]> {
+  return canvasRequest(config, 'get_enrollments', { courseId });
+}
+
+export async function getQuizSubmissions(config: CanvasConfig, courseId: number, quizId: number): Promise<QuizSubmission[]> {
+  const data = await canvasRequest(config, 'get_quiz_submissions', { courseId, quizId });
+  return data.quiz_submissions || data;
+}
+
+export async function getQuizReport(config: CanvasConfig, courseId: number, quizId: number): Promise<{ csv: string; pending?: boolean }> {
+  return canvasRequest(config, 'get_quiz_report', { courseId, quizId });
+}
+
+export async function getQuizStatistics(config: CanvasConfig, courseId: number, quizId: number): Promise<any> {
+  return canvasRequest(config, 'get_quiz_statistics', { courseId, quizId });
+}
