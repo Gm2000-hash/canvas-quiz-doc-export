@@ -281,6 +281,9 @@ export default function CanvasResults() {
     }
 
     const rows = parseCSV(reportCSV);
+    console.log("CSV headers:", rows[0]);
+    console.log("CSV row count:", rows.length);
+    console.log("Sample data row:", rows[1]);
     if (rows.length < 2) return { studentScores: [], standardPerformances: [] };
 
     const header = rows[0];
