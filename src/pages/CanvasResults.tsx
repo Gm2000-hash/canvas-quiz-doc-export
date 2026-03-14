@@ -66,8 +66,8 @@ function stripHtml(html: string): string {
 }
 
 function ScoreCell({ pct }: { pct: number }) {
-  const bg = pct >= 80 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
-    : pct >= 60 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
+  const bg = pct >= 75 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+    : pct >= 50 ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
     : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300';
   return <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${bg}`}>{Math.round(pct)}%</span>;
 }
@@ -281,24 +281,31 @@ export default function CanvasResults() {
     }
 
     const rows = parseCSV(reportCSV);
+    console.log("CSV headers:", rows[0]);
+    console.log("CSV row count:", rows.length);
+    console.log("Sample data row:", rows[1]);
     if (rows.length < 2) return { studentScores: [], standardPerformances: [] };
 
     const header = rows[0];
     const questionColumns: { colIndex: number; questionId: number }[] = [];
     for (let i = 0; i < header.length; i++) {
-      const match = header[i].match(/^(\d+):\s*.+/);
+      // Canvas CSV headers for questions look like "12345: Question text" or just contain a colon
+      const match = header[i].match(/^(\d+):/);
       if (match) questionColumns.push({ colIndex: i, questionId: parseInt(match[1]) });
     }
 
-    const nameIdx = header.findIndex(h => h.toLowerCase() === 'name');
-    const idIdx = header.findIndex(h => h.toLowerCase() === 'id');
+    // Try multiple possible name column headers
+    const nameIdx = header.findIndex(h => /^name$/i.test(h.trim()));
+    const idIdx = header.findIndex(h => /^id$/i.test(h.trim()));
+    const sisIdx = header.findIndex(h => /^sis_id$/i.test(h.trim()) || /^sis_user_id$/i.test(h.trim()));
 
+    // Skip summary/metadata rows at the bottom
     const scores: StudentScore[] = [];
     for (let r = 1; r < rows.length; r++) {
       const row = rows[r];
-      const name = nameIdx >= 0 ? row[nameIdx] : `Student ${r}`;
-      const id = idIdx >= 0 ? parseInt(row[idIdx]) : r;
-      if (!name || name === '') continue;
+      const name = nameIdx >= 0 ? row[nameIdx]?.trim() : '';
+      if (!name || name === '' || name.toLowerCase() === 'points possible' || name.toLowerCase() === 'average score') continue;
+      const id = idIdx >= 0 ? parseInt(row[idIdx]) || r : r;
 
       const qScores = new Map<number, { score: number; possible: number }>();
       let totalScore = 0;
@@ -536,8 +543,8 @@ export default function CanvasResults() {
                               </TableRow>
                             </TableHeader>
                             <TableBody>
-                              {studentStandardMatrix.map(student => (
-                                <TableRow key={student.studentId}>
+                              {studentStandardMatrix.map((student, idx) => (
+                                <TableRow key={student.studentId || idx}>
                                   <TableCell className="sticky left-0 bg-background z-10 font-medium">{student.studentName}</TableCell>
                                   <TableCell className="text-center">
                                     <ScoreCell pct={student.totalPossible > 0 ? (student.totalScore / student.totalPossible) * 100 : 0} />
@@ -615,8 +622,8 @@ export default function CanvasResults() {
                                   <TableCell className="text-center">{s.correct}/{s.total}</TableCell>
                                   <TableCell className="text-center"><ScoreCell pct={s.pct} /></TableCell>
                                   <TableCell className="text-center">
-                                    <Badge variant={s.pct >= 80 ? 'default' : s.pct >= 60 ? 'secondary' : 'destructive'}>
-                                      {s.pct >= 80 ? 'Mastered' : s.pct >= 60 ? 'Developing' : 'Needs Support'}
+                                     <Badge variant={s.pct >= 75 ? 'default' : s.pct >= 50 ? 'secondary' : 'destructive'}>
+                                       {s.pct >= 75 ? 'Mastered' : s.pct >= 50 ? 'Developing' : 'Needs Support'}
                                     </Badge>
                                   </TableCell>
                                 </TableRow>
