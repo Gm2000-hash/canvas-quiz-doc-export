@@ -12,7 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import PageBanner from "@/components/PageBanner";
+import { PageBanner } from "@/components/PageBanner";
 
 interface StudentScore {
   studentId: number;
