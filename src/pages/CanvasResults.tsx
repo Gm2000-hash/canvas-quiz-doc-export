@@ -251,7 +251,7 @@ export default function CanvasResults() {
   if (!config) {
     return (
       <div className="min-h-screen bg-background">
-        <PageBanner title="Canvas Results" subtitle="Pull student quiz results and analyze performance by standard." />
+        <PageBanner greeting="Canvas Results" subtitle="Pull student quiz results and analyze performance by standard." />
         <div className="max-w-xl mx-auto p-6">
           <SettingsForm config={null} onSave={setConfig} onDisconnect={() => setConfig(null)} />
         </div>
