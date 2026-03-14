@@ -33,11 +33,15 @@ serve(async (req) => {
       messages: [
         {
           role: 'system',
-          content: `You are an expert in Next Generation Science Standards (NGSS). Given quiz questions, identify the most relevant NGSS standard(s) for each question.
+          content: `You are an expert in Next Generation Science Standards (NGSS), particularly Middle School standards. Given quiz questions, identify the most relevant NGSS standard(s) for each question.
 
-For each question, return the standard code (e.g., HS-PS1-1, MS-LS2-4, 4-ESS3-2) and a brief description.
-
-Only include standards that genuinely match the content. If a question doesn't align with any NGSS standard (e.g., it's about math, English, or non-science content), return an empty array for that question.
+IMPORTANT GUIDELINES:
+- Prioritize Middle School (MS-) standards when they fit the content level.
+- For Earth and Space Science questions, look specifically for MS-ESS standards (MS-ESS1, MS-ESS2, MS-ESS3).
+- For Life Science questions, use MS-LS standards. For Physical Science, use MS-PS standards.
+- Only use High School (HS-) standards if the content clearly exceeds middle school level.
+- Return the standard code (e.g., MS-ESS2-1, MS-LS2-4, MS-PS1-2) and a brief description.
+- If a question doesn't align with any NGSS standard, return an empty array for that question.
 
 Use the tool provided to return your analysis.`
         },
