@@ -200,11 +200,29 @@ export default function CanvasResults() {
       }
       setEnrollments(enrollMap);
 
+      // Build a text-based lookup for fallback matching (strip HTML & normalize)
+      const bankByText = new Map<string, QuestionBankItem>();
+      for (const b of bank) {
+        if (b.standards.length > 0) {
+          const normalizedText = stripHtml(b.question_text).trim().toLowerCase().replace(/\s+/g, ' ');
+          if (!bankByText.has(normalizedText)) {
+            bankByText.set(normalizedText, b);
+          }
+        }
+      }
+
       // Build initial mappings from question bank tags
       const initialMappings: QuestionMapping[] = questions
         .filter(q => q.question_type !== "text_only_question")
         .map(q => {
-          const bankMatch = bank.find(b => b.canvas_question_id === q.id);
+          // First try matching by canvas_question_id
+          let bankMatch = bank.find(b => b.canvas_question_id === q.id);
+          // Fallback: match by normalized question text
+          if (!bankMatch || bankMatch.standards.length === 0) {
+            const normalizedText = stripHtml(q.question_text).trim().toLowerCase().replace(/\s+/g, ' ');
+            const textMatch = bankByText.get(normalizedText);
+            if (textMatch) bankMatch = textMatch;
+          }
           return {
             questionId: q.id,
             questionText: stripHtml(q.question_text),
