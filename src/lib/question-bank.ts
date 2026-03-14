@@ -116,27 +116,46 @@ export async function saveQuestionsToBank(
 }
 
 export async function getQuestionBank(): Promise<QuestionBankItem[]> {
-  const { data: questions, error } = await supabase
-    .from("question_bank")
-    .select("*")
-    .order("created_at", { ascending: false });
+  // Fetch all questions (paginate past the 1000-row default limit)
+  let allQuestions: any[] = [];
+  let from = 0;
+  const pageSize = 1000;
+  while (true) {
+    const { data, error } = await supabase
+      .from("question_bank")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .range(from, from + pageSize - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allQuestions = allQuestions.concat(data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
 
-  if (error) throw error;
-  if (!questions || questions.length === 0) return [];
+  if (allQuestions.length === 0) return [];
 
-  const { data: standards } = await supabase
-    .from("question_bank_standards")
-    .select("*")
-    .in("question_bank_id", questions.map(q => q.id));
+  // Fetch all standards in batches (to avoid URL length limits and row caps)
+  const ids = allQuestions.map((q: any) => q.id);
+  let allStandards: any[] = [];
+  const batchSize = 200;
+  for (let i = 0; i < ids.length; i += batchSize) {
+    const batch = ids.slice(i, i + batchSize);
+    const { data: standards } = await supabase
+      .from("question_bank_standards")
+      .select("*")
+      .in("question_bank_id", batch);
+    if (standards) allStandards = allStandards.concat(standards);
+  }
 
   const standardsMap = new Map<string, { ngss_code: string; ngss_description: string }[]>();
-  for (const s of standards || []) {
+  for (const s of allStandards) {
     const list = standardsMap.get(s.question_bank_id) || [];
     list.push({ ngss_code: s.ngss_code, ngss_description: s.ngss_description });
     standardsMap.set(s.question_bank_id, list);
   }
 
-  return questions.map(q => ({
+  return allQuestions.map((q: any) => ({
     id: q.id,
     canvas_question_id: q.canvas_question_id,
     question_text: q.question_text,
