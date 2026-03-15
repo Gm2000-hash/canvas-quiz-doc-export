@@ -46,6 +46,14 @@ interface QuestionMapping {
   standards: { code: string; desc: string }[];
 }
 
+interface TaggingSummary {
+  totalQuestions: number;
+  preMatchedCount: number;
+  aiTaggedCount: number;
+  stillUntagged: number;
+  standardCounts: { code: string; desc: string; count: number }[];
+}
+
 type Step = "select" | "mapping" | "report";
 
 // ── Helpers ──
@@ -165,7 +173,28 @@ export default function CanvasResults() {
   const [reportCSV, setReportCSV] = useState<string | null>(null);
   const [canvasQuestions, setCanvasQuestions] = useState<QuizQuestion[]>([]);
   const [mappings, setMappings] = useState<QuestionMapping[]>([]);
+  const [taggingSummary, setTaggingSummary] = useState<TaggingSummary | null>(null);
   const [enrollments, setEnrollments] = useState<Map<number, string>>(new Map());
+
+  const buildTaggingSummary = useCallback((allMappings: QuestionMapping[], preMatchedCount: number, aiTaggedCount: number) => {
+    const stdCountMap = new Map<string, { desc: string; count: number }>();
+    for (const m of allMappings) {
+      for (const s of m.standards) {
+        const existing = stdCountMap.get(s.code);
+        if (existing) existing.count++;
+        else stdCountMap.set(s.code, { desc: s.desc, count: 1 });
+      }
+    }
+    setTaggingSummary({
+      totalQuestions: allMappings.length,
+      preMatchedCount,
+      aiTaggedCount,
+      stillUntagged: allMappings.filter(m => m.standards.length === 0).length,
+      standardCounts: Array.from(stdCountMap.entries())
+        .map(([code, v]) => ({ code, desc: v.desc, count: v.count }))
+        .sort((a, b) => b.count - a.count),
+    });
+  }, []);
 
   // Load courses on mount
   useEffect(() => {
@@ -244,10 +273,14 @@ export default function CanvasResults() {
           };
         });
 
+      const preMatchedCount = initialMappings.filter(m => m.standards.length > 0).length;
       setMappings(initialMappings);
+      setTaggingSummary(null);
 
       // Auto-tag with AI if any questions have no standards
       const untagged = initialMappings.filter(m => m.standards.length === 0);
+      let aiTaggedCount = 0;
+
       if (untagged.length > 0) {
         setAiTagging(true);
         try {
@@ -264,21 +297,32 @@ export default function CanvasResults() {
             framework === "idaho" ? (grades[0] || undefined) : undefined,
           );
 
-          setMappings(prev => prev.map(m => {
-            if (m.standards.length === 0 && tagMap.has(m.questionId)) {
-              const matched = tagMap.get(m.questionId)!;
-              return { ...m, standards: matched.map(s => ({ code: s.code, desc: s.description })) };
-            }
-            return m;
-          }));
+          for (const [, stds] of tagMap) {
+            if (stds.length > 0) aiTaggedCount++;
+          }
 
-          toast.success(`AI suggested standards for ${tagMap.size} questions. Review and adjust below.`);
+          setMappings(prev => {
+            const updated = prev.map(m => {
+              if (m.standards.length === 0 && tagMap.has(m.questionId)) {
+                const matched = tagMap.get(m.questionId)!;
+                return { ...m, standards: matched.map(s => ({ code: s.code, desc: s.description })) };
+              }
+              return m;
+            });
+            buildTaggingSummary(updated, preMatchedCount, aiTaggedCount);
+            return updated;
+          });
+
+          toast.success(`AI tagged ${aiTaggedCount} of ${untagged.length} unmatched questions.`);
         } catch (err: any) {
           console.error("AI tagging failed:", err);
           toast.warning("AI auto-tagging failed. You can manually assign standards below.");
+          buildTaggingSummary(initialMappings, preMatchedCount, 0);
         } finally {
           setAiTagging(false);
         }
+      } else {
+        buildTaggingSummary(initialMappings, preMatchedCount, 0);
       }
 
       setStep("mapping");
@@ -529,6 +573,64 @@ export default function CanvasResults() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+              {/* Tagging Summary */}
+              {taggingSummary && !aiTagging && (
+                <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                  <h4 className="text-sm font-semibold flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-primary" /> Tagging Summary
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-foreground">{taggingSummary.totalQuestions}</div>
+                      <div className="text-[11px] text-muted-foreground">Total Questions</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-success">{taggingSummary.preMatchedCount}</div>
+                      <div className="text-[11px] text-muted-foreground">Pre-matched (Bank)</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">{taggingSummary.aiTaggedCount}</div>
+                      <div className="text-[11px] text-muted-foreground">AI Tagged</div>
+                    </div>
+                    <div className="text-center">
+                      <div className={`text-2xl font-bold ${taggingSummary.stillUntagged > 0 ? 'text-destructive' : 'text-success'}`}>{taggingSummary.stillUntagged}</div>
+                      <div className="text-[11px] text-muted-foreground">Still Untagged</div>
+                    </div>
+                  </div>
+                  {taggingSummary.standardCounts.length > 0 && (
+                    <div className="pt-2 border-t border-border">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Standards Distribution</p>
+                      <div className="space-y-1.5">
+                        {taggingSummary.standardCounts.slice(0, 8).map(sc => {
+                          const maxCount = taggingSummary.standardCounts[0]?.count || 1;
+                          const pct = Math.round((sc.count / maxCount) * 100);
+                          return (
+                            <div key={sc.code} className="flex items-center gap-2">
+                              <span className="text-xs font-mono w-24 shrink-0 truncate" title={sc.code}>{sc.code}</span>
+                              <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-primary/70 rounded-full transition-all"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-muted-foreground w-6 text-right">{sc.count}</span>
+                            </div>
+                          );
+                        })}
+                        {taggingSummary.standardCounts.length > 8 && (
+                          <p className="text-[10px] text-muted-foreground">+{taggingSummary.standardCounts.length - 8} more standards</p>
+                        )}
+                      </div>
+                      {taggingSummary.standardCounts.length > 1 && (
+                        <div className="flex gap-4 mt-2 text-[11px] text-muted-foreground">
+                          <span>Most tagged: <strong className="text-foreground">{taggingSummary.standardCounts[0].code}</strong> ({taggingSummary.standardCounts[0].count})</span>
+                          <span>Least tagged: <strong className="text-foreground">{taggingSummary.standardCounts[taggingSummary.standardCounts.length - 1].code}</strong> ({taggingSummary.standardCounts[taggingSummary.standardCounts.length - 1].count})</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="divide-y">
                 {mappings.map((m, i) => (
                   <div key={m.questionId} className="py-3 first:pt-0 last:pb-0">
