@@ -14,6 +14,7 @@ export type ProgressCallback = (progress: GenerationProgress) => void;
 interface GenerateOptions {
   framework?: "NGSS" | "Idaho";
   subject?: string;
+  dokLevel?: number | null;
 }
 
 /**
@@ -35,6 +36,7 @@ async function generateForSubstandard(
       count,
       framework: options.framework || "NGSS",
       subject: options.subject || "Science",
+      ...(options.dokLevel ? { dok_level: options.dokLevel } : {}),
     },
   });
 
