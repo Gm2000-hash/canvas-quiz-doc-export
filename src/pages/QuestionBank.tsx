@@ -1200,17 +1200,46 @@ const QuestionBank = () => {
             {untagged.length > 0 && (
               <Card className="mt-4">
                 <CardContent className="p-5">
-                  <button
-                    className="w-full flex items-center gap-3 text-left"
-                    onClick={() => setExpandedDiscipline(expandedDiscipline === "untagged" ? null : "untagged")}
-                  >
-                    <FlaskConical className="h-5 w-5 text-muted-foreground shrink-0" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-muted-foreground">Untagged</h3>
-                      <p className="text-sm text-muted-foreground">{untagged.length} question{untagged.length !== 1 ? "s" : ""}</p>
-                    </div>
-                    {expandedDiscipline === "untagged" ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />}
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <Checkbox
+                      checked={untagged.length > 0 && untagged.every(q => selected.has(q.id))}
+                      onCheckedChange={() => {
+                        const allSelected = untagged.every(q => selected.has(q.id));
+                        setSelected(prev => {
+                          const next = new Set(prev);
+                          untagged.forEach(q => allSelected ? next.delete(q.id) : next.add(q.id));
+                          return next;
+                        });
+                      }}
+                      className="shrink-0"
+                    />
+                    <button
+                      className="flex-1 flex items-center gap-3 text-left"
+                      onClick={() => setExpandedDiscipline(expandedDiscipline === "untagged" ? null : "untagged")}
+                    >
+                      <FlaskConical className="h-5 w-5 text-muted-foreground shrink-0" />
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-muted-foreground">Untagged</h3>
+                        <p className="text-sm text-muted-foreground">{untagged.length} question{untagged.length !== 1 ? "s" : ""}</p>
+                      </div>
+                      {expandedDiscipline === "untagged" ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />}
+                    </button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                      title="Delete all untagged questions"
+                      onClick={e => {
+                        e.stopPropagation();
+                        setBulkDeleteTarget({
+                          ids: untagged.map(q => q.id),
+                          label: `all ${untagged.length} untagged question${untagged.length !== 1 ? "s" : ""}`,
+                        });
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                   {expandedDiscipline === "untagged" && (
                     <div className="space-y-2 mt-4 border-t border-border pt-4">
                       {untagged.map(q => questionCard(q, "untagged"))}
