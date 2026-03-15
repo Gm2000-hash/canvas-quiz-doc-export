@@ -14,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft, Sparkles, Pencil, Check, X, FileSpreadsheet, FileArchive } from "lucide-react";
 import { exportMasteryConnectCSV, exportMasteryConnectDetailCSV } from "@/lib/export-mastery-connect";
-import { exportToQTI } from "@/lib/export-qti";
+import { exportToQTI, type QTIStudentResult } from "@/lib/export-qti";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import { Link } from "react-router-dom";
 import { PageBanner } from "@/components/PageBanner";
@@ -149,6 +150,7 @@ export default function CanvasResults() {
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
   const [aiTagging, setAiTagging] = useState(false);
+  const [includeScoresInQTI, setIncludeScoresInQTI] = useState(true);
 
   const [step, setStep] = useState<Step>("select");
   const [reportCSV, setReportCSV] = useState<string | null>(null);
@@ -591,7 +593,6 @@ export default function CanvasResults() {
                             disabled={mappings.length === 0}
                             onClick={() => {
                               const quizName = quizzes.find(q => String(q.id) === selectedQuiz)?.title || 'Quiz';
-                              // Build QuestionBankItem-shaped objects from canvas questions + mappings
                               const qtiQuestions: QuestionBankItem[] = canvasQuestions
                                 .filter(cq => cq.question_type !== 'text_only_question')
                                 .map(cq => {
@@ -614,8 +615,25 @@ export default function CanvasResults() {
                                     })),
                                   };
                                 });
-                              exportToQTI(quizName, qtiQuestions);
-                              toast.success("QTI package exported with standards tags!");
+
+                              // Build student results if checkbox is checked
+                              let studentResultsData: QTIStudentResult[] | undefined;
+                              if (includeScoresInQTI && studentStandardMatrix.length > 0) {
+                                studentResultsData = studentStandardMatrix.map(student => ({
+                                  name: student.studentName,
+                                  scores: new Map(
+                                    Array.from(student.questionScores.entries()).map(([qId, data]) => [
+                                      String(qId),
+                                      { score: data.score, possible: data.possible },
+                                    ])
+                                  ),
+                                }));
+                              }
+
+                              exportToQTI(quizName, qtiQuestions, studentResultsData);
+                              toast.success(includeScoresInQTI
+                                ? "QTI package exported with standards + student scores!"
+                                : "QTI package exported with standards tags!");
                             }}
                           >
                             <FileArchive className="h-3.5 w-3.5" /> Export QTI
@@ -623,6 +641,16 @@ export default function CanvasResults() {
                           <Button variant="outline" size="sm" onClick={() => setStep("mapping")} className="gap-1">
                             <Pencil className="h-3.5 w-3.5" /> Edit Mappings
                           </Button>
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Checkbox
+                            id="include-scores"
+                            checked={includeScoresInQTI}
+                            onCheckedChange={(checked) => setIncludeScoresInQTI(checked === true)}
+                          />
+                          <label htmlFor="include-scores" className="text-xs text-muted-foreground cursor-pointer">
+                            Include student scores in QTI package
+                          </label>
                         </div>
                       </div>
                     </CardHeader>
