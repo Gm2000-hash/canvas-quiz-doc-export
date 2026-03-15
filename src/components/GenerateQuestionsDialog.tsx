@@ -51,9 +51,9 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
   const [idahoGradeFilter, setIdahoGradeFilter] = useState<string>(defaultIdahoFilter);
   const [idahoCategoryFilter, setIdahoCategoryFilter] = useState<string>("essential");
   const [selectedIdahoStandards, setSelectedIdahoStandards] = useState<Set<string>>(new Set());
+  const [targetDok, setTargetDok] = useState<string>("any");
   const abortRef = useRef(false);
   const latestProgressRef = useRef<GenerationProgress | null>(null);
-  const autoTriggeredRef = useRef<string | null>(null);
 
   // Sync defaults when profile loads
   useEffect(() => {
@@ -61,40 +61,38 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
     setIdahoGradeFilter(defaultIdahoFilter);
   }, [defaultFramework, defaultIdahoFilter]);
 
-  // Auto-trigger generation when opened with an initialStandard
+  // Reset DOK when dialog opens with a new standard
   useEffect(() => {
-    if (open && initialStandard && !generating && !done && autoTriggeredRef.current !== initialStandard.code) {
-      autoTriggeredRef.current = initialStandard.code;
-      setFramework("ngss");
-      // Directly trigger generation for the single standard
-      const runGenerate = async () => {
-        setGenerating(true);
-        setDone(false);
-        abortRef.current = false;
-        latestProgressRef.current = null;
-        try {
-          await generateForStandards(
-            [{ code: initialStandard.code, description: initialStandard.description }],
-            questionsPerSub,
-            (p) => { latestProgressRef.current = p; setProgress(p); },
-            { framework: "NGSS", subject: "Science" }
-          );
-          setDone(true);
-          const total = latestProgressRef.current?.questionsGenerated ?? 0;
-          toast.success(`Generated ${total} question${total !== 1 ? "s" : ""} for ${initialStandard.code}!`);
-          onComplete();
-        } catch (e: any) {
-          toast.error(e.message || "Generation failed");
-        } finally {
-          setGenerating(false);
-        }
-      };
-      runGenerate();
-    }
-    if (!open) {
-      autoTriggeredRef.current = null;
+    if (open && initialStandard) {
+      setTargetDok("any");
+      setQuestionsPerSub(10);
     }
   }, [open, initialStandard]);
+
+  const handleGapGenerate = async () => {
+    if (!initialStandard) return;
+    setGenerating(true);
+    setDone(false);
+    abortRef.current = false;
+    latestProgressRef.current = null;
+    try {
+      const dokValue = targetDok !== "any" ? Number(targetDok) : null;
+      await generateForStandards(
+        [{ code: initialStandard.code, description: initialStandard.description }],
+        questionsPerSub,
+        (p) => { latestProgressRef.current = p; setProgress(p); },
+        { framework: "NGSS", subject: "Science", dokLevel: dokValue }
+      );
+      setDone(true);
+      const total = latestProgressRef.current?.questionsGenerated ?? 0;
+      toast.success(`Generated ${total} question${total !== 1 ? "s" : ""} for ${initialStandard.code}!`);
+      onComplete();
+    } catch (e: any) {
+      toast.error(e.message || "Generation failed");
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const handleProgressUpdate = (p: GenerationProgress) => {
     latestProgressRef.current = p;
