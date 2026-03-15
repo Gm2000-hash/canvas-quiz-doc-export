@@ -1,29 +1,22 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Sparkles } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface StandardsCoverageGridProps {
   questions: { id: string; standards: { ngss_code: string }[] }[];
+  onGapClick?: (standardCode: string, standardDescription: string) => void;
 }
 
-interface DisciplineGroup {
-  key: string;
-  label: string;
-  coreIdeas: string[];
-}
-
-const DISCIPLINES: DisciplineGroup[] = [
+const DISCIPLINES: { key: string; label: string; coreIdeas: string[] }[] = [
   { key: "LS", label: "Life Science", coreIdeas: ["MS-LS1", "MS-LS2", "MS-LS3", "MS-LS4"] },
   { key: "ESS", label: "Earth & Space Science", coreIdeas: ["MS-ESS1", "MS-ESS2", "MS-ESS3"] },
   { key: "PS", label: "Physical Science", coreIdeas: ["MS-PS1", "MS-PS2", "MS-PS3", "MS-PS4"] },
 ];
 
-export function StandardsCoverageGrid({ questions }: StandardsCoverageGridProps) {
-  // Build a map of standard code → question count
+export function StandardsCoverageGrid({ questions, onGapClick }: StandardsCoverageGridProps) {
   const countMap = new Map<string, number>();
   for (const q of questions) {
     for (const s of q.standards) {
@@ -31,7 +24,6 @@ export function StandardsCoverageGrid({ questions }: StandardsCoverageGridProps)
     }
   }
 
-  // Compute totals
   const allStandards = Object.values(ALL_SUBSTANDARDS).flat();
   const totalStandards = allStandards.length;
   const coveredCount = allStandards.filter(s => (countMap.get(s.code) || 0) > 0).length;
@@ -88,27 +80,35 @@ export function StandardsCoverageGrid({ questions }: StandardsCoverageGridProps)
                         return (
                           <Tooltip key={sub.code}>
                             <TooltipTrigger asChild>
-                              <div
+                              <button
+                                type="button"
+                                onClick={isGap && onGapClick ? () => onGapClick(sub.code, sub.description) : undefined}
                                 className={`
-                                  px-1.5 py-0.5 rounded text-[10px] font-mono leading-tight cursor-default transition-colors
+                                  px-1.5 py-0.5 rounded text-[10px] font-mono leading-tight transition-colors
                                   ${isGap
-                                    ? "bg-destructive/10 text-destructive border border-destructive/30 ring-1 ring-destructive/20"
+                                    ? "bg-destructive/10 text-destructive border border-destructive/30 ring-1 ring-destructive/20 cursor-pointer hover:bg-destructive/20 hover:ring-destructive/40"
                                     : count <= 2
-                                      ? "bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800"
-                                      : "bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800"
+                                      ? "bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800 cursor-default"
+                                      : "bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800 cursor-default"
                                   }
                                 `}
                               >
                                 {sub.code.replace("MS-", "")}
                                 {!isGap && <span className="ml-0.5 font-semibold">({count})</span>}
-                              </div>
+                              </button>
                             </TooltipTrigger>
                             <TooltipContent side="top" className="max-w-xs">
                               <p className="font-semibold text-xs">{sub.code}</p>
                               <p className="text-xs text-muted-foreground">{sub.description}</p>
-                              <p className={`text-xs font-medium mt-1 ${isGap ? "text-destructive" : "text-foreground"}`}>
-                                {isGap ? "⚠ No questions — not yet assessed" : `${count} question${count !== 1 ? "s" : ""}`}
-                              </p>
+                              {isGap ? (
+                                <p className="text-xs font-medium mt-1 text-destructive flex items-center gap-1">
+                                  <Sparkles className="h-3 w-3" /> Click to generate questions
+                                </p>
+                              ) : (
+                                <p className="text-xs font-medium mt-1 text-foreground">
+                                  {count} question{count !== 1 ? "s" : ""}
+                                </p>
+                              )}
                             </TooltipContent>
                           </Tooltip>
                         );
