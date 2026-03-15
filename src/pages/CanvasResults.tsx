@@ -94,7 +94,7 @@ const ALL_IDAHO_FLAT_MAPPED = ALL_IDAHO_STANDARDS_FLAT.map(s => ({ code: s.code,
 
 // ── Standards Picker for a single question ──
 
-function StandardsPicker({ standards, onChange, framework }: { standards: { code: string; desc: string }[]; onChange: (s: { code: string; desc: string }[]) => void; framework: "ngss" | "idaho" }) {
+function StandardsPicker({ standards, onChange, framework }: { standards: { code: string; desc: string; matched_terms?: string[] }[]; onChange: (s: { code: string; desc: string; matched_terms?: string[] }[]) => void; framework: "ngss" | "idaho" }) {
   const [adding, setAdding] = useState(false);
   const [search, setSearch] = useState("");
 
@@ -116,38 +116,49 @@ function StandardsPicker({ standards, onChange, framework }: { standards: { code
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-1.5">
-      {standards.map(s => (
-        <Badge key={s.code} variant="secondary" className="gap-1 pr-1">
-          {s.code}
-          <button onClick={() => remove(s.code)} className="ml-0.5 hover:text-destructive"><X className="h-3 w-3" /></button>
-        </Badge>
-      ))}
-      {adding ? (
-        <div className="relative">
-          <input
-            autoFocus
-            className="h-7 w-40 rounded border border-input bg-background px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
-            placeholder="Search standards..."
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            onBlur={() => setTimeout(() => { setAdding(false); setSearch(""); }, 200)}
-          />
-          {filtered.length > 0 && (
-            <div className="absolute z-50 mt-1 w-72 max-h-48 overflow-y-auto rounded-md border bg-popover shadow-md">
-              {filtered.map(s => (
-                <button key={s.code} className="w-full text-left px-3 py-1.5 text-xs hover:bg-accent" onMouseDown={() => add(s)}>
-                  <span className="font-medium">{s.code}</span> — {s.description.slice(0, 80)}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      ) : (
-        <button onClick={() => setAdding(true)} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
-          <Pencil className="h-3 w-3" /> Add
-        </button>
-      )}
+    <div className="space-y-1">
+      <div className="flex flex-wrap items-center gap-1.5">
+        {standards.map(s => (
+          <div key={s.code} className="inline-flex flex-col">
+            <Badge variant="secondary" className="gap-1 pr-1">
+              {s.code}
+              <button onClick={() => remove(s.code)} className="ml-0.5 hover:text-destructive"><X className="h-3 w-3" /></button>
+            </Badge>
+            {s.matched_terms && s.matched_terms.length > 0 && (
+              <div className="flex flex-wrap gap-0.5 mt-0.5 ml-0.5">
+                {s.matched_terms.map(t => (
+                  <span key={t} className="text-[9px] px-1 py-0 rounded bg-primary/10 text-primary italic">{t}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+        {adding ? (
+          <div className="relative">
+            <input
+              autoFocus
+              className="h-7 w-40 rounded border border-input bg-background px-2 text-xs focus:outline-none focus:ring-1 focus:ring-ring"
+              placeholder="Search standards..."
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              onBlur={() => setTimeout(() => { setAdding(false); setSearch(""); }, 200)}
+            />
+            {filtered.length > 0 && (
+              <div className="absolute z-50 mt-1 w-72 max-h-48 overflow-y-auto rounded-md border bg-popover shadow-md">
+                {filtered.map(s => (
+                  <button key={s.code} className="w-full text-left px-3 py-1.5 text-xs hover:bg-accent" onMouseDown={() => add(s)}>
+                    <span className="font-medium">{s.code}</span> — {s.description.slice(0, 80)}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <button onClick={() => setAdding(true)} className="inline-flex items-center gap-1 text-xs text-primary hover:underline">
+            <Pencil className="h-3 w-3" /> Add
+          </button>
+        )}
+      </div>
     </div>
   );
 }
