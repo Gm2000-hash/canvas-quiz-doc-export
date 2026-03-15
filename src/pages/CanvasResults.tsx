@@ -573,6 +573,64 @@ export default function CanvasResults() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
+              {/* Tagging Summary */}
+              {taggingSummary && !aiTagging && (
+                <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                  <h4 className="text-sm font-semibold flex items-center gap-2">
+                    <BarChart3 className="h-4 w-4 text-primary" /> Tagging Summary
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-foreground">{taggingSummary.totalQuestions}</div>
+                      <div className="text-[11px] text-muted-foreground">Total Questions</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-success">{taggingSummary.preMatchedCount}</div>
+                      <div className="text-[11px] text-muted-foreground">Pre-matched (Bank)</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-primary">{taggingSummary.aiTaggedCount}</div>
+                      <div className="text-[11px] text-muted-foreground">AI Tagged</div>
+                    </div>
+                    <div className="text-center">
+                      <div className={`text-2xl font-bold ${taggingSummary.stillUntagged > 0 ? 'text-destructive' : 'text-success'}`}>{taggingSummary.stillUntagged}</div>
+                      <div className="text-[11px] text-muted-foreground">Still Untagged</div>
+                    </div>
+                  </div>
+                  {taggingSummary.standardCounts.length > 0 && (
+                    <div className="pt-2 border-t border-border">
+                      <p className="text-xs font-medium text-muted-foreground mb-2">Standards Distribution</p>
+                      <div className="space-y-1.5">
+                        {taggingSummary.standardCounts.slice(0, 8).map(sc => {
+                          const maxCount = taggingSummary.standardCounts[0]?.count || 1;
+                          const pct = Math.round((sc.count / maxCount) * 100);
+                          return (
+                            <div key={sc.code} className="flex items-center gap-2">
+                              <span className="text-xs font-mono w-24 shrink-0 truncate" title={sc.code}>{sc.code}</span>
+                              <div className="flex-1 h-4 bg-muted rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-primary/70 rounded-full transition-all"
+                                  style={{ width: `${pct}%` }}
+                                />
+                              </div>
+                              <span className="text-xs text-muted-foreground w-6 text-right">{sc.count}</span>
+                            </div>
+                          );
+                        })}
+                        {taggingSummary.standardCounts.length > 8 && (
+                          <p className="text-[10px] text-muted-foreground">+{taggingSummary.standardCounts.length - 8} more standards</p>
+                        )}
+                      </div>
+                      {taggingSummary.standardCounts.length > 1 && (
+                        <div className="flex gap-4 mt-2 text-[11px] text-muted-foreground">
+                          <span>Most tagged: <strong className="text-foreground">{taggingSummary.standardCounts[0].code}</strong> ({taggingSummary.standardCounts[0].count})</span>
+                          <span>Least tagged: <strong className="text-foreground">{taggingSummary.standardCounts[taggingSummary.standardCounts.length - 1].code}</strong> ({taggingSummary.standardCounts[taggingSummary.standardCounts.length - 1].count})</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="divide-y">
                 {mappings.map((m, i) => (
                   <div key={m.questionId} className="py-3 first:pt-0 last:pb-0">
