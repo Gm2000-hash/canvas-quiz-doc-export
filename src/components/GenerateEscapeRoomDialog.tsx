@@ -372,7 +372,7 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
                               </div>
                             ))}
                             {editingRoom === puzzle.room_number && (
-                              <Button size="sm" variant="ghost" className="gap-1.5 text-xs text-amber-600 dark:text-amber-400" onClick={() => {
+                              <Button size="sm" variant="ghost" className="gap-1.5 text-xs text-warning" onClick={() => {
                                 updatePuzzleField(puzzle.room_number, "challenge_steps", [...(puzzle.challenge_steps || []), ""]);
                               }}><Plus className="h-3 w-3" /> Add Step</Button>
                             )}
