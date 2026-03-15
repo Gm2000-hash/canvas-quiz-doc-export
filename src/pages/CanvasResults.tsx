@@ -685,6 +685,37 @@ export default function CanvasResults() {
                   )}
                 </div>
               )}
+              {/* Re-tag toolbar */}
+              {!aiTagging && (
+                <div className="rounded-lg border border-border bg-card p-3 flex flex-wrap items-center gap-3">
+                  <span className="text-xs font-medium text-muted-foreground shrink-0">Re-tag with:</span>
+                  <Select value={framework} onValueChange={(v) => setFramework(v as "ngss" | "idaho")}>
+                    <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ngss">NGSS (Science)</SelectItem>
+                      <SelectItem value="idaho">Idaho Standards</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {framework === "idaho" && (
+                    <Select value={tagSubject} onValueChange={setTagSubject}>
+                      <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ELA">ELA</SelectItem>
+                        <SelectItem value="Math">Math</SelectItem>
+                        <SelectItem value="Social Studies">Social Studies</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <div className="flex gap-2 ml-auto">
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={() => handleRetag(false)} disabled={mappings.filter(m => m.standards.length === 0).length === 0}>
+                      <RefreshCw className="h-3.5 w-3.5" /> Re-tag Unmatched ({mappings.filter(m => m.standards.length === 0).length})
+                    </Button>
+                    <Button variant="secondary" size="sm" className="gap-1.5 text-xs h-8" onClick={() => handleRetag(true)}>
+                      <RefreshCw className="h-3.5 w-3.5" /> Re-tag All ({mappings.length})
+                    </Button>
+                  </div>
+                </div>
+              )}
               <div className="divide-y">
                 {mappings.map((m, i) => (
                   <div key={m.questionId} className="py-3 first:pt-0 last:pb-0">
