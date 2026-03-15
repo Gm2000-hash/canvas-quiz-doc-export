@@ -5,7 +5,9 @@ import { getCourses, getQuizzes, getQuizQuestions, getEnrollments, getQuizReport
 import { getQuestionBank, type QuestionBankItem } from "@/lib/question-bank";
 import { supabase } from "@/integrations/supabase/client";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ALL_IDAHO_STANDARDS_FLAT } from "@/lib/idaho-standards-data";
+import { useProfileDefaults } from "@/hooks/useProfileDefaults";
+import { tagQuestionsWithStandards } from "@/lib/standards-api";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
