@@ -15,10 +15,10 @@ import { Search, ArrowLeft, BookOpen, FlaskConical, Calculator, Landmark, Filter
 
 const CATEGORY_COLORS: Record<string, string> = {
   essential: "bg-primary/10 text-primary border-primary/20",
-  supporting: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
+  supporting: "bg-accent/10 text-accent border-accent/20",
   additional: "bg-muted text-muted-foreground border-border",
-  teacher_guidance: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
-  big_idea: "bg-purple-500/10 text-purple-700 dark:text-purple-400 border-purple-500/20",
+  teacher_guidance: "bg-warning/10 text-warning border-warning/20",
+  big_idea: "bg-chart-3/10 text-chart-3 border-chart-3/20",
 };
 
 const SUBJECT_ICONS: Record<string, React.ElementType> = {
