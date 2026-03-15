@@ -927,6 +927,23 @@ const QuestionBank = () => {
                                         {firstDesc && <p className="text-xs text-muted-foreground mt-1 break-words">{firstDesc}</p>}
                                       </div>
                                     </button>
+                                    {coreQuestions.length > 0 && (
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                                        title={`Delete all ${coreIdea} questions`}
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          setBulkDeleteTarget({
+                                            ids: coreQuestions.map(q => q.id),
+                                            label: `all ${coreQuestions.length} question${coreQuestions.length !== 1 ? "s" : ""} for ${coreIdea}`,
+                                          });
+                                        }}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    )}
                                   </div>
 
                                   {isCoreExpanded && (
