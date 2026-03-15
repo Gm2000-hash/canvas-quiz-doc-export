@@ -46,6 +46,14 @@ interface QuestionMapping {
   standards: { code: string; desc: string }[];
 }
 
+interface TaggingSummary {
+  totalQuestions: number;
+  preMatchedCount: number;
+  aiTaggedCount: number;
+  stillUntagged: number;
+  standardCounts: { code: string; desc: string; count: number }[];
+}
+
 type Step = "select" | "mapping" | "report";
 
 // ── Helpers ──
