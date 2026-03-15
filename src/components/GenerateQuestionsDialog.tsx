@@ -77,11 +77,13 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
     latestProgressRef.current = null;
     try {
       const dokValue = targetDok !== "any" ? Number(targetDok) : null;
+      const fw = initialStandard.framework || "NGSS";
+      const subj = initialStandard.subject || "Science";
       await generateForStandards(
         [{ code: initialStandard.code, description: initialStandard.description }],
         questionsPerSub,
         (p) => { latestProgressRef.current = p; setProgress(p); },
-        { framework: "NGSS", subject: "Science", dokLevel: dokValue }
+        { framework: fw, subject: subj, dokLevel: dokValue }
       );
       setDone(true);
       const total = latestProgressRef.current?.questionsGenerated ?? 0;
