@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft, Sparkles, Pencil, Check, X, FileSpreadsheet, FileArchive } from "lucide-react";
+import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft, Sparkles, Pencil, Check, X, FileSpreadsheet, FileArchive, RefreshCw } from "lucide-react";
 import { exportMasteryConnectCSV, exportMasteryConnectDetailCSV } from "@/lib/export-mastery-connect";
 import { exportToQTI, type QTIStudentResult } from "@/lib/export-qti";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -334,6 +334,60 @@ export default function CanvasResults() {
     }
   };
 
+  // Re-tag: run AI tagger again with potentially different framework/subject
+  const handleRetag = async (retagAll: boolean) => {
+    if (aiTagging) return;
+    setAiTagging(true);
+    setTaggingSummary(null);
+
+    try {
+      const toRetag = retagAll
+        ? mappings
+        : mappings.filter(m => m.standards.length === 0);
+
+      if (toRetag.length === 0) {
+        toast.info("No questions to re-tag.");
+        setAiTagging(false);
+        return;
+      }
+
+      const aiQuestions = toRetag.map(m => ({ id: m.questionId, question_text: m.questionText }));
+      const tagMap = await tagQuestionsWithStandards(
+        aiQuestions,
+        framework,
+        framework === "idaho" ? tagSubject : undefined,
+        framework === "idaho" ? (grades[0] || undefined) : undefined,
+      );
+
+      let aiTaggedCount = 0;
+      for (const [, stds] of tagMap) {
+        if (stds.length > 0) aiTaggedCount++;
+      }
+
+      const retagIds = new Set(toRetag.map(m => m.questionId));
+      setMappings(prev => {
+        const updated = prev.map(m => {
+          if (!retagIds.has(m.questionId)) return m;
+          if (tagMap.has(m.questionId)) {
+            const matched = tagMap.get(m.questionId)!;
+            return { ...m, standards: matched.map(s => ({ code: s.code, desc: s.description })) };
+          }
+          return retagAll ? { ...m, standards: [] } : m;
+        });
+        const preMatched = updated.filter(m => !retagIds.has(m.questionId) && m.standards.length > 0).length;
+        buildTaggingSummary(updated, preMatched, aiTaggedCount);
+        return updated;
+      });
+
+      toast.success(`AI re-tagged ${aiTaggedCount} of ${toRetag.length} questions.`);
+    } catch (err: any) {
+      console.error("Re-tagging failed:", err);
+      toast.error("Re-tagging failed. Try again shortly.");
+    } finally {
+      setAiTagging(false);
+    }
+  };
+
   // Update a single question's mapping
   const updateMapping = useCallback((questionId: number, standards: { code: string; desc: string }[]) => {
     setMappings(prev => prev.map(m => m.questionId === questionId ? { ...m, standards } : m));
@@ -629,6 +683,37 @@ export default function CanvasResults() {
                       )}
                     </div>
                   )}
+                </div>
+              )}
+              {/* Re-tag toolbar */}
+              {!aiTagging && (
+                <div className="rounded-lg border border-border bg-card p-3 flex flex-wrap items-center gap-3">
+                  <span className="text-xs font-medium text-muted-foreground shrink-0">Re-tag with:</span>
+                  <Select value={framework} onValueChange={(v) => setFramework(v as "ngss" | "idaho")}>
+                    <SelectTrigger className="h-8 w-[150px] text-xs"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ngss">NGSS (Science)</SelectItem>
+                      <SelectItem value="idaho">Idaho Standards</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {framework === "idaho" && (
+                    <Select value={tagSubject} onValueChange={setTagSubject}>
+                      <SelectTrigger className="h-8 w-[140px] text-xs"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ELA">ELA</SelectItem>
+                        <SelectItem value="Math">Math</SelectItem>
+                        <SelectItem value="Social Studies">Social Studies</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                  <div className="flex gap-2 ml-auto">
+                    <Button variant="outline" size="sm" className="gap-1.5 text-xs h-8" onClick={() => handleRetag(false)} disabled={mappings.filter(m => m.standards.length === 0).length === 0}>
+                      <RefreshCw className="h-3.5 w-3.5" /> Re-tag Unmatched ({mappings.filter(m => m.standards.length === 0).length})
+                    </Button>
+                    <Button variant="secondary" size="sm" className="gap-1.5 text-xs h-8" onClick={() => handleRetag(true)}>
+                      <RefreshCw className="h-3.5 w-3.5" /> Re-tag All ({mappings.length})
+                    </Button>
+                  </div>
                 </div>
               )}
               <div className="divide-y">
