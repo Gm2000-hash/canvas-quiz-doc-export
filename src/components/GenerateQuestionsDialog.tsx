@@ -197,6 +197,46 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
           </DialogDescription>
         </DialogHeader>
 
+        {/* Gap-click config form */}
+        {initialStandard && !generating && !done ? (
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1.5">
+                <Label className="text-sm">Number of Questions</Label>
+                <Select value={String(questionsPerSub)} onValueChange={v => setQuestionsPerSub(Number(v))}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {[3, 5, 10, 15, 20].map(n => (
+                      <SelectItem key={n} value={String(n)}>{n} questions</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-sm">DOK Level</Label>
+                <Select value={targetDok} onValueChange={setTargetDok}>
+                  <SelectTrigger className="h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="any">Mix (DOK 1-3)</SelectItem>
+                    <SelectItem value="1">DOK 1 – Recall</SelectItem>
+                    <SelectItem value="2">DOK 2 – Skills & Concepts</SelectItem>
+                    <SelectItem value="3">DOK 3 – Strategic Thinking</SelectItem>
+                    <SelectItem value="4">DOK 4 – Extended Thinking</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <Button onClick={handleGapGenerate} className="w-full gap-2">
+              <Sparkles className="h-4 w-4" />
+              Generate {questionsPerSub} Questions{targetDok !== "any" ? ` at DOK ${targetDok}` : ""}
+            </Button>
+          </div>
+        ) : null}
+
         {/* Progress view */}
         {(generating || done) && progress ? (
           <div className="space-y-4">
