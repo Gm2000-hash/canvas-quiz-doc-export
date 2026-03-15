@@ -347,8 +347,8 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
 
                       {/* Challenge Steps */}
                       {(puzzle.challenge_steps?.length || editingRoom === puzzle.room_number) ? (
-                        <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
-                          <p className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                        <div className="p-3 rounded-lg bg-warning/5 border border-warning/20">
+                          <p className="text-xs font-medium text-warning uppercase tracking-wide mb-2 flex items-center gap-1.5">
                             <ListOrdered className="h-3.5 w-3.5" /> Challenge Steps
                           </p>
                           <div className="space-y-2.5">
