@@ -79,8 +79,9 @@ function ScoreCell({ pct }: { pct: number }) {
   return <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${bg}`}>{clamped}%</span>;
 }
 
-// Flat list of all NGSS standards for the picker
-const ALL_STANDARDS_FLAT = Object.values(ALL_SUBSTANDARDS).flat();
+// Flat list of all standards for the picker (combined NGSS + Idaho)
+const ALL_NGSS_FLAT = Object.values(ALL_SUBSTANDARDS).flat();
+const ALL_IDAHO_FLAT_MAPPED = ALL_IDAHO_STANDARDS_FLAT.map(s => ({ code: s.code, description: s.description, keyTerms: [] as string[] }));
 
 // ── Standards Picker for a single question ──
 
