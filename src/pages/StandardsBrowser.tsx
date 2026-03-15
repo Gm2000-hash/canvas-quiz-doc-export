@@ -256,11 +256,13 @@ export default function StandardsBrowser() {
     if (search) {
       const q = search.toLowerCase();
       standards = standards.filter(s =>
-        s.code.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)
+        s.code.toLowerCase().includes(q) ||
+        s.description.toLowerCase().includes(q) ||
+        (customKeyTerms[s.code] || []).some(t => t.toLowerCase().includes(q))
       );
     }
     return standards;
-  }, [gradeFilter, categoryFilter, search]);
+  }, [gradeFilter, categoryFilter, search, customKeyTerms]);
 
   const filteredNgss = useMemo(() => {
     let standards = ngssFlat;
