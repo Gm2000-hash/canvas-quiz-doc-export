@@ -14,7 +14,8 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft, Sparkles, Pencil, Check, X, FileSpreadsheet, FileArchive } from "lucide-react";
 import { exportMasteryConnectCSV, exportMasteryConnectDetailCSV } from "@/lib/export-mastery-connect";
-import { exportToQTI } from "@/lib/export-qti";
+import { exportToQTI, type QTIStudentResult } from "@/lib/export-qti";
+import { Checkbox } from "@/components/ui/checkbox";
 
 import { Link } from "react-router-dom";
 import { PageBanner } from "@/components/PageBanner";
