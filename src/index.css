@@ -5,61 +5,61 @@
 
 @layer base {
   :root {
-    --background: 220 14% 96%;
-    --foreground: 220 13% 13%;
+    --background: 150 20% 96%;
+    --foreground: 160 30% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 13% 13%;
+    --card-foreground: 160 30% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 13% 13%;
+    --popover-foreground: 160 30% 10%;
 
-    --primary: 211 100% 50%;
+    --primary: 160 84% 39%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 92%;
-    --secondary-foreground: 220 13% 30%;
+    --secondary: 150 20% 92%;
+    --secondary-foreground: 160 30% 25%;
 
-    --muted: 220 12% 91%;
-    --muted-foreground: 220 9% 46%;
+    --muted: 150 15% 91%;
+    --muted-foreground: 160 10% 45%;
 
-    --accent: 220 14% 95%;
-    --accent-foreground: 211 100% 50%;
+    --accent: 330 85% 60%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 90%;
-    --input: 220 13% 90%;
-    --ring: 211 100% 50%;
+    --border: 150 15% 88%;
+    --input: 150 15% 88%;
+    --ring: 160 84% 39%;
 
     --radius: 0.875rem;
 
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 220 13% 13%;
-    --sidebar-primary: 211 100% 50%;
+    --sidebar-foreground: 160 30% 10%;
+    --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 14% 95%;
-    --sidebar-accent-foreground: 211 100% 50%;
-    --sidebar-border: 220 13% 90%;
-    --sidebar-ring: 211 100% 50%;
+    --sidebar-accent: 150 20% 95%;
+    --sidebar-accent-foreground: 160 84% 39%;
+    --sidebar-border: 150 15% 88%;
+    --sidebar-ring: 160 84% 39%;
 
-    --success: 142 71% 45%;
+    --success: 160 84% 39%;
     --success-foreground: 0 0% 100%;
-    --chart-1: 211 100% 50%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 24 95% 53%;
-    --chart-4: 262 83% 58%;
-    --chart-5: 220 9% 46%;
+    --chart-1: 160 84% 39%;
+    --chart-2: 330 85% 60%;
+    --chart-3: 210 100% 56%;
+    --chart-4: 280 70% 55%;
+    --chart-5: 45 93% 58%;
     --sidebar: 0 0% 100%;
 
-    /* Tropical bright theme */
-    --earth-terracotta: 145 75% 42%;
-    --earth-sage: 195 90% 50%;
-    --earth-sand: 50 95% 88%;
-    --earth-warm: 55 80% 96%;
-    --earth-clay: 145 65% 30%;
-    --earth-moss: 200 70% 40%;
+    /* Electric Garden accents */
+    --earth-terracotta: 160 84% 39%;
+    --earth-sage: 330 85% 60%;
+    --earth-sand: 210 100% 92%;
+    --earth-warm: 150 30% 96%;
+    --earth-clay: 160 70% 28%;
+    --earth-moss: 330 70% 48%;
 
     --shadow-2xs: 0 0 1px 0 hsl(0 0% 0% / 0.03);
     --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.04);
@@ -74,59 +74,59 @@
   }
 
   .dark {
-    --background: 220 13% 10%;
-    --foreground: 220 14% 96%;
+    --background: 160 20% 8%;
+    --foreground: 150 20% 96%;
 
-    --card: 220 13% 14%;
-    --card-foreground: 220 14% 96%;
+    --card: 160 20% 12%;
+    --card-foreground: 150 20% 96%;
 
-    --popover: 220 13% 16%;
-    --popover-foreground: 220 14% 96%;
+    --popover: 160 18% 14%;
+    --popover-foreground: 150 20% 96%;
 
-    --primary: 211 100% 55%;
+    --primary: 160 80% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 13% 20%;
-    --secondary-foreground: 220 14% 85%;
+    --secondary: 160 15% 18%;
+    --secondary-foreground: 150 20% 85%;
 
-    --muted: 220 13% 20%;
-    --muted-foreground: 220 9% 55%;
+    --muted: 160 15% 18%;
+    --muted-foreground: 150 10% 55%;
 
-    --accent: 220 13% 18%;
-    --accent-foreground: 211 100% 60%;
+    --accent: 330 80% 62%;
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 72% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 22%;
-    --input: 220 13% 22%;
-    --ring: 211 100% 55%;
+    --border: 160 15% 20%;
+    --input: 160 15% 20%;
+    --ring: 160 80% 45%;
 
-    --sidebar-background: 220 13% 12%;
-    --sidebar-foreground: 220 14% 96%;
-    --sidebar-primary: 211 100% 55%;
+    --sidebar-background: 160 20% 10%;
+    --sidebar-foreground: 150 20% 96%;
+    --sidebar-primary: 160 80% 45%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 13% 18%;
-    --sidebar-accent-foreground: 211 100% 60%;
-    --sidebar-border: 220 13% 22%;
-    --sidebar-ring: 211 100% 55%;
+    --sidebar-accent: 160 15% 16%;
+    --sidebar-accent-foreground: 160 80% 50%;
+    --sidebar-border: 160 15% 20%;
+    --sidebar-ring: 160 80% 45%;
 
-    --success: 142 71% 45%;
+    --success: 160 80% 45%;
     --success-foreground: 0 0% 100%;
-    --chart-1: 211 100% 60%;
-    --chart-2: 142 71% 55%;
-    --chart-3: 24 95% 60%;
-    --chart-4: 262 83% 65%;
-    --chart-5: 220 9% 55%;
-    --sidebar: 220 13% 12%;
+    --chart-1: 160 80% 50%;
+    --chart-2: 330 80% 65%;
+    --chart-3: 210 100% 62%;
+    --chart-4: 280 70% 62%;
+    --chart-5: 45 90% 62%;
+    --sidebar: 160 20% 10%;
 
-    /* Tropical bright theme (dark) */
-    --earth-terracotta: 145 70% 50%;
-    --earth-sage: 195 80% 45%;
-    --earth-sand: 50 60% 25%;
-    --earth-warm: 55 40% 15%;
-    --earth-clay: 145 60% 55%;
-    --earth-moss: 200 60% 45%;
+    /* Electric Garden accents (dark) */
+    --earth-terracotta: 160 75% 48%;
+    --earth-sage: 330 75% 55%;
+    --earth-sand: 210 60% 22%;
+    --earth-warm: 150 20% 14%;
+    --earth-clay: 160 60% 52%;
+    --earth-moss: 330 60% 50%;
     --shadow-2xs: 0 0 1px 0 hsl(0 0% 0% / 0.06);
     --shadow-xs: 0 1px 2px 0 hsl(0 0% 0% / 0.08);
     --shadow-sm: 0 1px 3px 0 hsl(0 0% 0% / 0.12), 0 1px 2px -1px hsl(0 0% 0% / 0.08);
