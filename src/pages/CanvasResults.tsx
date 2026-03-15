@@ -85,15 +85,17 @@ const ALL_IDAHO_FLAT_MAPPED = ALL_IDAHO_STANDARDS_FLAT.map(s => ({ code: s.code,
 
 // ── Standards Picker for a single question ──
 
-function StandardsPicker({ standards, onChange }: { standards: { code: string; desc: string }[]; onChange: (s: { code: string; desc: string }[]) => void }) {
+function StandardsPicker({ standards, onChange, framework }: { standards: { code: string; desc: string }[]; onChange: (s: { code: string; desc: string }[]) => void; framework: "ngss" | "idaho" }) {
   const [adding, setAdding] = useState(false);
   const [search, setSearch] = useState("");
 
+  const allStandardsList = framework === "ngss" ? ALL_NGSS_FLAT : ALL_IDAHO_FLAT_MAPPED;
+
   const filtered = useMemo(() => {
-    if (!search) return ALL_STANDARDS_FLAT.slice(0, 20);
+    if (!search) return allStandardsList.slice(0, 20);
     const q = search.toLowerCase();
-    return ALL_STANDARDS_FLAT.filter(s => s.code.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)).slice(0, 20);
-  }, [search]);
+    return allStandardsList.filter(s => s.code.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)).slice(0, 20);
+  }, [search, allStandardsList]);
 
   const remove = (code: string) => onChange(standards.filter(s => s.code !== code));
   const add = (s: { code: string; description: string }) => {
