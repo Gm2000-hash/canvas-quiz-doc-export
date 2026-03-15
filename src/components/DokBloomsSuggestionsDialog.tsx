@@ -93,19 +93,19 @@ export default function DokBloomsSuggestionsDialog({
   };
 
   const dokColors: Record<number, string> = {
-    1: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
-    2: "bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200",
-    3: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
-    4: "bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200",
+    1: "bg-success/15 text-success",
+    2: "bg-info/15 text-info",
+    3: "bg-warning/15 text-warning",
+    4: "bg-destructive/15 text-destructive",
   };
 
   const bloomsColors: Record<string, string> = {
-    Remember: "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200",
-    Understand: "bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200",
-    Apply: "bg-sky-100 text-sky-800 dark:bg-sky-900 dark:text-sky-200",
-    Analyze: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
-    Evaluate: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200",
-    Create: "bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200",
+    Remember: "bg-muted text-muted-foreground",
+    Understand: "bg-success/15 text-success",
+    Apply: "bg-info/15 text-info",
+    Analyze: "bg-warning/15 text-warning",
+    Evaluate: "bg-chart-3/15 text-chart-3",
+    Create: "bg-destructive/15 text-destructive",
   };
 
   const SuggestionCard = ({
@@ -170,7 +170,7 @@ export default function DokBloomsSuggestionsDialog({
       <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-amber-500" />
+            <Lightbulb className="h-5 w-5 text-warning" />
             DOK & Bloom's Customization Suggestions
           </DialogTitle>
           <DialogDescription>

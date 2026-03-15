@@ -142,7 +142,7 @@ export default function QuestionEditor() {
                     onClick={() => setShowSuggestions(true)}
                     disabled={!questionText.trim()}
                   >
-                    <Lightbulb className="h-3 w-3 text-amber-500" />
+                    <Lightbulb className="h-3 w-3 text-warning" />
                     AI Suggestions
                   </Button>
                 </div>

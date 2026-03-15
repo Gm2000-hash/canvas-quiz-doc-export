@@ -46,6 +46,10 @@
 
     --success: 127 100% 28%;
     --success-foreground: 0 0% 100%;
+    --warning: 36 100% 48%;
+    --warning-foreground: 36 100% 18%;
+    --info: 212 100% 45%;
+    --info-foreground: 212 100% 18%;
     --chart-1: 127 100% 32%;
     --chart-2: 212 100% 45%;
     --chart-3: 285 100% 42%;
@@ -113,6 +117,10 @@
 
     --success: 127 100% 45%;
     --success-foreground: 150 30% 5%;
+    --warning: 36 100% 58%;
+    --warning-foreground: 36 100% 85%;
+    --info: 212 100% 58%;
+    --info-foreground: 212 100% 90%;
     --chart-1: 127 100% 48%;
     --chart-2: 212 100% 60%;
     --chart-3: 285 100% 60%;

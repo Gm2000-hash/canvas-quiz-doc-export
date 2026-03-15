@@ -333,8 +333,8 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
 
                       {/* Scientific Scenario */}
                       {(puzzle.scenario_text || editingRoom === puzzle.room_number) && (
-                        <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
-                          <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                        <div className="p-3 rounded-lg bg-info/5 border border-info/20">
+                          <p className="text-xs font-medium text-info uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                             <FlaskConical className="h-3.5 w-3.5" /> Scientific Scenario
                           </p>
                           {editingRoom === puzzle.room_number ? (
@@ -347,14 +347,14 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
 
                       {/* Challenge Steps */}
                       {(puzzle.challenge_steps?.length || editingRoom === puzzle.room_number) ? (
-                        <div className="p-3 rounded-lg bg-amber-500/5 border border-amber-500/20">
-                          <p className="text-xs font-medium text-amber-600 dark:text-amber-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                        <div className="p-3 rounded-lg bg-warning/5 border border-warning/20">
+                          <p className="text-xs font-medium text-warning uppercase tracking-wide mb-2 flex items-center gap-1.5">
                             <ListOrdered className="h-3.5 w-3.5" /> Challenge Steps
                           </p>
                           <div className="space-y-2.5">
                             {(puzzle.challenge_steps || []).map((step, i) => (
                               <div key={i} className="flex gap-2.5">
-                                <div className="h-6 w-6 rounded-full bg-amber-500/15 flex items-center justify-center text-xs font-bold text-amber-700 dark:text-amber-300 shrink-0 mt-0.5">
+                                <div className="h-6 w-6 rounded-full bg-warning/15 flex items-center justify-center text-xs font-bold text-warning shrink-0 mt-0.5">
                                   {i + 1}
                                 </div>
                                 {editingRoom === puzzle.room_number ? (
@@ -372,7 +372,7 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
                               </div>
                             ))}
                             {editingRoom === puzzle.room_number && (
-                              <Button size="sm" variant="ghost" className="gap-1.5 text-xs text-amber-600 dark:text-amber-400" onClick={() => {
+                              <Button size="sm" variant="ghost" className="gap-1.5 text-xs text-warning" onClick={() => {
                                 updatePuzzleField(puzzle.room_number, "challenge_steps", [...(puzzle.challenge_steps || []), ""]);
                               }}><Plus className="h-3 w-3" /> Add Step</Button>
                             )}
@@ -452,8 +452,8 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
 
                       {/* Story Transition */}
                       {(puzzle.story_transition || editingRoom === puzzle.room_number) && (
-                        <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
-                          <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+                        <div className="p-2.5 rounded-lg bg-success/5 border border-success/20">
+                          <p className="text-xs font-medium text-success uppercase tracking-wide mb-1 flex items-center gap-1.5">
                             <ArrowRight className="h-3 w-3" /> What Happens Next
                           </p>
                           {editingRoom === puzzle.room_number ? (
