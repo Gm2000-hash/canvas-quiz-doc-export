@@ -685,6 +685,10 @@ const QuestionBank = () => {
           );
         })()}
 
+        {showNGSS && questions.length > 0 && (
+          <StandardsCoverageGrid questions={questions} />
+        )}
+
         {/* Breadcrumb trail for grouped view */}
         {viewMode === "grouped" && (expandedDiscipline || expandedCoreIdea) && (
           <nav className="flex items-center gap-1.5 text-sm">
