@@ -360,7 +360,13 @@ export default function StandardsBrowser() {
                               {s.subject} {s.grade}
                             </Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground leading-relaxed">{s.description}</p>
+                         <p className="text-sm text-muted-foreground leading-relaxed">{s.description}</p>
+                          <KeyTermsEditor
+                            code={s.code}
+                            defaultTerms={[]}
+                            customTerms={customKeyTerms[s.code] || []}
+                            onSave={handleSaveKeyTerms}
+                          />
                         </div>
                       </div>
                     </CardContent>
