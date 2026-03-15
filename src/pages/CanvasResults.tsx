@@ -150,6 +150,7 @@ export default function CanvasResults() {
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
   const [aiTagging, setAiTagging] = useState(false);
+  const [includeScoresInQTI, setIncludeScoresInQTI] = useState(true);
 
   const [step, setStep] = useState<Step>("select");
   const [reportCSV, setReportCSV] = useState<string | null>(null);
