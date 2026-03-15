@@ -485,6 +485,28 @@ export default function CanvasResults() {
                   )}
                 </div>
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Standards Framework</label>
+                <div className="flex gap-2">
+                  <Select value={framework} onValueChange={(v) => setFramework(v as "ngss" | "idaho")}>
+                    <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ngss">NGSS (Science)</SelectItem>
+                      <SelectItem value="idaho">Idaho Standards</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {framework === "idaho" && (
+                    <Select value={tagSubject} onValueChange={setTagSubject}>
+                      <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ELA">ELA</SelectItem>
+                        <SelectItem value="Math">Math</SelectItem>
+                        <SelectItem value="Social Studies">Social Studies</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              </div>
               <Button onClick={handlePullResults} disabled={loading || !selectedCourse || !selectedQuiz} className="gap-2">
                 {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Pulling Results...</> : <><Download className="h-4 w-4" /> Pull Results</>}
               </Button>
