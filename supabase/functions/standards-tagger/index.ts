@@ -185,7 +185,7 @@ RULES:
 - ONLY use standards from the MS- prefix list. Do NOT use any HS- (high school) standards.
 - Use the KEY TERMS section above as strong hints for matching.
 - Content-specific vocabulary matters more than the formal standard description.
-- Return the standard code and a brief description.
+- Return the standard code, a brief description, and 2-5 key terms from the question text that led you to choose this standard.
 - If a question doesn't align with any standard, return an empty array for that question.
 
 Use the tool provided to return your analysis.`;
