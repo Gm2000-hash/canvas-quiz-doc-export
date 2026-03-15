@@ -43,7 +43,7 @@ interface StandardPerformance {
 interface QuestionMapping {
   questionId: number;
   questionText: string;
-  standards: { code: string; desc: string }[];
+  standards: { code: string; desc: string; matched_terms?: string[] }[];
 }
 
 interface TaggingSummary {

@@ -202,7 +202,7 @@ RULES:
 - ONLY use standards from the list above. Do NOT invent standard codes.
 - Use the KEY TERMS section above as strong hints for matching.
 - Content-specific vocabulary matters more than the formal standard description.
-- Return the standard code and a brief description.
+- Return the standard code, a brief description, and 2-5 key terms from the question text that led you to choose this standard.
 - If a question doesn't align with any standard from the list, return an empty array for that question.
 - Prefer the most specific standard that matches the question content.
 
