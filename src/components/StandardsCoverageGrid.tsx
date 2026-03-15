@@ -104,7 +104,7 @@ function CoverageHeader({
           </p>
         </div>
         {gapCount === 0 ? (
-          <div className="flex items-center gap-1.5 text-xs text-emerald-600 font-medium">
+          <div className="flex items-center gap-1.5 text-xs text-success font-medium">
             <CheckCircle2 className="h-4 w-4" /> Full Coverage
           </div>
         ) : (
