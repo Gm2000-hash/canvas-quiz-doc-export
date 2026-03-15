@@ -104,8 +104,11 @@ ${questionTypes}
 Guidelines:
 - Questions should be grade-appropriate (${gradeRange})
 ${subjectGuidelines}
-- Include a range of DOK levels (1-3)
-- Vary Bloom's taxonomy levels (Remember, Understand, Apply, Analyze, Evaluate)
+${dok_level
+  ? `- Generate ALL questions at DOK Level ${dok_level}${dok_level === 1 ? ' (Recall & Reproduction — factual recall, definitions, simple identification)' : dok_level === 2 ? ' (Skills & Concepts — requires reasoning, comparing, explaining, interpreting data)' : dok_level === 3 ? ' (Strategic Thinking — requires analysis, evidence-based arguments, multi-step reasoning, justification)' : ' (Extended Thinking — requires investigation, complex reasoning, synthesis across concepts)'}
+- Match Bloom's taxonomy levels appropriate for DOK ${dok_level}`
+  : `- Include a range of DOK levels (1-3)
+- Vary Bloom's taxonomy levels (Remember, Understand, Apply, Analyze, Evaluate)`}
 - For drag-and-drop, categories should be clearly distinct
 
 Use the tool provided to return your questions.`;
