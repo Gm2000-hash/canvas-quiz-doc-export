@@ -880,8 +880,25 @@ const QuestionBank = () => {
                             <h3 className="font-semibold text-foreground">{disc.label}</h3>
                             <Badge variant="outline" className="text-[10px]">NGSS</Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground">{count} question{count !== 1 ? "s" : ""} · {coveredSubs}/{totalSubs} standards covered ({coveragePct}%)</p>
+                         <p className="text-sm text-muted-foreground">{count} question{count !== 1 ? "s" : ""} · {coveredSubs}/{totalSubs} standards covered ({coveragePct}%)</p>
                         </div>
+                        {count > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                            title={`Delete all ${disc.label} questions`}
+                            onClick={e => {
+                              e.stopPropagation();
+                              setBulkDeleteTarget({
+                                ids: uniqueDiscIds,
+                                label: `all ${uniqueDiscIds.length} ${disc.label} question${uniqueDiscIds.length !== 1 ? "s" : ""}`,
+                              });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                         {count > 0 && (
                           isExpanded ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         )}
