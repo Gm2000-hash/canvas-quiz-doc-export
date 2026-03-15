@@ -1207,9 +1207,45 @@ const QuestionBank = () => {
                                                 {code}
                                               </Badge>
                                               <p className="text-xs text-muted-foreground flex-1 break-words">{std.description}</p>
-                                              <span className="text-xs text-muted-foreground shrink-0">
-                                                {stdQuestions.length > 0 ? `${stdQuestions.length} Q` : "—"}
-                                              </span>
+                                              {stdQuestions.length > 0 && (
+                                                <div className="flex items-center gap-1 shrink-0">
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-6 px-2 text-[10px] gap-1"
+                                                    title={`Select all ${code} questions`}
+                                                    onClick={() => {
+                                                      const allSelected = stdQuestions.every(q => selected.has(q.id));
+                                                      setSelected(prev => {
+                                                        const next = new Set(prev);
+                                                        stdQuestions.forEach(q => allSelected ? next.delete(q.id) : next.add(q.id));
+                                                        return next;
+                                                      });
+                                                    }}
+                                                  >
+                                                    <Checkbox checked={stdQuestions.every(q => selected.has(q.id))} className="h-3 w-3" tabIndex={-1} />
+                                                    {stdQuestions.length} Q
+                                                  </Button>
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 text-destructive hover:text-destructive"
+                                                    title={`Delete all ${code} questions`}
+                                                    onClick={e => {
+                                                      e.stopPropagation();
+                                                      setBulkDeleteTarget({
+                                                        ids: stdQuestions.map(q => q.id),
+                                                        label: `all ${stdQuestions.length} question${stdQuestions.length !== 1 ? "s" : ""} for ${code}`,
+                                                      });
+                                                    }}
+                                                  >
+                                                    <Trash2 className="h-3 w-3" />
+                                                  </Button>
+                                                </div>
+                                              )}
+                                              {stdQuestions.length === 0 && (
+                                                <span className="text-xs text-muted-foreground shrink-0">—</span>
+                                              )}
                                             </div>
                                             {stdQuestions.length > 0 && (
                                               <div className="space-y-2 mt-1 ml-4">
