@@ -148,6 +148,7 @@ function StandardsPicker({ standards, onChange, framework }: { standards: { code
 
 export default function CanvasResults() {
   const { config, setConfig } = useCanvasConfig();
+  const { defaultFramework, subjects, grades } = useProfileDefaults();
   const [courses, setCourses] = useState<Course[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -157,6 +158,8 @@ export default function CanvasResults() {
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
   const [aiTagging, setAiTagging] = useState(false);
   const [includeScoresInQTI, setIncludeScoresInQTI] = useState(true);
+  const [framework, setFramework] = useState<"ngss" | "idaho">(defaultFramework);
+  const [tagSubject, setTagSubject] = useState(subjects.find(s => s !== "Science") || "ELA");
 
   const [step, setStep] = useState<Step>("select");
   const [reportCSV, setReportCSV] = useState<string | null>(null);
