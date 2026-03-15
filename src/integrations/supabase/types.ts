@@ -230,6 +230,33 @@ export type Database = {
           },
         ]
       }
+      standard_key_terms: {
+        Row: {
+          created_at: string
+          id: string
+          key_terms: string[]
+          standard_code: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key_terms?: string[]
+          standard_code: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key_terms?: string[]
+          standard_code?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       units: {
         Row: {
           created_at: string

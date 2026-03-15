@@ -2,7 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
 serve(async (req) => {
@@ -17,7 +17,7 @@ serve(async (req) => {
     const body = await req.text();
     console.log('Request body length:', body.length);
     
-    const { questions } = JSON.parse(body);
+    const { questions, keyTermsMap } = JSON.parse(body);
     if (!questions || !Array.isArray(questions)) {
       throw new Error('questions array is required');
     }
@@ -27,6 +27,18 @@ serve(async (req) => {
     const questionList = questions.map((q: any) =>
       `Question ${q.id}: "${q.question_text}"`
     ).join('\n');
+
+    // Build key terms section for the prompt
+    let keyTermsSection = '';
+    if (keyTermsMap && typeof keyTermsMap === 'object') {
+      const entries = Object.entries(keyTermsMap as Record<string, string[]>)
+        .filter(([, terms]) => Array.isArray(terms) && terms.length > 0)
+        .map(([code, terms]) => `  ${code}: ${(terms as string[]).join(', ')}`)
+        .join('\n');
+      if (entries) {
+        keyTermsSection = `\n\nKEY TERMS FOR MATCHING — Use these topic-specific keywords to help identify the correct standard for each question. If a question mentions several of these terms, it is very likely aligned to that standard:\n${entries}\n`;
+      }
+    }
 
     const requestBody = {
       model: 'google/gemini-2.5-flash',
@@ -95,9 +107,11 @@ You may ONLY use standards from this exact list:
 - MS-PS4-1: Use mathematical representations to describe a simple model for waves
 - MS-PS4-2: Develop and use a model to describe that waves are reflected, absorbed, or transmitted through various materials
 - MS-PS4-3: Integrate qualitative scientific and technical information to support the claim that digitized signals are a more reliable way to encode and transmit information
-
+${keyTermsSection}
 RULES:
 - ONLY use standards from the list above. Do NOT use any HS- (high school) standards.
+- Use the KEY TERMS section above as strong hints. If a question mentions terms like "fossil", "geologic time scale", "era", "period", "epoch", etc., it very likely aligns with MS-ESS1-4 or MS-LS4-1.
+- Content-specific vocabulary matters more than the formal standard description. A question about "stegosaurus" or "dinosaur" likely relates to MS-LS4-1 (fossil record) or MS-ESS1-4 (geologic time scale) depending on context.
 - Return the standard code and a brief description.
 - If a question doesn't align with any standard from the list, return an empty array for that question.
 
@@ -128,7 +142,7 @@ Use the tool provided to return your analysis.`
                         items: {
                           type: 'object',
                           properties: {
-                            code: { type: 'string', description: 'NGSS standard code like HS-PS1-1' },
+                            code: { type: 'string', description: 'NGSS standard code like MS-PS1-1' },
                             description: { type: 'string', description: 'Brief description of the standard' }
                           },
                           required: ['code', 'description'],
@@ -190,7 +204,6 @@ Use the tool provided to return your analysis.`
 
     const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) {
-      // Fallback: try to extract from content if no tool call
       const content = result.choices?.[0]?.message?.content;
       if (content) {
         console.log('No tool call, got content instead:', content.substring(0, 200));

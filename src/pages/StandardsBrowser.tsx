@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -6,12 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { PageBanner } from "@/components/PageBanner";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
-import { Search, ArrowLeft, BookOpen, FlaskConical, Calculator, Landmark, Filter } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { Search, ArrowLeft, BookOpen, FlaskConical, Calculator, Landmark, Filter, Tag, Plus, X, Save, Loader2 } from "lucide-react";
 
 const CATEGORY_COLORS: Record<string, string> = {
   essential: "bg-primary/10 text-primary border-primary/20",
@@ -28,12 +30,142 @@ const SUBJECT_ICONS: Record<string, React.ElementType> = {
   "Science": FlaskConical,
 };
 
+// Inline key terms editor
+function KeyTermsEditor({
+  code,
+  defaultTerms,
+  customTerms,
+  onSave,
+}: {
+  code: string;
+  defaultTerms: string[];
+  customTerms: string[];
+  onSave: (code: string, terms: string[]) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [terms, setTerms] = useState<string[]>([]);
+  const [newTerm, setNewTerm] = useState("");
+
+  // Merge default + custom for display
+  const allTerms = useMemo(() => {
+    return [...new Set([...defaultTerms, ...customTerms])];
+  }, [defaultTerms, customTerms]);
+
+  const startEditing = () => {
+    setTerms([...allTerms]);
+    setEditing(true);
+  };
+
+  const addTerm = () => {
+    const t = newTerm.trim().toLowerCase();
+    if (t && !terms.includes(t)) {
+      setTerms([...terms, t]);
+      setNewTerm("");
+    }
+  };
+
+  const removeTerm = (term: string) => {
+    setTerms(terms.filter(t => t !== term));
+  };
+
+  const handleSave = () => {
+    onSave(code, terms);
+    setEditing(false);
+  };
+
+  if (!editing) {
+    return (
+      <div className="flex flex-wrap items-center gap-1 mt-1.5">
+        <Tag className="h-3 w-3 text-muted-foreground shrink-0" />
+        {allTerms.slice(0, 8).map(t => (
+          <span key={t} className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground">{t}</span>
+        ))}
+        {allTerms.length > 8 && (
+          <span className="text-[10px] text-muted-foreground">+{allTerms.length - 8} more</span>
+        )}
+        <button onClick={startEditing} className="text-[10px] text-primary hover:underline ml-1">Edit</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-2 p-2 rounded-lg border border-border bg-muted/30 space-y-2">
+      <div className="flex flex-wrap gap-1">
+        {terms.map(t => (
+          <span key={t} className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary">
+            {t}
+            <button onClick={() => removeTerm(t)} className="hover:text-destructive"><X className="h-2.5 w-2.5" /></button>
+          </span>
+        ))}
+      </div>
+      <div className="flex gap-1">
+        <Input
+          value={newTerm}
+          onChange={e => setNewTerm(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); addTerm(); } }}
+          placeholder="Add key term..."
+          className="h-7 text-xs flex-1"
+        />
+        <Button variant="ghost" size="sm" className="h-7 px-2" onClick={addTerm}><Plus className="h-3 w-3" /></Button>
+      </div>
+      <div className="flex gap-1 justify-end">
+        <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setEditing(false)}>Cancel</Button>
+        <Button size="sm" className="h-7 text-xs gap-1" onClick={handleSave}><Save className="h-3 w-3" /> Save</Button>
+      </div>
+    </div>
+  );
+}
+
 export default function StandardsBrowser() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [framework, setFramework] = useState<"idaho" | "ngss">("idaho");
   const [search, setSearch] = useState("");
   const [gradeFilter, setGradeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [customKeyTerms, setCustomKeyTerms] = useState<Record<string, string[]>>({});
+  const [savingTerms, setSavingTerms] = useState(false);
+
+  // Fetch custom key terms from DB
+  useEffect(() => {
+    if (!user) return;
+    supabase
+      .from('standard_key_terms')
+      .select('standard_code, key_terms')
+      .then(({ data }) => {
+        if (data) {
+          const map: Record<string, string[]> = {};
+          for (const row of data) {
+            map[row.standard_code] = row.key_terms || [];
+          }
+          setCustomKeyTerms(map);
+        }
+      });
+  }, [user]);
+
+  const handleSaveKeyTerms = async (code: string, terms: string[]) => {
+    if (!user) return;
+    setSavingTerms(true);
+    try {
+      const { error } = await supabase
+        .from('standard_key_terms')
+        .upsert({
+          user_id: user.id,
+          standard_code: code,
+          key_terms: terms,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id,standard_code' });
+
+      if (error) throw error;
+      setCustomKeyTerms(prev => ({ ...prev, [code]: terms }));
+      toast.success(`Key terms updated for ${code}`);
+    } catch (e: any) {
+      toast.error('Failed to save key terms');
+      console.error(e);
+    } finally {
+      setSavingTerms(false);
+    }
+  };
 
   // NGSS flat list
   const ngssFlat = useMemo(() =>
@@ -42,7 +174,6 @@ export default function StandardsBrowser() {
     ), []
   );
 
-  // Get the unique NGSS groups
   const ngssGroups = Object.keys(ALL_SUBSTANDARDS);
 
   const filteredIdaho = useMemo(() => {
@@ -71,13 +202,14 @@ export default function StandardsBrowser() {
     if (search) {
       const q = search.toLowerCase();
       standards = standards.filter(s =>
-        s.code.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)
+        s.code.toLowerCase().includes(q) ||
+        s.description.toLowerCase().includes(q) ||
+        s.keyTerms.some(t => t.toLowerCase().includes(q))
       );
     }
     return standards;
   }, [ngssFlat, gradeFilter, search]);
 
-  // Count stats for Idaho
   const idahoStats = useMemo(() => {
     const filtered = gradeFilter !== "all"
       ? ALL_IDAHO_STANDARDS_FLAT.filter(s => {
@@ -95,7 +227,6 @@ export default function StandardsBrowser() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/60">
         <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-3">
           <AppNavSheet />
@@ -112,7 +243,6 @@ export default function StandardsBrowser() {
           greeting="Standards Browser"
           subtitle="Browse Idaho and NGSS standards organized by subject, grade, and category"
         />
-        {/* Framework toggle */}
         <Tabs value={framework} onValueChange={v => { setFramework(v as any); setGradeFilter("all"); setCategoryFilter("all"); setSearch(""); }}>
           <TabsList className="w-full max-w-sm">
             <TabsTrigger value="idaho" className="flex-1 gap-1.5">
@@ -124,12 +254,11 @@ export default function StandardsBrowser() {
           </TabsList>
         </Tabs>
 
-        {/* Filters */}
         <div className="flex flex-wrap gap-2 items-center">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search standards..."
+              placeholder={framework === "ngss" ? "Search standards or key terms..." : "Search standards..."}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="pl-9"
@@ -178,7 +307,6 @@ export default function StandardsBrowser() {
           )}
         </div>
 
-        {/* Stats bar for Idaho */}
         {framework === "idaho" && (
           <div className="flex gap-3 flex-wrap">
             <div className="flex items-center gap-1.5 text-sm">
@@ -263,6 +391,12 @@ export default function StandardsBrowser() {
                           <Badge variant="outline" className="text-[10px] px-1.5 py-0">{s.group}</Badge>
                         </div>
                         <p className="text-sm text-muted-foreground leading-relaxed">{s.description}</p>
+                        <KeyTermsEditor
+                          code={s.code}
+                          defaultTerms={s.keyTerms}
+                          customTerms={customKeyTerms[s.code] || []}
+                          onSave={handleSaveKeyTerms}
+                        />
                       </div>
                     </div>
                   </CardContent>
