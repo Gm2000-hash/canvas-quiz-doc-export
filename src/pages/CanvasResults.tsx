@@ -12,7 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft, Sparkles, Pencil, Check, X } from "lucide-react";
+import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft, Sparkles, Pencil, Check, X, FileSpreadsheet } from "lucide-react";
+import { exportMasteryConnectCSV, exportMasteryConnectDetailCSV } from "@/lib/export-mastery-connect";
 import { Link } from "react-router-dom";
 import { PageBanner } from "@/components/PageBanner";
 
@@ -539,14 +540,52 @@ export default function CanvasResults() {
                 <TabsContent value="matrix">
                   <Card>
                     <CardHeader>
-                      <div className="flex items-center justify-between">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
                         <div>
                           <CardTitle className="text-base">Student × Standard Performance Matrix</CardTitle>
                           <CardDescription>{studentScores.length} students, {allStandards.length} standards mapped</CardDescription>
                         </div>
-                        <Button variant="outline" size="sm" onClick={() => setStep("mapping")} className="gap-1">
-                          <Pencil className="h-3.5 w-3.5" /> Edit Mappings
-                        </Button>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            disabled={allStandards.length === 0}
+                            onClick={() => {
+                              const quizName = quizzes.find(q => String(q.id) === selectedQuiz)?.title || 'Quiz';
+                              const exportStudents = studentStandardMatrix.map(s => ({
+                                name: s.studentName,
+                                standardScores: s.stdScores,
+                              }));
+                              const exportStandards = allStandards.map(s => ({ code: s.code, description: s.desc }));
+                              exportMasteryConnectCSV(quizName, exportStudents, exportStandards);
+                              toast.success("Mastery Connect CSV exported!");
+                            }}
+                          >
+                            <FileSpreadsheet className="h-3.5 w-3.5" /> Export for Mastery Connect
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            disabled={allStandards.length === 0}
+                            onClick={() => {
+                              const quizName = quizzes.find(q => String(q.id) === selectedQuiz)?.title || 'Quiz';
+                              const exportStudents = studentStandardMatrix.map(s => ({
+                                name: s.studentName,
+                                standardScores: s.stdScores,
+                              }));
+                              const exportStandards = allStandards.map(s => ({ code: s.code, description: s.desc }));
+                              exportMasteryConnectDetailCSV(quizName, exportStudents, exportStandards);
+                              toast.success("Detailed CSV exported!");
+                            }}
+                          >
+                            <Download className="h-3.5 w-3.5" /> Detailed CSV
+                          </Button>
+                          <Button variant="outline" size="sm" onClick={() => setStep("mapping")} className="gap-1">
+                            <Pencil className="h-3.5 w-3.5" /> Edit Mappings
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
