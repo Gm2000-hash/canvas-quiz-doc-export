@@ -687,7 +687,13 @@ const QuestionBank = () => {
         })()}
 
         {showNGSS && questions.length > 0 && (
-          <StandardsCoverageGrid questions={questions} />
+          <StandardsCoverageGrid
+            questions={questions}
+            onGapClick={(code, description) => {
+              setGenerateForStandard({ code, description });
+              setShowGenerateDialog(true);
+            }}
+          />
         )}
 
         {/* Breadcrumb trail for grouped view */}
