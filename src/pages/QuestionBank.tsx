@@ -686,11 +686,13 @@ const QuestionBank = () => {
           );
         })()}
 
-        {showNGSS && questions.length > 0 && (
+        {questions.length > 0 && (
           <StandardsCoverageGrid
             questions={questions}
-            onGapClick={(code, description) => {
-              setGenerateForStandard({ code, description });
+            showNGSS={showNGSS}
+            activeIdahoSubjects={showIdaho ? activeIdahoSubjects : []}
+            onGapClick={(target) => {
+              setGenerateForStandard(target);
               setShowGenerateDialog(true);
             }}
           />
