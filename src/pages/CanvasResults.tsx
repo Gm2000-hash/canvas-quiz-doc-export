@@ -247,8 +247,36 @@ export default function CanvasResults() {
             question_text: m.questionText,
           }));
 
+          // Build key terms map from NGSS data + any custom terms
+          const keyTermsMap: Record<string, string[]> = {};
+          for (const group of Object.values(ALL_SUBSTANDARDS)) {
+            for (const std of group) {
+              if (std.keyTerms && std.keyTerms.length > 0) {
+                keyTermsMap[std.code] = std.keyTerms;
+              }
+            }
+          }
+
+          // Fetch any teacher-customized key terms and merge
+          try {
+            const { data: customTerms } = await supabase
+              .from('standard_key_terms')
+              .select('standard_code, key_terms');
+            if (customTerms) {
+              for (const ct of customTerms) {
+                if (ct.key_terms && ct.key_terms.length > 0) {
+                  keyTermsMap[ct.standard_code] = [
+                    ...new Set([...(keyTermsMap[ct.standard_code] || []), ...ct.key_terms])
+                  ];
+                }
+              }
+            }
+          } catch (e) {
+            console.warn('Could not fetch custom key terms:', e);
+          }
+
           const { data, error } = await supabase.functions.invoke('ngss-tagger', {
-            body: { questions: aiQuestions },
+            body: { questions: aiQuestions, keyTermsMap },
           });
 
           if (error) throw error;
