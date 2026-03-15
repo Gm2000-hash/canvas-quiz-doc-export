@@ -12,7 +12,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft, Sparkles, Pencil, Check, X } from "lucide-react";
+import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft, Sparkles, Pencil, Check, X, FileSpreadsheet } from "lucide-react";
+import { exportMasteryConnectCSV, exportMasteryConnectDetailCSV } from "@/lib/export-mastery-connect";
 import { Link } from "react-router-dom";
 import { PageBanner } from "@/components/PageBanner";
 
