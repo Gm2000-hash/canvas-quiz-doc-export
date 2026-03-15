@@ -8,9 +8,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { ShieldCheck, Users, Loader2, GraduationCap, Search } from "lucide-react";
+import { ShieldCheck, Users, Loader2, GraduationCap, Search, Trash2, KeyRound, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 type UserRow = {
   id: string;
@@ -22,6 +26,16 @@ type UserRow = {
   roles: string[];
 };
 
+type UserQuestion = {
+  id: string;
+  question_text: string;
+  question_type: string;
+  dok_level: number | null;
+  blooms_level: string | null;
+  created_at: string;
+  standards: { ngss_code: string; ngss_description: string }[];
+};
+
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const { isAdmin, loading: profileLoading } = useProfile();
@@ -30,41 +44,111 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
 
+  // User detail dialog
+  const [viewingUser, setViewingUser] = useState<UserRow | null>(null);
+  const [userQuestions, setUserQuestions] = useState<UserQuestion[]>([]);
+  const [questionsLoading, setQuestionsLoading] = useState(false);
+  const [questionFilter, setQuestionFilter] = useState("all");
+
+  // Delete / reset dialogs
+  const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
+  const [resetTarget, setResetTarget] = useState<UserRow | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
+
   const fetchUsers = useCallback(async () => {
     setLoading(true);
-
     const [profilesRes, rolesRes] = await Promise.all([
       supabase.from("profiles").select("*").order("created_at", { ascending: false }),
       supabase.from("user_roles").select("*"),
     ]);
-
     if (profilesRes.error) {
       toast.error("Failed to load users");
       setLoading(false);
       return;
     }
-
     const rolesMap = new Map<string, string[]>();
     (rolesRes.data || []).forEach((r: any) => {
       const existing = rolesMap.get(r.user_id) || [];
       existing.push(r.role);
       rolesMap.set(r.user_id, existing);
     });
-
     const merged: UserRow[] = (profilesRes.data || []).map((p: any) => ({
       ...p,
       roles: rolesMap.get(p.user_id) || [],
     }));
-
     setUsers(merged);
     setLoading(false);
   }, []);
 
   useEffect(() => {
-    if (!profileLoading && isAdmin) {
-      fetchUsers();
-    }
+    if (!profileLoading && isAdmin) fetchUsers();
   }, [profileLoading, isAdmin, fetchUsers]);
+
+  const callAdminFunction = async (action: string, userId: string) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await supabase.functions.invoke("admin-users", {
+      body: { action, userId },
+    });
+    if (res.error) throw new Error(res.error.message);
+    if (res.data?.error) throw new Error(res.data.error);
+    return res.data;
+  };
+
+  // View user questions & standards
+  const handleViewUser = async (user: UserRow) => {
+    setViewingUser(user);
+    setQuestionsLoading(true);
+    setQuestionFilter("all");
+    try {
+      const data = await callAdminFunction("get_user_questions", user.user_id);
+      const stdMap = new Map<string, { ngss_code: string; ngss_description: string }[]>();
+      (data.standards || []).forEach((s: any) => {
+        const arr = stdMap.get(s.question_bank_id) || [];
+        arr.push({ ngss_code: s.ngss_code, ngss_description: s.ngss_description });
+        stdMap.set(s.question_bank_id, arr);
+      });
+      const questions: UserQuestion[] = (data.questions || []).map((q: any) => ({
+        ...q,
+        standards: stdMap.get(q.id) || [],
+      }));
+      setUserQuestions(questions);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to load user data");
+    } finally {
+      setQuestionsLoading(false);
+    }
+  };
+
+  // Delete user
+  const handleDeleteUser = async () => {
+    if (!deleteTarget) return;
+    setActionLoading(true);
+    try {
+      await callAdminFunction("delete_user", deleteTarget.user_id);
+      toast.success(`User "${deleteTarget.display_name || deleteTarget.email}" has been removed`);
+      setDeleteTarget(null);
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete user");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Reset password
+  const handleResetPassword = async () => {
+    if (!resetTarget) return;
+    setActionLoading(true);
+    try {
+      const data = await callAdminFunction("reset_password", resetTarget.user_id);
+      toast.success(`Password reset link generated for ${data.email || resetTarget.email}`);
+      setResetTarget(null);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send reset");
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
   if (profileLoading) {
     return (
@@ -93,13 +177,8 @@ export default function AdminDashboard() {
     setUpdating(userId);
     try {
       if (newRole === "none") {
-        const { error } = await supabase
-          .from("user_roles")
-          .delete()
-          .eq("user_id", userId);
-        if (error) throw error;
+        await supabase.from("user_roles").delete().eq("user_id", userId);
       } else {
-        // Remove existing roles first, then insert new one
         await supabase.from("user_roles").delete().eq("user_id", userId);
         const { error } = await supabase
           .from("user_roles")
@@ -126,6 +205,29 @@ export default function AdminDashboard() {
     ...s,
     count: users.filter((u) => u.subjects.includes(s.value)).length,
   }));
+
+  // Filter questions by content area
+  const getFilteredQuestions = () => {
+    if (questionFilter === "all") return userQuestions;
+    if (questionFilter === "no-standards") return userQuestions.filter((q) => q.standards.length === 0);
+    // Filter by standards prefix patterns
+    const prefixMap: Record<string, string[]> = {
+      science: ["MS-", "HS-", "K-", "1-", "2-", "3-", "4-", "5-"],
+      ela: ["ELA"],
+      math: ["MA", "MATH"],
+      "social-studies": ["SS", "SOC"],
+    };
+    const prefixes = prefixMap[questionFilter] || [];
+    return userQuestions.filter((q) =>
+      q.standards.some((s) => prefixes.some((p) => s.ngss_code.toUpperCase().startsWith(p)))
+    );
+  };
+
+  const filteredQuestions = getFilteredQuestions();
+
+  // Count standards by area
+  const allStandards = userQuestions.flatMap((q) => q.standards);
+  const uniqueStandards = [...new Map(allStandards.map((s) => [s.ngss_code, s])).values()];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -191,12 +293,13 @@ export default function AdminDashboard() {
                       <TableHead>Subjects</TableHead>
                       <TableHead>Role</TableHead>
                       <TableHead className="text-right">Joined</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {filtered.length === 0 ? (
                       <TableRow>
-                        <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                        <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                           No users found
                         </TableCell>
                       </TableRow>
@@ -241,6 +344,37 @@ export default function AdminDashboard() {
                           <TableCell className="text-right text-sm text-muted-foreground">
                             {new Date(user.created_at).toLocaleDateString()}
                           </TableCell>
+                          <TableCell className="text-right">
+                            <div className="flex items-center justify-end gap-1">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                title="View questions & standards"
+                                onClick={() => handleViewUser(user)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8"
+                                title="Reset password"
+                                onClick={() => setResetTarget(user)}
+                              >
+                                <KeyRound className="h-4 w-4" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-destructive hover:text-destructive"
+                                title="Remove user"
+                                onClick={() => setDeleteTarget(user)}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
                         </TableRow>
                       ))
                     )}
@@ -251,6 +385,121 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </main>
+
+      {/* View User Questions Dialog */}
+      <Dialog open={!!viewingUser} onOpenChange={(open) => !open && setViewingUser(null)}>
+        <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle>
+              {viewingUser?.display_name || viewingUser?.email} — Questions & Standards
+            </DialogTitle>
+            <DialogDescription>
+              {userQuestions.length} questions · {uniqueStandards.length} unique standards tagged
+            </DialogDescription>
+          </DialogHeader>
+
+          <Tabs value={questionFilter} onValueChange={setQuestionFilter} className="flex-1 min-h-0">
+            <TabsList className="w-full justify-start flex-wrap h-auto gap-1 p-1">
+              <TabsTrigger value="all" className="text-xs">All ({userQuestions.length})</TabsTrigger>
+              <TabsTrigger value="science" className="text-xs">Science</TabsTrigger>
+              <TabsTrigger value="ela" className="text-xs">ELA</TabsTrigger>
+              <TabsTrigger value="math" className="text-xs">Math</TabsTrigger>
+              <TabsTrigger value="social-studies" className="text-xs">Social Studies</TabsTrigger>
+              <TabsTrigger value="no-standards" className="text-xs">Untagged</TabsTrigger>
+            </TabsList>
+
+            <ScrollArea className="flex-1 mt-3" style={{ maxHeight: "55vh" }}>
+              {questionsLoading ? (
+                <div className="flex justify-center py-12">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : filteredQuestions.length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  No questions found in this category.
+                </p>
+              ) : (
+                <div className="space-y-3 pr-4">
+                  {filteredQuestions.map((q) => (
+                    <Card key={q.id} className="p-3">
+                      <div className="flex items-start justify-between gap-2 mb-1.5">
+                        <p
+                          className="text-sm font-medium leading-snug flex-1"
+                          dangerouslySetInnerHTML={{ __html: q.question_text }}
+                        />
+                        <Badge variant="outline" className="text-[10px] shrink-0">
+                          {q.question_type}
+                        </Badge>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {q.dok_level && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            DOK {q.dok_level}
+                          </Badge>
+                        )}
+                        {q.blooms_level && (
+                          <Badge variant="secondary" className="text-[10px]">
+                            {q.blooms_level}
+                          </Badge>
+                        )}
+                        {q.standards.map((s) => (
+                          <Badge key={s.ngss_code} className="text-[10px] bg-primary/10 text-primary border-0">
+                            {s.ngss_code}
+                          </Badge>
+                        ))}
+                        {q.standards.length === 0 && (
+                          <span className="text-[10px] text-muted-foreground italic">No standards tagged</span>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Confirmation */}
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove User</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete <strong>{deleteTarget?.display_name || deleteTarget?.email}</strong> and all their data (questions, lesson plans, profile). This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={actionLoading}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Delete User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reset Password Confirmation */}
+      <AlertDialog open={!!resetTarget} onOpenChange={(open) => !open && setResetTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reset Password</AlertDialogTitle>
+            <AlertDialogDescription>
+              Generate a password reset link for <strong>{resetTarget?.display_name || resetTarget?.email}</strong>. The user will receive instructions to set a new password.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={actionLoading}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleResetPassword} disabled={actionLoading}>
+              {actionLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Send Reset Link
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
