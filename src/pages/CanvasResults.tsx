@@ -173,6 +173,7 @@ export default function CanvasResults() {
   const [reportCSV, setReportCSV] = useState<string | null>(null);
   const [canvasQuestions, setCanvasQuestions] = useState<QuizQuestion[]>([]);
   const [mappings, setMappings] = useState<QuestionMapping[]>([]);
+  const [taggingSummary, setTaggingSummary] = useState<TaggingSummary | null>(null);
   const [enrollments, setEnrollments] = useState<Map<number, string>>(new Map());
 
   // Load courses on mount
