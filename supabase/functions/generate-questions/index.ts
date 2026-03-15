@@ -14,7 +14,7 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) throw new Error('LOVABLE_API_KEY is not configured');
 
-    const { standard_code, standard_description, count = 10, subject, framework = "NGSS" } = await req.json();
+    const { standard_code, standard_description, count = 10, subject, framework = "NGSS", dok_level } = await req.json();
     if (!standard_code || !standard_description) {
       throw new Error('standard_code and standard_description are required');
     }
