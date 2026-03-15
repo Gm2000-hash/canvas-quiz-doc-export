@@ -981,9 +981,45 @@ const QuestionBank = () => {
                                                 {sub.code}
                                               </Badge>
                                               <p className="text-xs text-muted-foreground flex-1 break-words">{sub.description}</p>
-                                              <span className="text-xs text-muted-foreground shrink-0">
-                                                {subQuestions.length > 0 ? `${subQuestions.length} Q` : "—"}
-                                              </span>
+                                              {subQuestions.length > 0 && (
+                                                <div className="flex items-center gap-1 shrink-0">
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    className="h-6 px-2 text-[10px] gap-1"
+                                                    title={`Select all ${sub.code} questions`}
+                                                    onClick={() => {
+                                                      const allSelected = subQuestions.every(q => selected.has(q.id));
+                                                      setSelected(prev => {
+                                                        const next = new Set(prev);
+                                                        subQuestions.forEach(q => allSelected ? next.delete(q.id) : next.add(q.id));
+                                                        return next;
+                                                      });
+                                                    }}
+                                                  >
+                                                    <Checkbox checked={subQuestions.every(q => selected.has(q.id))} className="h-3 w-3" tabIndex={-1} />
+                                                    {subQuestions.length} Q
+                                                  </Button>
+                                                  <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="h-6 w-6 text-destructive hover:text-destructive"
+                                                    title={`Delete all ${sub.code} questions`}
+                                                    onClick={e => {
+                                                      e.stopPropagation();
+                                                      setBulkDeleteTarget({
+                                                        ids: subQuestions.map(q => q.id),
+                                                        label: `all ${subQuestions.length} question${subQuestions.length !== 1 ? "s" : ""} for ${sub.code}`,
+                                                      });
+                                                    }}
+                                                  >
+                                                    <Trash2 className="h-3 w-3" />
+                                                  </Button>
+                                                </div>
+                                              )}
+                                              {subQuestions.length === 0 && (
+                                                <span className="text-xs text-muted-foreground shrink-0">—</span>
+                                              )}
                                             </div>
                                             {subQuestions.length > 0 && (
                                               <div className="space-y-2 mt-1 ml-4">
