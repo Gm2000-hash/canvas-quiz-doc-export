@@ -176,6 +176,26 @@ export default function CanvasResults() {
   const [taggingSummary, setTaggingSummary] = useState<TaggingSummary | null>(null);
   const [enrollments, setEnrollments] = useState<Map<number, string>>(new Map());
 
+  const buildTaggingSummary = useCallback((allMappings: QuestionMapping[], preMatchedCount: number, aiTaggedCount: number) => {
+    const stdCountMap = new Map<string, { desc: string; count: number }>();
+    for (const m of allMappings) {
+      for (const s of m.standards) {
+        const existing = stdCountMap.get(s.code);
+        if (existing) existing.count++;
+        else stdCountMap.set(s.code, { desc: s.desc, count: 1 });
+      }
+    }
+    setTaggingSummary({
+      totalQuestions: allMappings.length,
+      preMatchedCount,
+      aiTaggedCount,
+      stillUntagged: allMappings.filter(m => m.standards.length === 0).length,
+      standardCounts: Array.from(stdCountMap.entries())
+        .map(([code, v]) => ({ code, desc: v.desc, count: v.count }))
+        .sort((a, b) => b.count - a.count),
+    });
+  }, []);
+
   // Load courses on mount
   useEffect(() => {
     if (config) {
