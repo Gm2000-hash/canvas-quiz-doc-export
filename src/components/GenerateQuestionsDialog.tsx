@@ -41,7 +41,7 @@ type GenerateTarget =
   | { type: "all" }
   | { type: "idaho"; standards: { code: string; description: string }[]; subject: string };
 
-export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete }: Props) {
+export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete, initialStandard }: Props) {
   const { defaultFramework, defaultIdahoFilter } = useProfileDefaults();
   const [questionsPerSub, setQuestionsPerSub] = useState(10);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
@@ -53,12 +53,28 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
   const [selectedIdahoStandards, setSelectedIdahoStandards] = useState<Set<string>>(new Set());
   const abortRef = useRef(false);
   const latestProgressRef = useRef<GenerationProgress | null>(null);
+  const autoTriggeredRef = useRef<string | null>(null);
 
   // Sync defaults when profile loads
   useEffect(() => {
     setFramework(defaultFramework);
     setIdahoGradeFilter(defaultIdahoFilter);
   }, [defaultFramework, defaultIdahoFilter]);
+
+  // Auto-trigger generation when opened with an initialStandard
+  useEffect(() => {
+    if (open && initialStandard && !generating && !done && autoTriggeredRef.current !== initialStandard.code) {
+      autoTriggeredRef.current = initialStandard.code;
+      setFramework("ngss");
+      handleGenerate({
+        type: "coreIdea",
+        id: initialStandard.code,
+      });
+    }
+    if (!open) {
+      autoTriggeredRef.current = null;
+    }
+  }, [open, initialStandard]);
 
   const handleProgressUpdate = (p: GenerationProgress) => {
     latestProgressRef.current = p;
