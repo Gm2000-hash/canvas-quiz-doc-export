@@ -13,7 +13,7 @@ import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Search, ArrowLeft, BookOpen, FlaskConical, Calculator, Landmark, Filter, Tag, Plus, X, Save, Loader2 } from "lucide-react";
+import { Search, ArrowLeft, BookOpen, FlaskConical, Calculator, Landmark, Filter, Tag, Plus, X, Save, Loader2, Sparkles } from "lucide-react";
 
 const CATEGORY_COLORS: Record<string, string> = {
   essential: "bg-primary/10 text-primary border-primary/20",
