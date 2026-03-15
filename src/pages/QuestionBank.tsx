@@ -603,6 +603,15 @@ const QuestionBank = () => {
                 <FileText className="h-4 w-4" />
                 Create Quiz ({selected.size})
               </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => setBulkDeleteTarget({ ids: [...selected], label: `${selected.size} selected question${selected.size !== 1 ? "s" : ""}` })}
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete ({selected.size})
+              </Button>
               {canvasConnected && (
                 <Button variant="outline" onClick={() => setShowPushToCanvas(true)} className="gap-2">
                   <Upload className="h-4 w-4" />
