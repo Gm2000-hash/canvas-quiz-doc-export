@@ -115,7 +115,7 @@ const QuestionBank = () => {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
-  const [generateForStandard, setGenerateForStandard] = useState<{ code: string; description: string } | null>(null);
+  const [generateForStandard, setGenerateForStandard] = useState<{ code: string; description: string; framework: "NGSS" | "Idaho"; subject: string } | null>(null);
   const [showPushToCanvas, setShowPushToCanvas] = useState(false);
   const [quizTitle, setQuizTitle] = useState("Custom Quiz");
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
@@ -686,11 +686,13 @@ const QuestionBank = () => {
           );
         })()}
 
-        {showNGSS && questions.length > 0 && (
+        {questions.length > 0 && (
           <StandardsCoverageGrid
             questions={questions}
-            onGapClick={(code, description) => {
-              setGenerateForStandard({ code, description });
+            showNGSS={showNGSS}
+            activeIdahoSubjects={showIdaho ? activeIdahoSubjects : []}
+            onGapClick={(target) => {
+              setGenerateForStandard(target);
               setShowGenerateDialog(true);
             }}
           />

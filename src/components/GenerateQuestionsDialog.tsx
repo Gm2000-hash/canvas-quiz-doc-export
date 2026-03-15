@@ -20,7 +20,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onComplete: () => void;
-  initialStandard?: { code: string; description: string } | null;
+  initialStandard?: { code: string; description: string; framework?: "NGSS" | "Idaho"; subject?: string } | null;
 }
 
 const DISCIPLINES = [
@@ -77,11 +77,13 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
     latestProgressRef.current = null;
     try {
       const dokValue = targetDok !== "any" ? Number(targetDok) : null;
+      const fw = initialStandard.framework || "NGSS";
+      const subj = initialStandard.subject || "Science";
       await generateForStandards(
         [{ code: initialStandard.code, description: initialStandard.description }],
         questionsPerSub,
         (p) => { latestProgressRef.current = p; setProgress(p); },
-        { framework: "NGSS", subject: "Science", dokLevel: dokValue }
+        { framework: fw, subject: subj, dokLevel: dokValue }
       );
       setDone(true);
       const total = latestProgressRef.current?.questionsGenerated ?? 0;
@@ -203,7 +205,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
             <div className="p-3 rounded-lg bg-muted/50 border border-border">
               <div className="flex items-center gap-2 mb-1">
                 <Badge variant="default" className="text-xs">{initialStandard.code}</Badge>
-                <span className="text-xs text-muted-foreground">NGSS Standard</span>
+                <span className="text-xs text-muted-foreground">{initialStandard.framework === "Idaho" ? `Idaho ${initialStandard.subject || ""} Standard` : "NGSS Standard"}</span>
               </div>
               <p className="text-sm text-foreground">{initialStandard.description}</p>
             </div>
