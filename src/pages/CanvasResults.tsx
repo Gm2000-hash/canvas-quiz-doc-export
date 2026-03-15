@@ -253,10 +253,14 @@ export default function CanvasResults() {
           };
         });
 
+      const preMatchedCount = initialMappings.filter(m => m.standards.length > 0).length;
       setMappings(initialMappings);
+      setTaggingSummary(null);
 
       // Auto-tag with AI if any questions have no standards
       const untagged = initialMappings.filter(m => m.standards.length === 0);
+      let aiTaggedCount = 0;
+
       if (untagged.length > 0) {
         setAiTagging(true);
         try {
@@ -273,21 +277,32 @@ export default function CanvasResults() {
             framework === "idaho" ? (grades[0] || undefined) : undefined,
           );
 
-          setMappings(prev => prev.map(m => {
-            if (m.standards.length === 0 && tagMap.has(m.questionId)) {
-              const matched = tagMap.get(m.questionId)!;
-              return { ...m, standards: matched.map(s => ({ code: s.code, desc: s.description })) };
-            }
-            return m;
-          }));
+          for (const [, stds] of tagMap) {
+            if (stds.length > 0) aiTaggedCount++;
+          }
 
-          toast.success(`AI suggested standards for ${tagMap.size} questions. Review and adjust below.`);
+          setMappings(prev => {
+            const updated = prev.map(m => {
+              if (m.standards.length === 0 && tagMap.has(m.questionId)) {
+                const matched = tagMap.get(m.questionId)!;
+                return { ...m, standards: matched.map(s => ({ code: s.code, desc: s.description })) };
+              }
+              return m;
+            });
+            buildTaggingSummary(updated, preMatchedCount, aiTaggedCount);
+            return updated;
+          });
+
+          toast.success(`AI tagged ${aiTaggedCount} of ${untagged.length} unmatched questions.`);
         } catch (err: any) {
           console.error("AI tagging failed:", err);
           toast.warning("AI auto-tagging failed. You can manually assign standards below.");
+          buildTaggingSummary(initialMappings, preMatchedCount, 0);
         } finally {
           setAiTagging(false);
         }
+      } else {
+        buildTaggingSummary(initialMappings, preMatchedCount, 0);
       }
 
       setStep("mapping");
