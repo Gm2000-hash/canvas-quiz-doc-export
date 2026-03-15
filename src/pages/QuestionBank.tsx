@@ -115,6 +115,7 @@ const QuestionBank = () => {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [generateForStandard, setGenerateForStandard] = useState<{ code: string; description: string } | null>(null);
   const [showPushToCanvas, setShowPushToCanvas] = useState(false);
   const [quizTitle, setQuizTitle] = useState("Custom Quiz");
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
@@ -504,7 +505,7 @@ const QuestionBank = () => {
             <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5">
               <Plus className="h-4 w-4" /> Create Question
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setShowGenerateDialog(true)} className="gap-1.5">
+            <Button size="sm" variant="outline" onClick={() => { setGenerateForStandard(null); setShowGenerateDialog(true); }} className="gap-1.5">
               <Sparkles className="h-4 w-4" /> Generate Sample Questions
             </Button>
             <Button variant={viewMode === "grouped" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grouped")} className="gap-1.5">
@@ -686,7 +687,13 @@ const QuestionBank = () => {
         })()}
 
         {showNGSS && questions.length > 0 && (
-          <StandardsCoverageGrid questions={questions} />
+          <StandardsCoverageGrid
+            questions={questions}
+            onGapClick={(code, description) => {
+              setGenerateForStandard({ code, description });
+              setShowGenerateDialog(true);
+            }}
+          />
         )}
 
         {/* Breadcrumb trail for grouped view */}
@@ -1476,8 +1483,12 @@ const QuestionBank = () => {
       />
       <GenerateQuestionsDialog
         open={showGenerateDialog}
-        onOpenChange={setShowGenerateDialog}
+        onOpenChange={(v) => {
+          setShowGenerateDialog(v);
+          if (!v) setGenerateForStandard(null);
+        }}
         onComplete={loadQuestions}
+        initialStandard={generateForStandard}
       />
       <DokBloomsSuggestionsDialog
         open={!!suggestionsQuestion}

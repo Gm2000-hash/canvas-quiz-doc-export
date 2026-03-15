@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onComplete: () => void;
+  initialStandard?: { code: string; description: string } | null;
 }
 
 const DISCIPLINES = [
@@ -40,7 +41,7 @@ type GenerateTarget =
   | { type: "all" }
   | { type: "idaho"; standards: { code: string; description: string }[]; subject: string };
 
-export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete }: Props) {
+export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete, initialStandard }: Props) {
   const { defaultFramework, defaultIdahoFilter } = useProfileDefaults();
   const [questionsPerSub, setQuestionsPerSub] = useState(10);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
@@ -52,12 +53,48 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
   const [selectedIdahoStandards, setSelectedIdahoStandards] = useState<Set<string>>(new Set());
   const abortRef = useRef(false);
   const latestProgressRef = useRef<GenerationProgress | null>(null);
+  const autoTriggeredRef = useRef<string | null>(null);
 
   // Sync defaults when profile loads
   useEffect(() => {
     setFramework(defaultFramework);
     setIdahoGradeFilter(defaultIdahoFilter);
   }, [defaultFramework, defaultIdahoFilter]);
+
+  // Auto-trigger generation when opened with an initialStandard
+  useEffect(() => {
+    if (open && initialStandard && !generating && !done && autoTriggeredRef.current !== initialStandard.code) {
+      autoTriggeredRef.current = initialStandard.code;
+      setFramework("ngss");
+      // Directly trigger generation for the single standard
+      const runGenerate = async () => {
+        setGenerating(true);
+        setDone(false);
+        abortRef.current = false;
+        latestProgressRef.current = null;
+        try {
+          await generateForStandards(
+            [{ code: initialStandard.code, description: initialStandard.description }],
+            questionsPerSub,
+            (p) => { latestProgressRef.current = p; setProgress(p); },
+            { framework: "NGSS", subject: "Science" }
+          );
+          setDone(true);
+          const total = latestProgressRef.current?.questionsGenerated ?? 0;
+          toast.success(`Generated ${total} question${total !== 1 ? "s" : ""} for ${initialStandard.code}!`);
+          onComplete();
+        } catch (e: any) {
+          toast.error(e.message || "Generation failed");
+        } finally {
+          setGenerating(false);
+        }
+      };
+      runGenerate();
+    }
+    if (!open) {
+      autoTriggeredRef.current = null;
+    }
+  }, [open, initialStandard]);
 
   const handleProgressUpdate = (p: GenerationProgress) => {
     latestProgressRef.current = p;
@@ -153,10 +190,12 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            Generate Sample Questions
+            {initialStandard ? `Generate Questions for ${initialStandard.code}` : "Generate Sample Questions"}
           </DialogTitle>
           <DialogDescription>
-            Use AI to generate ISAT-style questions aligned to NGSS or Idaho Content Standards.
+            {initialStandard
+              ? initialStandard.description
+              : "Use AI to generate ISAT-style questions aligned to NGSS or Idaho Content Standards."}
           </DialogDescription>
         </DialogHeader>
 
