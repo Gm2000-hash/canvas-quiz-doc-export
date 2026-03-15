@@ -642,6 +642,16 @@ export default function CanvasResults() {
                             <Pencil className="h-3.5 w-3.5" /> Edit Mappings
                           </Button>
                         </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Checkbox
+                            id="include-scores"
+                            checked={includeScoresInQTI}
+                            onCheckedChange={(checked) => setIncludeScoresInQTI(checked === true)}
+                          />
+                          <label htmlFor="include-scores" className="text-xs text-muted-foreground cursor-pointer">
+                            Include student scores in QTI package
+                          </label>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent>
