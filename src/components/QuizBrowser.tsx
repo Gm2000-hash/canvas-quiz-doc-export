@@ -435,10 +435,10 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
                   <PopoverTrigger asChild>
                     <button
                       onClick={(e) => e.stopPropagation()}
-                      className="absolute top-3 right-3 h-7 w-7 rounded-lg bg-white/20 hover:bg-white/40 flex items-center justify-center transition-colors backdrop-blur-sm"
+                      className="absolute top-3 right-3 h-7 w-7 rounded-lg bg-primary-foreground/20 hover:bg-primary-foreground/40 flex items-center justify-center transition-colors backdrop-blur-sm"
                       title="Change tile color"
                     >
-                      <Palette className="h-3.5 w-3.5 text-white" />
+                      <Palette className="h-3.5 w-3.5 text-primary-foreground" />
                     </button>
                   </PopoverTrigger>
                   <PopoverContent

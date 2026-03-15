@@ -452,8 +452,8 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
 
                       {/* Story Transition */}
                       {(puzzle.story_transition || editingRoom === puzzle.room_number) && (
-                        <div className="p-2.5 rounded-lg bg-emerald-500/5 border border-emerald-500/20">
-                          <p className="text-xs font-medium text-emerald-600 dark:text-emerald-400 uppercase tracking-wide mb-1 flex items-center gap-1.5">
+                        <div className="p-2.5 rounded-lg bg-success/5 border border-success/20">
+                          <p className="text-xs font-medium text-success uppercase tracking-wide mb-1 flex items-center gap-1.5">
                             <ArrowRight className="h-3 w-3" /> What Happens Next
                           </p>
                           {editingRoom === puzzle.room_number ? (

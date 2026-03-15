@@ -191,7 +191,7 @@ export default function StandardsBrowser() {
               <span className="text-muted-foreground">essential</span>
             </div>
             <div className="flex items-center gap-1.5 text-sm">
-              <div className="h-2.5 w-2.5 rounded-full bg-blue-500" />
+              <div className="h-2.5 w-2.5 rounded-full bg-accent" />
               <span className="font-medium">{idahoStats.supporting}</span>
               <span className="text-muted-foreground">supporting</span>
             </div>

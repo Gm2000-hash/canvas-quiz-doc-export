@@ -52,8 +52,8 @@ function StandardChip({
             ${isGap
               ? "bg-destructive/10 text-destructive border border-destructive/30 ring-1 ring-destructive/20 cursor-pointer hover:bg-destructive/20 hover:ring-destructive/40"
               : count <= 2
-                ? "bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800 cursor-default"
-                : "bg-emerald-100 text-emerald-800 border border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800 cursor-default"
+                ? "bg-warning/15 text-warning border border-warning/30 cursor-default"
+                : "bg-success/15 text-success border border-success/30 cursor-default"
             }
           `}
         >
