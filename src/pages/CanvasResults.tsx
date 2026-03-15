@@ -548,6 +548,7 @@ export default function CanvasResults() {
                         <StandardsPicker
                           standards={m.standards}
                           onChange={(s) => updateMapping(m.questionId, s)}
+                          framework={framework}
                         />
                       </div>
                     </div>
