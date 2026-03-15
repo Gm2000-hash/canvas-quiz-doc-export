@@ -66,10 +66,30 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
     if (open && initialStandard && !generating && !done && autoTriggeredRef.current !== initialStandard.code) {
       autoTriggeredRef.current = initialStandard.code;
       setFramework("ngss");
-      handleGenerate({
-        type: "coreIdea",
-        id: initialStandard.code,
-      });
+      // Directly trigger generation for the single standard
+      const runGenerate = async () => {
+        setGenerating(true);
+        setDone(false);
+        abortRef.current = false;
+        latestProgressRef.current = null;
+        try {
+          await generateForStandards(
+            [{ code: initialStandard.code, description: initialStandard.description }],
+            questionsPerSub,
+            (p) => { latestProgressRef.current = p; setProgress(p); },
+            { framework: "NGSS", subject: "Science" }
+          );
+          setDone(true);
+          const total = latestProgressRef.current?.questionsGenerated ?? 0;
+          toast.success(`Generated ${total} question${total !== 1 ? "s" : ""} for ${initialStandard.code}!`);
+          onComplete();
+        } catch (e: any) {
+          toast.error(e.message || "Generation failed");
+        } finally {
+          setGenerating(false);
+        }
+      };
+      runGenerate();
     }
     if (!open) {
       autoTriggeredRef.current = null;
