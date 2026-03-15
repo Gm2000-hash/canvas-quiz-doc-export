@@ -258,9 +258,15 @@ function buildItemXml(q: QuestionBankItem, index: number): string {
   }
 }
 
+export interface QTIStudentResult {
+  name: string;
+  scores: Map<string, { score: number; possible: number }>; // questionId -> score
+}
+
 export async function exportToQTI(
   title: string,
-  questions: QuestionBankItem[]
+  questions: QuestionBankItem[],
+  studentResults?: QTIStudentResult[]
 ) {
   const zip = new JSZip();
   const assessmentId = `assessment_${Date.now()}`;
@@ -283,7 +289,12 @@ ${itemsXml}
   </assessment>
 </questestinterop>`;
 
-  // Build manifest
+  // Build manifest — include results file if present
+  const resourceFiles = [`<file href="${assessmentId}.xml"/>`];
+  if (studentResults && studentResults.length > 0) {
+    resourceFiles.push(`<file href="results.xml"/>`);
+  }
+
   const manifestXml = `<?xml version="1.0" encoding="UTF-8"?>
 <manifest identifier="manifest_${assessmentId}" xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" xmlns:imsmd="http://www.imsglobal.org/xsd/imsmd_v1p2">
   <metadata>
@@ -293,7 +304,7 @@ ${itemsXml}
   <organizations/>
   <resources>
     <resource identifier="res_${assessmentId}" type="imsqti_xmlv1p2" href="${assessmentId}.xml">
-      <file href="${assessmentId}.xml"/>
+      ${resourceFiles.join('\n      ')}
     </resource>
   </resources>
 </manifest>`;
@@ -301,7 +312,70 @@ ${itemsXml}
   zip.file('imsmanifest.xml', manifestXml);
   zip.file(`${assessmentId}.xml`, assessmentXml);
 
+  // Build QTI results XML if student data provided
+  if (studentResults && studentResults.length > 0) {
+    const resultsXml = buildResultsXml(assessmentId, title, questions, studentResults);
+    zip.file('results.xml', resultsXml);
+  }
+
   const blob = await zip.generateAsync({ type: 'blob' });
   const safeName = title.replace(/[^a-zA-Z0-9]/g, '_');
   saveAs(blob, `${safeName}_QTI.zip`);
+}
+
+function buildResultsXml(
+  assessmentId: string,
+  title: string,
+  questions: QuestionBankItem[],
+  students: QTIStudentResult[]
+): string {
+  const studentEntries = students.map((student, si) => {
+    const itemResults = questions.map((q, qi) => {
+      const itemId = `item_${qi + 1}_${q.id.slice(0, 8)}`;
+      const scoreData = student.scores.get(q.id);
+      const score = scoreData?.score ?? 0;
+      const possible = scoreData?.possible ?? q.points_possible;
+      const pct = possible > 0 ? Math.min(Math.round((score / possible) * 100), 100) : 0;
+      // Include standards in per-item metadata
+      const stdMeta = q.standards.map(s => `
+            <fieldentry>${escapeXml(s.ngss_code)}: ${escapeXml(s.ngss_description)}</fieldentry>`).join('');
+
+      return `
+        <item_result identifier="${itemId}">
+          <result_metadata>
+            <entry key="points_earned">${score}</entry>
+            <entry key="points_possible">${possible}</entry>
+            <entry key="percent">${pct}</entry>${stdMeta ? `
+            <entry key="standards">${q.standards.map(s => escapeXml(s.ngss_code)).join(', ')}</entry>` : ''}
+          </result_metadata>
+        </item_result>`;
+    }).join('');
+
+    const totalScore = questions.reduce((sum, q) => {
+      const s = student.scores.get(q.id);
+      return sum + (s?.score ?? 0);
+    }, 0);
+    const totalPossible = questions.reduce((sum, q) => {
+      const s = student.scores.get(q.id);
+      return sum + (s?.possible ?? q.points_possible);
+    }, 0);
+
+    return `
+    <assessment_result identifier="result_${si}" student_name="${escapeXml(student.name)}">
+      <result_metadata>
+        <entry key="total_score">${totalScore}</entry>
+        <entry key="total_possible">${totalPossible}</entry>
+        <entry key="percent">${totalPossible > 0 ? Math.min(Math.round((totalScore / totalPossible) * 100), 100) : 0}</entry>
+      </result_metadata>${itemResults}
+    </assessment_result>`;
+  }).join('');
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<results_report assessment_ident="${assessmentId}" title="${escapeXml(title)}">
+  <metadata>
+    <entry key="exported_at">${new Date().toISOString()}</entry>
+    <entry key="student_count">${students.length}</entry>
+    <entry key="question_count">${questions.length}</entry>
+  </metadata>${studentEntries}
+</results_report>`;
 }
