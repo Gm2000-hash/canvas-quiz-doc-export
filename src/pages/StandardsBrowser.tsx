@@ -328,7 +328,7 @@ export default function StandardsBrowser() {
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder={framework === "ngss" ? "Search standards or key terms..." : "Search standards..."}
+              placeholder={framework === "ngss" ? "Search standards or key terms..." : "Search standards or key terms..."}
               value={search}
               onChange={e => setSearch(e.target.value)}
               className="pl-9"
