@@ -83,9 +83,14 @@ serve(async (req) => {
                           type: 'object',
                           properties: {
                             code: { type: 'string', description: 'Standard code' },
-                            description: { type: 'string', description: 'Brief description of the standard' }
+                            description: { type: 'string', description: 'Brief description of the standard' },
+                            matched_terms: {
+                              type: 'array',
+                              items: { type: 'string' },
+                              description: 'Key terms from the question that matched this standard (2-5 terms)'
+                            }
                           },
-                          required: ['code', 'description'],
+                          required: ['code', 'description', 'matched_terms'],
                           additionalProperties: false
                         }
                       }
