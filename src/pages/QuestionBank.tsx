@@ -304,6 +304,26 @@ const QuestionBank = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    if (!bulkDeleteTarget) return;
+    setBulkDeleting(true);
+    try {
+      await deleteManyFromBank(bulkDeleteTarget.ids);
+      setQuestions(prev => prev.filter(q => !bulkDeleteTarget.ids.includes(q.id)));
+      setSelected(prev => {
+        const next = new Set(prev);
+        bulkDeleteTarget.ids.forEach(id => next.delete(id));
+        return next;
+      });
+      toast.success(`Deleted ${bulkDeleteTarget.ids.length} question${bulkDeleteTarget.ids.length !== 1 ? "s" : ""}`);
+      setBulkDeleteTarget(null);
+    } catch {
+      toast.error("Failed to delete questions");
+    } finally {
+      setBulkDeleting(false);
+    }
+  };
+
   const handleExport = async () => {
     const selectedQuestions = questions.filter(q => selected.has(q.id));
     if (selectedQuestions.length === 0) return;
