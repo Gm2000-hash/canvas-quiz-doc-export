@@ -305,7 +305,7 @@ export default function CanvasResults() {
             const updated = prev.map(m => {
               if (m.standards.length === 0 && tagMap.has(m.questionId)) {
                 const matched = tagMap.get(m.questionId)!;
-                return { ...m, standards: matched.map(s => ({ code: s.code, desc: s.description })) };
+                return { ...m, standards: matched.map(s => ({ code: s.code, desc: s.description, matched_terms: s.matched_terms })) };
               }
               return m;
             });
