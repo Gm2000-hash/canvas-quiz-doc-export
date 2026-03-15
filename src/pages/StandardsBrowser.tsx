@@ -125,6 +125,8 @@ export default function StandardsBrowser() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [customKeyTerms, setCustomKeyTerms] = useState<Record<string, string[]>>({});
   const [savingTerms, setSavingTerms] = useState(false);
+  const [generatingKeyTerms, setGeneratingKeyTerms] = useState(false);
+  const [genProgress, setGenProgress] = useState("");
 
   // Fetch custom key terms from DB
   useEffect(() => {
