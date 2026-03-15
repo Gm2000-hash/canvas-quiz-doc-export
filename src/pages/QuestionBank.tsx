@@ -148,6 +148,8 @@ const QuestionBank = () => {
   const [saving, setSaving] = useState(false);
   const [backfilling, setBackfilling] = useState(false);
   const [suggestionsQuestion, setSuggestionsQuestion] = useState<QuestionBankItem | null>(null);
+  const [bulkDeleteTarget, setBulkDeleteTarget] = useState<{ ids: string[]; label: string } | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   // DOK and Bloom's levels imported from shared data
 
