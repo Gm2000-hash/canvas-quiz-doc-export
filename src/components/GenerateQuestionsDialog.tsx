@@ -190,10 +190,12 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
-            Generate Sample Questions
+            {initialStandard ? `Generate Questions for ${initialStandard.code}` : "Generate Sample Questions"}
           </DialogTitle>
           <DialogDescription>
-            Use AI to generate ISAT-style questions aligned to NGSS or Idaho Content Standards.
+            {initialStandard
+              ? initialStandard.description
+              : "Use AI to generate ISAT-style questions aligned to NGSS or Idaho Content Standards."}
           </DialogDescription>
         </DialogHeader>
 
