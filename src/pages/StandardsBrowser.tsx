@@ -169,6 +169,72 @@ export default function StandardsBrowser() {
     }
   };
 
+  const handleBulkGenerateKeyTerms = async () => {
+    if (!user || generatingKeyTerms) return;
+
+    // Get Idaho standards that don't have custom key terms yet
+    const standardsToGenerate = ALL_IDAHO_STANDARDS_FLAT.filter(
+      s => !(customKeyTerms[s.code] && customKeyTerms[s.code].length > 0)
+    );
+
+    if (standardsToGenerate.length === 0) {
+      toast.info("All Idaho standards already have key terms!");
+      return;
+    }
+
+    setGeneratingKeyTerms(true);
+    setGenProgress(`Generating key terms for ${standardsToGenerate.length} standards...`);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-key-terms', {
+        body: {
+          standards: standardsToGenerate.map(s => ({ code: s.code, description: s.description })),
+        },
+      });
+
+      if (error) throw new Error(error.message || 'Failed to generate key terms');
+      if (data?.error) throw new Error(data.error);
+
+      const results: { code: string; key_terms: string[] }[] = data.results || [];
+      setGenProgress(`Saving ${results.length} key term sets...`);
+
+      // Batch upsert to DB
+      const upsertRows = results
+        .filter(r => r.key_terms && r.key_terms.length > 0)
+        .map(r => ({
+          user_id: user.id,
+          standard_code: r.code,
+          key_terms: r.key_terms.map(t => t.toLowerCase()),
+          updated_at: new Date().toISOString(),
+        }));
+
+      if (upsertRows.length > 0) {
+        const { error: upsertError } = await supabase
+          .from('standard_key_terms')
+          .upsert(upsertRows, { onConflict: 'user_id,standard_code' });
+
+        if (upsertError) throw upsertError;
+
+        // Update local state
+        const newTerms = { ...customKeyTerms };
+        for (const r of results) {
+          if (r.key_terms?.length > 0) {
+            newTerms[r.code] = r.key_terms.map(t => t.toLowerCase());
+          }
+        }
+        setCustomKeyTerms(newTerms);
+      }
+
+      toast.success(`Generated key terms for ${results.length} standards!`);
+    } catch (err: any) {
+      console.error('Bulk key terms generation failed:', err);
+      toast.error(err?.message || 'Failed to generate key terms');
+    } finally {
+      setGeneratingKeyTerms(false);
+      setGenProgress("");
+    }
+  };
+
   // NGSS flat list
   const ngssFlat = useMemo(() =>
     Object.entries(ALL_SUBSTANDARDS).flatMap(([group, standards]) =>
