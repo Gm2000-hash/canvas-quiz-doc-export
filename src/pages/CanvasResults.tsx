@@ -5,6 +5,9 @@ import { getCourses, getQuizzes, getQuizQuestions, getEnrollments, getQuizReport
 import { getQuestionBank, type QuestionBankItem } from "@/lib/question-bank";
 import { supabase } from "@/integrations/supabase/client";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
+import { ALL_IDAHO_STANDARDS_FLAT } from "@/lib/idaho-standards-data";
+import { useProfileDefaults } from "@/hooks/useProfileDefaults";
+import { tagQuestionsWithStandards } from "@/lib/standards-api";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -77,20 +80,23 @@ function ScoreCell({ pct }: { pct: number }) {
   return <span className={`inline-block px-2 py-0.5 rounded text-xs font-medium ${bg}`}>{clamped}%</span>;
 }
 
-// Flat list of all NGSS standards for the picker
-const ALL_STANDARDS_FLAT = Object.values(ALL_SUBSTANDARDS).flat();
+// Flat list of all standards for the picker (combined NGSS + Idaho)
+const ALL_NGSS_FLAT = Object.values(ALL_SUBSTANDARDS).flat();
+const ALL_IDAHO_FLAT_MAPPED = ALL_IDAHO_STANDARDS_FLAT.map(s => ({ code: s.code, description: s.description, keyTerms: [] as string[] }));
 
 // ── Standards Picker for a single question ──
 
-function StandardsPicker({ standards, onChange }: { standards: { code: string; desc: string }[]; onChange: (s: { code: string; desc: string }[]) => void }) {
+function StandardsPicker({ standards, onChange, framework }: { standards: { code: string; desc: string }[]; onChange: (s: { code: string; desc: string }[]) => void; framework: "ngss" | "idaho" }) {
   const [adding, setAdding] = useState(false);
   const [search, setSearch] = useState("");
 
+  const allStandardsList = framework === "ngss" ? ALL_NGSS_FLAT : ALL_IDAHO_FLAT_MAPPED;
+
   const filtered = useMemo(() => {
-    if (!search) return ALL_STANDARDS_FLAT.slice(0, 20);
+    if (!search) return allStandardsList.slice(0, 20);
     const q = search.toLowerCase();
-    return ALL_STANDARDS_FLAT.filter(s => s.code.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)).slice(0, 20);
-  }, [search]);
+    return allStandardsList.filter(s => s.code.toLowerCase().includes(q) || s.description.toLowerCase().includes(q)).slice(0, 20);
+  }, [search, allStandardsList]);
 
   const remove = (code: string) => onChange(standards.filter(s => s.code !== code));
   const add = (s: { code: string; description: string }) => {
@@ -142,6 +148,7 @@ function StandardsPicker({ standards, onChange }: { standards: { code: string; d
 
 export default function CanvasResults() {
   const { config, setConfig } = useCanvasConfig();
+  const { defaultFramework, subjects, grades } = useProfileDefaults();
   const [courses, setCourses] = useState<Course[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -151,6 +158,8 @@ export default function CanvasResults() {
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
   const [aiTagging, setAiTagging] = useState(false);
   const [includeScoresInQTI, setIncludeScoresInQTI] = useState(true);
+  const [framework, setFramework] = useState<"ngss" | "idaho">(defaultFramework);
+  const [tagSubject, setTagSubject] = useState(subjects.find(s => s !== "Science") || "ELA");
 
   const [step, setStep] = useState<Step>("select");
   const [reportCSV, setReportCSV] = useState<string | null>(null);
@@ -247,54 +256,23 @@ export default function CanvasResults() {
             question_text: m.questionText,
           }));
 
-          // Build key terms map from NGSS data + any custom terms
-          const keyTermsMap: Record<string, string[]> = {};
-          for (const group of Object.values(ALL_SUBSTANDARDS)) {
-            for (const std of group) {
-              if (std.keyTerms && std.keyTerms.length > 0) {
-                keyTermsMap[std.code] = std.keyTerms;
-              }
-            }
-          }
-
-          // Fetch any teacher-customized key terms and merge
-          try {
-            const { data: customTerms } = await supabase
-              .from('standard_key_terms')
-              .select('standard_code, key_terms');
-            if (customTerms) {
-              for (const ct of customTerms) {
-                if (ct.key_terms && ct.key_terms.length > 0) {
-                  keyTermsMap[ct.standard_code] = [
-                    ...new Set([...(keyTermsMap[ct.standard_code] || []), ...ct.key_terms])
-                  ];
-                }
-              }
-            }
-          } catch (e) {
-            console.warn('Could not fetch custom key terms:', e);
-          }
-
-          const { data, error } = await supabase.functions.invoke('ngss-tagger', {
-            body: { questions: aiQuestions, keyTermsMap },
-          });
-
-          if (error) throw error;
-
-          const tags = data?.tags || [];
-          const tagMap = new Map<number, { code: string; desc: string }[]>();
-          for (const t of tags) {
-            tagMap.set(t.question_id, (t.standards || []).map((s: any) => ({ code: s.code, desc: s.description })));
-          }
+          // Use the unified standards tagger
+          const tagMap = await tagQuestionsWithStandards(
+            aiQuestions,
+            framework,
+            framework === "idaho" ? tagSubject : undefined,
+            framework === "idaho" ? (grades[0] || undefined) : undefined,
+          );
 
           setMappings(prev => prev.map(m => {
             if (m.standards.length === 0 && tagMap.has(m.questionId)) {
-              return { ...m, standards: tagMap.get(m.questionId)! };
+              const matched = tagMap.get(m.questionId)!;
+              return { ...m, standards: matched.map(s => ({ code: s.code, desc: s.description })) };
             }
             return m;
           }));
 
-          toast.success(`AI suggested standards for ${tags.length} questions. Review and adjust below.`);
+          toast.success(`AI suggested standards for ${tagMap.size} questions. Review and adjust below.`);
         } catch (err: any) {
           console.error("AI tagging failed:", err);
           toast.warning("AI auto-tagging failed. You can manually assign standards below.");
@@ -507,6 +485,28 @@ export default function CanvasResults() {
                   )}
                 </div>
               </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-foreground">Standards Framework</label>
+                <div className="flex gap-2">
+                  <Select value={framework} onValueChange={(v) => setFramework(v as "ngss" | "idaho")}>
+                    <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ngss">NGSS (Science)</SelectItem>
+                      <SelectItem value="idaho">Idaho Standards</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {framework === "idaho" && (
+                    <Select value={tagSubject} onValueChange={setTagSubject}>
+                      <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="ELA">ELA</SelectItem>
+                        <SelectItem value="Math">Math</SelectItem>
+                        <SelectItem value="Social Studies">Social Studies</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              </div>
               <Button onClick={handlePullResults} disabled={loading || !selectedCourse || !selectedQuiz} className="gap-2">
                 {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Pulling Results...</> : <><Download className="h-4 w-4" /> Pull Results</>}
               </Button>
@@ -539,6 +539,7 @@ export default function CanvasResults() {
                         <StandardsPicker
                           standards={m.standards}
                           onChange={(s) => updateMapping(m.questionId, s)}
+                          framework={framework}
                         />
                       </div>
                     </div>
