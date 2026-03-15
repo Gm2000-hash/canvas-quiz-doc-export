@@ -218,6 +218,17 @@ export async function deleteFromBank(id: string) {
   if (error) throw error;
 }
 
+export async function deleteManyFromBank(ids: string[]) {
+  if (ids.length === 0) return;
+  const batchSize = 200;
+  for (let i = 0; i < ids.length; i += batchSize) {
+    const batch = ids.slice(i, i + batchSize);
+    await supabase.from("question_bank_standards").delete().in("question_bank_id", batch);
+    const { error } = await supabase.from("question_bank").delete().in("id", batch);
+    if (error) throw error;
+  }
+}
+
 export async function backfillDokAndBlooms(): Promise<number> {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Must be logged in");
