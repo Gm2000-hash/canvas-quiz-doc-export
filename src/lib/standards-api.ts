@@ -5,6 +5,7 @@ import { ALL_IDAHO_STANDARDS, type IdahoGradeStandards } from "@/lib/idaho-stand
 export interface StandardMatch {
   code: string;
   description: string;
+  matched_terms?: string[];
 }
 
 export interface StandardTag {
