@@ -200,6 +200,13 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
         {/* Gap-click config form */}
         {initialStandard && !generating && !done ? (
           <div className="space-y-4">
+            <div className="p-3 rounded-lg bg-muted/50 border border-border">
+              <div className="flex items-center gap-2 mb-1">
+                <Badge variant="default" className="text-xs">{initialStandard.code}</Badge>
+                <span className="text-xs text-muted-foreground">NGSS Standard</span>
+              </div>
+              <p className="text-sm text-foreground">{initialStandard.description}</p>
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-sm">Number of Questions</Label>
@@ -232,7 +239,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
             </div>
             <Button onClick={handleGapGenerate} className="w-full gap-2">
               <Sparkles className="h-4 w-4" />
-              Generate {questionsPerSub} Questions{targetDok !== "any" ? ` at DOK ${targetDok}` : ""}
+              Generate {questionsPerSub} Questions for {initialStandard.code}{targetDok !== "any" ? ` at DOK ${targetDok}` : ""}
             </Button>
           </div>
         ) : null}
