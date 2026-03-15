@@ -20,7 +20,7 @@ interface Props {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onComplete: () => void;
-  initialStandard?: { code: string; description: string } | null;
+  initialStandard?: { code: string; description: string; framework?: "NGSS" | "Idaho"; subject?: string } | null;
 }
 
 const DISCIPLINES = [
