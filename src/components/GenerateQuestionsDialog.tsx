@@ -205,7 +205,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
             <div className="p-3 rounded-lg bg-muted/50 border border-border">
               <div className="flex items-center gap-2 mb-1">
                 <Badge variant="default" className="text-xs">{initialStandard.code}</Badge>
-                <span className="text-xs text-muted-foreground">NGSS Standard</span>
+                <span className="text-xs text-muted-foreground">{initialStandard.framework === "Idaho" ? `Idaho ${initialStandard.subject || ""} Standard` : "NGSS Standard"}</span>
               </div>
               <p className="text-sm text-foreground">{initialStandard.description}</p>
             </div>
