@@ -289,7 +289,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
               </div>
             )}
           </div>
-        ) : (
+        ) : initialStandard ? null : (
           /* Selection view */
           <div className="space-y-4">
             <div className="space-y-1.5">
