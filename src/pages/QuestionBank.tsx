@@ -28,6 +28,7 @@ import { PageBanner } from "@/components/PageBanner";
 import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useProfile } from "@/hooks/useProfile";
+import { StandardsCoverageGrid } from "@/components/StandardsCoverageGrid";
 
 function stripHtml(html: string): string {
   const div = document.createElement("div");
@@ -683,6 +684,10 @@ const QuestionBank = () => {
             </div>
           );
         })()}
+
+        {showNGSS && questions.length > 0 && (
+          <StandardsCoverageGrid questions={questions} />
+        )}
 
         {/* Breadcrumb trail for grouped view */}
         {viewMode === "grouped" && (expandedDiscipline || expandedCoreIdea) && (
