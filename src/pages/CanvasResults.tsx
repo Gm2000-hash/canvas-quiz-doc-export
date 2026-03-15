@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft, Sparkles, Pencil, Check, X, FileSpreadsheet, FileArchive } from "lucide-react";
 import { exportMasteryConnectCSV, exportMasteryConnectDetailCSV } from "@/lib/export-mastery-connect";
 import { exportToQTI } from "@/lib/export-qti";
-import type { QuestionBankItem } from "@/lib/question-bank";
+
 import { Link } from "react-router-dom";
 import { PageBanner } from "@/components/PageBanner";
 
