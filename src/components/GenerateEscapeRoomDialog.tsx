@@ -333,8 +333,8 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
 
                       {/* Scientific Scenario */}
                       {(puzzle.scenario_text || editingRoom === puzzle.room_number) && (
-                        <div className="p-3 rounded-lg bg-blue-500/5 border border-blue-500/20">
-                          <p className="text-xs font-medium text-blue-600 dark:text-blue-400 uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
+                        <div className="p-3 rounded-lg bg-info/5 border border-info/20">
+                          <p className="text-xs font-medium text-info uppercase tracking-wide mb-1.5 flex items-center gap-1.5">
                             <FlaskConical className="h-3.5 w-3.5" /> Scientific Scenario
                           </p>
                           {editingRoom === puzzle.room_number ? (
