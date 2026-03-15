@@ -5,12 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { getQuestionBank, deleteFromBank, updateQuestion, backfillDokAndBlooms, type QuestionBankItem } from "@/lib/question-bank";
+import { getQuestionBank, deleteFromBank, deleteManyFromBank, updateQuestion, backfillDokAndBlooms, type QuestionBankItem } from "@/lib/question-bank";
 import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT } from "@/lib/idaho-standards-data";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
@@ -147,6 +148,8 @@ const QuestionBank = () => {
   const [saving, setSaving] = useState(false);
   const [backfilling, setBackfilling] = useState(false);
   const [suggestionsQuestion, setSuggestionsQuestion] = useState<QuestionBankItem | null>(null);
+  const [bulkDeleteTarget, setBulkDeleteTarget] = useState<{ ids: string[]; label: string } | null>(null);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
   // DOK and Bloom's levels imported from shared data
 
@@ -298,6 +301,26 @@ const QuestionBank = () => {
       toast.error("Failed to backfill levels");
     } finally {
       setBackfilling(false);
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (!bulkDeleteTarget) return;
+    setBulkDeleting(true);
+    try {
+      await deleteManyFromBank(bulkDeleteTarget.ids);
+      setQuestions(prev => prev.filter(q => !bulkDeleteTarget.ids.includes(q.id)));
+      setSelected(prev => {
+        const next = new Set(prev);
+        bulkDeleteTarget.ids.forEach(id => next.delete(id));
+        return next;
+      });
+      toast.success(`Deleted ${bulkDeleteTarget.ids.length} question${bulkDeleteTarget.ids.length !== 1 ? "s" : ""}`);
+      setBulkDeleteTarget(null);
+    } catch {
+      toast.error("Failed to delete questions");
+    } finally {
+      setBulkDeleting(false);
     }
   };
 
@@ -580,6 +603,15 @@ const QuestionBank = () => {
                 <FileText className="h-4 w-4" />
                 Create Quiz ({selected.size})
               </Button>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="gap-1.5"
+                onClick={() => setBulkDeleteTarget({ ids: [...selected], label: `${selected.size} selected question${selected.size !== 1 ? "s" : ""}` })}
+              >
+                <Trash2 className="h-4 w-4" />
+                Delete ({selected.size})
+              </Button>
               {canvasConnected && (
                 <Button variant="outline" onClick={() => setShowPushToCanvas(true)} className="gap-2">
                   <Upload className="h-4 w-4" />
@@ -848,8 +880,25 @@ const QuestionBank = () => {
                             <h3 className="font-semibold text-foreground">{disc.label}</h3>
                             <Badge variant="outline" className="text-[10px]">NGSS</Badge>
                           </div>
-                          <p className="text-sm text-muted-foreground">{count} question{count !== 1 ? "s" : ""} · {coveredSubs}/{totalSubs} standards covered ({coveragePct}%)</p>
+                         <p className="text-sm text-muted-foreground">{count} question{count !== 1 ? "s" : ""} · {coveredSubs}/{totalSubs} standards covered ({coveragePct}%)</p>
                         </div>
+                        {count > 0 && (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                            title={`Delete all ${disc.label} questions`}
+                            onClick={e => {
+                              e.stopPropagation();
+                              setBulkDeleteTarget({
+                                ids: uniqueDiscIds,
+                                label: `all ${uniqueDiscIds.length} ${disc.label} question${uniqueDiscIds.length !== 1 ? "s" : ""}`,
+                              });
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        )}
                         {count > 0 && (
                           isExpanded ? <ChevronDown className="h-5 w-5 text-muted-foreground" /> : <ChevronRight className="h-5 w-5 text-muted-foreground" />
                         )}
@@ -895,6 +944,23 @@ const QuestionBank = () => {
                                         {firstDesc && <p className="text-xs text-muted-foreground mt-1 break-words">{firstDesc}</p>}
                                       </div>
                                     </button>
+                                    {coreQuestions.length > 0 && (
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                                        title={`Delete all ${coreIdea} questions`}
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          setBulkDeleteTarget({
+                                            ids: coreQuestions.map(q => q.id),
+                                            label: `all ${coreQuestions.length} question${coreQuestions.length !== 1 ? "s" : ""} for ${coreIdea}`,
+                                          });
+                                        }}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    )}
                                   </div>
 
                                   {isCoreExpanded && (
@@ -1074,6 +1140,23 @@ const QuestionBank = () => {
                                         </div>
                                       </div>
                                     </button>
+                                    {gradeQuestions.length > 0 && (
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                                        title={`Delete all Grade ${grade} ${subj.label} questions`}
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          setBulkDeleteTarget({
+                                            ids: gradeQuestions.map(q => q.id),
+                                            label: `all ${gradeQuestions.length} Grade ${grade} ${subj.label} question${gradeQuestions.length !== 1 ? "s" : ""}`,
+                                          });
+                                        }}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    )}
                                   </div>
 
                                   {/* Expanded: show individual standards with questions */}
@@ -1530,6 +1613,28 @@ const QuestionBank = () => {
           config={canvasConfig}
         />
       )}
+      {/* Bulk Delete Confirmation */}
+      <AlertDialog open={!!bulkDeleteTarget} onOpenChange={(open) => !open && setBulkDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Questions</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete <strong>{bulkDeleteTarget?.label}</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={bulkDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleBulkDelete}
+              disabled={bulkDeleting}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
+              Delete {bulkDeleteTarget?.ids.length} Question{(bulkDeleteTarget?.ids.length || 0) !== 1 ? "s" : ""}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
