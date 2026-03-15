@@ -376,7 +376,7 @@ export default function StandardsBrowser() {
         </div>
 
         {framework === "idaho" && (
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-3 flex-wrap items-center">
             <div className="flex items-center gap-1.5 text-sm">
               <span className="font-semibold">{idahoStats.total}</span>
               <span className="text-muted-foreground">total</span>
@@ -395,6 +395,21 @@ export default function StandardsBrowser() {
               <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
               <span className="font-medium">{idahoStats.additional}</span>
               <span className="text-muted-foreground">additional</span>
+            </div>
+            <div className="ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={handleBulkGenerateKeyTerms}
+                disabled={generatingKeyTerms}
+              >
+                {generatingKeyTerms ? (
+                  <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {genProgress || "Generating..."}</>
+                ) : (
+                  <><Sparkles className="h-3.5 w-3.5" /> Generate Key Terms with AI</>
+                )}
+              </Button>
             </div>
           </div>
         )}
