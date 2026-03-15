@@ -1140,6 +1140,23 @@ const QuestionBank = () => {
                                         </div>
                                       </div>
                                     </button>
+                                    {gradeQuestions.length > 0 && (
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 shrink-0 text-destructive hover:text-destructive"
+                                        title={`Delete all Grade ${grade} ${subj.label} questions`}
+                                        onClick={e => {
+                                          e.stopPropagation();
+                                          setBulkDeleteTarget({
+                                            ids: gradeQuestions.map(q => q.id),
+                                            label: `all ${gradeQuestions.length} Grade ${grade} ${subj.label} question${gradeQuestions.length !== 1 ? "s" : ""}`,
+                                          });
+                                        }}
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    )}
                                   </div>
 
                                   {/* Expanded: show individual standards with questions */}
