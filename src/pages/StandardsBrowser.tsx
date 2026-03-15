@@ -13,7 +13,7 @@ import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } 
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Search, ArrowLeft, BookOpen, FlaskConical, Calculator, Landmark, Filter, Tag, Plus, X, Save, Loader2 } from "lucide-react";
+import { Search, ArrowLeft, BookOpen, FlaskConical, Calculator, Landmark, Filter, Tag, Plus, X, Save, Loader2, Sparkles } from "lucide-react";
 
 const CATEGORY_COLORS: Record<string, string> = {
   essential: "bg-primary/10 text-primary border-primary/20",
@@ -125,6 +125,8 @@ export default function StandardsBrowser() {
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [customKeyTerms, setCustomKeyTerms] = useState<Record<string, string[]>>({});
   const [savingTerms, setSavingTerms] = useState(false);
+  const [generatingKeyTerms, setGeneratingKeyTerms] = useState(false);
+  const [genProgress, setGenProgress] = useState("");
 
   // Fetch custom key terms from DB
   useEffect(() => {
@@ -164,6 +166,72 @@ export default function StandardsBrowser() {
       console.error(e);
     } finally {
       setSavingTerms(false);
+    }
+  };
+
+  const handleBulkGenerateKeyTerms = async () => {
+    if (!user || generatingKeyTerms) return;
+
+    // Get Idaho standards that don't have custom key terms yet
+    const standardsToGenerate = ALL_IDAHO_STANDARDS_FLAT.filter(
+      s => !(customKeyTerms[s.code] && customKeyTerms[s.code].length > 0)
+    );
+
+    if (standardsToGenerate.length === 0) {
+      toast.info("All Idaho standards already have key terms!");
+      return;
+    }
+
+    setGeneratingKeyTerms(true);
+    setGenProgress(`Generating key terms for ${standardsToGenerate.length} standards...`);
+
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-key-terms', {
+        body: {
+          standards: standardsToGenerate.map(s => ({ code: s.code, description: s.description })),
+        },
+      });
+
+      if (error) throw new Error(error.message || 'Failed to generate key terms');
+      if (data?.error) throw new Error(data.error);
+
+      const results: { code: string; key_terms: string[] }[] = data.results || [];
+      setGenProgress(`Saving ${results.length} key term sets...`);
+
+      // Batch upsert to DB
+      const upsertRows = results
+        .filter(r => r.key_terms && r.key_terms.length > 0)
+        .map(r => ({
+          user_id: user.id,
+          standard_code: r.code,
+          key_terms: r.key_terms.map(t => t.toLowerCase()),
+          updated_at: new Date().toISOString(),
+        }));
+
+      if (upsertRows.length > 0) {
+        const { error: upsertError } = await supabase
+          .from('standard_key_terms')
+          .upsert(upsertRows, { onConflict: 'user_id,standard_code' });
+
+        if (upsertError) throw upsertError;
+
+        // Update local state
+        const newTerms = { ...customKeyTerms };
+        for (const r of results) {
+          if (r.key_terms?.length > 0) {
+            newTerms[r.code] = r.key_terms.map(t => t.toLowerCase());
+          }
+        }
+        setCustomKeyTerms(newTerms);
+      }
+
+      toast.success(`Generated key terms for ${results.length} standards!`);
+    } catch (err: any) {
+      console.error('Bulk key terms generation failed:', err);
+      toast.error(err?.message || 'Failed to generate key terms');
+    } finally {
+      setGeneratingKeyTerms(false);
+      setGenProgress("");
     }
   };
 
@@ -308,7 +376,7 @@ export default function StandardsBrowser() {
         </div>
 
         {framework === "idaho" && (
-          <div className="flex gap-3 flex-wrap">
+          <div className="flex gap-3 flex-wrap items-center">
             <div className="flex items-center gap-1.5 text-sm">
               <span className="font-semibold">{idahoStats.total}</span>
               <span className="text-muted-foreground">total</span>
@@ -327,6 +395,21 @@ export default function StandardsBrowser() {
               <div className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
               <span className="font-medium">{idahoStats.additional}</span>
               <span className="text-muted-foreground">additional</span>
+            </div>
+            <div className="ml-auto">
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 text-xs"
+                onClick={handleBulkGenerateKeyTerms}
+                disabled={generatingKeyTerms}
+              >
+                {generatingKeyTerms ? (
+                  <><Loader2 className="h-3.5 w-3.5 animate-spin" /> {genProgress || "Generating..."}</>
+                ) : (
+                  <><Sparkles className="h-3.5 w-3.5" /> Generate Key Terms with AI</>
+                )}
+              </Button>
             </div>
           </div>
         )}
