@@ -354,7 +354,7 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
                           <div className="space-y-2.5">
                             {(puzzle.challenge_steps || []).map((step, i) => (
                               <div key={i} className="flex gap-2.5">
-                                <div className="h-6 w-6 rounded-full bg-amber-500/15 flex items-center justify-center text-xs font-bold text-amber-700 dark:text-amber-300 shrink-0 mt-0.5">
+                                <div className="h-6 w-6 rounded-full bg-warning/15 flex items-center justify-center text-xs font-bold text-warning shrink-0 mt-0.5">
                                   {i + 1}
                                 </div>
                                 {editingRoom === puzzle.room_number ? (
