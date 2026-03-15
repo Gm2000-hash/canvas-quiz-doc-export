@@ -12,8 +12,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft, Sparkles, Pencil, Check, X, FileSpreadsheet } from "lucide-react";
+import { Loader2, Download, BarChart3, Users, BookOpen, ArrowLeft, Sparkles, Pencil, Check, X, FileSpreadsheet, FileArchive } from "lucide-react";
 import { exportMasteryConnectCSV, exportMasteryConnectDetailCSV } from "@/lib/export-mastery-connect";
+import { exportToQTI } from "@/lib/export-qti";
+
 import { Link } from "react-router-dom";
 import { PageBanner } from "@/components/PageBanner";
 
@@ -580,7 +582,43 @@ export default function CanvasResults() {
                               toast.success("Detailed CSV exported!");
                             }}
                           >
-                            <Download className="h-3.5 w-3.5" /> Detailed CSV
+                          <Download className="h-3.5 w-3.5" /> Detailed CSV
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="gap-1"
+                            disabled={mappings.length === 0}
+                            onClick={() => {
+                              const quizName = quizzes.find(q => String(q.id) === selectedQuiz)?.title || 'Quiz';
+                              // Build QuestionBankItem-shaped objects from canvas questions + mappings
+                              const qtiQuestions: QuestionBankItem[] = canvasQuestions
+                                .filter(cq => cq.question_type !== 'text_only_question')
+                                .map(cq => {
+                                  const mapping = mappings.find(m => m.questionId === cq.id);
+                                  return {
+                                    id: String(cq.id),
+                                    canvas_question_id: cq.id,
+                                    question_text: cq.question_text,
+                                    question_type: cq.question_type,
+                                    points_possible: cq.points_possible || 1,
+                                    answers: cq.answers || [],
+                                    source_course: null,
+                                    source_quiz: null,
+                                    created_at: new Date().toISOString(),
+                                    dok_level: null,
+                                    blooms_level: null,
+                                    standards: (mapping?.standards || []).map(s => ({
+                                      ngss_code: s.code,
+                                      ngss_description: s.desc,
+                                    })),
+                                  };
+                                });
+                              exportToQTI(quizName, qtiQuestions);
+                              toast.success("QTI package exported with standards tags!");
+                            }}
+                          >
+                            <FileArchive className="h-3.5 w-3.5" /> Export QTI
                           </Button>
                           <Button variant="outline" size="sm" onClick={() => setStep("mapping")} className="gap-1">
                             <Pencil className="h-3.5 w-3.5" /> Edit Mappings
