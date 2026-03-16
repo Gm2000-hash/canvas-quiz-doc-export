@@ -1,11 +1,11 @@
-import { ReactNode } from "react";
+import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface PageBannerProps {
   greeting?: string;
   subtitle?: string;
   stats?: { label: string; value: string | number }[];
-  children?: ReactNode;
+  children?: React.ReactNode;
   compact?: boolean;
   avatarUrl?: string;
   avatarFallback?: string;
@@ -13,10 +13,20 @@ interface PageBannerProps {
   avatarSize?: "default" | "large";
 }
 
-export function PageBanner({
-  greeting, subtitle, stats, children, compact = false,
-  avatarUrl, avatarFallback, avatarPosition = "left", avatarSize = "default",
-}: PageBannerProps) {
+export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(function PageBanner(
+  {
+    greeting,
+    subtitle,
+    stats,
+    children,
+    compact = false,
+    avatarUrl,
+    avatarFallback,
+    avatarPosition = "left",
+    avatarSize = "default",
+  },
+  ref,
+) {
   const sizeClass = avatarSize === "large"
     ? "h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32"
     : compact ? "h-10 w-10" : "h-14 w-14 sm:h-16 sm:w-16";
@@ -31,8 +41,10 @@ export function PageBanner({
   ) : null;
 
   return (
-    <div className={`relative overflow-hidden rounded-2xl bg-earth-warm border border-earth-sand ${compact ? "p-5" : "p-6 sm:p-8"}`}>
-      {/* Abstract shapes */}
+    <div
+      ref={ref}
+      className={`relative overflow-hidden rounded-2xl bg-earth-warm border border-earth-sand ${compact ? "p-5" : "p-6 sm:p-8"}`}
+    >
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-earth-terracotta/10" />
         <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-earth-sage/10" />
@@ -43,7 +55,6 @@ export function PageBanner({
         <div className="absolute top-8 left-[38%] w-2 h-2 rounded-full bg-earth-terracotta/10" />
       </div>
 
-      {/* Content */}
       <div className="relative z-10">
         <div className="flex items-center gap-4 sm:gap-6">
           {avatarPosition === "left" && avatarEl}
@@ -83,4 +94,4 @@ export function PageBanner({
       </div>
     </div>
   );
-}
+});

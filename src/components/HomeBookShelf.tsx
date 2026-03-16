@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PdfFlipbookViewer } from '@/components/PdfFlipbookViewer';
 import { FileText, BookOpenCheck } from 'lucide-react';
@@ -11,12 +11,15 @@ interface LibraryBook {
   file_size: number;
 }
 
-export function HomeBookShelf() {
-  const [books, setBooks] = useState<LibraryBook[]>([]);
-  const [viewingBook, setViewingBook] = useState<{ title: string; url: string } | null>(null);
-  const [openingId, setOpeningId] = useState<string | null>(null);
+export const HomeBookShelf = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(function HomeBookShelf(
+  { className, ...props },
+  ref,
+) {
+  const [books, setBooks] = React.useState<LibraryBook[]>([]);
+  const [viewingBook, setViewingBook] = React.useState<{ title: string; url: string } | null>(null);
+  const [openingId, setOpeningId] = React.useState<string | null>(null);
 
-  useEffect(() => {
+  React.useEffect(() => {
     supabase
       .from('library_books')
       .select('id, title, file_path, file_size')
@@ -53,7 +56,7 @@ export function HomeBookShelf() {
   };
 
   return (
-    <>
+    <div ref={ref} className={className} {...props}>
       <div>
         <div className="flex items-center gap-2 mb-3">
           <BookOpenCheck className="h-4 w-4 text-earth-terracotta" />
@@ -89,6 +92,6 @@ export function HomeBookShelf() {
           onClose={() => setViewingBook(null)}
         />
       )}
-    </>
+    </div>
   );
-}
+});
