@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { ShieldCheck, Users, Loader2, GraduationCap, Search, Trash2, KeyRound, Eye } from "lucide-react";
+import { ShieldCheck, Users, Loader2, GraduationCap, Search, Trash2, KeyRound, Eye, BookOpenCheck } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -243,7 +243,17 @@ export default function AdminDashboard() {
 
       <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full space-y-6">
         {/* Stats */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+          <Card
+            className="cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border-primary/20"
+            onClick={() => navigate("/library")}
+          >
+            <CardContent className="pt-5 pb-4 text-center">
+              <BookOpenCheck className="h-6 w-6 text-primary mx-auto mb-1" />
+              <div className="text-sm font-semibold text-foreground">Manage Library</div>
+              <div className="text-xs text-muted-foreground">Upload & manage PDFs</div>
+            </CardContent>
+          </Card>
           <Card>
             <CardContent className="pt-5 pb-4 text-center">
               <Users className="h-6 w-6 text-primary mx-auto mb-1" />
