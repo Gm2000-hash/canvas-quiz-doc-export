@@ -275,7 +275,8 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Bottom Inspirational Quote */}
+        {/* Shared Book Shelf */}
+        <HomeBookShelf />
         <div className="mx-auto max-w-lg rounded-2xl border border-earth-sand bg-earth-warm/50 p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Lightbulb className="h-4 w-4 text-earth-terracotta" />
