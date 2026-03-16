@@ -118,6 +118,7 @@ export type Database = {
           file_path: string
           file_size: number
           id: string
+          is_published: boolean
           page_count: number | null
           title: string
           updated_at: string
@@ -129,6 +130,7 @@ export type Database = {
           file_path: string
           file_size?: number
           id?: string
+          is_published?: boolean
           page_count?: number | null
           title: string
           updated_at?: string
@@ -140,6 +142,7 @@ export type Database = {
           file_path?: string
           file_size?: number
           id?: string
+          is_published?: boolean
           page_count?: number | null
           title?: string
           updated_at?: string
