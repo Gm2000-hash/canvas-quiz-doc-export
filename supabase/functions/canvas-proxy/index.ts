@@ -228,8 +228,10 @@ serve(async (req) => {
 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
+    const status = /Unauthorized|Invalid Canvas URL|Canvas URL must use|required/.test(message) ? 400 : 500;
+
     return new Response(JSON.stringify({ error: message }), {
-      status: 500,
+      status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
