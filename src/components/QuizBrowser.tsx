@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { getCourses, getQuizzes, getQuiz, getQuizQuestions, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from '@/lib/canvas-api';
-import { tagQuestionsWithNGSS, type NGSSStandard } from '@/lib/ngss-api';
+import { tagQuestionsWithStandards, type StandardMatch } from '@/lib/standards-api';
 import { exportQuizToDocx } from '@/lib/export-docx';
 import { saveQuestionsToBank } from '@/lib/question-bank';
 import { toast } from 'sonner';
@@ -101,7 +101,7 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
 
   // NGSS tagging state
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [ngssTags, setNgssTags] = useState<Map<number, NGSSStandard[]>>(new Map());
+  const [ngssTags, setNgssTags] = useState<Map<number, StandardMatch[]>>(new Map());
   const [loadingNGSS, setLoadingNGSS] = useState(false);
   const [ngssLoaded, setNgssLoaded] = useState(false);
 
@@ -178,8 +178,9 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
       setQuestions(qs);
       const filtered = qs.filter(q => q.question_type !== 'text_only_question');
       if (filtered.length > 0) {
-        const tags = await tagQuestionsWithNGSS(
-          filtered.map(q => ({ id: q.id, question_text: q.question_text }))
+        const tags = await tagQuestionsWithStandards(
+          filtered.map(q => ({ id: q.id, question_text: q.question_text })),
+          'ngss'
         );
         setNgssTags(tags);
       }

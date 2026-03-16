@@ -185,8 +185,10 @@ RULES:
 - ONLY use standards from the MS- prefix list. Do NOT use any HS- (high school) standards.
 - Use the KEY TERMS section above as strong hints for matching.
 - Content-specific vocabulary matters more than the formal standard description.
+- Try HARD to match every question. Use inference: a question about "dinosaurs" relates to fossils (MS-LS4-1 or MS-ESS1-4). A question about "weather" relates to MS-ESS2-5 or MS-ESS2-6. A question about "cells" relates to MS-LS1-1 or MS-LS1-2.
+- Strip HTML tags mentally — focus on the actual content words in the question.
+- If a question tests knowledge that partially overlaps with a standard, tag it. Only return an empty array if the question is truly unrelated to ANY middle school science standard (e.g., a math-only or reading-only question).
 - Return the standard code, a brief description, and 2-5 key terms from the question text that led you to choose this standard.
-- If a question doesn't align with any standard, return an empty array for that question.
 
 Use the tool provided to return your analysis.`;
 }
@@ -202,9 +204,10 @@ RULES:
 - ONLY use standards from the list above. Do NOT invent standard codes.
 - Use the KEY TERMS section above as strong hints for matching.
 - Content-specific vocabulary matters more than the formal standard description.
-- Return the standard code, a brief description, and 2-5 key terms from the question text that led you to choose this standard.
-- If a question doesn't align with any standard from the list, return an empty array for that question.
+- Try HARD to match every question. Use inference from context clues, synonyms, and related concepts. Strip HTML tags mentally — focus on the actual content words.
+- If a question tests knowledge that partially overlaps with a standard, tag it. Only return an empty array if the question is truly unrelated to ANY standard in the list.
 - Prefer the most specific standard that matches the question content.
+- Return the standard code, a brief description, and 2-5 key terms from the question text that led you to choose this standard.
 
 Use the tool provided to return your analysis.`;
 }
