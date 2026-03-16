@@ -136,22 +136,32 @@ export function BrainstormChat({ lessonContext, onCopyToField }: Props) {
     let assistantSoFar = "";
 
     try {
-      const { data, error } = await supabase.functions.invoke("lesson-brainstorm", {
-        body: {
-          messages: newMessages,
-          lessonContext,
-        },
-      });
-
-      if (error) {
-        throw error;
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) {
+        throw new Error("You must be signed in to use brainstorming");
       }
 
-      if (!data || !(data instanceof ReadableStream)) {
-        throw new Error("Request failed");
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lesson-brainstorm`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            messages: newMessages,
+            lessonContext,
+          }),
+        }
+      );
+
+      if (!resp.ok || !resp.body) {
+        const errData = await resp.json().catch(() => ({}));
+        throw new Error(errData.error || `Request failed (${resp.status})`);
       }
 
-      const reader = data.getReader();
+      const reader = resp.body.getReader();
       const decoder = new TextDecoder();
       let textBuffer = "";
       let streamDone = false;
