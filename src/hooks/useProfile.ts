@@ -25,12 +25,17 @@ export const SUBJECT_OPTIONS = [
 ] as const;
 
 export function useProfile() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
+    if (authLoading) {
+      setLoading(true);
+      return;
+    }
+
     if (!user) {
       setProfile(null);
       setLoading(false);
@@ -53,19 +58,13 @@ export function useProfile() {
           .eq("user_id", user.id),
       ]);
 
-      if (profileRes.data) {
-        setProfile(profileRes.data as Profile);
-      }
-
-      if (roleRes.data) {
-        setIsAdmin(roleRes.data.some((r: any) => r.role === "admin"));
-      }
-
+      setProfile((profileRes.data as Profile) ?? null);
+      setIsAdmin((roleRes.data ?? []).some((r: any) => r.role === "admin"));
       setLoading(false);
     };
 
     fetchProfile();
-  }, [user]);
+  }, [user, authLoading]);
 
   const updateProfile = async (updates: Partial<Pick<Profile, "display_name" | "subjects">>) => {
     if (!user) return;
@@ -81,7 +80,7 @@ export function useProfile() {
     return { data, error };
   };
 
-  const needsOnboarding = !loading && user && profile && profile.subjects.length === 0;
+  const needsOnboarding = !authLoading && !loading && user && profile && profile.subjects.length === 0;
 
   return { profile, loading, isAdmin, updateProfile, needsOnboarding };
 }
