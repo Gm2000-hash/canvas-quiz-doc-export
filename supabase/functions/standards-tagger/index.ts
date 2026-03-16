@@ -202,9 +202,10 @@ RULES:
 - ONLY use standards from the list above. Do NOT invent standard codes.
 - Use the KEY TERMS section above as strong hints for matching.
 - Content-specific vocabulary matters more than the formal standard description.
-- Return the standard code, a brief description, and 2-5 key terms from the question text that led you to choose this standard.
-- If a question doesn't align with any standard from the list, return an empty array for that question.
+- Try HARD to match every question. Use inference from context clues, synonyms, and related concepts. Strip HTML tags mentally — focus on the actual content words.
+- If a question tests knowledge that partially overlaps with a standard, tag it. Only return an empty array if the question is truly unrelated to ANY standard in the list.
 - Prefer the most specific standard that matches the question content.
+- Return the standard code, a brief description, and 2-5 key terms from the question text that led you to choose this standard.
 
 Use the tool provided to return your analysis.`;
 }

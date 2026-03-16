@@ -178,8 +178,9 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
       setQuestions(qs);
       const filtered = qs.filter(q => q.question_type !== 'text_only_question');
       if (filtered.length > 0) {
-        const tags = await tagQuestionsWithNGSS(
-          filtered.map(q => ({ id: q.id, question_text: q.question_text }))
+        const tags = await tagQuestionsWithStandards(
+          filtered.map(q => ({ id: q.id, question_text: q.question_text })),
+          'ngss'
         );
         setNgssTags(tags);
       }
