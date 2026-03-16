@@ -13,6 +13,42 @@ interface SettingsFormProps {
   onDisconnect: () => void;
 }
 
+const APPROVED_CANVAS_HOST_PATTERNS = [
+  /(^|\.)instructure\.com$/i,
+  /(^|\.)canvaslms\.com$/i,
+  /^canvas\./i,
+  /\.canvas\./i,
+];
+
+function isIpAddress(hostname: string) {
+  return /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname);
+}
+
+function isApprovedCanvasHost(hostname: string) {
+  const normalized = hostname.toLowerCase();
+
+  if (normalized === 'localhost' || normalized.endsWith('.local') || isIpAddress(normalized)) {
+    return false;
+  }
+
+  return APPROVED_CANVAS_HOST_PATTERNS.some((pattern) => pattern.test(normalized));
+}
+
+function normalizeCanvasUrl(value: string) {
+  const raw = value.trim().startsWith('http') ? value.trim() : `https://${value.trim()}`;
+  const url = new URL(raw);
+
+  if (url.protocol !== 'https:') {
+    throw new Error('Canvas URL must use HTTPS.');
+  }
+
+  if (!isApprovedCanvasHost(url.hostname)) {
+    throw new Error('Use an approved Canvas domain, such as your school Canvas URL or an instructure.com address.');
+  }
+
+  return `${url.origin}${url.pathname === '/' ? '' : url.pathname}`.replace(/\/+$/, '');
+}
+
 export function SettingsForm({ config, onSave, onDisconnect }: SettingsFormProps) {
   const [canvasUrl, setCanvasUrl] = useState(config?.canvasUrl || '');
   const [apiToken, setApiToken] = useState(config?.apiToken || '');
@@ -24,16 +60,14 @@ export function SettingsForm({ config, onSave, onDisconnect }: SettingsFormProps
       return;
     }
 
-    let url = canvasUrl.trim();
-    if (!url.startsWith('http')) url = `https://${url}`;
-
     setTesting(true);
     try {
+      const url = normalizeCanvasUrl(canvasUrl);
       await getCourses({ canvasUrl: url, apiToken: apiToken.trim() });
       onSave({ canvasUrl: url, apiToken: apiToken.trim() });
       toast.success('Connected to Canvas successfully!');
     } catch (err) {
-      toast.error('Failed to connect. Please check your URL and API token.');
+      toast.error(err instanceof Error ? err.message : 'Failed to connect. Please check your URL and API token.');
     } finally {
       setTesting(false);
     }
@@ -78,7 +112,7 @@ export function SettingsForm({ config, onSave, onDisconnect }: SettingsFormProps
             onChange={(e) => setApiToken(e.target.value)}
           />
           <p className="text-xs text-muted-foreground">
-            Canvas → Account → Settings → New Access Token.{' '}
+            Canvas → Account → Settings → New Access Token. Only approved HTTPS Canvas domains are accepted.{' '}
             <a
               href="https://community.canvaslms.com/t5/Admin-Guide/How-do-I-manage-API-access-tokens-as-an-admin/ta-p/89"
               target="_blank"

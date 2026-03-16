@@ -37,8 +37,18 @@ export interface QuizAnswer {
 }
 
 async function canvasRequest(config: CanvasConfig, action: string, params: Record<string, unknown> = {}) {
+  const { data: { session } } = await supabase.auth.getSession();
+  const accessToken = session?.access_token;
+
+  if (!accessToken) {
+    throw new Error('Please sign in to use Canvas.');
+  }
+
   const { data, error } = await supabase.functions.invoke('canvas-proxy', {
     body: { ...params, action, canvasUrl: config.canvasUrl, apiToken: config.apiToken },
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
   });
 
   if (error) throw new Error(error.message || 'Failed to call Canvas API');
