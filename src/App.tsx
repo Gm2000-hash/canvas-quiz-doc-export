@@ -42,6 +42,17 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const { needsOnboarding, isAdmin, loading: profileLoading } = useProfile();
+
+  if (loading || profileLoading) return <LoadingScreen />;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (needsOnboarding) return <Navigate to="/onboarding" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 function OnboardingRoute() {
   const { user, loading } = useAuth();
   const { needsOnboarding, loading: profileLoading } = useProfile();
@@ -75,11 +86,12 @@ const App = () => (
           <Route path="/lesson-planner" element={<ProtectedRoute><LessonPlanner /></ProtectedRoute>} />
           <Route path="/units/:id" element={<ProtectedRoute><UnitDetail /></ProtectedRoute>} />
           <Route path="/lessons/:id" element={<ProtectedRoute><LessonPlanEditor /></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/library" element={<AdminRoute><Library /></AdminRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/standards" element={<ProtectedRoute><StandardsBrowser /></ProtectedRoute>} />
           <Route path="/canvas-results" element={<ProtectedRoute><CanvasResults /></ProtectedRoute>} />
-          <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+          <Route path="/library" element={<Navigate to="/admin/library" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

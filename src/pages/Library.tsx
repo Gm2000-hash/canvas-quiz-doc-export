@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
 import { AppNavSheet } from '@/components/AppNavSheet';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PdfFlipbookViewer } from '@/components/PdfFlipbookViewer';
@@ -10,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { BookOpen, Upload, Loader2, Trash2, FileText } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
 
 interface LibraryBook {
   id: string;
@@ -23,7 +21,6 @@ interface LibraryBook {
 
 export default function Library() {
   const { user } = useAuth();
-  const { isAdmin, loading: profileLoading } = useProfile();
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -43,21 +40,8 @@ export default function Library() {
   }, []);
 
   useEffect(() => {
-    if (!profileLoading && isAdmin) fetchBooks();
-  }, [fetchBooks, profileLoading, isAdmin]);
-
-  // Wait for profile to load before redirecting
-  if (profileLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
-  }
+    fetchBooks();
+  }, [fetchBooks]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
