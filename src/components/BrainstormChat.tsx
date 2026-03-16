@@ -135,27 +135,22 @@ export function BrainstormChat({ lessonContext, onCopyToField }: Props) {
     let assistantSoFar = "";
 
     try {
-      const resp = await fetch(
-        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/lesson-brainstorm`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-          },
-          body: JSON.stringify({
-            messages: newMessages,
-            lessonContext,
-          }),
-        }
-      );
+      const { data, error } = await supabase.functions.invoke("lesson-brainstorm", {
+        body: {
+          messages: newMessages,
+          lessonContext,
+        },
+      });
 
-      if (!resp.ok || !resp.body) {
-        const errData = await resp.json().catch(() => ({}));
-        throw new Error(errData.error || `Request failed (${resp.status})`);
+      if (error) {
+        throw error;
       }
 
-      const reader = resp.body.getReader();
+      if (!data || !(data instanceof ReadableStream)) {
+        throw new Error("Request failed");
+      }
+
+      const reader = data.getReader();
       const decoder = new TextDecoder();
       let textBuffer = "";
       let streamDone = false;
