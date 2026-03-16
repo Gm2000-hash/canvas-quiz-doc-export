@@ -546,18 +546,35 @@ export default function CanvasResults() {
           <Button variant="ghost" size="sm" asChild>
             <Link to="/"><ArrowLeft className="h-4 w-4 mr-1" /> Home</Link>
           </Button>
-          {step !== "select" && (
+          {step === "mapping" && (
             <Button variant="ghost" size="sm" onClick={() => setStep("select")}>
-              <ArrowLeft className="h-4 w-4 mr-1" /> New Quiz
+              <ArrowLeft className="h-4 w-4 mr-1" /> Back to Quiz Selection
+            </Button>
+          )}
+          {step === "report" && (
+            <Button variant="ghost" size="sm" onClick={() => setStep("mapping")}>
+              <ArrowLeft className="h-4 w-4 mr-1" /> Back to Mappings
             </Button>
           )}
         </div>
 
         {/* Step indicators */}
         <div className="flex items-center gap-2 text-sm">
-          <Badge variant={step === "select" ? "default" : "secondary"}>1. Select Quiz</Badge>
+          <Badge
+            variant={step === "select" ? "default" : "secondary"}
+            className={step !== "select" ? "cursor-pointer hover:bg-accent" : ""}
+            onClick={() => step !== "select" && setStep("select")}
+          >
+            1. Select Quiz
+          </Badge>
           <span className="text-muted-foreground">→</span>
-          <Badge variant={step === "mapping" ? "default" : "secondary"}>2. Map Standards</Badge>
+          <Badge
+            variant={step === "mapping" ? "default" : "secondary"}
+            className={step === "report" ? "cursor-pointer hover:bg-accent" : ""}
+            onClick={() => step === "report" && setStep("mapping")}
+          >
+            2. Map Standards
+          </Badge>
           <span className="text-muted-foreground">→</span>
           <Badge variant={step === "report" ? "default" : "secondary"}>3. View Report</Badge>
         </div>
