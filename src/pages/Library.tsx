@@ -29,11 +29,6 @@ export default function Library() {
   const [uploading, setUploading] = useState(false);
   const [viewingBook, setViewingBook] = useState<LibraryBook | null>(null);
 
-  // Only admins can access this page
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
-  }
-
   const fetchBooks = useCallback(async () => {
     const { data, error } = await supabase
       .from('library_books')
@@ -50,6 +45,11 @@ export default function Library() {
   useEffect(() => {
     fetchBooks();
   }, [fetchBooks]);
+
+  // Only admins can access this page
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
