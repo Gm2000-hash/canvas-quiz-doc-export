@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useProfile } from '@/hooks/useProfile';
 import { AppNavSheet } from '@/components/AppNavSheet';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PdfFlipbookViewer } from '@/components/PdfFlipbookViewer';
@@ -9,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { BookOpen, Upload, Loader2, Trash2, FileText } from 'lucide-react';
+import { Navigate } from 'react-router-dom';
 
 interface LibraryBook {
   id: string;
@@ -21,17 +23,21 @@ interface LibraryBook {
 
 export default function Library() {
   const { user } = useAuth();
+  const { isAdmin } = useProfile();
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [viewingBook, setViewingBook] = useState<LibraryBook | null>(null);
 
+  // Only admins can access this page
+  if (!isAdmin) {
+    return <Navigate to="/" replace />;
+  }
+
   const fetchBooks = useCallback(async () => {
-    if (!user) return;
     const { data, error } = await supabase
       .from('library_books')
       .select('*')
-      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
     if (error) {
       console.error('Failed to fetch books:', error);
@@ -39,7 +45,7 @@ export default function Library() {
       setBooks(data || []);
     }
     setLoading(false);
-  }, [user]);
+  }, []);
 
   useEffect(() => {
     fetchBooks();
@@ -59,7 +65,7 @@ export default function Library() {
 
     setUploading(true);
     try {
-      const filePath = `${user.id}/${Date.now()}-${file.name}`;
+      const filePath = `shared/${Date.now()}-${file.name}`;
       const { error: uploadError } = await supabase.storage
         .from('library-pdfs')
         .upload(filePath, file, { contentType: 'application/pdf' });
@@ -78,7 +84,7 @@ export default function Library() {
 
       if (insertError) throw insertError;
 
-      toast.success(`"${title}" added to your library`);
+      toast.success(`"${title}" added to the shared library`);
       fetchBooks();
     } catch (err) {
       console.error('Upload error:', err);
@@ -90,7 +96,7 @@ export default function Library() {
   };
 
   const handleDelete = async (book: LibraryBook) => {
-    if (!confirm(`Delete "${book.title}" from your library?`)) return;
+    if (!confirm(`Delete "${book.title}" from the shared library?`)) return;
     try {
       await supabase.storage.from('library-pdfs').remove([book.file_path]);
       await supabase.from('library_books').delete().eq('id', book.id);
@@ -115,16 +121,15 @@ export default function Library() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
-        <Breadcrumbs items={[{ label: "Library" }]} />
+        <Breadcrumbs items={[{ label: "Manage Library" }]} />
       </header>
 
       <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto space-y-6">
-          {/* Header + Upload */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-foreground">My Library</h1>
-              <p className="text-sm text-muted-foreground mt-1">Upload and read PDFs in a book-style viewer</p>
+              <h1 className="text-2xl font-bold text-foreground">Manage Shared Library</h1>
+              <p className="text-sm text-muted-foreground mt-1">Upload PDFs that appear on all teachers' home screens</p>
             </div>
             <div>
               <Input
@@ -153,7 +158,6 @@ export default function Library() {
             </div>
           </div>
 
-          {/* Books Grid */}
           {loading ? (
             <div className="flex items-center justify-center py-20">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -162,8 +166,8 @@ export default function Library() {
             <Card>
               <CardContent className="py-16 text-center">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground/40" />
-                <h3 className="text-lg font-semibold text-foreground mb-1">Your library is empty</h3>
-                <p className="text-sm text-muted-foreground">Upload a PDF to start reading in book mode</p>
+                <h3 className="text-lg font-semibold text-foreground mb-1">No books yet</h3>
+                <p className="text-sm text-muted-foreground">Upload a PDF to share it with all teachers</p>
               </CardContent>
             </Card>
           ) : (
@@ -174,12 +178,9 @@ export default function Library() {
                   className="group cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 overflow-hidden"
                   onClick={() => openBook(book)}
                 >
-                  {/* Book cover */}
                   <div className="aspect-[3/4] bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 flex items-center justify-center relative">
                     <FileText className="h-10 w-10 text-primary/40" />
-                    {/* Spine effect */}
                     <div className="absolute left-0 top-0 bottom-0 w-2 bg-primary/20" />
-                    {/* Delete button */}
                     <Button
                       variant="destructive"
                       size="icon"
@@ -200,7 +201,6 @@ export default function Library() {
         </div>
       </main>
 
-      {/* PDF Viewer overlay */}
       {viewingBook && (
         <PdfFlipbookViewer
           fileUrl={viewingBook.file_path}
