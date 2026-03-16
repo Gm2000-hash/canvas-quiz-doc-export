@@ -23,7 +23,7 @@ interface LibraryBook {
 
 export default function Library() {
   const { user } = useAuth();
-  const { isAdmin } = useProfile();
+  const { isAdmin, loading: profileLoading } = useProfile();
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -43,10 +43,18 @@ export default function Library() {
   }, []);
 
   useEffect(() => {
-    fetchBooks();
-  }, [fetchBooks]);
+    if (!profileLoading && isAdmin) fetchBooks();
+  }, [fetchBooks, profileLoading, isAdmin]);
 
-  // Only admins can access this page
+  // Wait for profile to load before redirecting
+  if (profileLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   if (!isAdmin) {
     return <Navigate to="/" replace />;
   }
