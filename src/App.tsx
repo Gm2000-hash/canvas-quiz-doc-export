@@ -86,11 +86,12 @@ const App = () => (
           <Route path="/lesson-planner" element={<ProtectedRoute><LessonPlanner /></ProtectedRoute>} />
           <Route path="/units/:id" element={<ProtectedRoute><UnitDetail /></ProtectedRoute>} />
           <Route path="/lessons/:id" element={<ProtectedRoute><LessonPlanEditor /></ProtectedRoute>} />
-          <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/library" element={<AdminRoute><Library /></AdminRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/standards" element={<ProtectedRoute><StandardsBrowser /></ProtectedRoute>} />
           <Route path="/canvas-results" element={<ProtectedRoute><CanvasResults /></ProtectedRoute>} />
-          <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+          <Route path="/library" element={<Navigate to="/admin/library" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

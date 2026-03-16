@@ -21,7 +21,6 @@ interface LibraryBook {
 
 export default function Library() {
   const { user } = useAuth();
-  const { isAdmin, loading: profileLoading } = useProfile();
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -41,21 +40,8 @@ export default function Library() {
   }, []);
 
   useEffect(() => {
-    if (!profileLoading && isAdmin) fetchBooks();
-  }, [fetchBooks, profileLoading, isAdmin]);
-
-  // Wait for profile to load before redirecting
-  if (profileLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  if (!isAdmin) {
-    return <Navigate to="/" replace />;
-  }
+    fetchBooks();
+  }, [fetchBooks]);
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

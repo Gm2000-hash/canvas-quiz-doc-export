@@ -246,7 +246,7 @@ export default function AdminDashboard() {
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
           <Card
             className="cursor-pointer hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 border-primary/20"
-            onClick={() => navigate("/library")}
+            onClick={() => navigate("/admin/library")}
           >
             <CardContent className="pt-5 pb-4 text-center">
               <BookOpenCheck className="h-6 w-6 text-primary mx-auto mb-1" />
