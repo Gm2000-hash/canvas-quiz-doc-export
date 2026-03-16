@@ -42,6 +42,17 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function AdminRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  const { needsOnboarding, isAdmin, loading: profileLoading } = useProfile();
+
+  if (loading || profileLoading) return <LoadingScreen />;
+  if (!user) return <Navigate to="/auth" replace />;
+  if (needsOnboarding) return <Navigate to="/onboarding" replace />;
+  if (!isAdmin) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 function OnboardingRoute() {
   const { user, loading } = useAuth();
   const { needsOnboarding, loading: profileLoading } = useProfile();

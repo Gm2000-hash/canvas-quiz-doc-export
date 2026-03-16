@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
-import { useProfile } from '@/hooks/useProfile';
 import { AppNavSheet } from '@/components/AppNavSheet';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PdfFlipbookViewer } from '@/components/PdfFlipbookViewer';
@@ -10,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { BookOpen, Upload, Loader2, Trash2, FileText } from 'lucide-react';
-import { Navigate } from 'react-router-dom';
 
 interface LibraryBook {
   id: string;
