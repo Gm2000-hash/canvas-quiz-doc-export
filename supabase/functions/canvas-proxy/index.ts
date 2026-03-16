@@ -1,9 +1,77 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.57.4";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+const APPROVED_CANVAS_HOST_PATTERNS = [
+  /(^|\.)instructure\.com$/i,
+  /(^|\.)canvaslms\.com$/i,
+  /^canvas\./i,
+  /\.canvas\./i,
+];
+
+function isIpAddress(hostname: string) {
+  return /^(\d{1,3}\.){3}\d{1,3}$/.test(hostname);
+}
+
+function validateCanvasUrl(value: string) {
+  let url: URL;
+
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error('Invalid Canvas URL');
+  }
+
+  const hostname = url.hostname.toLowerCase();
+  const isApprovedHost = APPROVED_CANVAS_HOST_PATTERNS.some((pattern) => pattern.test(hostname));
+
+  if (url.protocol !== 'https:') {
+    throw new Error('Canvas URL must use HTTPS');
+  }
+
+  if (hostname === 'localhost' || hostname.endsWith('.local') || isIpAddress(hostname)) {
+    throw new Error('Canvas URL must use an approved Canvas domain');
+  }
+
+  if (!isApprovedHost) {
+    throw new Error('Canvas URL must use an approved Canvas domain');
+  }
+
+  return `${url.origin}${url.pathname === '/' ? '' : url.pathname}`.replace(/\/+$/, '');
+}
+
+async function requireAuth(req: Request) {
+  const authHeader = req.headers.get('Authorization');
+
+  if (!authHeader?.startsWith('Bearer ')) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  const supabase = createClient(
+    Deno.env.get('SUPABASE_URL') ?? '',
+    Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+    { global: { headers: { Authorization: authHeader } } },
+  );
+
+  const token = authHeader.replace('Bearer ', '');
+  const { data, error } = await supabase.auth.getClaims(token);
+
+  if (error || !data?.claims?.sub) {
+    return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+      status: 401,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
+  }
+
+  return null;
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -11,6 +79,9 @@ serve(async (req) => {
   }
 
   try {
+    const authError = await requireAuth(req);
+    if (authError) return authError;
+
     const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData, submissionId } = await req.json();
 
     if (!canvasUrl || !apiToken) {
@@ -20,7 +91,7 @@ serve(async (req) => {
       });
     }
 
-    const baseUrl = canvasUrl.replace(/\/+$/, '');
+    const baseUrl = validateCanvasUrl(canvasUrl);
     const headers: Record<string, string> = { 'Authorization': `Bearer ${apiToken}` };
 
     let url: string;

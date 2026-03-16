@@ -112,7 +112,7 @@ export function SettingsForm({ config, onSave, onDisconnect }: SettingsFormProps
             onChange={(e) => setApiToken(e.target.value)}
           />
           <p className="text-xs text-muted-foreground">
-            Canvas → Account → Settings → New Access Token.{' '}
+            Canvas → Account → Settings → New Access Token. Only approved HTTPS Canvas domains are accepted.{' '}
             <a
               href="https://community.canvaslms.com/t5/Admin-Guide/How-do-I-manage-API-access-tokens-as-an-admin/ta-p/89"
               target="_blank"
