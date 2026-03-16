@@ -7,8 +7,9 @@ import { PdfFlipbookViewer } from '@/components/PdfFlipbookViewer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { BookOpen, Upload, Loader2, Trash2, FileText } from 'lucide-react';
+import { BookOpen, Upload, Loader2, Trash2, FileText, Eye, EyeOff } from 'lucide-react';
 
 interface LibraryBook {
   id: string;
@@ -17,6 +18,13 @@ interface LibraryBook {
   file_size: number;
   page_count: number;
   created_at: string;
+  is_published: boolean;
+}
+
+interface ViewingBook {
+  id: string;
+  title: string;
+  url: string;
 }
 
 export default function Library() {
@@ -24,18 +32,24 @@ export default function Library() {
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [viewingBook, setViewingBook] = useState<LibraryBook | null>(null);
+  const [openingId, setOpeningId] = useState<string | null>(null);
+  const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [viewingBook, setViewingBook] = useState<ViewingBook | null>(null);
 
   const fetchBooks = useCallback(async () => {
+    setLoading(true);
     const { data, error } = await supabase
       .from('library_books')
-      .select('*')
+      .select('id, title, file_path, file_size, page_count, created_at, is_published')
       .order('created_at', { ascending: false });
+
     if (error) {
       console.error('Failed to fetch books:', error);
+      toast.error('Failed to load library');
     } else {
       setBooks(data || []);
     }
+
     setLoading(false);
   }, []);
 
@@ -72,11 +86,12 @@ export default function Library() {
           title,
           file_path: filePath,
           file_size: file.size,
+          is_published: false,
         });
 
       if (insertError) throw insertError;
 
-      toast.success(`"${title}" added to the shared library`);
+      toast.success(`"${title}" uploaded as unpublished`);
       fetchBooks();
     } catch (err) {
       console.error('Upload error:', err);
@@ -89,19 +104,66 @@ export default function Library() {
 
   const handleDelete = async (book: LibraryBook) => {
     if (!confirm(`Delete "${book.title}" from the shared library?`)) return;
+
     try {
-      await supabase.storage.from('library-pdfs').remove([book.file_path]);
-      await supabase.from('library_books').delete().eq('id', book.id);
-      setBooks(prev => prev.filter(b => b.id !== book.id));
+      const { error: storageError } = await supabase.storage.from('library-pdfs').remove([book.file_path]);
+      if (storageError) throw storageError;
+
+      const { error: deleteError } = await supabase.from('library_books').delete().eq('id', book.id);
+      if (deleteError) throw deleteError;
+
+      setBooks((prev) => prev.filter((b) => b.id !== book.id));
       toast.success('Book removed');
-    } catch {
+    } catch (error) {
+      console.error('Failed to delete book:', error);
       toast.error('Failed to delete book');
     }
   };
 
-  const openBook = (book: LibraryBook) => {
-    const { data } = supabase.storage.from('library-pdfs').getPublicUrl(book.file_path);
-    setViewingBook({ ...book, file_path: data.publicUrl });
+  const handleTogglePublished = async (book: LibraryBook) => {
+    const nextPublished = !book.is_published;
+    setUpdatingId(book.id);
+
+    try {
+      const { error } = await supabase
+        .from('library_books')
+        .update({ is_published: nextPublished })
+        .eq('id', book.id);
+
+      if (error) throw error;
+
+      setBooks((prev) =>
+        prev.map((item) =>
+          item.id === book.id ? { ...item, is_published: nextPublished } : item
+        )
+      );
+
+      toast.success(nextPublished ? 'Book published' : 'Book unpublished');
+    } catch (error) {
+      console.error('Failed to update publish state:', error);
+      toast.error('Failed to update publish state');
+    } finally {
+      setUpdatingId(null);
+    }
+  };
+
+  const openBook = async (book: LibraryBook) => {
+    setOpeningId(book.id);
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('library-pdfs')
+        .createSignedUrl(book.file_path, 60 * 30);
+
+      if (error || !data?.signedUrl) throw error;
+
+      setViewingBook({ id: book.id, title: book.title, url: data.signedUrl });
+    } catch (error) {
+      console.error('Failed to open PDF:', error);
+      toast.error('Failed to open PDF');
+    } finally {
+      setOpeningId(null);
+    }
   };
 
   const formatSize = (bytes: number) => {
@@ -113,15 +175,17 @@ export default function Library() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
-        <Breadcrumbs items={[{ label: "Manage Library" }]} />
+        <Breadcrumbs items={[{ label: 'Manage Library' }]} />
       </header>
 
       <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h1 className="text-2xl font-bold text-foreground">Manage Shared Library</h1>
-              <p className="text-sm text-muted-foreground mt-1">Upload PDFs that appear on all teachers' home screens</p>
+              <p className="text-sm text-muted-foreground mt-1">
+                Upload PDFs, then publish them when they should appear on teacher home screens.
+              </p>
             </div>
             <div>
               <Input
@@ -159,35 +223,81 @@ export default function Library() {
               <CardContent className="py-16 text-center">
                 <BookOpen className="h-12 w-12 mx-auto mb-4 text-muted-foreground/40" />
                 <h3 className="text-lg font-semibold text-foreground mb-1">No books yet</h3>
-                <p className="text-sm text-muted-foreground">Upload a PDF to share it with all teachers</p>
+                <p className="text-sm text-muted-foreground">Upload a PDF to start the shared library</p>
               </CardContent>
             </Card>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-              {books.map(book => (
-                <Card
-                  key={book.id}
-                  className="group cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 overflow-hidden"
-                  onClick={() => openBook(book)}
-                >
-                  <div className="aspect-[3/4] bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 flex items-center justify-center relative">
-                    <FileText className="h-10 w-10 text-primary/40" />
-                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-primary/20" />
-                    <Button
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2 h-7 w-7 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(book); }}
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
+              {books.map((book) => {
+                const isUpdating = updatingId === book.id;
+                const isOpening = openingId === book.id;
+
+                return (
+                  <Card
+                    key={book.id}
+                    className="group overflow-hidden transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+                  >
+                    <button
+                      type="button"
+                      className="w-full text-left"
+                      onClick={() => openBook(book)}
+                      disabled={isOpening}
                     >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                  <CardContent className="p-3">
-                    <p className="text-sm font-medium text-foreground truncate">{book.title}</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">{formatSize(book.file_size)}</p>
-                  </CardContent>
-                </Card>
-              ))}
+                      <div className="aspect-[3/4] bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 flex items-center justify-center relative">
+                        {isOpening ? (
+                          <Loader2 className="h-10 w-10 animate-spin text-primary/50" />
+                        ) : (
+                          <FileText className="h-10 w-10 text-primary/40" />
+                        )}
+                        <div className="absolute left-0 top-0 bottom-0 w-2 bg-primary/20" />
+                      </div>
+                    </button>
+
+                    <CardContent className="space-y-3 p-3">
+                      <div className="space-y-1">
+                        <p className="truncate text-sm font-medium text-foreground">{book.title}</p>
+                        <div className="flex items-center justify-between gap-2">
+                          <p className="text-[11px] text-muted-foreground">{formatSize(book.file_size)}</p>
+                          <Badge variant={book.is_published ? 'default' : 'secondary'}>
+                            {book.is_published ? 'Published' : 'Unpublished'}
+                          </Badge>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="w-full gap-2"
+                          disabled={isUpdating}
+                          onClick={() => handleTogglePublished(book)}
+                        >
+                          {isUpdating ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : book.is_published ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                          {book.is_published ? 'Unpublish' : 'Publish'}
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="w-full gap-2"
+                          onClick={() => handleDelete(book)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           )}
         </div>
@@ -195,7 +305,7 @@ export default function Library() {
 
       {viewingBook && (
         <PdfFlipbookViewer
-          fileUrl={viewingBook.file_path}
+          fileUrl={viewingBook.url}
           title={viewingBook.title}
           onClose={() => setViewingBook(null)}
         />

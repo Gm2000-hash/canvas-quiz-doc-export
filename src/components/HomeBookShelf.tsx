@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PdfFlipbookViewer } from '@/components/PdfFlipbookViewer';
 import { FileText, BookOpenCheck } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface LibraryBook {
   id: string;
@@ -13,22 +14,42 @@ interface LibraryBook {
 export function HomeBookShelf() {
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [viewingBook, setViewingBook] = useState<{ title: string; url: string } | null>(null);
+  const [openingId, setOpeningId] = useState<string | null>(null);
 
   useEffect(() => {
     supabase
       .from('library_books')
       .select('id, title, file_path, file_size')
       .order('created_at', { ascending: false })
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          console.error('Failed to load library books:', error);
+          return;
+        }
+
         if (data) setBooks(data);
       });
   }, []);
 
   if (books.length === 0) return null;
 
-  const openBook = (book: LibraryBook) => {
-    const { data } = supabase.storage.from('library-pdfs').getPublicUrl(book.file_path);
-    setViewingBook({ title: book.title, url: data.publicUrl });
+  const openBook = async (book: LibraryBook) => {
+    setOpeningId(book.id);
+
+    try {
+      const { data, error } = await supabase.storage
+        .from('library-pdfs')
+        .createSignedUrl(book.file_path, 60 * 30);
+
+      if (error || !data?.signedUrl) throw error;
+
+      setViewingBook({ title: book.title, url: data.signedUrl });
+    } catch (error) {
+      console.error('Failed to open library book:', error);
+      toast.error('Failed to open PDF');
+    } finally {
+      setOpeningId(null);
+    }
   };
 
   return (
@@ -39,18 +60,20 @@ export function HomeBookShelf() {
           <h2 className="text-lg font-semibold text-foreground">Reading Library</h2>
         </div>
         <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">
-          {books.map(book => (
+          {books.map((book) => (
             <button
               key={book.id}
               onClick={() => openBook(book)}
-              className="shrink-0 w-28 group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl"
+              disabled={openingId === book.id}
+              className="shrink-0 w-28 group text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl disabled:opacity-70"
             >
-              {/* Book cover */}
               <div className="aspect-[3/4] rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 border border-border/60 flex items-center justify-center relative overflow-hidden transition-all duration-200 group-hover:shadow-lg group-hover:-translate-y-1 group-active:scale-[0.97]">
-                <FileText className="h-8 w-8 text-primary/30" />
-                {/* Spine */}
+                {openingId === book.id ? (
+                  <div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+                ) : (
+                  <FileText className="h-8 w-8 text-primary/30" />
+                )}
                 <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary/25 rounded-l-xl" />
-                {/* Shine effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               </div>
               <p className="text-xs font-medium text-foreground mt-2 truncate px-0.5">{book.title}</p>
