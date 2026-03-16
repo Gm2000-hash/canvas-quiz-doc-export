@@ -101,7 +101,7 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
 
   // NGSS tagging state
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
-  const [ngssTags, setNgssTags] = useState<Map<number, NGSSStandard[]>>(new Map());
+  const [ngssTags, setNgssTags] = useState<Map<number, StandardMatch[]>>(new Map());
   const [loadingNGSS, setLoadingNGSS] = useState(false);
   const [ngssLoaded, setNgssLoaded] = useState(false);
 
