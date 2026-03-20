@@ -543,6 +543,48 @@ export default function AdminDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Invite User Dialog */}
+      <Dialog open={inviteOpen} onOpenChange={(open) => { if (!open) { setInviteOpen(false); setInviteEmail(""); setInvitePassword(""); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Invite New User</DialogTitle>
+            <DialogDescription>
+              Create a new account. The user can sign in immediately with these credentials.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Email *</label>
+              <Input
+                type="email"
+                placeholder="teacher@school.edu"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                className="h-10 rounded-xl"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Temporary Password</label>
+              <Input
+                type="text"
+                placeholder="Leave blank to auto-generate"
+                value={invitePassword}
+                onChange={(e) => setInvitePassword(e.target.value)}
+                className="h-10 rounded-xl"
+              />
+              <p className="text-xs text-muted-foreground">If left blank, a random password will be generated. Share it with the user so they can sign in.</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteOpen(false)} disabled={inviteLoading}>Cancel</Button>
+            <Button onClick={handleInviteUser} disabled={inviteLoading || !inviteEmail.trim()}>
+              {inviteLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <UserPlus className="h-4 w-4 mr-1" />}
+              Create User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
