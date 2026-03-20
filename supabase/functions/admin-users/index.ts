@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { action, userId } = await req.json();
+    const { action, userId, email, password } = await req.json();
 
     if (action === "delete_user") {
       const { error } = await adminClient.auth.admin.deleteUser(userId);
@@ -98,6 +98,21 @@ Deno.serve(async (req) => {
 
       return new Response(
         JSON.stringify({ questions, standards }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (action === "invite_user") {
+      if (!email) throw new Error("Email is required");
+      const tempPassword = password || crypto.randomUUID().slice(0, 16);
+      const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true,
+      });
+      if (createError) throw createError;
+      return new Response(
+        JSON.stringify({ success: true, userId: newUser.user.id, email }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }

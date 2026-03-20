@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { ShieldCheck, Users, Loader2, GraduationCap, Search, Trash2, KeyRound, Eye, BookOpenCheck } from "lucide-react";
+import { ShieldCheck, Users, Loader2, GraduationCap, Search, Trash2, KeyRound, Eye, BookOpenCheck, UserPlus } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -54,6 +54,12 @@ export default function AdminDashboard() {
   const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
   const [resetTarget, setResetTarget] = useState<UserRow | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Invite user
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [invitePassword, setInvitePassword] = useState("");
+  const [inviteLoading, setInviteLoading] = useState(false);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -147,6 +153,27 @@ export default function AdminDashboard() {
       toast.error(err.message || "Failed to send reset");
     } finally {
       setActionLoading(false);
+    }
+  };
+
+  const handleInviteUser = async () => {
+    if (!inviteEmail.trim()) return;
+    setInviteLoading(true);
+    try {
+      const res = await supabase.functions.invoke("admin-users", {
+        body: { action: "invite_user", email: inviteEmail.trim(), password: invitePassword || undefined },
+      });
+      if (res.error) throw new Error(res.error.message);
+      if (res.data?.error) throw new Error(res.data.error);
+      toast.success(`User "${inviteEmail}" has been created!`);
+      setInviteOpen(false);
+      setInviteEmail("");
+      setInvitePassword("");
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create user");
+    } finally {
+      setInviteLoading(false);
     }
   };
 
@@ -277,14 +304,20 @@ export default function AdminDashboard() {
           <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <CardTitle className="text-lg">All Users</CardTitle>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search name, email, subject..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 h-9 rounded-xl"
-                />
+              <div className="flex items-center gap-2">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search name, email, subject..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 h-9 rounded-xl"
+                  />
+                </div>
+                <Button size="sm" className="h-9 rounded-xl gap-1.5" onClick={() => setInviteOpen(true)}>
+                  <UserPlus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Invite</span>
+                </Button>
               </div>
             </div>
           </CardHeader>
@@ -510,6 +543,48 @@ export default function AdminDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Invite User Dialog */}
+      <Dialog open={inviteOpen} onOpenChange={(open) => { if (!open) { setInviteOpen(false); setInviteEmail(""); setInvitePassword(""); } }}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Invite New User</DialogTitle>
+            <DialogDescription>
+              Create a new account. The user can sign in immediately with these credentials.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Email *</label>
+              <Input
+                type="email"
+                placeholder="teacher@school.edu"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                className="h-10 rounded-xl"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium">Temporary Password</label>
+              <Input
+                type="text"
+                placeholder="Leave blank to auto-generate"
+                value={invitePassword}
+                onChange={(e) => setInvitePassword(e.target.value)}
+                className="h-10 rounded-xl"
+              />
+              <p className="text-xs text-muted-foreground">If left blank, a random password will be generated. Share it with the user so they can sign in.</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setInviteOpen(false)} disabled={inviteLoading}>Cancel</Button>
+            <Button onClick={handleInviteUser} disabled={inviteLoading || !inviteEmail.trim()}>
+              {inviteLoading ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <UserPlus className="h-4 w-4 mr-1" />}
+              Create User
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
