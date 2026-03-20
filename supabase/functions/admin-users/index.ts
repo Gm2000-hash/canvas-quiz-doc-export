@@ -102,6 +102,21 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (action === "invite_user") {
+      if (!email) throw new Error("Email is required");
+      const tempPassword = password || crypto.randomUUID().slice(0, 16);
+      const { data: newUser, error: createError } = await adminClient.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true,
+      });
+      if (createError) throw createError;
+      return new Response(
+        JSON.stringify({ success: true, userId: newUser.user.id, email }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     return new Response(JSON.stringify({ error: "Unknown action" }), {
       status: 400,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
