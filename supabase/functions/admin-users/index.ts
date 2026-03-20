@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { action, userId } = await req.json();
+    const { action, userId, email, password } = await req.json();
 
     if (action === "delete_user") {
       const { error } = await adminClient.auth.admin.deleteUser(userId);
