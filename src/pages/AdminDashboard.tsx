@@ -304,14 +304,20 @@ export default function AdminDashboard() {
           <CardHeader className="pb-3">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
               <CardTitle className="text-lg">All Users</CardTitle>
-              <div className="relative w-full sm:w-64">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search name, email, subject..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="pl-9 h-9 rounded-xl"
-                />
+              <div className="flex items-center gap-2">
+                <div className="relative w-full sm:w-64">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search name, email, subject..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className="pl-9 h-9 rounded-xl"
+                  />
+                </div>
+                <Button size="sm" className="h-9 rounded-xl gap-1.5" onClick={() => setInviteOpen(true)}>
+                  <UserPlus className="h-4 w-4" />
+                  <span className="hidden sm:inline">Invite</span>
+                </Button>
               </div>
             </div>
           </CardHeader>
