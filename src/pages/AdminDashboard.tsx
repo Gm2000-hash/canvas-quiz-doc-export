@@ -156,6 +156,29 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleInviteUser = async () => {
+    if (!inviteEmail.trim()) return;
+    setInviteLoading(true);
+    try {
+      await callAdminFunction("invite_user", "");
+      // Need to pass email/password via body, so call directly
+      const res = await supabase.functions.invoke("admin-users", {
+        body: { action: "invite_user", email: inviteEmail.trim(), password: invitePassword || undefined },
+      });
+      if (res.error) throw new Error(res.error.message);
+      if (res.data?.error) throw new Error(res.data.error);
+      toast.success(`User "${inviteEmail}" has been created!`);
+      setInviteOpen(false);
+      setInviteEmail("");
+      setInvitePassword("");
+      fetchUsers();
+    } catch (err: any) {
+      toast.error(err.message || "Failed to create user");
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
   if (profileLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
