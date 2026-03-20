@@ -160,8 +160,6 @@ export default function AdminDashboard() {
     if (!inviteEmail.trim()) return;
     setInviteLoading(true);
     try {
-      await callAdminFunction("invite_user", "");
-      // Need to pass email/password via body, so call directly
       const res = await supabase.functions.invoke("admin-users", {
         body: { action: "invite_user", email: inviteEmail.trim(), password: invitePassword || undefined },
       });
