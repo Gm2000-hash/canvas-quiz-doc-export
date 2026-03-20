@@ -55,6 +55,12 @@ export default function AdminDashboard() {
   const [resetTarget, setResetTarget] = useState<UserRow | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
 
+  // Invite user
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [invitePassword, setInvitePassword] = useState("");
+  const [inviteLoading, setInviteLoading] = useState(false);
+
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     const [profilesRes, rolesRes] = await Promise.all([
