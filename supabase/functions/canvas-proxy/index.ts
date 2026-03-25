@@ -82,7 +82,7 @@ serve(async (req) => {
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData, submissionId } = await req.json();
+    const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData, submissionId, pageData } = await req.json();
 
     if (!canvasUrl || !apiToken) {
       return new Response(JSON.stringify({ error: 'Canvas URL and API token are required' }), {
