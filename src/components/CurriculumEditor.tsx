@@ -155,6 +155,7 @@ function UnitSection({
   onToggle,
   onEditLesson,
   onOpenGenerate,
+  refreshKey,
 }: {
   unit: { id: string; title: string; discipline: string; grade_level: string };
   index: number;
@@ -162,6 +163,7 @@ function UnitSection({
   onToggle: () => void;
   onEditLesson: (lesson: CurriculumLesson) => void;
   onOpenGenerate: () => void;
+  refreshKey: number;
 }) {
   const { user } = useAuth();
   const { lessons, loading, createLesson, deleteLesson, reorderLessons } = useCurriculumLessons(isExpanded ? unit.id : undefined);
