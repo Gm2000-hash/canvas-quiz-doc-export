@@ -1,0 +1,1 @@
+ALTER TABLE public.library_books ADD COLUMN source_discipline text DEFAULT NULL;
