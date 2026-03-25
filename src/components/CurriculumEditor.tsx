@@ -207,6 +207,22 @@ function UnitSection({
             </div>
           </div>
         </button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1 text-xs"
+          disabled={lessons.length === 0}
+          onClick={async () => {
+            try {
+              await exportCurriculumUnitToDocx(unit, lessons);
+              sonnerToast.success("Unit exported to Word!");
+            } catch (err: any) {
+              sonnerToast.error(err.message || "Export failed");
+            }
+          }}
+        >
+          <FileDown className="h-3.5 w-3.5" /> Export
+        </Button>
         <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={onOpenGenerate}>
           <Sparkles className="h-3.5 w-3.5" /> AI Generate
         </Button>
