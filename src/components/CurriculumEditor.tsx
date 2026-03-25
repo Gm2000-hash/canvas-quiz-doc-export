@@ -10,8 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Plus, Trash2, Pencil, ChevronDown, ChevronRight, GripVertical,
-  BookOpen, Sparkles, Loader2, Eye, RotateCcw, Save, X,
+  BookOpen, Sparkles, Loader2, Eye, RotateCcw, Save, X, FileDown,
 } from "lucide-react";
+import { exportCurriculumUnitToDocx, exportCurriculumLessonToDocx } from "@/lib/export-curriculum-docx";
 import { toast as sonnerToast } from "sonner";
 
 interface CurriculumEditorProps {
@@ -206,6 +207,22 @@ function UnitSection({
             </div>
           </div>
         </button>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-1 text-xs"
+          disabled={lessons.length === 0}
+          onClick={async () => {
+            try {
+              await exportCurriculumUnitToDocx(unit, lessons);
+              sonnerToast.success("Unit exported to Word!");
+            } catch (err: any) {
+              sonnerToast.error(err.message || "Export failed");
+            }
+          }}
+        >
+          <FileDown className="h-3.5 w-3.5" /> Export
+        </Button>
         <Button variant="ghost" size="sm" className="gap-1 text-xs" onClick={onOpenGenerate}>
           <Sparkles className="h-3.5 w-3.5" /> AI Generate
         </Button>
@@ -248,6 +265,20 @@ function UnitSection({
                     </div>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={async () => {
+                        try {
+                          await exportCurriculumLessonToDocx(lesson);
+                          sonnerToast.success("Lesson exported!");
+                        } catch (err: any) {
+                          sonnerToast.error(err.message || "Export failed");
+                        }
+                      }}
+                      title="Export to Word"
+                      className="rounded-md p-1.5 text-muted-foreground hover:text-foreground"
+                    >
+                      <FileDown className="h-3.5 w-3.5" />
+                    </button>
                     <button onClick={() => onEditLesson(lesson)} title="Edit" className="rounded-md p-1.5 text-muted-foreground hover:text-foreground">
                       <Pencil className="h-3.5 w-3.5" />
                     </button>
