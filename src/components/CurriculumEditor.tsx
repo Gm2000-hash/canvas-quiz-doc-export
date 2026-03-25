@@ -133,6 +133,7 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
 
                 sonnerToast.success("Lesson generated and saved!");
                 setGenDialogUnit(null);
+                setRefreshKey(k => k + 1);
               } catch (err: any) {
                 sonnerToast.error(err.message || "Failed to generate");
               } finally {
