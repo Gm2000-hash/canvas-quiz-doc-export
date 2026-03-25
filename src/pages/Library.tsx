@@ -317,6 +317,14 @@ export default function Library() {
           onClose={() => setViewingBook(null)}
         />
       )}
+
+      {viewingCurriculum && (
+        <CurriculumReadingViewer
+          discipline={viewingCurriculum.discipline}
+          title={viewingCurriculum.title}
+          onClose={() => setViewingCurriculum(null)}
+        />
+      )}
     </div>
   );
 }
