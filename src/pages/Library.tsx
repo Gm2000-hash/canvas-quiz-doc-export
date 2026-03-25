@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AppNavSheet } from '@/components/AppNavSheet';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PdfFlipbookViewer } from '@/components/PdfFlipbookViewer';
+import { CurriculumReadingViewer } from '@/components/CurriculumReadingViewer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
