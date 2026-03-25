@@ -52,6 +52,7 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
           {units.map((unit, idx) => (
             <UnitSection
               key={unit.id}
+              refreshKey={refreshKey}
               unit={unit}
               index={idx}
               isExpanded={expandedUnit === unit.id}
