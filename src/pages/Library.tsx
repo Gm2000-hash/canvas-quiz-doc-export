@@ -20,6 +20,7 @@ interface LibraryBook {
   page_count: number;
   created_at: string;
   is_published: boolean;
+  source_discipline: string | null;
 }
 
 interface ViewingBook {
