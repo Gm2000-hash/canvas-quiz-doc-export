@@ -37,6 +37,7 @@ export default function Library() {
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [viewingBook, setViewingBook] = useState<ViewingBook | null>(null);
+  const [viewingCurriculum, setViewingCurriculum] = useState<{ title: string; discipline: string } | null>(null);
 
   const fetchBooks = useCallback(async () => {
     setLoading(true);
