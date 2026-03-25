@@ -151,8 +151,12 @@ export default function Library() {
   };
 
   const openBook = async (book: LibraryBook) => {
-    setOpeningId(book.id);
+    if (book.source_discipline) {
+      setViewingCurriculum({ title: book.title, discipline: book.source_discipline });
+      return;
+    }
 
+    setOpeningId(book.id);
     try {
       const { data, error } = await supabase.storage
         .from('library-pdfs')
