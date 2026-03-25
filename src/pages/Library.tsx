@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { AppNavSheet } from '@/components/AppNavSheet';
 import { Breadcrumbs } from '@/components/Breadcrumbs';
 import { PdfFlipbookViewer } from '@/components/PdfFlipbookViewer';
+import { CurriculumReadingViewer } from '@/components/CurriculumReadingViewer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ interface LibraryBook {
   page_count: number;
   created_at: string;
   is_published: boolean;
+  source_discipline: string | null;
 }
 
 interface ViewingBook {
@@ -35,19 +37,20 @@ export default function Library() {
   const [openingId, setOpeningId] = useState<string | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
   const [viewingBook, setViewingBook] = useState<ViewingBook | null>(null);
+  const [viewingCurriculum, setViewingCurriculum] = useState<{ title: string; discipline: string } | null>(null);
 
   const fetchBooks = useCallback(async () => {
     setLoading(true);
     const { data, error } = await supabase
       .from('library_books')
-      .select('id, title, file_path, file_size, page_count, created_at, is_published')
+      .select('id, title, file_path, file_size, page_count, created_at, is_published, source_discipline')
       .order('created_at', { ascending: false });
 
     if (error) {
       console.error('Failed to fetch books:', error);
       toast.error('Failed to load library');
     } else {
-      setBooks(data || []);
+      setBooks((data || []) as LibraryBook[]);
     }
 
     setLoading(false);
@@ -148,8 +151,12 @@ export default function Library() {
   };
 
   const openBook = async (book: LibraryBook) => {
-    setOpeningId(book.id);
+    if (book.source_discipline) {
+      setViewingCurriculum({ title: book.title, discipline: book.source_discipline });
+      return;
+    }
 
+    setOpeningId(book.id);
     try {
       const { data, error } = await supabase.storage
         .from('library-pdfs')
@@ -257,7 +264,7 @@ export default function Library() {
                       <div className="space-y-1">
                         <p className="truncate text-sm font-medium text-foreground">{book.title}</p>
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-[11px] text-muted-foreground">{formatSize(book.file_size)}</p>
+                          <p className="text-[11px] text-muted-foreground">{book.source_discipline ? 'Curriculum' : formatSize(book.file_size)}</p>
                           <Badge variant={book.is_published ? 'default' : 'secondary'}>
                             {book.is_published ? 'Published' : 'Unpublished'}
                           </Badge>
@@ -308,6 +315,14 @@ export default function Library() {
           fileUrl={viewingBook.url}
           title={viewingBook.title}
           onClose={() => setViewingBook(null)}
+        />
+      )}
+
+      {viewingCurriculum && (
+        <CurriculumReadingViewer
+          discipline={viewingCurriculum.discipline}
+          title={viewingCurriculum.title}
+          onClose={() => setViewingCurriculum(null)}
         />
       )}
     </div>

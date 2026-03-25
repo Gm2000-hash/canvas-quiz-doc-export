@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { PdfFlipbookViewer } from '@/components/PdfFlipbookViewer';
+import { CurriculumReadingViewer } from '@/components/CurriculumReadingViewer';
 import { FileText, BookOpenCheck } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -9,6 +10,7 @@ interface LibraryBook {
   title: string;
   file_path: string;
   file_size: number;
+  source_discipline: string | null;
 }
 
 export const HomeBookShelf = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(function HomeBookShelf(
@@ -17,12 +19,13 @@ export const HomeBookShelf = React.forwardRef<HTMLDivElement, React.HTMLAttribut
 ) {
   const [books, setBooks] = React.useState<LibraryBook[]>([]);
   const [viewingBook, setViewingBook] = React.useState<{ title: string; url: string } | null>(null);
+  const [viewingCurriculum, setViewingCurriculum] = React.useState<{ title: string; discipline: string } | null>(null);
   const [openingId, setOpeningId] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     supabase
       .from('library_books')
-      .select('id, title, file_path, file_size')
+      .select('id, title, file_path, file_size, source_discipline')
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) {
@@ -30,22 +33,27 @@ export const HomeBookShelf = React.forwardRef<HTMLDivElement, React.HTMLAttribut
           return;
         }
 
-        if (data) setBooks(data);
+        if (data) setBooks(data as LibraryBook[]);
       });
   }, []);
 
   if (books.length === 0) return null;
 
   const openBook = async (book: LibraryBook) => {
-    setOpeningId(book.id);
+    // Curriculum-backed book
+    if (book.source_discipline) {
+      setViewingCurriculum({ title: book.title, discipline: book.source_discipline });
+      return;
+    }
 
+    // PDF book
+    setOpeningId(book.id);
     try {
       const { data, error } = await supabase.storage
         .from('library-pdfs')
         .createSignedUrl(book.file_path, 60 * 30);
 
       if (error || !data?.signedUrl) throw error;
-
       setViewingBook({ title: book.title, url: data.signedUrl });
     } catch (error) {
       console.error('Failed to open library book:', error);
@@ -78,6 +86,11 @@ export const HomeBookShelf = React.forwardRef<HTMLDivElement, React.HTMLAttribut
                 )}
                 <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary/25 rounded-l-xl" />
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                {book.source_discipline && (
+                  <div className="absolute bottom-1.5 right-1.5 rounded bg-primary/20 px-1 py-0.5 text-[9px] font-medium text-primary">
+                    Curriculum
+                  </div>
+                )}
               </div>
               <p className="text-xs font-medium text-foreground mt-2 truncate px-0.5">{book.title}</p>
             </button>
@@ -90,6 +103,14 @@ export const HomeBookShelf = React.forwardRef<HTMLDivElement, React.HTMLAttribut
           fileUrl={viewingBook.url}
           title={viewingBook.title}
           onClose={() => setViewingBook(null)}
+        />
+      )}
+
+      {viewingCurriculum && (
+        <CurriculumReadingViewer
+          discipline={viewingCurriculum.discipline}
+          title={viewingCurriculum.title}
+          onClose={() => setViewingCurriculum(null)}
         />
       )}
     </div>

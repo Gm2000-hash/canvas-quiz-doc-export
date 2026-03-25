@@ -82,7 +82,7 @@ serve(async (req) => {
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData, submissionId } = await req.json();
+    const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData, submissionId, pageData } = await req.json();
 
     if (!canvasUrl || !apiToken) {
       return new Response(JSON.stringify({ error: 'Canvas URL and API token are required' }), {
@@ -206,6 +206,14 @@ serve(async (req) => {
         if (!courseId) throw new Error('courseId is required');
         url = `${baseUrl}/api/v1/courses/${courseId}/enrollments?type[]=StudentEnrollment&per_page=100&state[]=active`;
         break;
+      case 'create_page': {
+        if (!courseId || !pageData) throw new Error('courseId and pageData are required');
+        url = `${baseUrl}/api/v1/courses/${courseId}/pages`;
+        method = 'POST';
+        headers['Content-Type'] = 'application/json';
+        body = JSON.stringify({ wiki_page: pageData });
+        break;
+      }
       default:
         throw new Error(`Unknown action: ${action}`);
     }
