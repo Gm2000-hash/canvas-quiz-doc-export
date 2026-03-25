@@ -29,6 +29,53 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
   const [genForm, setGenForm] = useState({ subject_area: "", objectives: "", key_terms: "", format: "textbook" as "textbook" | "scripted" | "both" });
   const [genDialogUnit, setGenDialogUnit] = useState<string | null>(null);
+  const [syncing, setSyncing] = useState(false);
+
+  const SCIENCE_DISCIPLINES = ["Life Science", "Physical Science", "Earth & Space Science"];
+
+  const handleSyncToLibrary = async () => {
+    if (!user) return;
+    setSyncing(true);
+    try {
+      for (const discipline of SCIENCE_DISCIPLINES) {
+        const disciplineUnits = units.filter(u => u.discipline === discipline);
+        if (disciplineUnits.length === 0) continue;
+
+        // Check if a library book already exists for this discipline
+        const { data: existing } = await supabase
+          .from("library_books")
+          .select("id")
+          .eq("source_discipline", discipline)
+          .eq("user_id", user.id)
+          .maybeSingle();
+
+        if (existing) {
+          // Update the existing entry (touch updated_at so it shows as fresh)
+          await supabase
+            .from("library_books")
+            .update({ updated_at: new Date().toISOString(), is_published: true } as any)
+            .eq("id", existing.id);
+        } else {
+          // Create a new library book entry
+          await supabase
+            .from("library_books")
+            .insert({
+              user_id: user.id,
+              title: `${discipline} Readings`,
+              file_path: `curriculum/${discipline.toLowerCase().replace(/\s+/g, "-")}`,
+              file_size: 0,
+              is_published: true,
+              source_discipline: discipline,
+            } as any);
+        }
+      }
+      sonnerToast.success("Curriculum readings synced to library!");
+    } catch (err: any) {
+      sonnerToast.error(err.message || "Failed to sync to library");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -39,6 +86,16 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
           <span className="text-sm font-semibold text-foreground">Curriculum Editor</span>
         </div>
         <div className="flex-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          className="gap-2 text-xs"
+          disabled={syncing || units.length === 0}
+          onClick={handleSyncToLibrary}
+        >
+          {syncing ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Library className="h-3.5 w-3.5" />}
+          {syncing ? "Syncing…" : "Sync to Library"}
+        </Button>
         <span className="text-xs text-muted-foreground">{units.length} units</span>
       </div>
 
