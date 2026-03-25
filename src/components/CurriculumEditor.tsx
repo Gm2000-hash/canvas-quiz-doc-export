@@ -24,6 +24,7 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
   const { user } = useAuth();
   const { toast } = useToast();
   const [expandedUnit, setExpandedUnit] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [editingLesson, setEditingLesson] = useState<CurriculumLesson | null>(null);
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
   const [genForm, setGenForm] = useState({ subject_area: "", objectives: "", key_terms: "", format: "textbook" as "textbook" | "scripted" | "both" });
@@ -51,6 +52,7 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
           {units.map((unit, idx) => (
             <UnitSection
               key={unit.id}
+              refreshKey={refreshKey}
               unit={unit}
               index={idx}
               isExpanded={expandedUnit === unit.id}
@@ -131,6 +133,7 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
 
                 sonnerToast.success("Lesson generated and saved!");
                 setGenDialogUnit(null);
+                setRefreshKey(k => k + 1);
               } catch (err: any) {
                 sonnerToast.error(err.message || "Failed to generate");
               } finally {
@@ -152,6 +155,7 @@ function UnitSection({
   onToggle,
   onEditLesson,
   onOpenGenerate,
+  refreshKey,
 }: {
   unit: { id: string; title: string; discipline: string; grade_level: string };
   index: number;
@@ -159,9 +163,10 @@ function UnitSection({
   onToggle: () => void;
   onEditLesson: (lesson: CurriculumLesson) => void;
   onOpenGenerate: () => void;
+  refreshKey: number;
 }) {
   const { user } = useAuth();
-  const { lessons, loading, createLesson, deleteLesson, reorderLessons } = useCurriculumLessons(isExpanded ? unit.id : undefined);
+  const { lessons, loading, createLesson, deleteLesson, reorderLessons } = useCurriculumLessons(isExpanded ? unit.id : undefined, refreshKey);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
