@@ -23,7 +23,7 @@ export interface CurriculumLesson {
   updated_at: string;
 }
 
-export function useCurriculumLessons(unitId?: string) {
+export function useCurriculumLessons(unitId?: string, refreshTrigger?: number) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [lessons, setLessons] = useState<CurriculumLesson[]>([]);
@@ -44,7 +44,7 @@ export function useCurriculumLessons(unitId?: string) {
       setLessons((data || []) as unknown as CurriculumLesson[]);
     }
     setLoading(false);
-  }, [user, unitId]);
+  }, [user, unitId, refreshTrigger]);
 
   useEffect(() => { fetchLessons(); }, [fetchLessons]);
 

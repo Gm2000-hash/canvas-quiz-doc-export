@@ -166,7 +166,7 @@ function UnitSection({
   refreshKey: number;
 }) {
   const { user } = useAuth();
-  const { lessons, loading, createLesson, deleteLesson, reorderLessons } = useCurriculumLessons(isExpanded ? unit.id : undefined);
+  const { lessons, loading, createLesson, deleteLesson, reorderLessons } = useCurriculumLessons(isExpanded ? unit.id : undefined, refreshKey);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
 
