@@ -207,11 +207,7 @@ serve(async (req) => {
         url = `${baseUrl}/api/v1/courses/${courseId}/enrollments?type[]=StudentEnrollment&per_page=100&state[]=active`;
         break;
       case 'create_page': {
-        if (!courseId) throw new Error('courseId is required');
-        const { pageData } = await req.json().catch(() => ({}));
-        const pd = (await req.json().catch(() => null)) || {};
-        // pageData was already destructured from the original body parse above
-        const reqBody = JSON.parse(body || '{}');
+        if (!courseId || !pageData) throw new Error('courseId and pageData are required');
         url = `${baseUrl}/api/v1/courses/${courseId}/pages`;
         method = 'POST';
         headers['Content-Type'] = 'application/json';
