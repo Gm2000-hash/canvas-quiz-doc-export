@@ -10,8 +10,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText, Copy, GripVertical } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText, Copy, GripVertical, Sparkles } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { CurriculumEditor } from "@/components/CurriculumEditor";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { WeeklyDashboard } from "@/components/WeeklyDashboard";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -212,167 +214,188 @@ const LessonPlanner = () => {
           subtitle="Organize units, generate AI lesson plans, and export pacing guides"
           stats={[{ label: "Units", value: units.length }]}
         />
-        {/* Calendar Overview */}
-        <WeeklyDashboard />
 
-        <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="text-xl font-bold text-foreground">Units</h2>
-            <p className="text-sm text-muted-foreground mt-0.5">Organize lesson plans into units with pacing guides</p>
-          </div>
-          <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-            <DialogTrigger asChild>
-              <Button className="gap-2 rounded-xl">
-                <Plus className="h-4 w-4" />
-                New Unit
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Create New Unit</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 pt-2">
-                <div className="space-y-2">
-                  <Label>Unit Title</Label>
-                  <Input placeholder="e.g. Ecosystems & Biodiversity" value={newUnit.title} onChange={e => setNewUnit(p => ({ ...p, title: e.target.value }))} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Description</Label>
-                  <Textarea placeholder="Brief overview of the unit..." value={newUnit.description} onChange={e => setNewUnit(p => ({ ...p, description: e.target.value }))} rows={3} />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label>Discipline</Label>
-                    <Select value={newUnit.discipline} onValueChange={v => setNewUnit(p => ({ ...p, discipline: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                      <SelectContent>
-                        {DISCIPLINES.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Grade Level</Label>
-                    <Select value={newUnit.grade_level} onValueChange={v => setNewUnit(p => ({ ...p, grade_level: v }))}>
-                      <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
-                      <SelectContent>
-                        {GRADE_LEVELS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <Label>Start Date</Label>
-                    <Input type="date" value={newUnit.date_start} onChange={e => setNewUnit(p => ({ ...p, date_start: e.target.value }))} />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>End Date</Label>
-                    <Input type="date" value={newUnit.date_end} onChange={e => setNewUnit(p => ({ ...p, date_end: e.target.value }))} />
-                  </div>
-                </div>
-                <Button onClick={handleCreate} className="w-full rounded-xl" disabled={!newUnit.title.trim()}>Create Unit</Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
+        <Tabs defaultValue="units" className="w-full">
+          <TabsList className="w-full justify-start">
+            <TabsTrigger value="units" className="gap-2">
+              <Layers className="h-4 w-4" /> Units
+            </TabsTrigger>
+            <TabsTrigger value="curriculum" className="gap-2">
+              <Sparkles className="h-4 w-4" /> Curriculum
+            </TabsTrigger>
+          </TabsList>
 
-        {loading ? (
-          <div className="flex items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-          </div>
-        ) : units.length === 0 ? (
-          <Card className="border-dashed">
-            <CardContent className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                <Layers className="h-7 w-7 text-primary" />
+          <TabsContent value="units" className="space-y-6 mt-4">
+            {/* Calendar Overview */}
+            <WeeklyDashboard />
+
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-foreground">Units</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">Organize lesson plans into units with pacing guides</p>
               </div>
-              <h3 className="text-lg font-semibold text-foreground mb-1">No units yet</h3>
-              <p className="text-sm text-muted-foreground mb-4">Create your first unit to start organizing lesson plans</p>
-              <Button onClick={() => setCreateOpen(true)} className="gap-2 rounded-xl">
-                <Plus className="h-4 w-4" /> Create First Unit
-              </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-3">
-            {units.map((unit, idx) => (
-              <div
-                key={unit.id}
-                draggable
-                onDragStart={e => handleUnitDragStart(e, idx)}
-                onDragEnd={handleUnitDragEnd}
-                onDragOver={e => handleUnitDragOver(e, idx)}
-                onDragEnter={e => e.preventDefault()}
-                className={`transition-all duration-150 ${
-                  overIdx === idx && dragIdx !== null && dragIdx !== idx
-                    ? "ring-2 ring-dashed ring-primary/40 rounded-xl"
-                    : ""
-                }`}
-              >
-                <Card
-                  className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]"
-                  onClick={() => navigate(`/units/${unit.id}`)}
-                >
-                  <CardContent className="p-4 flex items-center gap-4">
-                    <div
-                      className="shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors touch-none"
-                      onMouseDown={e => e.stopPropagation()}
-                      onClick={e => e.stopPropagation()}
-                    >
-                      <GripVertical className="h-4 w-4" />
+              <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2 rounded-xl">
+                    <Plus className="h-4 w-4" />
+                    New Unit
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <DialogHeader>
+                    <DialogTitle>Create New Unit</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4 pt-2">
+                    <div className="space-y-2">
+                      <Label>Unit Title</Label>
+                      <Input placeholder="e.g. Ecosystems & Biodiversity" value={newUnit.title} onChange={e => setNewUnit(p => ({ ...p, title: e.target.value }))} />
                     </div>
-                    <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                      <FileText className="h-5 w-5 text-primary" />
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea placeholder="Brief overview of the unit..." value={newUnit.description} onChange={e => setNewUnit(p => ({ ...p, description: e.target.value }))} rows={3} />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-foreground truncate">{unit.title}</h3>
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
-                        {unit.discipline && <span>{unit.discipline}</span>}
-                        {unit.discipline && unit.grade_level && <span>•</span>}
-                        {unit.grade_level && <span>{unit.grade_level}</span>}
-                        {(unit.discipline || unit.grade_level) && <span>•</span>}
-                        <span>{unit.lesson_count || 0} lessons</span>
-                        {unit.date_start && (
-                          <>
-                            <span>•</span>
-                            <span className="flex items-center gap-1">
-                              <Calendar className="h-3 w-3" />
-                              {format(new Date(unit.date_start), "MMM d")}
-                              {unit.date_end && ` – ${format(new Date(unit.date_end), "MMM d")}`}
-                            </span>
-                          </>
-                        )}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label>Discipline</Label>
+                        <Select value={newUnit.discipline} onValueChange={v => setNewUnit(p => ({ ...p, discipline: v }))}>
+                          <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                          <SelectContent>
+                            {DISCIPLINES.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                       </div>
-                      {unit.description && (
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{unit.description}</p>
-                      )}
+                      <div className="space-y-2">
+                        <Label>Grade Level</Label>
+                        <Select value={newUnit.grade_level} onValueChange={v => setNewUnit(p => ({ ...p, grade_level: v }))}>
+                          <SelectTrigger><SelectValue placeholder="Select..." /></SelectTrigger>
+                          <SelectContent>
+                            {GRADE_LEVELS.map(g => <SelectItem key={g} value={g}>{g}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="shrink-0 h-8 w-8 rounded-xl text-muted-foreground"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
-                        <DropdownMenuItem className="gap-2" onClick={() => handleDuplicate(unit)}>
-                          <Copy className="h-3.5 w-3.5" /> Duplicate Unit
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleDelete(unit.id)}>
-                          <Trash2 className="h-3.5 w-3.5" /> Delete Unit
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </CardContent>
-                </Card>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <Label>Start Date</Label>
+                        <Input type="date" value={newUnit.date_start} onChange={e => setNewUnit(p => ({ ...p, date_start: e.target.value }))} />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>End Date</Label>
+                        <Input type="date" value={newUnit.date_end} onChange={e => setNewUnit(p => ({ ...p, date_end: e.target.value }))} />
+                      </div>
+                    </div>
+                    <Button onClick={handleCreate} className="w-full rounded-xl" disabled={!newUnit.title.trim()}>Create Unit</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
+
+            {loading ? (
+              <div className="flex items-center justify-center py-20">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
               </div>
-            ))}
-          </div>
-        )}
+            ) : units.length === 0 ? (
+              <Card className="border-dashed">
+                <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+                  <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                    <Layers className="h-7 w-7 text-primary" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-1">No units yet</h3>
+                  <p className="text-sm text-muted-foreground mb-4">Create your first unit to start organizing lesson plans</p>
+                  <Button onClick={() => setCreateOpen(true)} className="gap-2 rounded-xl">
+                    <Plus className="h-4 w-4" /> Create First Unit
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-3">
+                {units.map((unit, idx) => (
+                  <div
+                    key={unit.id}
+                    draggable
+                    onDragStart={e => handleUnitDragStart(e, idx)}
+                    onDragEnd={handleUnitDragEnd}
+                    onDragOver={e => handleUnitDragOver(e, idx)}
+                    onDragEnter={e => e.preventDefault()}
+                    className={`transition-all duration-150 ${
+                      overIdx === idx && dragIdx !== null && dragIdx !== idx
+                        ? "ring-2 ring-dashed ring-primary/40 rounded-xl"
+                        : ""
+                    }`}
+                  >
+                    <Card
+                      className="cursor-pointer transition-all duration-200 hover:shadow-md hover:-translate-y-0.5 active:scale-[0.99]"
+                      onClick={() => navigate(`/units/${unit.id}`)}
+                    >
+                      <CardContent className="p-4 flex items-center gap-4">
+                        <div
+                          className="shrink-0 cursor-grab active:cursor-grabbing text-muted-foreground hover:text-foreground transition-colors touch-none"
+                          onMouseDown={e => e.stopPropagation()}
+                          onClick={e => e.stopPropagation()}
+                        >
+                          <GripVertical className="h-4 w-4" />
+                        </div>
+                        <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                          <FileText className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-foreground truncate">{unit.title}</h3>
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground mt-0.5">
+                            {unit.discipline && <span>{unit.discipline}</span>}
+                            {unit.discipline && unit.grade_level && <span>•</span>}
+                            {unit.grade_level && <span>{unit.grade_level}</span>}
+                            {(unit.discipline || unit.grade_level) && <span>•</span>}
+                            <span>{unit.lesson_count || 0} lessons</span>
+                            {unit.date_start && (
+                              <>
+                                <span>•</span>
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-3 w-3" />
+                                  {format(new Date(unit.date_start), "MMM d")}
+                                  {unit.date_end && ` – ${format(new Date(unit.date_end), "MMM d")}`}
+                                </span>
+                              </>
+                            )}
+                          </div>
+                          {unit.description && (
+                            <p className="text-xs text-muted-foreground mt-1 line-clamp-1">{unit.description}</p>
+                          )}
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="shrink-0 h-8 w-8 rounded-xl text-muted-foreground"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end" onClick={e => e.stopPropagation()}>
+                            <DropdownMenuItem className="gap-2" onClick={() => handleDuplicate(unit)}>
+                              <Copy className="h-3.5 w-3.5" /> Duplicate Unit
+                            </DropdownMenuItem>
+                            <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleDelete(unit.id)}>
+                              <Trash2 className="h-3.5 w-3.5" /> Delete Unit
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </CardContent>
+                    </Card>
+                  </div>
+                ))}
+              </div>
+            )}
+          </TabsContent>
+
+          <TabsContent value="curriculum" className="mt-4">
+            <CurriculumEditor
+              units={units.map(u => ({ id: u.id, title: u.title, discipline: u.discipline, grade_level: u.grade_level, description: u.description }))}
+              onRefreshUnits={fetchUnits}
+            />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );
