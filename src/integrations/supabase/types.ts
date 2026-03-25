@@ -14,6 +14,74 @@ export type Database = {
   }
   public: {
     Tables: {
+      curriculum_lessons: {
+        Row: {
+          created_at: string
+          explanation: Json
+          id: string
+          image_url: string | null
+          interactive_activities: Json | null
+          intro: Json
+          key_terms: Json
+          objectives: Json
+          quiz: Json
+          reading_paragraphs: Json | null
+          reading_questions: Json | null
+          reading_title: string | null
+          sort_order: number
+          title: string
+          unit_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          explanation?: Json
+          id?: string
+          image_url?: string | null
+          interactive_activities?: Json | null
+          intro?: Json
+          key_terms?: Json
+          objectives?: Json
+          quiz?: Json
+          reading_paragraphs?: Json | null
+          reading_questions?: Json | null
+          reading_title?: string | null
+          sort_order?: number
+          title: string
+          unit_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          explanation?: Json
+          id?: string
+          image_url?: string | null
+          interactive_activities?: Json | null
+          intro?: Json
+          key_terms?: Json
+          objectives?: Json
+          quiz?: Json
+          reading_paragraphs?: Json | null
+          reading_questions?: Json | null
+          reading_title?: string | null
+          sort_order?: number
+          title?: string
+          unit_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_lessons_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_plan_standards: {
         Row: {
           id: string
