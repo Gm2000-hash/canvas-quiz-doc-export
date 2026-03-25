@@ -264,7 +264,7 @@ export default function Library() {
                       <div className="space-y-1">
                         <p className="truncate text-sm font-medium text-foreground">{book.title}</p>
                         <div className="flex items-center justify-between gap-2">
-                          <p className="text-[11px] text-muted-foreground">{formatSize(book.file_size)}</p>
+                          <p className="text-[11px] text-muted-foreground">{book.source_discipline ? 'Curriculum' : formatSize(book.file_size)}</p>
                           <Badge variant={book.is_published ? 'default' : 'secondary'}>
                             {book.is_published ? 'Published' : 'Unpublished'}
                           </Badge>
