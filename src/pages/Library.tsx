@@ -49,7 +49,7 @@ export default function Library() {
       console.error('Failed to fetch books:', error);
       toast.error('Failed to load library');
     } else {
-      setBooks(data || []);
+      setBooks((data || []) as LibraryBook[]);
     }
 
     setLoading(false);
