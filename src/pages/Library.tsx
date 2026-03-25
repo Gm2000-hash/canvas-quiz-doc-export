@@ -42,7 +42,7 @@ export default function Library() {
     setLoading(true);
     const { data, error } = await supabase
       .from('library_books')
-      .select('id, title, file_path, file_size, page_count, created_at, is_published')
+      .select('id, title, file_path, file_size, page_count, created_at, is_published, source_discipline')
       .order('created_at', { ascending: false });
 
     if (error) {
