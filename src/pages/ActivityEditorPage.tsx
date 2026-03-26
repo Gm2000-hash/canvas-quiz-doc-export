@@ -221,6 +221,18 @@ export default function ActivityEditorPage() {
           <Input value={title} onChange={e => setTitle(e.target.value)} className="mt-1.5 text-lg font-semibold" />
         </div>
 
+        {standards.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-medium text-muted-foreground">NGSS Standards:</span>
+            {standards.map(s => (
+              <Badge key={s.ngss_code} variant="outline" className="text-xs font-mono border-primary/30 text-primary" title={s.ngss_description}>
+                {s.ngss_code}
+              </Badge>
+            ))}
+            {tagging && <span className="text-xs text-muted-foreground animate-pulse">Tagging…</span>}
+          </div>
+        )}
+
         <Tabs defaultValue="edit">
           <TabsList>
             <TabsTrigger value="edit">Edit</TabsTrigger>
