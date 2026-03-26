@@ -18,7 +18,7 @@ import avatarElephant from "@/assets/avatars/elephant.png";
 export const PRESET_AVATARS = [
   { src: avatarDog, label: "Dog" },
   { src: avatarSquirrel, label: "Squirrel" },
-  { src: avatarCat, label: "Cat" },
+  { src: avatarCat, label: "Ninja Frog" },
   { src: avatarKoala, label: "Koala" },
   { src: avatarKangaroo, label: "Kangaroo" },
   { src: avatarPenguin, label: "Penguin" },
@@ -28,7 +28,7 @@ export const PRESET_AVATARS = [
   { src: avatarElephant, label: "Elephant" },
   { src: avatarBear, label: "Bear" },
   { src: avatarWoman, label: "Woman" },
-  { src: avatarTurtle, label: "Turtle" },
+  { src: avatarTurtle, label: "Ninja Mongoose" },
   { src: avatarSkateboard, label: "Skateboard" },
 ] as const;
 
