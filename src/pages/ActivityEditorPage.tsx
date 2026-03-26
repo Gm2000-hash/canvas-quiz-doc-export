@@ -11,11 +11,30 @@ import { FillInBlanksEditor } from "@/components/activities/editors/FillInBlanks
 import { DragTheWordsEditor } from "@/components/activities/editors/DragTheWordsEditor";
 import { AccordionEditor } from "@/components/activities/editors/AccordionEditor";
 import { TimelineEditor } from "@/components/activities/editors/TimelineEditor";
+import { MultipleChoiceEditor } from "@/components/activities/editors/MultipleChoiceEditor";
+import { TrueFalseEditor } from "@/components/activities/editors/TrueFalseEditor";
+import { SingleChoiceSetEditor } from "@/components/activities/editors/SingleChoiceSetEditor";
+import { MarkTheWordsEditor } from "@/components/activities/editors/MarkTheWordsEditor";
+import { EssayEditor } from "@/components/activities/editors/EssayEditor";
+import { SummaryEditor } from "@/components/activities/editors/SummaryEditor";
+import { DialogCardsEditor } from "@/components/activities/editors/DialogCardsEditor";
+import { FlashcardsEditor } from "@/components/activities/editors/FlashcardsEditor";
+import { MemoryGameEditor } from "@/components/activities/editors/MemoryGameEditor";
+import { ArithmeticQuizEditor } from "@/components/activities/editors/ArithmeticQuizEditor";
+import { DragAndDropEditor } from "@/components/activities/editors/DragAndDropEditor";
+import { QuestionSetEditor } from "@/components/activities/editors/QuestionSetEditor";
+import { PersonalityQuizEditor } from "@/components/activities/editors/PersonalityQuizEditor";
+import { GameMapEditor } from "@/components/activities/editors/GameMapEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ACTIVITY_TYPES } from "@/lib/h5p-types";
-import type { ActivityType, ActivityContent, FillInBlanksContent, DragTheWordsContent, AccordionContent, TimelineContent } from "@/lib/h5p-types";
+import type {
+  ActivityType, ActivityContent, FillInBlanksContent, DragTheWordsContent, AccordionContent, TimelineContent,
+  MultipleChoiceContent, TrueFalseContent, SingleChoiceSetContent, MarkTheWordsContent,
+  EssayContent, SummaryContent, DialogCardsContent, FlashcardsContent, MemoryGameContent,
+  ArithmeticQuizContent, DragAndDropContent, QuestionSetContent, PersonalityQuizContent, GameMapContent,
+} from "@/lib/h5p-types";
 import { ArrowLeft, Save, Puzzle } from "lucide-react";
 
 export default function ActivityEditorPage() {
