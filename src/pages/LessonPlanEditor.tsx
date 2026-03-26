@@ -126,12 +126,13 @@ const LessonPlanEditor = () => {
       if (d.unit_id) {
         const { data: unitData } = await supabase
           .from("units")
-          .select("discipline, title")
+          .select("discipline, title, grade_level")
           .eq("id", d.unit_id)
           .single();
-        if (unitData?.discipline) {
-          setUnitDiscipline(unitData.discipline);
+        if (unitData) {
+          setUnitDiscipline(unitData.discipline || null);
           setUnitTitle(unitData.title || '');
+          setUnitGradeLevel(unitData.grade_level || '');
         }
       }
     };
