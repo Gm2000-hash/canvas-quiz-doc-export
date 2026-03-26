@@ -31,7 +31,7 @@ export async function generatePdfThumbnail(
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
-    await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+    await page.render({ canvasContext: ctx, viewport: scaledViewport, canvas } as any).promise;
 
     // Convert canvas to blob
     const blob = await new Promise<Blob | null>((resolve) =>
