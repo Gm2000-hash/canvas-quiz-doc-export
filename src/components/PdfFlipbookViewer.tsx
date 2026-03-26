@@ -167,7 +167,7 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
           </div>
         )}
 
-        <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading="">
+        <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading="" externalLinkTarget="_blank">
           {numPages > 0 && (
             <div className="flipbook-container" style={{ perspective: '2000px' }}>
               {/* @ts-ignore - react-pageflip typing issues */}
