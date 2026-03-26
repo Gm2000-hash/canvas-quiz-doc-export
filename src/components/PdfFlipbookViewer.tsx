@@ -65,7 +65,7 @@ const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width,
         height={height}
         renderTextLayer={true}
         renderAnnotationLayer={true}
-        externalLinkTarget="_blank"
+        renderAnnotationLayer={true}
         className="pdf-page-render"
       />
     </div>
