@@ -70,9 +70,10 @@ CRITICAL REQUIREMENTS FOR DETAIL:
 - DIFFERENTIATION: Provide specific accommodations for ELL students, students with IEPs, gifted learners, and struggling readers.
 - NOTES: Include teacher tips, common misconceptions students may have, and how to address them.
 - RESOURCES: For EVERY lesson, provide at least 3 real, reputable online resources with working URLs. Include a mix of videos (YouTube, Khan Academy, etc.), articles (National Geographic, NASA, Smithsonian, CK-12, etc.), and interactive activities (PhET simulations, BrainPOP, etc.). These should be real URLs that teachers can actually use.
+- VOCABULARY: For EVERY lesson, include AT LEAST 4 key science vocabulary terms with clear, student-friendly definitions. These are critical terms students must understand. Include more terms for vocabulary-heavy lessons.
+- NGSS STANDARDS: For EVERY lesson, you MUST tag it with at least one relevant NGSS Middle School performance expectation (MS-LS, MS-PS, MS-ESS, MS-ETS codes). Include the COMPLETE standard text. This is MANDATORY — no lesson should be returned without at least one NGSS standard.
 
-Include a variety of activities: direct instruction, labs, group work, discussions, and assessments.
-Map each lesson to relevant NGSS Middle School performance expectations (MS-LS, MS-PS, MS-ESS, MS-ETS codes). Always include the COMPLETE standard text.`;
+Include a variety of activities: direct instruction, labs, group work, discussions, and assessments.`;
 
     const userPrompt = `Create ${numLessons} sequential, FULLY SCRIPTED lesson plans for a unit called "${unitTitle}" focused on "${topic}".
 ${additionalContext ? `Additional instructions: ${additionalContext}` : ""}
