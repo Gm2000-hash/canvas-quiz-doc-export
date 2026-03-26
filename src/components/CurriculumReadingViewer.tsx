@@ -434,39 +434,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     </div>
                   )}
 
-                  {/* Reading Questions */}
-                  {(lesson.reading_questions as any[])?.length > 0 && (
-                    <div className="space-y-3 rounded-xl bg-muted/50 p-4">
-                      <h3 className="text-sm font-semibold text-foreground">Comprehension Questions</h3>
-                      {(lesson.reading_questions as any[]).map((q, i) => {
-                        const text = typeof q === 'string' ? q : q.question || q.text || '';
-                        return (
-                          <p key={i} className="text-sm text-foreground/80" dangerouslySetInnerHTML={{ __html: `${i + 1}. ${text}` }} />
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Quiz */}
-                  {(lesson.quiz as any[])?.length > 0 && (
-                    <div className="space-y-3 border-t border-border pt-6">
-                      <h3 className="text-lg font-semibold text-foreground">Quiz</h3>
-                      {(lesson.quiz as any[]).map((q, i) => {
-                        const text = typeof q === 'string' ? q : q.question || q.text || '';
-                        const options = q.options as string[] | undefined;
-                        return (
-                          <div key={i} className="space-y-1">
-                            <p className="text-sm font-medium text-foreground" dangerouslySetInnerHTML={{ __html: `${i + 1}. ${text}` }} />
-                            {options?.map((opt, oi) => (
-                              <p key={oi} className="text-sm text-muted-foreground ml-4">
-                                {String.fromCharCode(65 + oi)}) {opt}
-                              </p>
-                            ))}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
                 </>
               )}
             </div>
