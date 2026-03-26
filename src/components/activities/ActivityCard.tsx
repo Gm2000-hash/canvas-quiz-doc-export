@@ -13,6 +13,7 @@ interface ActivityCardProps {
   standards?: ActivityStandard[];
   onPlay: () => void;
   onEdit: () => void;
+  onDuplicate: () => void;
   onDelete: () => void;
 }
 
