@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { BookOpen, Upload, Loader2, Trash2, FileText, Eye, EyeOff } from 'lucide-react';
+import { generatePdfThumbnail } from '@/lib/pdf-thumbnail';
 
 interface LibraryBook {
   id: string;
