@@ -5,6 +5,7 @@ import { useCanvasConfig } from '@/hooks/useCanvasConfig';
 import { getCourses, type Course, type CanvasConfig } from '@/lib/canvas-api';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -584,7 +585,7 @@ function PushReadingsToCanvasDialog({
 }) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
-  const [selectedCourseId, setSelectedCourseId] = useState('');
+  const [selectedCourseIds, setSelectedCourseIds] = useState<Set<string>>(new Set());
   const [pageTitle, setPageTitle] = useState(bookTitle);
   const [pushing, setPushing] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -644,9 +645,19 @@ function PushReadingsToCanvasDialog({
     return parts.join('\n');
   };
 
+  const toggleCourse = (id: string) => {
+    setSelectedCourseIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const totalWork = lessons.length * selectedCourseIds.size;
+
   const handlePush = async () => {
-    if (!selectedCourseId) {
-      toast.error('Please select a course');
+    if (selectedCourseIds.size === 0) {
+      toast.error('Please select at least one course');
       return;
     }
     setPushing(true);
@@ -657,33 +668,39 @@ function PushReadingsToCanvasDialog({
       const accessToken = session?.access_token;
       if (!accessToken) throw new Error('Please sign in');
 
-      for (let i = 0; i < lessons.length; i++) {
-        const lesson = lessons[i];
-        const html = buildHtml(lesson);
-        const lessonTitle = `${pageTitle} - Lesson ${i + 1}: ${lesson.title}`;
+      let completed = 0;
+      const courseIds = Array.from(selectedCourseIds);
 
-        const { data, error } = await supabase.functions.invoke('canvas-proxy', {
-          body: {
-            action: 'create_page',
-            canvasUrl: config.canvasUrl,
-            apiToken: config.apiToken,
-            courseId: Number(selectedCourseId),
-            pageData: {
-              title: lessonTitle,
-              body: html,
-              published: false,
+      for (const courseId of courseIds) {
+        for (let i = 0; i < lessons.length; i++) {
+          const lesson = lessons[i];
+          const html = buildHtml(lesson);
+          const lessonTitle = `${pageTitle} - Lesson ${i + 1}: ${lesson.title}`;
+
+          const { data, error } = await supabase.functions.invoke('canvas-proxy', {
+            body: {
+              action: 'create_page',
+              canvasUrl: config.canvasUrl,
+              apiToken: config.apiToken,
+              courseId: Number(courseId),
+              pageData: {
+                title: lessonTitle,
+                body: html,
+                published: false,
+              },
             },
-          },
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
 
-        if (error) throw new Error(error.message || 'Failed to create page');
-        if (data?.error) throw new Error(data.error);
-        setProgress(i + 1);
+          if (error) throw new Error(error.message || 'Failed to create page');
+          if (data?.error) throw new Error(data.error);
+          completed++;
+          setProgress(completed);
+        }
       }
 
       setDone(true);
-      toast.success(`${lessons.length} reading pages pushed to Canvas!`);
+      toast.success(`${lessons.length} reading pages pushed to ${courseIds.length} course${courseIds.length > 1 ? 's' : ''}!`);
     } catch (err: any) {
       toast.error(err?.message || 'Failed to push to Canvas');
     } finally {
@@ -702,7 +719,7 @@ function PushReadingsToCanvasDialog({
           <div className="flex flex-col items-center gap-3 py-6">
             <CheckCircle className="h-12 w-12 text-primary" />
             <p className="text-sm font-medium text-foreground">
-              {lessons.length} pages created successfully!
+              {lessons.length} pages created in {selectedCourseIds.size} course{selectedCourseIds.size > 1 ? 's' : ''}!
             </p>
             <p className="text-xs text-muted-foreground text-center">
               Pages are saved as drafts. Publish them in Canvas when ready.
@@ -713,20 +730,23 @@ function PushReadingsToCanvasDialog({
           <>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Canvas Course</Label>
+                <Label>Canvas Courses ({selectedCourseIds.size} selected)</Label>
                 {loadingCourses ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" /> Loading courses...
                   </div>
                 ) : (
-                  <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                    <SelectTrigger><SelectValue placeholder="Select a course..." /></SelectTrigger>
-                    <SelectContent>
-                      {courses.map(c => (
-                        <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="max-h-48 overflow-y-auto border border-border rounded-md divide-y divide-border">
+                    {courses.map(c => (
+                      <label key={c.id} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50 cursor-pointer">
+                        <Checkbox
+                          checked={selectedCourseIds.has(String(c.id))}
+                          onCheckedChange={() => toggleCourse(String(c.id))}
+                        />
+                        <span className="text-sm">{c.name}</span>
+                      </label>
+                    ))}
+                  </div>
                 )}
               </div>
 
@@ -744,18 +764,18 @@ function PushReadingsToCanvasDialog({
                 <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-primary h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(progress / lessons.length) * 100}%` }}
+                    style={{ width: `${totalWork > 0 ? (progress / totalWork) * 100 : 0}%` }}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
-                  Creating page {progress} of {lessons.length}...
+                  Creating page {progress} of {totalWork}...
                 </p>
               </div>
             )}
 
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pushing}>Cancel</Button>
-              <Button onClick={handlePush} disabled={pushing || !selectedCourseId} className="gap-2">
+              <Button onClick={handlePush} disabled={pushing || selectedCourseIds.size === 0} className="gap-2">
                 {pushing ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Pushing...</>
                 ) : (
