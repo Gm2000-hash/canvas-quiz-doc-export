@@ -50,6 +50,8 @@ import { ArrowLeft, Save, Puzzle, Download, Sparkles, Loader2 } from "lucide-rea
 import { exportActivityAsH5P } from "@/lib/export-h5p";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useActivityStandards, type ActivityStandard } from "@/hooks/useActivityStandards";
+import { Badge } from "@/components/ui/badge";
 
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
 
