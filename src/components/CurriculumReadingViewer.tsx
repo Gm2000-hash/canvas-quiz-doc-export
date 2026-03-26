@@ -119,7 +119,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
           explanation: editData.explanation as any,
           reading_title: editData.reading_title,
           reading_paragraphs: editData.reading_paragraphs as any,
-          reading_questions: editData.reading_questions as any,
           updated_at: new Date().toISOString(),
         })
         .eq('id', lesson.id)
