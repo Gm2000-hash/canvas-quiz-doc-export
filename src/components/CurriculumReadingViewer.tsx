@@ -644,9 +644,19 @@ function PushReadingsToCanvasDialog({
     return parts.join('\n');
   };
 
+  const toggleCourse = (id: string) => {
+    setSelectedCourseIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const totalWork = lessons.length * selectedCourseIds.size;
+
   const handlePush = async () => {
-    if (!selectedCourseId) {
-      toast.error('Please select a course');
+    if (selectedCourseIds.size === 0) {
+      toast.error('Please select at least one course');
       return;
     }
     setPushing(true);
@@ -657,33 +667,39 @@ function PushReadingsToCanvasDialog({
       const accessToken = session?.access_token;
       if (!accessToken) throw new Error('Please sign in');
 
-      for (let i = 0; i < lessons.length; i++) {
-        const lesson = lessons[i];
-        const html = buildHtml(lesson);
-        const lessonTitle = `${pageTitle} - Lesson ${i + 1}: ${lesson.title}`;
+      let completed = 0;
+      const courseIds = Array.from(selectedCourseIds);
 
-        const { data, error } = await supabase.functions.invoke('canvas-proxy', {
-          body: {
-            action: 'create_page',
-            canvasUrl: config.canvasUrl,
-            apiToken: config.apiToken,
-            courseId: Number(selectedCourseId),
-            pageData: {
-              title: lessonTitle,
-              body: html,
-              published: false,
+      for (const courseId of courseIds) {
+        for (let i = 0; i < lessons.length; i++) {
+          const lesson = lessons[i];
+          const html = buildHtml(lesson);
+          const lessonTitle = `${pageTitle} - Lesson ${i + 1}: ${lesson.title}`;
+
+          const { data, error } = await supabase.functions.invoke('canvas-proxy', {
+            body: {
+              action: 'create_page',
+              canvasUrl: config.canvasUrl,
+              apiToken: config.apiToken,
+              courseId: Number(courseId),
+              pageData: {
+                title: lessonTitle,
+                body: html,
+                published: false,
+              },
             },
-          },
-          headers: { Authorization: `Bearer ${accessToken}` },
-        });
+            headers: { Authorization: `Bearer ${accessToken}` },
+          });
 
-        if (error) throw new Error(error.message || 'Failed to create page');
-        if (data?.error) throw new Error(data.error);
-        setProgress(i + 1);
+          if (error) throw new Error(error.message || 'Failed to create page');
+          if (data?.error) throw new Error(data.error);
+          completed++;
+          setProgress(completed);
+        }
       }
 
       setDone(true);
-      toast.success(`${lessons.length} reading pages pushed to Canvas!`);
+      toast.success(`${lessons.length} reading pages pushed to ${courseIds.length} course${courseIds.length > 1 ? 's' : ''}!`);
     } catch (err: any) {
       toast.error(err?.message || 'Failed to push to Canvas');
     } finally {
