@@ -24,9 +24,7 @@ export type Database = {
           intro: Json
           key_terms: Json
           objectives: Json
-          quiz: Json
           reading_paragraphs: Json | null
-          reading_questions: Json | null
           reading_title: string | null
           sort_order: number
           title: string
@@ -43,9 +41,7 @@ export type Database = {
           intro?: Json
           key_terms?: Json
           objectives?: Json
-          quiz?: Json
           reading_paragraphs?: Json | null
-          reading_questions?: Json | null
           reading_title?: string | null
           sort_order?: number
           title: string
@@ -62,9 +58,7 @@ export type Database = {
           intro?: Json
           key_terms?: Json
           objectives?: Json
-          quiz?: Json
           reading_paragraphs?: Json | null
-          reading_questions?: Json | null
           reading_title?: string | null
           sort_order?: number
           title?: string
