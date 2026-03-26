@@ -80,9 +80,19 @@ export default function PushToCanvasDialog({ open, onOpenChange, questions, conf
     }
   }, [open, config]);
 
+  const toggleCourse = (id: string) => {
+    setSelectedCourseIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+
+  const totalWork = questions.length * selectedCourseIds.size;
+
   const handlePush = async () => {
-    if (!selectedCourseId) {
-      toast.error("Please select a course");
+    if (selectedCourseIds.size === 0) {
+      toast.error("Please select at least one course");
       return;
     }
     if (!quizTitle.trim()) {
@@ -94,29 +104,33 @@ export default function PushToCanvasDialog({ open, onOpenChange, questions, conf
     setProgress(0);
 
     try {
-      // 1. Create the quiz
-      const quiz = await createCanvasQuiz(config, Number(selectedCourseId), {
-        title: quizTitle.trim(),
-        quiz_type: quizType as any,
-        shuffle_answers: shuffleAnswers,
-        published: publishImmediately,
-      });
+      let completed = 0;
+      const courseIds = Array.from(selectedCourseIds);
 
-      // 2. Add questions one by one
-      for (let i = 0; i < questions.length; i++) {
-        const q = questions[i];
-        await createCanvasQuizQuestion(config, Number(selectedCourseId), quiz.id, {
-          question_name: `Question ${i + 1}`,
-          question_text: q.question_text,
-          question_type: mapQuestionType(q.question_type),
-          points_possible: q.points_possible,
-          answers: buildCanvasAnswers(q),
+      for (const courseId of courseIds) {
+        const quiz = await createCanvasQuiz(config, Number(courseId), {
+          title: quizTitle.trim(),
+          quiz_type: quizType as any,
+          shuffle_answers: shuffleAnswers,
+          published: publishImmediately,
         });
-        setProgress(i + 1);
+
+        for (let i = 0; i < questions.length; i++) {
+          const q = questions[i];
+          await createCanvasQuizQuestion(config, Number(courseId), quiz.id, {
+            question_name: `Question ${i + 1}`,
+            question_text: q.question_text,
+            question_type: mapQuestionType(q.question_type),
+            points_possible: q.points_possible,
+            answers: buildCanvasAnswers(q),
+          });
+          completed++;
+          setProgress(completed);
+        }
       }
 
       setDone(true);
-      toast.success(`Quiz "${quizTitle}" pushed to Canvas with ${questions.length} questions!`);
+      toast.success(`Quiz "${quizTitle}" pushed to ${courseIds.length} course${courseIds.length > 1 ? 's' : ''} with ${questions.length} questions!`);
     } catch (err: any) {
       toast.error(err?.message || "Failed to push quiz to Canvas");
     } finally {
@@ -137,7 +151,9 @@ export default function PushToCanvasDialog({ open, onOpenChange, questions, conf
         {done ? (
           <div className="flex flex-col items-center gap-3 py-6">
             <CheckCircle className="h-12 w-12 text-primary" />
-            <p className="text-sm font-medium text-foreground">Quiz created successfully!</p>
+            <p className="text-sm font-medium text-foreground">
+              Quiz created in {selectedCourseIds.size} course{selectedCourseIds.size > 1 ? 's' : ''}!
+            </p>
             <p className="text-xs text-muted-foreground text-center">
               {publishImmediately
                 ? "The quiz is live and visible to students."
@@ -149,22 +165,23 @@ export default function PushToCanvasDialog({ open, onOpenChange, questions, conf
           <>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Canvas Course</Label>
+                <Label>Canvas Courses ({selectedCourseIds.size} selected)</Label>
                 {loadingCourses ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" /> Loading courses...
                   </div>
                 ) : (
-                  <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a course..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {courses.map(c => (
-                        <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="max-h-48 overflow-y-auto border border-border rounded-md divide-y divide-border">
+                    {courses.map(c => (
+                      <label key={c.id} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50 cursor-pointer">
+                        <Checkbox
+                          checked={selectedCourseIds.has(String(c.id))}
+                          onCheckedChange={() => toggleCourse(String(c.id))}
+                        />
+                        <span className="text-sm">{c.name}</span>
+                      </label>
+                    ))}
+                  </div>
                 )}
               </div>
 
@@ -204,18 +221,18 @@ export default function PushToCanvasDialog({ open, onOpenChange, questions, conf
                 <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-primary h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(progress / questions.length) * 100}%` }}
+                    style={{ width: `${totalWork > 0 ? (progress / totalWork) * 100 : 0}%` }}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
-                  Adding question {progress} of {questions.length}...
+                  Adding question {progress} of {totalWork}...
                 </p>
               </div>
             )}
 
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pushing}>Cancel</Button>
-              <Button onClick={handlePush} disabled={pushing || !selectedCourseId} className="gap-2">
+              <Button onClick={handlePush} disabled={pushing || selectedCourseIds.size === 0} className="gap-2">
                 {pushing ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Pushing...</>
                 ) : (
