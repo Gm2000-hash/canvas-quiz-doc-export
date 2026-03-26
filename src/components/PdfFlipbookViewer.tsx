@@ -39,18 +39,16 @@ interface LinkAnnotation {
   rect: [number, number, number, number]; // [x1, y1, x2, y2] in PDF coords
 }
 
-const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width, height }, ref) => {
+const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width, height, pdfDoc }, ref) => {
   const [links, setLinks] = useState<LinkAnnotation[]>([]);
   const [viewport, setViewport] = useState<{ width: number; height: number } | null>(null);
 
-  // Extract link annotations from the PDF page using pdfjs
   useEffect(() => {
+    if (!pdfDoc) return;
     let cancelled = false;
     (async () => {
       try {
-        const pdf = (pdfjs as any).getDocument?._lastDoc;
-        if (!pdf) return;
-        const page = await pdf.getPage(pageNumber);
+        const page = await pdfDoc.getPage(pageNumber);
         const vp = page.getViewport({ scale: 1 });
         if (!cancelled) setViewport({ width: vp.width, height: vp.height });
 
