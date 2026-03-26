@@ -14,7 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ACTIVITY_TYPES, getDefaultContent } from "@/lib/h5p-types";
 import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
-import { Plus, Puzzle, Search } from "lucide-react";
+import { Plus, Puzzle, Search, ArrowLeft } from "lucide-react";
 
 interface Activity {
   id: string;
