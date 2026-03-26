@@ -17,7 +17,7 @@ interface ActivityCardProps {
   onDelete: () => void;
 }
 
-export function ActivityCard({ title, activityType, updatedAt, standards, onPlay, onEdit, onDelete }: ActivityCardProps) {
+export function ActivityCard({ title, activityType, updatedAt, standards, onPlay, onEdit, onDuplicate, onDelete }: ActivityCardProps) {
   const typeInfo = ACTIVITY_TYPES.find(t => t.type === activityType);
 
   return (
