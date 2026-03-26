@@ -23,7 +23,7 @@ export const PRESET_AVATARS = [
   { src: avatarKangaroo, label: "Kangaroo" },
   { src: avatarPenguin, label: "Penguin" },
   { src: avatarSkategirl, label: "Skater Girl" },
-  { src: avatarRabbit, label: "Rabbit" },
+  { src: avatarRabbit, label: "Naiad" },
   { src: avatarPanda, label: "Panda" },
   { src: avatarElephant, label: "Elephant" },
   { src: avatarBear, label: "Bear" },
