@@ -718,7 +718,7 @@ function PushReadingsToCanvasDialog({
           <div className="flex flex-col items-center gap-3 py-6">
             <CheckCircle className="h-12 w-12 text-primary" />
             <p className="text-sm font-medium text-foreground">
-              {lessons.length} pages created successfully!
+              {lessons.length} pages created in {selectedCourseIds.size} course{selectedCourseIds.size > 1 ? 's' : ''}!
             </p>
             <p className="text-xs text-muted-foreground text-center">
               Pages are saved as drafts. Publish them in Canvas when ready.
@@ -729,20 +729,23 @@ function PushReadingsToCanvasDialog({
           <>
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label>Canvas Course</Label>
+                <Label>Canvas Courses ({selectedCourseIds.size} selected)</Label>
                 {loadingCourses ? (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
                     <Loader2 className="h-4 w-4 animate-spin" /> Loading courses...
                   </div>
                 ) : (
-                  <Select value={selectedCourseId} onValueChange={setSelectedCourseId}>
-                    <SelectTrigger><SelectValue placeholder="Select a course..." /></SelectTrigger>
-                    <SelectContent>
-                      {courses.map(c => (
-                        <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="max-h-48 overflow-y-auto border border-border rounded-md divide-y divide-border">
+                    {courses.map(c => (
+                      <label key={c.id} className="flex items-center gap-3 px-3 py-2 hover:bg-muted/50 cursor-pointer">
+                        <Checkbox
+                          checked={selectedCourseIds.has(String(c.id))}
+                          onCheckedChange={() => toggleCourse(String(c.id))}
+                        />
+                        <span className="text-sm">{c.name}</span>
+                      </label>
+                    ))}
+                  </div>
                 )}
               </div>
 
@@ -760,18 +763,18 @@ function PushReadingsToCanvasDialog({
                 <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
                   <div
                     className="bg-primary h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${(progress / lessons.length) * 100}%` }}
+                    style={{ width: `${totalWork > 0 ? (progress / totalWork) * 100 : 0}%` }}
                   />
                 </div>
                 <p className="text-xs text-muted-foreground text-center">
-                  Creating page {progress} of {lessons.length}...
+                  Creating page {progress} of {totalWork}...
                 </p>
               </div>
             )}
 
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pushing}>Cancel</Button>
-              <Button onClick={handlePush} disabled={pushing || !selectedCourseId} className="gap-2">
+              <Button onClick={handlePush} disabled={pushing || selectedCourseIds.size === 0} className="gap-2">
                 {pushing ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Pushing...</>
                 ) : (
