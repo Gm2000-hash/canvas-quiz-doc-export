@@ -117,6 +117,13 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
   const flipBookRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Load PDF independently for annotation extraction
+  useEffect(() => {
+    if (!fileUrl) return;
+    const loadingTask = pdfjs.getDocument(fileUrl);
+    loadingTask.promise.then((doc) => setPdfDoc(doc)).catch(() => {});
+  }, [fileUrl]);
+
   // Calculate page dimensions based on container
   const getPageDimensions = useCallback(() => {
     const maxW = isFullscreen ? window.innerWidth * 0.42 : Math.min(420, window.innerWidth * 0.38);
