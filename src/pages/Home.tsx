@@ -207,15 +207,15 @@ export default function Home() {
           {/* Today's Lessons */}
           {todayLessons.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-earth-clay uppercase tracking-wider">Today's Lessons:</span>
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">Today's Lessons:</span>
               {todayLessons.map(l => (
-                <Badge key={l.id} variant="secondary" className="rounded-lg text-xs bg-earth-sand text-earth-clay border-earth-sand">
+                <Badge key={l.id} variant="secondary" className="rounded-lg text-xs">
                   {l.title}
                 </Badge>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-earth-moss italic">No lessons scheduled for today</p>
+            <p className="text-xs text-muted-foreground italic">No lessons scheduled for today</p>
           )}
         </PageBanner>
 
