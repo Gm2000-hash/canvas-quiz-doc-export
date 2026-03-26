@@ -95,9 +95,8 @@ Return ONLY valid JSON (no markdown).`;
       properties: {
         reading_title: { type: "string" },
         reading_paragraphs: { type: "array", items: { type: "string" } },
-        reading_questions: { type: "array", items: { type: "object" } },
       },
-      required: ["reading_title", "reading_paragraphs", "reading_questions"],
+      required: ["reading_title", "reading_paragraphs"],
     };
 
     const lessonSchema: any = {
