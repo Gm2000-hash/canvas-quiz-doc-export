@@ -275,6 +275,9 @@ const UnitDetail = () => {
         ]} />
         <div className="flex-1" />
         <div className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" className="text-primary rounded-xl gap-1.5 text-sm" onClick={() => navigate("/lesson-planner?tab=curriculum")}>
+            <BookOpen className="h-4 w-4" /> Curriculum
+          </Button>
           <Button variant="ghost" size="sm" className="text-primary rounded-xl gap-1.5 text-sm" onClick={() => setGenerateOpen(true)}>
             <Sparkles className="h-4 w-4" /> AI Generate
           </Button>
