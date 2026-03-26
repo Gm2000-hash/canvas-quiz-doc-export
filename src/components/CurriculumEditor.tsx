@@ -10,8 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Plus, Trash2, Pencil, ChevronDown, ChevronRight, GripVertical,
-  BookOpen, Sparkles, Loader2, Eye, RotateCcw, Save, X, FileDown, Library,
+  BookOpen, Sparkles, Loader2, Eye, RotateCcw, Save, X, FileDown, Library, ExternalLink,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { exportCurriculumUnitToDocx, exportCurriculumLessonToDocx } from "@/lib/export-curriculum-docx";
 import { toast as sonnerToast } from "sonner";
 
@@ -223,6 +224,7 @@ function UnitSection({
   refreshKey: number;
 }) {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const { lessons, loading, createLesson, deleteLesson, reorderLessons } = useCurriculumLessons(isExpanded ? unit.id : undefined, refreshKey);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
@@ -327,6 +329,13 @@ function UnitSection({
                     </div>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => navigate(`/units/${unit.id}`)}
+                      title="View Lesson Plans"
+                      className="rounded-md p-1.5 text-muted-foreground hover:text-primary"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </button>
                     <button
                       onClick={async () => {
                         try {
