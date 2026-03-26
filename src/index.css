@@ -171,33 +171,30 @@
   @apply text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer;
 }
 
-/* PDF annotation links clickable above flipbook */
+/* PDF annotation and text layers - clickable above flipbook */
 .pdf-links .react-pdf__Page__annotations,
-.pdf-links .react-pdf__Page__annotations.annotationLayer {
-  position: absolute;
+.pdf-links .annotationLayer {
+  position: absolute !important;
   inset: 0;
   z-index: 50;
   pointer-events: none;
 }
 
-.pdf-links .react-pdf__Page__annotations a,
-.pdf-links .react-pdf__Page__annotations .linkAnnotation,
+.pdf-links .react-pdf__Page__textContent,
+.pdf-links .textLayer {
+  position: absolute !important;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  opacity: 0.01;
+}
+
 .pdf-links .annotationLayer a,
-.pdf-links .annotationLayer section {
+.pdf-links .annotationLayer section,
+.pdf-links .annotationLayer .linkAnnotation {
   pointer-events: auto !important;
-  cursor: pointer;
+  cursor: pointer !important;
   z-index: 51;
-  position: relative;
-}
-
-/* Ensure flipbook doesn't block annotation clicks */
-.flipbook-container .stf__item {
-  overflow: visible;
-}
-
-.pdf-links .annotationLayer a[href] {
-  color: transparent;
-  display: block;
 }
 
 /* iOS-style frosted glass effect for headers */
