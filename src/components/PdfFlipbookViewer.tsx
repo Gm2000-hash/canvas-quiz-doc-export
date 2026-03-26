@@ -33,18 +33,43 @@ interface FlipPageProps {
   height: number;
 }
 
-const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width, height }, ref) => (
-  <div ref={ref} className="bg-white flex items-center justify-center overflow-hidden relative pdf-links">
-    <Page
-      pageNumber={pageNumber}
-      width={width}
-      height={height}
-      renderTextLayer={false}
-      renderAnnotationLayer={true}
-      className="pdf-page-render"
-    />
-  </div>
-));
+const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width, height }, ref) => {
+  const innerRef = useRef<HTMLDivElement>(null);
+
+  // Ensure annotation links open in new tabs
+  useEffect(() => {
+    const el = innerRef.current;
+    if (!el) return;
+    const observer = new MutationObserver(() => {
+      el.querySelectorAll<HTMLAnchorElement>('.annotationLayer a[href], .react-pdf__Page__annotations a[href]').forEach(a => {
+        a.setAttribute('target', '_blank');
+        a.setAttribute('rel', 'noopener noreferrer');
+      });
+    });
+    observer.observe(el, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={(node) => {
+        (innerRef as any).current = node;
+        if (typeof ref === 'function') ref(node);
+        else if (ref) (ref as any).current = node;
+      }}
+      className="bg-white flex items-center justify-center overflow-hidden relative pdf-links"
+    >
+      <Page
+        pageNumber={pageNumber}
+        width={width}
+        height={height}
+        renderTextLayer={false}
+        renderAnnotationLayer={true}
+        className="pdf-page-render"
+      />
+    </div>
+  );
+});
 FlipPage.displayName = 'FlipPage';
 
 export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewerProps) {
