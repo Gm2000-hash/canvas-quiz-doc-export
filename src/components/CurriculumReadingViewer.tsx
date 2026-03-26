@@ -211,7 +211,99 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
     setEditData({ ...editData, key_terms: terms });
   };
 
+  // Generic array helpers
+  const moveItem = (field: string, index: number, dir: 'up' | 'down') => {
+    if (!editData) return;
+    const arr = [...(editData[field as keyof typeof editData] as any[])];
+    const swap = dir === 'up' ? index - 1 : index + 1;
+    if (swap < 0 || swap >= arr.length) return;
+    [arr[index], arr[swap]] = [arr[swap], arr[index]];
+    setEditData({ ...editData, [field]: arr });
+  };
 
+  const deleteItem = (field: string, index: number) => {
+    if (!editData) return;
+    const arr = [...(editData[field as keyof typeof editData] as any[])];
+    arr.splice(index, 1);
+    setEditData({ ...editData, [field]: arr });
+  };
+
+  const addItem = (field: string, defaultValue: any) => {
+    if (!editData) return;
+    const arr = [...((editData[field as keyof typeof editData] as any[]) || []), defaultValue];
+    setEditData({ ...editData, [field]: arr });
+  };
+
+  const handleEditorAction = (action: EditorAction) => {
+    if (!editData) return;
+    const fieldMap: Record<SectionKind, string> = {
+      objectives: 'objectives',
+      key_terms: 'key_terms',
+      intro: 'intro',
+      explanation: 'explanation',
+      reading: 'reading_paragraphs',
+    };
+
+    switch (action.type) {
+      case 'move':
+        if (action.section && action.index != null && action.direction) {
+          moveItem(fieldMap[action.section], action.index, action.direction);
+        }
+        break;
+      case 'delete':
+        if (action.section && action.index != null) {
+          deleteItem(fieldMap[action.section], action.index);
+        }
+        break;
+      case 'add':
+        if (action.section === 'key_terms') {
+          addItem('key_terms', { term: '', definition: '' });
+        } else if (action.section === 'objectives') {
+          addItem('objectives', '');
+        } else if (action.section === 'intro') {
+          addItem('intro', '');
+        } else if (action.section === 'explanation') {
+          addItem('explanation', '');
+        } else if (action.section === 'reading') {
+          addItem('reading_paragraphs', '');
+          if (!editData.reading_title) {
+            setEditData(prev => prev ? { ...prev, reading_title: 'Reading' } : prev);
+          }
+        }
+        break;
+      case 'insert-video':
+        setVideoDialogOpen(true);
+        break;
+      case 'insert-activity':
+        toast.info('Select an activity to embed from the Activity Builder');
+        break;
+      case 'set-font':
+        if (action.value) setEditFont(action.value);
+        break;
+      case 'set-size':
+        if (action.value) setEditFontSize(action.value);
+        break;
+      case 'set-spacing':
+        if (action.value) setEditLineSpacing(action.value);
+        break;
+    }
+  };
+
+  const insertVideoEmbed = () => {
+    if (!videoUrl.trim() || !editData) return;
+    // Convert YouTube URLs to embed format
+    let embedUrl = videoUrl.trim();
+    const ytMatch = embedUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+    if (ytMatch) embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+    const embedHtml = `<iframe src="${embedUrl}" width="100%" height="400" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`;
+    addItem('reading_paragraphs', embedHtml);
+    if (!editData.reading_title) {
+      setEditData(prev => prev ? { ...prev, reading_title: 'Reading' } : prev);
+    }
+    setVideoUrl('');
+    setVideoDialogOpen(false);
+    toast.success('Video embed added to reading section');
+  };
   return (
     <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex flex-col">
       {/* Header */}
