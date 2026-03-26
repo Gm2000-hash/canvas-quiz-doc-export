@@ -68,7 +68,17 @@ Improve and fill in any missing information. Keep the same general topic but mak
 
       setProgress(40);
 
-      if (error) throw error;
+      if (error) {
+        // Try to extract error message from response context
+        let errorMsg = error.message;
+        try {
+          if (error.context?.body) {
+            const body = typeof error.context.body === 'string' ? JSON.parse(error.context.body) : error.context.body;
+            if (body?.error) errorMsg = body.error;
+          }
+        } catch {}
+        throw new Error(errorMsg);
+      }
       if (!data?.lessons?.[0]) throw new Error("Invalid response from AI");
 
       const newLesson = data.lessons[0];
