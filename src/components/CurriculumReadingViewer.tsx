@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save } from 'lucide-react';
+import { ReadingEditToolbar, ItemToolbar, type EditorAction, type SectionKind } from '@/components/ReadingEditToolbar';
 import { toast } from 'sonner';
 import type { CurriculumLesson } from '@/hooks/useCurriculum';
 
