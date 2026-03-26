@@ -218,7 +218,7 @@ const LessonPlanner = () => {
           stats={[{ label: "Units", value: units.length }]}
         />
 
-        <Tabs defaultValue="units" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="units" className="gap-2">
               <Layers className="h-4 w-4" /> Units
