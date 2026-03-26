@@ -496,6 +496,14 @@ const LessonPlanEditor = () => {
           vocabulary: lesson.vocabulary.map(v => v.term).join(", "),
         }}
       />
+
+      {readingOpen && unitDiscipline && (
+        <CurriculumReadingViewer
+          discipline={unitDiscipline}
+          title={`${unitTitle} Readings`}
+          onClose={() => setReadingOpen(false)}
+        />
+      )}
     </div>
   );
 };
