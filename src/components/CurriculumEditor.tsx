@@ -183,10 +183,8 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
                   intro: tb?.intro || sc?.hook || [],
                   explanation: tb?.explanation || sc?.key_concepts?.map((kc: any) => `**${kc.heading}**\n\n${kc.content}`) || [],
                   key_terms: tb?.key_terms || [],
-                  quiz: tb?.quiz || sc?.formative_assessment || [],
                   reading_title: lesson.reading?.reading_title || null,
                   reading_paragraphs: lesson.reading?.reading_paragraphs || [],
-                  reading_questions: lesson.reading?.reading_questions || [],
                 } as any);
 
                 sonnerToast.success("Lesson generated and saved!");

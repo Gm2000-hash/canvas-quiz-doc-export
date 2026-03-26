@@ -214,8 +214,8 @@ async function handleRegeneration(opts: {
 
   const sectionConfigs: Record<string, { prompt: string; schema: any }> = {
     reading: {
-      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Create a compelling non-fiction reading with 8-12 paragraphs and 4-5 comprehension questions.`,
-      schema: { type: "object", properties: { reading_title: { type: "string" }, reading_paragraphs: { type: "array", items: { type: "string" } }, reading_questions: { type: "array", items: { type: "object" } } }, required: ["reading_title", "reading_paragraphs", "reading_questions"] },
+      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Create a compelling non-fiction reading with 8-12 paragraphs.`,
+      schema: { type: "object", properties: { reading_title: { type: "string" }, reading_paragraphs: { type: "array", items: { type: "string" } } }, required: ["reading_title", "reading_paragraphs"] },
     },
     objectives: {
       prompt: `Regenerate ONLY the objectives for this lesson. Write 3-5 clear, measurable learning objectives.`,
