@@ -551,15 +551,6 @@ function PushReadingsToCanvasDialog({
       parts.push(`<h3>Reading: ${lesson.reading_title}</h3>`);
       (lesson.reading_paragraphs as string[])?.forEach(p => parts.push(`<p>${p}</p>`));
 
-      const rqs = lesson.reading_questions as any[];
-      if (rqs?.length) {
-        parts.push('<h4>Comprehension Questions</h4><ol>');
-        rqs.forEach(q => {
-          const text = typeof q === 'string' ? q : q.question || q.text || '';
-          parts.push(`<li>${text}</li>`);
-        });
-        parts.push('</ol>');
-      }
     }
 
     return parts.join('\n');
