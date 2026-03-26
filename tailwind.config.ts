@@ -110,12 +110,10 @@ export default {
   		},
   		fontFamily: {
   			sans: [
+  				'Space Grotesk',
   				'Inter',
   				'-apple-system',
   				'BlinkMacSystemFont',
-  				'SF Pro Display',
-  				'SF Pro Text',
-  				'Helvetica Neue',
   				'system-ui',
   				'sans-serif'
   			]
