@@ -85,7 +85,6 @@ export default function ActivityEditorPage() {
     // Fetch standards
     fetchStandards([id]).then(map => setStandards(map[id] || []));
   }, [id, user]);
-  }, [id, user]);
 
   const handleSave = async () => {
     if (!id) return;
