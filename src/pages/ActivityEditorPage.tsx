@@ -104,6 +104,15 @@ export default function ActivityEditorPage() {
       case "question_set": return <QuestionSetEditor content={content as QuestionSetContent} onChange={setContent} />;
       case "personality_quiz": return <PersonalityQuizEditor content={content as PersonalityQuizContent} onChange={setContent} />;
       case "game_map": return <GameMapEditor content={content as GameMapContent} onChange={setContent} />;
+      case "column": return <ColumnEditor content={content as ColumnContent} onChange={setContent} />;
+      case "course_presentation": return <CoursePresentationEditor content={content as CoursePresentationContent} onChange={setContent} />;
+      case "documentation_tool": return <DocumentationToolEditor content={content as DocumentationToolContent} onChange={setContent} />;
+      case "image_hotspots": return <ImageHotspotsEditor content={content as ImageHotspotsContent} onChange={setContent} />;
+      case "interactive_book": return <InteractiveBookEditor content={content as InteractiveBookContent} onChange={setContent} />;
+      case "interactive_video": return <InteractiveVideoEditor content={content as InteractiveVideoContent} onChange={setContent} />;
+      case "virtual_tour": return <VirtualTourEditor content={content as VirtualTourContent} onChange={setContent} />;
+      case "crossword": return <CrosswordEditor content={content as CrosswordContent} onChange={setContent} />;
+      case "agamotto": return <AgamottoEditor content={content as AgamottoContent} onChange={setContent} />;
       default: return <p className="text-sm text-muted-foreground">Unknown type</p>;
     }
   };
