@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import type { CurriculumLesson } from '@/hooks/useCurriculum';
 
