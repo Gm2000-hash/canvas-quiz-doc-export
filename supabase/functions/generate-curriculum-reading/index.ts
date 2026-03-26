@@ -63,28 +63,22 @@ serve(async (req) => {
 IMPORTANT — Connected Reading:
 Also generate a "reading" object with:
 - reading_title: A compelling title for a standalone reading passage connected to the lesson topic
-- reading_paragraphs: Array of 8-12 detailed, engaging paragraphs that form a cohesive reading passage. Write at a middle-school reading level with rich vocabulary.
-- reading_questions: Array of 4-5 comprehension questions about the reading, each with {question_text, question_type, answers, points_possible}.`;
+- reading_paragraphs: Array of 8-12 detailed, engaging paragraphs that form a cohesive reading passage. Write at a middle-school reading level with rich vocabulary.`;
 
     const formatInstructions = format === "textbook"
       ? `Output the lesson:
-- title, objectives (3-5), key_terms (8-12 {term, definition}), intro (6-8 paragraphs), explanation (8-12 paragraphs), quiz (12-15 questions)
+- title, objectives (3-5), key_terms (8-12 {term, definition}), intro (6-8 paragraphs), explanation (8-12 paragraphs)
 ${readingInstructions}`
       : format === "scripted"
       ? `Output as scripted lesson plan:
-- title, hook (3-5 paragraphs), key_concepts (6-8 {heading, content}), assignment ({title, description, instructions}), formative_assessment (8-10 questions)
+- title, hook (3-5 paragraphs), key_concepts (6-8 {heading, content}), assignment ({title, description, instructions})
 ${readingInstructions}`
       : `Output in BOTH formats under "textbook" and "scripted" keys. Include "reading" at the top level.
-FORMAT 1 "textbook": title, objectives, key_terms, intro, explanation, quiz
-FORMAT 2 "scripted": title, hook, key_concepts, assignment, formative_assessment
+FORMAT 1 "textbook": title, objectives, key_terms, intro, explanation
+FORMAT 2 "scripted": title, hook, key_concepts, assignment
 ${readingInstructions}`;
 
-    const systemPrompt = `You are an expert middle school science curriculum designer specializing in NGSS-aligned lesson creation. You write engaging, narrative-driven lessons appropriate for ${grade_level} students.
-
-When creating quiz/assessment questions, use these answer formats:
-- multiple_choice_question: answers: [{id,text,weight}] where weight=100 for correct, 0 for incorrect. Always 4 options.
-- true_false_question: answers: [{id,text:"True"|"False",weight}]
-- short_answer_question: answers: [{id,text:"sample answer",weight:100}]`;
+    const systemPrompt = `You are an expert middle school science curriculum designer specializing in NGSS-aligned lesson creation. You write engaging, narrative-driven lessons appropriate for ${grade_level} students.`;
 
     const userPrompt = `Create a ${grade_level} science lesson about "${subject_area}".
 
@@ -101,9 +95,8 @@ Return ONLY valid JSON (no markdown).`;
       properties: {
         reading_title: { type: "string" },
         reading_paragraphs: { type: "array", items: { type: "string" } },
-        reading_questions: { type: "array", items: { type: "object" } },
       },
-      required: ["reading_title", "reading_paragraphs", "reading_questions"],
+      required: ["reading_title", "reading_paragraphs"],
     };
 
     const lessonSchema: any = {
@@ -121,9 +114,8 @@ Return ONLY valid JSON (no markdown).`;
           key_terms: { type: "array", items: { type: "object", properties: { term: { type: "string" }, definition: { type: "string" } }, required: ["term", "definition"] } },
           intro: { type: "array", items: { type: "string" } },
           explanation: { type: "array", items: { type: "string" } },
-          quiz: { type: "array", items: { type: "object" } },
         },
-        required: ["title", "objectives", "key_terms", "intro", "explanation", "quiz"],
+        required: ["title", "objectives", "key_terms", "intro", "explanation"],
       };
       if (format === "both") {
         lessonSchema.properties.textbook = tbProps;
@@ -222,8 +214,8 @@ async function handleRegeneration(opts: {
 
   const sectionConfigs: Record<string, { prompt: string; schema: any }> = {
     reading: {
-      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Create a compelling non-fiction reading with 8-12 paragraphs and 4-5 comprehension questions.`,
-      schema: { type: "object", properties: { reading_title: { type: "string" }, reading_paragraphs: { type: "array", items: { type: "string" } }, reading_questions: { type: "array", items: { type: "object" } } }, required: ["reading_title", "reading_paragraphs", "reading_questions"] },
+      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Create a compelling non-fiction reading with 8-12 paragraphs.`,
+      schema: { type: "object", properties: { reading_title: { type: "string" }, reading_paragraphs: { type: "array", items: { type: "string" } } }, required: ["reading_title", "reading_paragraphs"] },
     },
     objectives: {
       prompt: `Regenerate ONLY the objectives for this lesson. Write 3-5 clear, measurable learning objectives.`,

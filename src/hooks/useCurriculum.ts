@@ -16,7 +16,6 @@ export interface CurriculumLesson {
   quiz: any[];
   reading_title: string | null;
   reading_paragraphs: string[];
-  reading_questions: any[];
   interactive_activities: any[];
   image_url: string | null;
   created_at: string;
