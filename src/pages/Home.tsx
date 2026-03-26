@@ -19,6 +19,7 @@ import sketchLessonPlanner from "@/assets/sketch-lesson-planner.png";
 import sketchCreateQuestion from "@/assets/sketch-create-question.png";
 import sketchStandardsBrowser from "@/assets/sketch-standards-browser.png";
 import sketchProfileSettings from "@/assets/sketch-profile-settings.png";
+import sketchActivityBuilder from "@/assets/sketch-activity-builder.png";
 
 const dailyTips = [
   { text: "The best teachers don't give you the answer — they spark the desire to find it.", author: "Unknown" },
