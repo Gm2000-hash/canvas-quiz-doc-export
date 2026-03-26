@@ -90,113 +90,160 @@ Each lesson should be 50 minutes with EXACTLY 3 learning objectives and AT LEAST
 
 Make these detailed enough that a substitute teacher with no science background could pick them up and teach effectively.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
-        messages: [
-          { role: "system", content: systemPrompt },
-          { role: "user", content: userPrompt },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "create_lesson_plans",
-              description: "Create an array of detailed lesson plans",
-              parameters: {
-                type: "object",
-                properties: {
-                  lessons: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        title: { type: "string", description: "Lesson title" },
-                        duration_minutes: { type: "number", description: "Lesson duration in minutes" },
-                        objectives: { type: "string", description: "EXACTLY 3 specific, measurable learning objectives using Bloom's taxonomy verbs, one per line" },
-                        activities: {
-                          type: "array",
-                          description: "AT LEAST 4 activities per lesson. Each activity MUST have detailed talking points and background info.",
-                          items: {
-                            type: "object",
-                            properties: {
-                              name: { type: "string", description: "Activity name, e.g. 'Warm-up: Activating Prior Knowledge'" },
-                              duration: { type: "number", description: "Duration in minutes" },
-                              description: { type: "string", description: "DETAILED teacher script of 8-15 sentences. MUST include: KEY TALKING POINTS as bullet points of main ideas to communicate, BACKGROUND INFORMATION with 3-5 sentences of deep content knowledge covering scientific explanations, real-world connections, common misconceptions and corrections, and analogies. Also include specific questions to ask with anticipated student responses, and step-by-step procedures for labs/activities." },
+    // Helper to make the AI call
+    async function callAI(messages: any[]) {
+      return await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${LOVABLE_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages,
+          tools: [
+            {
+              type: "function",
+              function: {
+                name: "create_lesson_plans",
+                description: "Create an array of detailed lesson plans",
+                parameters: {
+                  type: "object",
+                  properties: {
+                    lessons: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          title: { type: "string", description: "Lesson title" },
+                          duration_minutes: { type: "number", description: "Lesson duration in minutes" },
+                          objectives: { type: "string", description: "EXACTLY 3 specific, measurable learning objectives using Bloom's taxonomy verbs, one per line" },
+                          activities: {
+                            type: "array",
+                            description: "AT LEAST 4 activities per lesson. Each activity MUST have detailed talking points and background info.",
+                            items: {
+                              type: "object",
+                              properties: {
+                                name: { type: "string", description: "Activity name, e.g. 'Warm-up: Activating Prior Knowledge'" },
+                                duration: { type: "number", description: "Duration in minutes" },
+                                description: { type: "string", description: "DETAILED teacher script of 8-15 sentences. MUST include: KEY TALKING POINTS as bullet points of main ideas to communicate, BACKGROUND INFORMATION with 3-5 sentences of deep content knowledge covering scientific explanations, real-world connections, common misconceptions and corrections, and analogies. Also include specific questions to ask with anticipated student responses, and step-by-step procedures for labs/activities." },
+                              },
+                              required: ["name", "duration", "description"],
                             },
-                            required: ["name", "duration", "description"],
+                          },
+                          materials: { type: "string", description: "Detailed materials list with quantities" },
+                          assessment: { type: "string", description: "Specific formative and summative assessment strategies with example questions, exit ticket prompts, or rubric criteria" },
+                          differentiation: { type: "string", description: "Specific strategies for ELL students, IEP accommodations, gifted extensions, and struggling readers" },
+                          notes: { type: "string", description: "Teacher tips, common student misconceptions, and how to address them" },
+                          vocabulary_json: {
+                            type: "string",
+                            description: "REQUIRED. JSON string of vocabulary array with AT LEAST 4 terms. Each item has term (string) and definition (string). Example: [{\"term\":\"Photosynthesis\",\"definition\":\"The process by which green plants use sunlight...\"}]",
+                          },
+                          resources_json: {
+                            type: "string",
+                            description: "JSON string of at least 3 online resources. Each has title (string), url (string — a real working URL), and type (string — one of: video, article, activity, other). Include a mix of videos, readings, and interactive activities from reputable sources like Khan Academy, YouTube edu channels, CK-12, PhET, BrainPOP, National Geographic, NASA, Smithsonian, etc. Example: [{\"title\":\"Khan Academy: Photosynthesis\",\"url\":\"https://www.khanacademy.org/science/biology/photosynthesis-in-plants\",\"type\":\"video\"},{\"title\":\"CK-12: Plant Biology\",\"url\":\"https://www.ck12.org/biology/plant-biology/\",\"type\":\"article\"},{\"title\":\"PhET: Photosynthesis Lab\",\"url\":\"https://phet.colorado.edu/en/simulations/photosynthesis\",\"type\":\"activity\"}]",
+                          },
+                          standards_json: {
+                            type: "string",
+                            description: "REQUIRED. JSON string of NGSS standards array with AT LEAST 1 standard. Each standard has code (string like MS-LS1-1) and description (the FULL COMPLETE text of the performance expectation). EVERY lesson MUST have at least one standard. Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation to provide evidence that living things are made of cells...\"}]",
                           },
                         },
-                        materials: { type: "string", description: "Detailed materials list with quantities" },
-                        assessment: { type: "string", description: "Specific formative and summative assessment strategies with example questions, exit ticket prompts, or rubric criteria" },
-                        differentiation: { type: "string", description: "Specific strategies for ELL students, IEP accommodations, gifted extensions, and struggling readers" },
-                        notes: { type: "string", description: "Teacher tips, common student misconceptions, and how to address them" },
-                        vocabulary_json: {
-                          type: "string",
-                          description: "REQUIRED. JSON string of vocabulary array with AT LEAST 4 terms. Each item has term (string) and definition (string). Example: [{\"term\":\"Photosynthesis\",\"definition\":\"The process by which green plants use sunlight...\"}]",
-                        },
-                        resources_json: {
-                          type: "string",
-                          description: "JSON string of at least 3 online resources. Each has title (string), url (string — a real working URL), and type (string — one of: video, article, activity, other). Include a mix of videos, readings, and interactive activities from reputable sources like Khan Academy, YouTube edu channels, CK-12, PhET, BrainPOP, National Geographic, NASA, Smithsonian, etc. Example: [{\"title\":\"Khan Academy: Photosynthesis\",\"url\":\"https://www.khanacademy.org/science/biology/photosynthesis-in-plants\",\"type\":\"video\"},{\"title\":\"CK-12: Plant Biology\",\"url\":\"https://www.ck12.org/biology/plant-biology/\",\"type\":\"article\"},{\"title\":\"PhET: Photosynthesis Lab\",\"url\":\"https://phet.colorado.edu/en/simulations/photosynthesis\",\"type\":\"activity\"}]",
-                        },
-                        standards_json: {
-                          type: "string",
-                          description: "REQUIRED. JSON string of NGSS standards array with AT LEAST 1 standard. Each standard has code (string like MS-LS1-1) and description (the FULL COMPLETE text of the performance expectation). EVERY lesson MUST have at least one standard. Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation to provide evidence that living things are made of cells...\"}]",
-                        },
+                        required: ["title", "duration_minutes", "objectives", "activities", "materials", "assessment", "differentiation", "resources_json", "vocabulary_json", "standards_json"],
+                        additionalProperties: false,
                       },
-                      required: ["title", "duration_minutes", "objectives", "activities", "materials", "assessment", "differentiation", "resources_json", "vocabulary_json", "standards_json"],
-                      additionalProperties: false,
                     },
                   },
+                  required: ["lessons"],
+                  additionalProperties: false,
                 },
-                required: ["lessons"],
-                additionalProperties: false,
               },
             },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "create_lesson_plans" } },
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "Usage limit reached. Please add credits." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const text = await response.text();
-      console.error("AI error:", response.status, text);
-      throw new Error(`AI gateway error: ${response.status}`);
+          ],
+          tool_choice: { type: "function", function: { name: "create_lesson_plans" } },
+        }),
+      });
     }
 
-    const result = await response.json();
-    const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
-    let parsed: any;
-
-    if (toolCall) {
-      parsed = JSON.parse(toolCall.function.arguments);
-    } else {
-      // Fallback: try to extract JSON from the message content
-      const content = result.choices?.[0]?.message?.content || "";
-      console.warn("No tool call in response, attempting to parse content as JSON");
-      const jsonMatch = content.match(/\{[\s\S]*"lessons"[\s\S]*\}/);
-      if (jsonMatch) {
-        parsed = JSON.parse(jsonMatch[0]);
-      } else {
-        console.error("AI response had no tool call and no parseable JSON:", content.substring(0, 500));
-        throw new Error("AI did not return structured lesson data. Please try again.");
+    function extractJsonFromResponse(text: string): any {
+      // Strip markdown code blocks
+      let cleaned = text.replace(/```json\s*/gi, "").replace(/```\s*/g, "").trim();
+      // Find JSON with "lessons" key
+      const jsonStart = cleaned.indexOf("{");
+      const jsonEnd = cleaned.lastIndexOf("}");
+      if (jsonStart === -1 || jsonEnd === -1) return null;
+      cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+      try {
+        return JSON.parse(cleaned);
+      } catch {
+        // Fix common issues
+        cleaned = cleaned.replace(/,\s*}/g, "}").replace(/,\s*]/g, "]").replace(/[\x00-\x1F\x7F]/g, "");
+        try { return JSON.parse(cleaned); } catch { return null; }
       }
+    }
+
+    const messages = [
+      { role: "system", content: systemPrompt },
+      { role: "user", content: userPrompt },
+    ];
+
+    let parsed: any = null;
+    const MAX_ATTEMPTS = 2;
+
+    for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+      console.log(`AI call attempt ${attempt}/${MAX_ATTEMPTS}`);
+      const response = await callAI(messages);
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          return new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
+            status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        if (response.status === 402) {
+          return new Response(JSON.stringify({ error: "Usage limit reached. Please add credits." }), {
+            status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        const text = await response.text();
+        console.error("AI error:", response.status, text);
+        throw new Error(`AI gateway error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      const msg = result.choices?.[0]?.message;
+      const finishReason = result.choices?.[0]?.finish_reason;
+      console.log("AI finish_reason:", finishReason, "has tool_calls:", !!msg?.tool_calls?.length, "content length:", (msg?.content || "").length);
+
+      const toolCall = msg?.tool_calls?.[0];
+      if (toolCall?.function?.arguments) {
+        try {
+          parsed = JSON.parse(toolCall.function.arguments);
+          if (parsed?.lessons?.length > 0) break;
+        } catch (e) {
+          console.warn("Failed to parse tool call arguments:", e);
+          // Try to extract from malformed JSON
+          parsed = extractJsonFromResponse(toolCall.function.arguments);
+          if (parsed?.lessons?.length > 0) break;
+        }
+      }
+
+      // Fallback: try to extract from content
+      const content = msg?.content || "";
+      if (content.length > 0) {
+        parsed = extractJsonFromResponse(content);
+        if (parsed?.lessons?.length > 0) break;
+      }
+
+      console.warn(`Attempt ${attempt} failed to produce valid data. finish_reason: ${finishReason}`);
+      if (attempt < MAX_ATTEMPTS) {
+        // Add a nudge message for retry
+        messages.push({ role: "assistant", content: content || "I need to generate the lesson plans." });
+        messages.push({ role: "user", content: "Please use the create_lesson_plans tool to return the structured lesson data. This is required." });
+      }
+    }
+
+    if (!parsed?.lessons?.length) {
+      throw new Error("AI did not return structured lesson data after multiple attempts. Please try again.");
     }
 
     const lessons = parsed.lessons.map((l: any) => {
