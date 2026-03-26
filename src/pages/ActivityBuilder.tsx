@@ -255,6 +255,7 @@ export default function ActivityBuilder() {
                       <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
                     ) : sources.length === 0 ? (
                       <p className="text-xs text-muted-foreground mt-1">No lessons found. Create a lesson plan or curriculum lesson first.</p>
+                    ) : (
                       <Select value={selectedSource} onValueChange={setSelectedSource}>
                         <SelectTrigger className="mt-1.5">
                           <SelectValue placeholder="Select a lesson..." />
