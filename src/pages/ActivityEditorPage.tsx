@@ -50,7 +50,6 @@ import { ArrowLeft, Save, Puzzle, Download, Sparkles, Loader2 } from "lucide-rea
 import { exportActivityAsH5P } from "@/lib/export-h5p";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 
 const AI_SUPPORTED_TYPES: ActivityType[] = [
   "fill_in_blanks", "drag_the_words", "multiple_choice", "true_false", "single_choice_set",
