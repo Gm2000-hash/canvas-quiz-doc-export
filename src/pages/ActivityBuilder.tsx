@@ -42,6 +42,7 @@ export default function ActivityBuilder() {
   const [newType, setNewType] = useState<ActivityType>("fill_in_blanks");
   const [useAI, setUseAI] = useState(false);
   const [sources, setSources] = useState<SourceOption[]>([]);
+  const [sourcesLoaded, setSourcesLoaded] = useState(false);
   const [selectedSource, setSelectedSource] = useState<string>("");
   const [generating, setGenerating] = useState(false);
 
