@@ -93,6 +93,8 @@ const App = () => (
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/standards" element={<ProtectedRoute><StandardsBrowser /></ProtectedRoute>} />
           <Route path="/canvas-results" element={<ProtectedRoute><CanvasResults /></ProtectedRoute>} />
+          <Route path="/activities" element={<ProtectedRoute><ActivityBuilder /></ProtectedRoute>} />
+          <Route path="/activities/:id" element={<ProtectedRoute><ActivityEditorPage /></ProtectedRoute>} />
           <Route path="/library" element={<Navigate to="/admin/library" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
