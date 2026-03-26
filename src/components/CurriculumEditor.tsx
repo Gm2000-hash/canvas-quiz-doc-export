@@ -330,6 +330,13 @@ function UnitSection({
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
+                      onClick={() => navigate(`/units/${unit.id}`)}
+                      title="View Lesson Plans"
+                      className="rounded-md p-1.5 text-muted-foreground hover:text-primary"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                    </button>
+                    <button
                       onClick={async () => {
                         try {
                           await exportCurriculumLessonToDocx(lesson);
