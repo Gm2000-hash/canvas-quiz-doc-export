@@ -581,6 +581,51 @@ function LessonEditorDialog({
             </Button>
           </div>
 
+          {/* Interactive Activities */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-1.5"><Puzzle className="h-3.5 w-3.5 text-primary" /> Interactive Activities</Label>
+              <span className="text-xs text-muted-foreground">{interactiveActivities.length} embedded</span>
+            </div>
+            {interactiveActivities.map((ea, idx) => {
+              const typeInfo = ACTIVITY_TYPES.find(t => t.type === ea.activity_type);
+              return (
+                <div key={ea.activity_id} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/50">
+                  <Puzzle className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="text-sm flex-1 truncate">{ea.title}</span>
+                  <span className="text-[10px] text-muted-foreground">{typeInfo?.label}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    title="Export H5P"
+                    onClick={async () => {
+                      const { data } = await supabase.from("h5p_activities").select("content, activity_type, title").eq("id", ea.activity_id).single();
+                      if (data) {
+                        await exportActivityAsH5P((data as any).title, (data as any).activity_type as ActivityType, (data as any).content as ActivityContent);
+                        sonnerToast.success("H5P file downloaded");
+                      }
+                    }}
+                  >
+                    <Download className="h-3 w-3" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70" onClick={() => setInteractiveActivities(interactiveActivities.filter((_, i) => i !== idx))}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              );
+            })}
+            <Button variant="outline" size="sm" className="w-full gap-1" onClick={() => setEmbedPickerOpen(true)}>
+              <Plus className="h-3 w-3" /> Embed Activity
+            </Button>
+            <EmbedActivityPicker
+              open={embedPickerOpen}
+              onOpenChange={setEmbedPickerOpen}
+              excludeIds={interactiveActivities.map(e => e.activity_id)}
+              onSelect={(a) => setInteractiveActivities([...interactiveActivities, { activity_id: a.id, title: a.title, activity_type: a.activity_type }])}
+            />
+          </div>
+
           {/* Intro & Explanation (collapsible sections) */}
           <details className="space-y-2">
             <summary className="cursor-pointer text-sm font-medium text-foreground">Introduction ({intro.length} paragraphs)</summary>
