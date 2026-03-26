@@ -59,13 +59,13 @@ export default {
   				DEFAULT: 'hsl(var(--info))',
   				foreground: 'hsl(var(--info-foreground))'
   			},
-  			earth: {
-  				terracotta: 'hsl(var(--earth-terracotta))',
-  				sage: 'hsl(var(--earth-sage))',
-  				sand: 'hsl(var(--earth-sand))',
-  				warm: 'hsl(var(--earth-warm))',
-  				clay: 'hsl(var(--earth-clay))',
-  				moss: 'hsl(var(--earth-moss))'
+  			neon: {
+  				pink: 'hsl(var(--neon-pink))',
+  				cyan: 'hsl(var(--neon-cyan))',
+  				purple: 'hsl(var(--neon-purple))',
+  				orange: 'hsl(var(--neon-orange))',
+  				green: 'hsl(var(--neon-green))',
+  				yellow: 'hsl(var(--neon-yellow))'
   			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
