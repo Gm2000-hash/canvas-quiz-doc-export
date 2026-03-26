@@ -76,6 +76,47 @@ export type Database = {
           },
         ]
       }
+      h5p_activities: {
+        Row: {
+          activity_type: string
+          content: Json
+          created_at: string
+          id: string
+          title: string
+          unit_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          content?: Json
+          created_at?: string
+          id?: string
+          title: string
+          unit_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          content?: Json
+          created_at?: string
+          id?: string
+          title?: string
+          unit_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "h5p_activities_unit_id_fkey"
+            columns: ["unit_id"]
+            isOneToOne: false
+            referencedRelation: "units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lesson_plan_standards: {
         Row: {
           id: string
