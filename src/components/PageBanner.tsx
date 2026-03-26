@@ -1,5 +1,4 @@
 import * as React from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface PageBannerProps {
   greeting?: string;
@@ -32,12 +31,15 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
     : compact ? "h-10 w-10" : "h-14 w-14 sm:h-16 sm:w-16";
 
   const avatarEl = avatarUrl !== undefined ? (
-    <Avatar className={`${sizeClass} ring-2 ring-neon-pink/40 shrink-0`}>
-      <AvatarImage src={avatarUrl} alt="Profile" />
-      <AvatarFallback className="bg-secondary text-primary font-semibold">
-        {avatarFallback || "?"}
-      </AvatarFallback>
-    </Avatar>
+    <div className={`relative ${sizeClass} rounded-2xl overflow-hidden border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] transition-transform hover:rotate-2 shrink-0`}>
+      {avatarUrl ? (
+        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
+      ) : (
+        <div className="w-full h-full bg-secondary flex items-center justify-center">
+          <span className="text-primary font-semibold">{avatarFallback || "?"}</span>
+        </div>
+      )}
+    </div>
   ) : null;
 
   return (
