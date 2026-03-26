@@ -69,8 +69,55 @@ export default function ActivityBuilder() {
 
   useEffect(() => { fetchActivities(); }, [user]);
 
+  // Fetch sources when AI toggle is enabled
+  useEffect(() => {
+    if (!useAI || !user || sources.length > 0) return;
+    Promise.all([
+      supabase.from("lesson_plans").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
+      supabase.from("curriculum_lessons").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
+    ]).then(([lp, cl]) => {
+      const opts: SourceOption[] = [
+        ...((lp.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "lesson_plan" as const })),
+        ...((cl.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "curriculum_lesson" as const })),
+      ];
+      setSources(opts);
+      if (opts.length > 0) setSelectedSource(opts[0].id);
+    });
+  }, [useAI, user]);
+
   const handleCreate = async () => {
     if (!user || !newTitle.trim()) return;
+
+    if (useAI && selectedSource) {
+      const source = sources.find(s => s.id === selectedSource);
+      if (!source) return;
+      setGenerating(true);
+      try {
+        const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
+          body: { activityType: newType, sourceType: source.type, sourceId: source.id },
+        });
+        if (fnError) throw fnError;
+        if (fnData?.error) throw new Error(fnData.error);
+        const content = fnData.content;
+        const { data, error } = await supabase
+          .from("h5p_activities")
+          .insert({ user_id: user.id, title: newTitle.trim(), activity_type: newType, content: content as any })
+          .select()
+          .single();
+        if (error) throw error;
+        setShowCreate(false);
+        setNewTitle("");
+        setUseAI(false);
+        toast({ title: "Activity generated with AI!" });
+        navigate(`/activities/${(data as any).id}`);
+      } catch (err: any) {
+        toast({ title: "Generation failed", description: err.message, variant: "destructive" });
+      } finally {
+        setGenerating(false);
+      }
+      return;
+    }
+
     const content = getDefaultContent(newType);
     const { data, error } = await supabase
       .from("h5p_activities")
