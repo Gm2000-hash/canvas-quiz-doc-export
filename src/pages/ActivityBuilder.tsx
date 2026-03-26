@@ -90,8 +90,9 @@ export default function ActivityBuilder() {
         const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
           body: { activityType: newType, sourceType: source.type, sourceId: source.id },
         });
-        if (fnError) throw fnError;
         if (fnData?.error) throw new Error(fnData.error);
+        if (fnError) throw fnError;
+        if (!fnData?.content) throw new Error("No content generated");
         const content = fnData.content;
         const { data, error } = await supabase
           .from("h5p_activities")
