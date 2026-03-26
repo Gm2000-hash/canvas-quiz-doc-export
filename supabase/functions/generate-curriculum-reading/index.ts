@@ -114,9 +114,8 @@ Return ONLY valid JSON (no markdown).`;
           key_terms: { type: "array", items: { type: "object", properties: { term: { type: "string" }, definition: { type: "string" } }, required: ["term", "definition"] } },
           intro: { type: "array", items: { type: "string" } },
           explanation: { type: "array", items: { type: "string" } },
-          quiz: { type: "array", items: { type: "object" } },
         },
-        required: ["title", "objectives", "key_terms", "intro", "explanation", "quiz"],
+        required: ["title", "objectives", "key_terms", "intro", "explanation"],
       };
       if (format === "both") {
         lessonSchema.properties.textbook = tbProps;
