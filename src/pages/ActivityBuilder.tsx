@@ -312,6 +312,7 @@ export default function ActivityBuilder() {
                       standards={standardsMap[a.id]}
                       onPlay={() => setPreviewActivity(a)}
                       onEdit={() => navigate(`/activities/${a.id}`)}
+                      onDuplicate={() => handleDuplicate(a)}
                       onDelete={() => handleDelete(a.id)}
                     />
                   ))}
