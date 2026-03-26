@@ -184,6 +184,12 @@ export default function ActivityEditorPage() {
           {typeInfo?.label ?? "Activity"}
         </span>
         <div className="flex-1" />
+        {supportsAI && (
+          <Button variant="outline" size="sm" onClick={openAIDialog} disabled={generating}>
+            {generating ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1.5" />}
+            {generating ? "Generating…" : "Generate with AI"}
+          </Button>
+        )}
         <Button
           variant="outline"
           size="sm"
