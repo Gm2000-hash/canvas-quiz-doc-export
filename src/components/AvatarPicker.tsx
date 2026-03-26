@@ -50,9 +50,9 @@ export function AvatarPicker({ selected, onSelect }: AvatarPickerProps) {
             )}
             title={avatar.label}
           >
-            <Avatar className="h-12 w-12 mx-auto">
-              <AvatarImage src={avatar.src} alt={avatar.label} />
-            </Avatar>
+            <div className="relative w-12 h-12 mx-auto rounded-2xl overflow-hidden border-[3px] border-foreground shadow-[3px_3px_0px_0px_hsl(var(--foreground))] transition-transform hover:rotate-2">
+              <img src={avatar.src} alt={avatar.label} className="w-full h-full object-cover" />
+            </div>
           </button>
         ))}
       </div>
