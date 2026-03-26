@@ -78,6 +78,9 @@ const LessonPlanEditor = () => {
   const [saving, setSaving] = useState(false);
   const [standardsOpen, setStandardsOpen] = useState(false);
   const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
+  const [readingOpen, setReadingOpen] = useState(false);
+  const [unitDiscipline, setUnitDiscipline] = useState<string | null>(null);
+  const [unitTitle, setUnitTitle] = useState('');
 
   useEffect(() => {
     if (!user || !id) return;
