@@ -64,7 +64,7 @@ export default function ActivityBuilder() {
 
   // Fetch sources when AI toggle is enabled
   useEffect(() => {
-    if (!useAI || !user || sources.length > 0) return;
+    if (!useAI || !user || sourcesLoaded) return;
     Promise.all([
       supabase.from("lesson_plans").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
       supabase.from("curriculum_lessons").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
@@ -74,9 +74,10 @@ export default function ActivityBuilder() {
         ...((cl.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "curriculum_lesson" as const })),
       ];
       setSources(opts);
+      setSourcesLoaded(true);
       if (opts.length > 0) setSelectedSource(opts[0].id);
     });
-  }, [useAI, user]);
+  }, [useAI, user, sourcesLoaded]);
 
   const handleCreate = async () => {
     if (!user || !newTitle.trim()) return;
