@@ -71,6 +71,7 @@ const ALL_CARDS: DashboardCard[] = [
   { id: "lesson-planner", title: "Lesson Planner", description: "Organize units, generate AI lesson plans, and export pacing guides.", path: "/lesson-planner", icon: Layers, image: sketchLessonPlanner },
   { id: "standards", title: "Standards Browser", description: "Browse Idaho and NGSS standards organized by subject, grade, and category.", path: "/standards", icon: Library, image: sketchStandardsBrowser },
   { id: "canvas-results", title: "Canvas Results", description: "Pull student quiz scores and analyze performance by standard.", path: "/canvas-results", icon: BarChart3 },
+  { id: "activities", title: "Activity Builder", description: "Create interactive H5P-style activities like fill-in-the-blanks and timelines.", path: "/activities", icon: Puzzle, image: sketchActivityBuilder },
   { id: "profile", title: "Profile Settings", description: "Update your photo, contact info, and teaching preferences.", path: "/profile", icon: UserCircle, image: sketchProfileSettings },
 ];
 
