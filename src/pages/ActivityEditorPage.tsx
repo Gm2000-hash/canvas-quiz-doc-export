@@ -72,6 +72,10 @@ export default function ActivityEditorPage() {
   const [content, setContent] = useState<ActivityContent>({ text: "", acceptAlternatives: true });
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [sources, setSources] = useState<SourceOption[]>([]);
+  const [selectedSource, setSelectedSource] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
