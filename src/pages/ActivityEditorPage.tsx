@@ -46,7 +46,8 @@ import type {
   ColumnContent, CoursePresentationContent, DocumentationToolContent, ImageHotspotsContent,
   InteractiveBookContent, InteractiveVideoContent, VirtualTourContent, CrosswordContent, AgamottoContent,
 } from "@/lib/h5p-types";
-import { ArrowLeft, Save, Puzzle } from "lucide-react";
+import { ArrowLeft, Save, Puzzle, Download } from "lucide-react";
+import { exportActivityAsH5P } from "@/lib/export-h5p";
 
 export default function ActivityEditorPage() {
   const { id } = useParams<{ id: string }>();
