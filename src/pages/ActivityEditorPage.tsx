@@ -11,11 +11,30 @@ import { FillInBlanksEditor } from "@/components/activities/editors/FillInBlanks
 import { DragTheWordsEditor } from "@/components/activities/editors/DragTheWordsEditor";
 import { AccordionEditor } from "@/components/activities/editors/AccordionEditor";
 import { TimelineEditor } from "@/components/activities/editors/TimelineEditor";
+import { MultipleChoiceEditor } from "@/components/activities/editors/MultipleChoiceEditor";
+import { TrueFalseEditor } from "@/components/activities/editors/TrueFalseEditor";
+import { SingleChoiceSetEditor } from "@/components/activities/editors/SingleChoiceSetEditor";
+import { MarkTheWordsEditor } from "@/components/activities/editors/MarkTheWordsEditor";
+import { EssayEditor } from "@/components/activities/editors/EssayEditor";
+import { SummaryEditor } from "@/components/activities/editors/SummaryEditor";
+import { DialogCardsEditor } from "@/components/activities/editors/DialogCardsEditor";
+import { FlashcardsEditor } from "@/components/activities/editors/FlashcardsEditor";
+import { MemoryGameEditor } from "@/components/activities/editors/MemoryGameEditor";
+import { ArithmeticQuizEditor } from "@/components/activities/editors/ArithmeticQuizEditor";
+import { DragAndDropEditor } from "@/components/activities/editors/DragAndDropEditor";
+import { QuestionSetEditor } from "@/components/activities/editors/QuestionSetEditor";
+import { PersonalityQuizEditor } from "@/components/activities/editors/PersonalityQuizEditor";
+import { GameMapEditor } from "@/components/activities/editors/GameMapEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ACTIVITY_TYPES } from "@/lib/h5p-types";
-import type { ActivityType, ActivityContent, FillInBlanksContent, DragTheWordsContent, AccordionContent, TimelineContent } from "@/lib/h5p-types";
+import type {
+  ActivityType, ActivityContent, FillInBlanksContent, DragTheWordsContent, AccordionContent, TimelineContent,
+  MultipleChoiceContent, TrueFalseContent, SingleChoiceSetContent, MarkTheWordsContent,
+  EssayContent, SummaryContent, DialogCardsContent, FlashcardsContent, MemoryGameContent,
+  ArithmeticQuizContent, DragAndDropContent, QuestionSetContent, PersonalityQuizContent, GameMapContent,
+} from "@/lib/h5p-types";
 import { ArrowLeft, Save, Puzzle } from "lucide-react";
 
 export default function ActivityEditorPage() {
@@ -56,14 +75,25 @@ export default function ActivityEditorPage() {
 
   const renderEditor = () => {
     switch (activityType) {
-      case "fill_in_blanks":
-        return <FillInBlanksEditor content={content as FillInBlanksContent} onChange={setContent} />;
-      case "drag_the_words":
-        return <DragTheWordsEditor content={content as DragTheWordsContent} onChange={setContent} />;
-      case "accordion":
-        return <AccordionEditor content={content as AccordionContent} onChange={setContent} />;
-      case "timeline":
-        return <TimelineEditor content={content as TimelineContent} onChange={setContent} />;
+      case "fill_in_blanks": return <FillInBlanksEditor content={content as FillInBlanksContent} onChange={setContent} />;
+      case "drag_the_words": return <DragTheWordsEditor content={content as DragTheWordsContent} onChange={setContent} />;
+      case "accordion": return <AccordionEditor content={content as AccordionContent} onChange={setContent} />;
+      case "timeline": return <TimelineEditor content={content as TimelineContent} onChange={setContent} />;
+      case "multiple_choice": return <MultipleChoiceEditor content={content as MultipleChoiceContent} onChange={setContent} />;
+      case "true_false": return <TrueFalseEditor content={content as TrueFalseContent} onChange={setContent} />;
+      case "single_choice_set": return <SingleChoiceSetEditor content={content as SingleChoiceSetContent} onChange={setContent} />;
+      case "mark_the_words": return <MarkTheWordsEditor content={content as MarkTheWordsContent} onChange={setContent} />;
+      case "essay": return <EssayEditor content={content as EssayContent} onChange={setContent} />;
+      case "summary": return <SummaryEditor content={content as SummaryContent} onChange={setContent} />;
+      case "dialog_cards": return <DialogCardsEditor content={content as DialogCardsContent} onChange={setContent} />;
+      case "flashcards": return <FlashcardsEditor content={content as FlashcardsContent} onChange={setContent} />;
+      case "memory_game": return <MemoryGameEditor content={content as MemoryGameContent} onChange={setContent} />;
+      case "arithmetic_quiz": return <ArithmeticQuizEditor content={content as ArithmeticQuizContent} onChange={setContent} />;
+      case "drag_and_drop": return <DragAndDropEditor content={content as DragAndDropContent} onChange={setContent} />;
+      case "question_set": return <QuestionSetEditor content={content as QuestionSetContent} onChange={setContent} />;
+      case "personality_quiz": return <PersonalityQuizEditor content={content as PersonalityQuizContent} onChange={setContent} />;
+      case "game_map": return <GameMapEditor content={content as GameMapContent} onChange={setContent} />;
+      default: return <p className="text-sm text-muted-foreground">Unknown type</p>;
     }
   };
 
