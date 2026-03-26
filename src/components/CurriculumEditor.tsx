@@ -10,8 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Plus, Trash2, Pencil, ChevronDown, ChevronRight, GripVertical,
-  BookOpen, Sparkles, Loader2, Eye, RotateCcw, Save, X, FileDown, Library, ExternalLink,
+  BookOpen, Sparkles, Loader2, Eye, RotateCcw, Save, X, FileDown, Library, ExternalLink, Puzzle, Download,
 } from "lucide-react";
+import { EmbedActivityPicker, type EmbeddedActivity } from "@/components/EmbedActivityPicker";
+import { ACTIVITY_TYPES } from "@/lib/h5p-types";
+import { exportActivityAsH5P } from "@/lib/export-h5p";
+import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
 import { useNavigate } from "react-router-dom";
 import { exportCurriculumUnitToDocx, exportCurriculumLessonToDocx } from "@/lib/export-curriculum-docx";
 import { toast as sonnerToast } from "sonner";
