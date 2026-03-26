@@ -374,25 +374,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     </div>
                   )}
 
-                  {/* Reading Questions */}
-                  {(editData.reading_questions as any[])?.length > 0 && (
-                    <div className="space-y-2 rounded-xl bg-muted/50 p-4">
-                      <Label className="text-xs font-semibold text-muted-foreground uppercase">Comprehension Questions</Label>
-                      {(editData.reading_questions as any[]).map((q, i) => {
-                        const text = typeof q === 'string' ? q : q.question || q.text || '';
-                        return (
-                          <div key={i} className="flex gap-2 items-center">
-                            <span className="text-xs text-muted-foreground w-5 shrink-0">{i + 1}.</span>
-                            <Input
-                              value={text}
-                              onChange={e => updateEditQuestion(i, e.target.value)}
-                              className="text-sm border-dashed"
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
                 </>
               ) : (
                 /* ─── READ MODE ─── */
