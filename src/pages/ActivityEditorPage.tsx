@@ -99,6 +99,43 @@ export default function ActivityEditorPage() {
   };
 
   const typeInfo = ACTIVITY_TYPES.find(t => t.type === activityType);
+  const supportsAI = AI_SUPPORTED_TYPES.includes(activityType);
+
+  const openAIDialog = async () => {
+    if (sources.length === 0 && user) {
+      const [lp, cl] = await Promise.all([
+        supabase.from("lesson_plans").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
+        supabase.from("curriculum_lessons").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
+      ]);
+      const opts: SourceOption[] = [
+        ...((lp.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "lesson_plan" as const })),
+        ...((cl.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "curriculum_lesson" as const })),
+      ];
+      setSources(opts);
+      if (opts.length > 0) setSelectedSource(opts[0].id);
+    }
+    setShowAIDialog(true);
+  };
+
+  const handleGenerate = async () => {
+    const source = sources.find(s => s.id === selectedSource);
+    if (!source) return;
+    setGenerating(true);
+    try {
+      const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
+        body: { activityType, sourceType: source.type, sourceId: source.id },
+      });
+      if (fnError) throw fnError;
+      if (fnData?.error) throw new Error(fnData.error);
+      setContent(fnData.content as ActivityContent);
+      setShowAIDialog(false);
+      toast({ title: "Content generated with AI!", description: "Review and save when ready." });
+    } catch (err: any) {
+      toast({ title: "Generation failed", description: err.message, variant: "destructive" });
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const renderEditor = () => {
     switch (activityType) {
