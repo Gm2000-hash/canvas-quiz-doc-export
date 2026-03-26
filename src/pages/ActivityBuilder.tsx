@@ -148,6 +148,35 @@ export default function ActivityBuilder() {
     toast({ title: "Activity deleted" });
   };
 
+  const handleDuplicate = async (activity: Activity) => {
+    if (!user) return;
+    const { data, error } = await supabase
+      .from("h5p_activities")
+      .insert({
+        user_id: user.id,
+        title: `${activity.title} (Copy)`,
+        activity_type: activity.activity_type,
+        content: activity.content,
+      })
+      .select()
+      .single();
+    if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    toast({ title: "Activity duplicated" });
+    // Also duplicate standards
+    const existingStandards = standardsMap[activity.id];
+    if (existingStandards && existingStandards.length > 0) {
+      await supabase.from("h5p_activity_standards").insert(
+        existingStandards.map(s => ({
+          activity_id: (data as any).id,
+          ngss_code: s.ngss_code,
+          ngss_description: s.ngss_description,
+          matched_terms: s.matched_terms || [],
+        }))
+      );
+    }
+    fetchActivities();
+  };
+
   const filtered = activities.filter(a => {
     if (filterType !== "all" && a.activity_type !== filterType) return false;
     if (search && !a.title.toLowerCase().includes(search.toLowerCase())) return false;
@@ -259,6 +288,7 @@ export default function ActivityBuilder() {
                 standards={standardsMap[a.id]}
                 onPlay={() => setPreviewActivity(a)}
                 onEdit={() => navigate(`/activities/${a.id}`)}
+                onDuplicate={() => handleDuplicate(a)}
                 onDelete={() => handleDelete(a.id)}
               />
             ))}
@@ -282,6 +312,7 @@ export default function ActivityBuilder() {
                       standards={standardsMap[a.id]}
                       onPlay={() => setPreviewActivity(a)}
                       onEdit={() => navigate(`/activities/${a.id}`)}
+                      onDuplicate={() => handleDuplicate(a)}
                       onDelete={() => handleDelete(a.id)}
                     />
                   ))}

@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ACTIVITY_TYPES } from "@/lib/h5p-types";
-import { Play, Pencil, Trash2 } from "lucide-react";
+import { Play, Pencil, Trash2, Copy } from "lucide-react";
 import type { ActivityStandard } from "@/hooks/useActivityStandards";
 
 interface ActivityCardProps {
@@ -13,10 +13,11 @@ interface ActivityCardProps {
   standards?: ActivityStandard[];
   onPlay: () => void;
   onEdit: () => void;
+  onDuplicate: () => void;
   onDelete: () => void;
 }
 
-export function ActivityCard({ title, activityType, updatedAt, standards, onPlay, onEdit, onDelete }: ActivityCardProps) {
+export function ActivityCard({ title, activityType, updatedAt, standards, onPlay, onEdit, onDuplicate, onDelete }: ActivityCardProps) {
   const typeInfo = ACTIVITY_TYPES.find(t => t.type === activityType);
 
   return (
@@ -45,6 +46,9 @@ export function ActivityCard({ title, activityType, updatedAt, standards, onPlay
         </Button>
         <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onEdit} title="Edit">
           <Pencil className="h-4 w-4" />
+        </Button>
+        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onDuplicate} title="Duplicate">
+          <Copy className="h-4 w-4" />
         </Button>
         <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={onDelete} title="Delete">
           <Trash2 className="h-4 w-4" />
