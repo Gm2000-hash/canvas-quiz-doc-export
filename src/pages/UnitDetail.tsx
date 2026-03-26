@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Calendar, List, Trash2, GripVertical, Clock, Sparkles, Download, Lock, Copy } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, List, Trash2, GripVertical, Clock, Sparkles, Download, Lock, Copy, BookOpen } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
@@ -275,6 +275,9 @@ const UnitDetail = () => {
         ]} />
         <div className="flex-1" />
         <div className="flex items-center gap-1">
+          <Button variant="ghost" size="sm" className="text-primary rounded-xl gap-1.5 text-sm" onClick={() => navigate("/lesson-planner?tab=curriculum")}>
+            <BookOpen className="h-4 w-4" /> Curriculum
+          </Button>
           <Button variant="ghost" size="sm" className="text-primary rounded-xl gap-1.5 text-sm" onClick={() => setGenerateOpen(true)}>
             <Sparkles className="h-4 w-4" /> AI Generate
           </Button>

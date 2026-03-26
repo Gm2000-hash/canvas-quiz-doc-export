@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfileDefaults } from "@/hooks/useProfileDefaults";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,6 +45,9 @@ const LessonPlanner = () => {
   const { user, signOut } = useAuth();
   const { defaultGradeLevel, defaultDiscipline } = useProfileDefaults();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") === "curriculum" ? "curriculum" : "units";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const { toast } = useToast();
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
@@ -215,7 +218,7 @@ const LessonPlanner = () => {
           stats={[{ label: "Units", value: units.length }]}
         />
 
-        <Tabs defaultValue="units" className="w-full">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="w-full justify-start">
             <TabsTrigger value="units" className="gap-2">
               <Layers className="h-4 w-4" /> Units
