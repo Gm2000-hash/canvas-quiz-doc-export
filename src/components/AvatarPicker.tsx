@@ -14,6 +14,7 @@ import avatarSkategirl from "@/assets/avatars/skategirl.png";
 import avatarRabbit from "@/assets/avatars/rabbit.png";
 import avatarPanda from "@/assets/avatars/panda.png";
 import avatarElephant from "@/assets/avatars/elephant.png";
+import avatarPangolin from "@/assets/avatars/pangolin.png";
 
 export const PRESET_AVATARS = [
   { src: avatarDog, label: "Dog" },
