@@ -11,6 +11,7 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { BookOpen, Upload, Loader2, Trash2, FileText, Eye, EyeOff } from 'lucide-react';
+import { generatePdfThumbnail } from '@/lib/pdf-thumbnail';
 
 interface LibraryBook {
   id: string;
@@ -21,6 +22,7 @@ interface LibraryBook {
   created_at: string;
   is_published: boolean;
   source_discipline: string | null;
+  cover_url: string | null;
 }
 
 interface ViewingBook {
@@ -43,7 +45,7 @@ export default function Library() {
     setLoading(true);
     const { data, error } = await supabase
       .from('library_books')
-      .select('id, title, file_path, file_size, page_count, created_at, is_published, source_discipline')
+      .select('id, title, file_path, file_size, page_count, created_at, is_published, source_discipline, cover_url')
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -82,7 +84,7 @@ export default function Library() {
       if (uploadError) throw uploadError;
 
       const title = file.name.replace(/\.pdf$/i, '');
-      const { error: insertError } = await supabase
+      const { data: insertData, error: insertError } = await supabase
         .from('library_books')
         .insert({
           user_id: user.id,
@@ -90,9 +92,22 @@ export default function Library() {
           file_path: filePath,
           file_size: file.size,
           is_published: false,
-        });
+        })
+        .select('id')
+        .single();
 
       if (insertError) throw insertError;
+
+      // Generate thumbnail from first page
+      if (insertData) {
+        const coverUrl = await generatePdfThumbnail(file, insertData.id);
+        if (coverUrl) {
+          await supabase
+            .from('library_books')
+            .update({ cover_url: coverUrl })
+            .eq('id', insertData.id);
+        }
+      }
 
       toast.success(`"${title}" uploaded as unpublished`);
       fetchBooks();
@@ -250,9 +265,11 @@ export default function Library() {
                       onClick={() => openBook(book)}
                       disabled={isOpening}
                     >
-                      <div className="aspect-[3/4] bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 flex items-center justify-center relative">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 flex items-center justify-center relative overflow-hidden">
                         {isOpening ? (
                           <Loader2 className="h-10 w-10 animate-spin text-primary/50" />
+                        ) : book.cover_url ? (
+                          <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
                         ) : (
                           <FileText className="h-10 w-10 text-primary/40" />
                         )}

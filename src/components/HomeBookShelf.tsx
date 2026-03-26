@@ -11,6 +11,7 @@ interface LibraryBook {
   file_path: string;
   file_size: number;
   source_discipline: string | null;
+  cover_url: string | null;
 }
 
 export const HomeBookShelf = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(function HomeBookShelf(
@@ -25,7 +26,7 @@ export const HomeBookShelf = React.forwardRef<HTMLDivElement, React.HTMLAttribut
   React.useEffect(() => {
     supabase
       .from('library_books')
-      .select('id, title, file_path, file_size, source_discipline')
+      .select('id, title, file_path, file_size, source_discipline, cover_url')
       .order('created_at', { ascending: false })
       .then(({ data, error }) => {
         if (error) {
@@ -81,10 +82,12 @@ export const HomeBookShelf = React.forwardRef<HTMLDivElement, React.HTMLAttribut
               <div className="aspect-[3/4] rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 border border-border/60 flex items-center justify-center relative overflow-hidden transition-all duration-200 group-hover:shadow-lg group-hover:-translate-y-1 group-active:scale-[0.97]">
                 {openingId === book.id ? (
                   <div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
+                ) : book.cover_url ? (
+                  <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover rounded-xl" />
                 ) : (
                   <FileText className="h-8 w-8 text-primary/30" />
                 )}
-                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary/25 rounded-l-xl" />
+                {!book.cover_url && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary/25 rounded-l-xl" />}
                 <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 {book.source_discipline && (
                   <div className="absolute bottom-1.5 right-1.5 rounded bg-primary/20 px-1 py-0.5 text-[9px] font-medium text-primary">
