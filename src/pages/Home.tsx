@@ -258,7 +258,7 @@ export default function Home() {
                             loading="lazy"
                           />
                         ) : (
-                          <Icon className="h-6 w-6 text-earth-terracotta transition-transform duration-200 group-hover:scale-110" />
+                          <Icon className="h-6 w-6 text-primary transition-transform duration-200 group-hover:scale-110" />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
