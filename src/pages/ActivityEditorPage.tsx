@@ -51,13 +51,6 @@ import { exportActivityAsH5P } from "@/lib/export-h5p";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-const AI_SUPPORTED_TYPES: ActivityType[] = [
-  "fill_in_blanks", "drag_the_words", "multiple_choice", "true_false", "single_choice_set",
-  "mark_the_words", "essay", "summary", "dialog_cards", "flashcards", "memory_game",
-  "accordion", "timeline", "crossword", "drag_and_drop", "question_set",
-  "course_presentation", "interactive_book", "column",
-];
-
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
 
 export default function ActivityEditorPage() {
@@ -99,7 +92,7 @@ export default function ActivityEditorPage() {
   };
 
   const typeInfo = ACTIVITY_TYPES.find(t => t.type === activityType);
-  const supportsAI = AI_SUPPORTED_TYPES.includes(activityType);
+  const supportsAI = true; // All activity types now support AI generation
 
   const openAIDialog = async () => {
     if (sources.length === 0 && user) {

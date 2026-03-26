@@ -19,14 +19,6 @@ import { Plus, Puzzle, Search, ArrowLeft, Sparkles, Loader2 } from "lucide-react
 
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
 
-// Activity types that support AI generation
-const AI_SUPPORTED_TYPES: ActivityType[] = [
-  "fill_in_blanks", "drag_the_words", "multiple_choice", "true_false", "single_choice_set",
-  "mark_the_words", "essay", "summary", "dialog_cards", "flashcards", "memory_game",
-  "accordion", "timeline", "crossword", "drag_and_drop", "question_set",
-  "course_presentation", "interactive_book", "column",
-];
-
 interface Activity {
   id: string;
   title: string;
@@ -246,7 +238,7 @@ export default function ActivityBuilder() {
             </div>
 
             {/* AI Generation Toggle */}
-            {AI_SUPPORTED_TYPES.includes(newType) && (
+            {true && (
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
