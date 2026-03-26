@@ -72,14 +72,57 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
       setUnitMap(uMap);
 
       const unitIds = units.map(u => u.id);
-      const { data: lessonData } = await supabase
-        .from('curriculum_lessons')
-        .select('*')
-        .eq('user_id', user.id)
-        .in('unit_id', unitIds)
-        .order('sort_order');
+      const [lessonRes, planRes] = await Promise.all([
+        supabase
+          .from('curriculum_lessons')
+          .select('*')
+          .eq('user_id', user.id)
+          .in('unit_id', unitIds)
+          .order('sort_order'),
+        supabase
+          .from('lesson_plans')
+          .select('id, unit_id, title, objectives')
+          .eq('user_id', user.id)
+          .in('unit_id', unitIds),
+      ]);
 
-      setLessons((lessonData || []) as unknown as CurriculumLesson[]);
+      const rawLessons = (lessonRes.data || []) as unknown as CurriculumLesson[];
+
+      // Build a map of lesson plans by unit_id for matching
+      const plansByUnit: Record<string, { title: string; objectives: string }[]> = {};
+      (planRes.data || []).forEach((p: any) => {
+        if (!plansByUnit[p.unit_id]) plansByUnit[p.unit_id] = [];
+        plansByUnit[p.unit_id].push({ title: p.title, objectives: p.objectives || '' });
+      });
+
+      // Merge lesson plan objectives into curriculum lessons
+      const enriched = rawLessons.map(lesson => {
+        const plans = plansByUnit[lesson.unit_id] || [];
+        // Find matching plan by similar title (case-insensitive substring match)
+        const match = plans.find(p => {
+          const pTitle = p.title.toLowerCase().trim();
+          const lTitle = lesson.title.toLowerCase().trim();
+          return pTitle === lTitle || pTitle.includes(lTitle) || lTitle.includes(pTitle);
+        });
+        if (match && match.objectives) {
+          // Parse objectives from the lesson plan (stored as text, one per line)
+          const planObjectives = match.objectives
+            .split('\n')
+            .map((o: string) => o.replace(/^[-•*]\s*/, '').trim())
+            .filter((o: string) => o.length > 0);
+          const existingObjectives = (lesson.objectives as string[]) || [];
+          // Add plan objectives that aren't already present
+          const newObjectives = planObjectives.filter(
+            (po: string) => !existingObjectives.some(eo => eo.toLowerCase() === po.toLowerCase())
+          );
+          if (newObjectives.length > 0) {
+            return { ...lesson, objectives: [...existingObjectives, ...newObjectives] };
+          }
+        }
+        return lesson;
+      });
+
+      setLessons(enriched);
       setLoading(false);
     })();
   }, [user, discipline]);
