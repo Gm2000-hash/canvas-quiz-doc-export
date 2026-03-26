@@ -45,7 +45,7 @@ export default function ActivityEditorPage() {
     if (!id) return;
     setSaving(true);
     const { error } = await supabase.from("h5p_activities").update({
-      title, content, updated_at: new Date().toISOString()
+      title, content: content as any, updated_at: new Date().toISOString()
     }).eq("id", id);
     setSaving(false);
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }

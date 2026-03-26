@@ -59,7 +59,7 @@ export default function ActivityBuilder() {
     const content = getDefaultContent(newType);
     const { data, error } = await supabase
       .from("h5p_activities")
-      .insert({ user_id: user.id, title: newTitle.trim(), activity_type: newType, content })
+      .insert({ user_id: user.id, title: newTitle.trim(), activity_type: newType, content: content as any })
       .select()
       .single();
     if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
