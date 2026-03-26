@@ -502,6 +502,7 @@ function LessonEditorDialog({
         explanation: explanation as any,
         reading_title: readingTitle || null,
         reading_paragraphs: readingParagraphs as any,
+        interactive_activities: interactiveActivities as any,
         updated_at: new Date().toISOString(),
       } as any)
       .eq("id", lesson.id);
