@@ -450,20 +450,37 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
             <Button
               variant="outline"
               size="sm"
-              disabled={currentLesson === 0 || editing}
-              onClick={() => { setCurrentLesson(c => c - 1); if (editing) cancelEditing(); }}
+              disabled={editing}
+              onClick={() => {
+                if (currentLesson === 0 || currentLesson === null) {
+                  setCurrentLesson(null);
+                } else {
+                  setCurrentLesson(c => (c ?? 1) - 1);
+                }
+                if (editing) cancelEditing();
+              }}
               className="gap-2"
             >
-              <ChevronLeft className="h-4 w-4" /> Previous
+              <ChevronLeft className="h-4 w-4" /> {currentLesson === 0 ? 'Contents' : 'Previous'}
             </Button>
-            <span className="text-xs text-muted-foreground">
-              {currentLesson + 1} / {lessons.length}
-            </span>
+            <button
+              onClick={() => { setCurrentLesson(null); if (editing) cancelEditing(); }}
+              className="text-xs text-muted-foreground hover:text-primary transition-colors"
+            >
+              {currentLesson !== null ? `${currentLesson + 1} / ${lessons.length}` : 'Table of Contents'}
+            </button>
             <Button
               variant="outline"
               size="sm"
-              disabled={currentLesson >= lessons.length - 1 || editing}
-              onClick={() => { setCurrentLesson(c => c + 1); if (editing) cancelEditing(); }}
+              disabled={currentLesson !== null && currentLesson >= lessons.length - 1 || editing}
+              onClick={() => {
+                if (currentLesson === null) {
+                  setCurrentLesson(0);
+                } else {
+                  setCurrentLesson(c => (c ?? -1) + 1);
+                }
+                if (editing) cancelEditing();
+              }}
               className="gap-2"
             >
               Next <ChevronRight className="h-4 w-4" />
