@@ -244,8 +244,55 @@ export default function ActivityBuilder() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handleCreate} disabled={!newTitle.trim()} className="w-full">
-              Create Activity
+
+            {/* AI Generation Toggle */}
+            {AI_SUPPORTED_TYPES.includes(newType) && (
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                    <Sparkles className="h-4 w-4 text-primary" /> Generate with AI
+                  </Label>
+                  <Switch checked={useAI} onCheckedChange={setUseAI} />
+                </div>
+                {useAI && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Source lesson or reading</Label>
+                    {sources.length === 0 ? (
+                      <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
+                    ) : (
+                      <Select value={selectedSource} onValueChange={setSelectedSource}>
+                        <SelectTrigger className="mt-1.5">
+                          <SelectValue placeholder="Select a lesson..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sources.map(s => (
+                            <SelectItem key={s.id} value={s.id}>
+                              <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+                                {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
+                              </span>
+                              {s.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Button
+              onClick={handleCreate}
+              disabled={!newTitle.trim() || generating || (useAI && !selectedSource)}
+              className="w-full gap-2"
+            >
+              {generating ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
+              ) : useAI ? (
+                <><Sparkles className="h-4 w-4" /> Generate Activity</>
+              ) : (
+                "Create Activity"
+              )}
             </Button>
           </div>
         </DialogContent>
