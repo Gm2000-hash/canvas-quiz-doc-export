@@ -108,16 +108,16 @@ export default {
   			xl: 'var(--shadow-xl)',
   			'2xl': 'var(--shadow-2xl)'
   		},
-  		fontFamily: {
-  			sans: [
-  				'Space Grotesk',
-  				'Inter',
-  				'-apple-system',
-  				'BlinkMacSystemFont',
-  				'system-ui',
-  				'sans-serif'
-  			]
-  		}
+		fontFamily: {
+			sans: [
+				'Nunito',
+				'Inter',
+				'-apple-system',
+				'BlinkMacSystemFont',
+				'system-ui',
+				'sans-serif'
+			]
+		}
   	}
   },
   plugins: [require("tailwindcss-animate")],
