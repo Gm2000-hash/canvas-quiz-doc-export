@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save } from 'lucide-react';
+import { ReadingEditToolbar, ItemToolbar, type EditorAction, type SectionKind } from '@/components/ReadingEditToolbar';
 import { toast } from 'sonner';
 import type { CurriculumLesson } from '@/hooks/useCurriculum';
 
@@ -36,6 +37,11 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editData, setEditData] = useState<Partial<CurriculumLesson> | null>(null);
+  const [editFont, setEditFont] = useState('font-sans');
+  const [editFontSize, setEditFontSize] = useState('text-sm');
+  const [editLineSpacing, setEditLineSpacing] = useState('leading-relaxed');
+  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
 
   const filteredIndices = lessons.reduce<number[]>((acc, lesson, i) => {
     if (!searchQuery.trim()) { acc.push(i); return acc; }
@@ -205,7 +211,99 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
     setEditData({ ...editData, key_terms: terms });
   };
 
+  // Generic array helpers
+  const moveItem = (field: string, index: number, dir: 'up' | 'down') => {
+    if (!editData) return;
+    const arr = [...(editData[field as keyof typeof editData] as any[])];
+    const swap = dir === 'up' ? index - 1 : index + 1;
+    if (swap < 0 || swap >= arr.length) return;
+    [arr[index], arr[swap]] = [arr[swap], arr[index]];
+    setEditData({ ...editData, [field]: arr });
+  };
 
+  const deleteItem = (field: string, index: number) => {
+    if (!editData) return;
+    const arr = [...(editData[field as keyof typeof editData] as any[])];
+    arr.splice(index, 1);
+    setEditData({ ...editData, [field]: arr });
+  };
+
+  const addItem = (field: string, defaultValue: any) => {
+    if (!editData) return;
+    const arr = [...((editData[field as keyof typeof editData] as any[]) || []), defaultValue];
+    setEditData({ ...editData, [field]: arr });
+  };
+
+  const handleEditorAction = (action: EditorAction) => {
+    if (!editData) return;
+    const fieldMap: Record<SectionKind, string> = {
+      objectives: 'objectives',
+      key_terms: 'key_terms',
+      intro: 'intro',
+      explanation: 'explanation',
+      reading: 'reading_paragraphs',
+    };
+
+    switch (action.type) {
+      case 'move':
+        if (action.section && action.index != null && action.direction) {
+          moveItem(fieldMap[action.section], action.index, action.direction);
+        }
+        break;
+      case 'delete':
+        if (action.section && action.index != null) {
+          deleteItem(fieldMap[action.section], action.index);
+        }
+        break;
+      case 'add':
+        if (action.section === 'key_terms') {
+          addItem('key_terms', { term: '', definition: '' });
+        } else if (action.section === 'objectives') {
+          addItem('objectives', '');
+        } else if (action.section === 'intro') {
+          addItem('intro', '');
+        } else if (action.section === 'explanation') {
+          addItem('explanation', '');
+        } else if (action.section === 'reading') {
+          addItem('reading_paragraphs', '');
+          if (!editData.reading_title) {
+            setEditData(prev => prev ? { ...prev, reading_title: 'Reading' } : prev);
+          }
+        }
+        break;
+      case 'insert-video':
+        setVideoDialogOpen(true);
+        break;
+      case 'insert-activity':
+        toast.info('Select an activity to embed from the Activity Builder');
+        break;
+      case 'set-font':
+        if (action.value) setEditFont(action.value);
+        break;
+      case 'set-size':
+        if (action.value) setEditFontSize(action.value);
+        break;
+      case 'set-spacing':
+        if (action.value) setEditLineSpacing(action.value);
+        break;
+    }
+  };
+
+  const insertVideoEmbed = () => {
+    if (!videoUrl.trim() || !editData) return;
+    // Convert YouTube URLs to embed format
+    let embedUrl = videoUrl.trim();
+    const ytMatch = embedUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
+    if (ytMatch) embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}`;
+    const embedHtml = `<iframe src="${embedUrl}" width="100%" height="400" frameborder="0" allowfullscreen style="border-radius:12px;"></iframe>`;
+    addItem('reading_paragraphs', embedHtml);
+    if (!editData.reading_title) {
+      setEditData(prev => prev ? { ...prev, reading_title: 'Reading' } : prev);
+    }
+    setVideoUrl('');
+    setVideoDialogOpen(false);
+    toast.success('Video embed added to reading section');
+  };
   return (
     <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex flex-col">
       {/* Header */}
@@ -385,7 +483,35 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
             >
               {editing && editData ? (
                 /* ─── EDIT MODE ─── */
-                <>
+                <div className={`${editFont} ${editFontSize} ${editLineSpacing}`}>
+                  <ReadingEditToolbar
+                    onAction={handleEditorAction}
+                    activeFont={editFont}
+                    activeFontSize={editFontSize}
+                    activeLineSpacing={editLineSpacing}
+                  />
+
+                  {/* Video embed dialog */}
+                  <Dialog open={videoDialogOpen} onOpenChange={setVideoDialogOpen}>
+                    <DialogContent className="sm:max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Insert Video</DialogTitle>
+                      </DialogHeader>
+                      <div className="space-y-2">
+                        <Label>Video URL (YouTube, Vimeo, or direct embed)</Label>
+                        <Input
+                          value={videoUrl}
+                          onChange={e => setVideoUrl(e.target.value)}
+                          placeholder="https://youtube.com/watch?v=..."
+                        />
+                      </div>
+                      <DialogFooter>
+                        <Button variant="outline" onClick={() => setVideoDialogOpen(false)}>Cancel</Button>
+                        <Button onClick={insertVideoEmbed} disabled={!videoUrl.trim()}>Insert</Button>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+
                   {/* Title */}
                   <div className="text-center space-y-2 pb-4 border-b border-border">
                     <Input
@@ -396,100 +522,146 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                   </div>
 
                   {/* Objectives */}
-                  {(editData.objectives as string[])?.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-muted-foreground uppercase">Objectives</Label>
-                      {(editData.objectives as string[]).map((obj, i) => (
-                        <Input
-                          key={i}
-                          value={obj}
-                          onChange={e => updateEditArray('objectives', i, e.target.value)}
-                          className="text-sm border-dashed"
+                  <div className="space-y-2">
+                    <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Objectives</Label>
+                    {((editData.objectives as string[]) || []).map((obj, i) => (
+                      <div key={i} className="flex items-start gap-1 group">
+                        <div className="flex-1">
+                          <Input
+                            value={obj}
+                            onChange={e => updateEditArray('objectives', i, e.target.value)}
+                            className="border-dashed"
+                          />
+                        </div>
+                        <ItemToolbar
+                          section="objectives"
+                          index={i}
+                          total={(editData.objectives as string[]).length}
+                          onAction={handleEditorAction}
                         />
-                      ))}
-                    </div>
-                  )}
+                      </div>
+                    ))}
+                    <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary" onClick={() => handleEditorAction({ type: 'add', section: 'objectives' })}>
+                      + Add Objective
+                    </Button>
+                  </div>
 
                   {/* Key Terms */}
-                  {(editData.key_terms as any[])?.length > 0 && (
-                    <div className="rounded-xl bg-primary/5 border border-primary/10 p-4 space-y-3">
-                      <Label className="text-xs font-semibold text-primary uppercase">Key Terms</Label>
-                      {(editData.key_terms as { term: string; definition: string }[]).map((kt, i) => (
-                        <div key={i} className="flex gap-2">
-                          <Input
-                            value={kt.term}
-                            onChange={e => updateEditKeyTerm(i, 'term', e.target.value)}
-                            className="w-1/3 text-sm font-semibold border-dashed"
-                            placeholder="Term"
-                          />
-                          <Input
+                  <div className="space-y-3">
+                    <Label className="text-[11px] font-semibold text-primary uppercase tracking-wider">Key Terms</Label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      {((editData.key_terms as { term: string; definition: string }[]) || []).map((kt, i) => (
+                        <div key={i} className="rounded-2xl border border-primary/15 bg-primary/5 p-3 space-y-2">
+                          <div className="flex items-center justify-between">
+                            <Input
+                              value={kt.term}
+                              onChange={e => updateEditKeyTerm(i, 'term', e.target.value)}
+                              className="font-bold border-dashed h-8 text-sm"
+                              placeholder="Term"
+                            />
+                            <ItemToolbar
+                              section="key_terms"
+                              index={i}
+                              total={(editData.key_terms as any[]).length}
+                              onAction={handleEditorAction}
+                            />
+                          </div>
+                          <Textarea
                             value={kt.definition}
                             onChange={e => updateEditKeyTerm(i, 'definition', e.target.value)}
-                            className="flex-1 text-sm border-dashed"
+                            rows={2}
+                            className="border-dashed text-sm"
                             placeholder="Definition"
                           />
                         </div>
                       ))}
                     </div>
-                  )}
+                    <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary" onClick={() => handleEditorAction({ type: 'add', section: 'key_terms' })}>
+                      + Add Key Term
+                    </Button>
+                  </div>
 
                   {/* Introduction */}
-                  {(editData.intro as string[])?.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-muted-foreground uppercase">Introduction</Label>
-                      {(editData.intro as string[]).map((p, i) => (
+                  <div className="space-y-2">
+                    <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Introduction</Label>
+                    {((editData.intro as string[]) || []).map((p, i) => (
+                      <div key={i} className="flex items-start gap-1">
                         <Textarea
-                          key={i}
                           value={p}
                           onChange={e => updateEditArray('intro', i, e.target.value)}
                           rows={3}
-                          className="text-sm border-dashed"
+                          className="flex-1 border-dashed"
                         />
-                      ))}
-                    </div>
-                  )}
+                        <ItemToolbar
+                          section="intro"
+                          index={i}
+                          total={(editData.intro as string[]).length}
+                          onAction={handleEditorAction}
+                        />
+                      </div>
+                    ))}
+                    <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary" onClick={() => handleEditorAction({ type: 'add', section: 'intro' })}>
+                      + Add Paragraph
+                    </Button>
+                  </div>
 
                   {/* Explanation */}
-                  {(editData.explanation as string[])?.length > 0 && (
-                    <div className="space-y-2">
-                      <Label className="text-xs font-semibold text-muted-foreground uppercase">Explanation</Label>
-                      {(editData.explanation as string[]).map((p, i) => (
+                  <div className="space-y-2">
+                    <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Explanation</Label>
+                    {((editData.explanation as string[]) || []).map((p, i) => (
+                      <div key={i} className="flex items-start gap-1">
                         <Textarea
-                          key={i}
                           value={p}
                           onChange={e => updateEditArray('explanation', i, e.target.value)}
                           rows={3}
-                          className="text-sm border-dashed"
+                          className="flex-1 border-dashed"
                         />
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Reading Passage */}
-                  {editData.reading_title != null && (
-                    <div className="space-y-2 border-t border-border pt-6">
-                      <div className="flex items-center gap-2">
-                        <span>📖</span>
-                        <Input
-                          value={editData.reading_title || ''}
-                          onChange={e => setEditData({ ...editData, reading_title: e.target.value })}
-                          className="text-lg font-semibold border-dashed"
-                          placeholder="Reading title"
+                        <ItemToolbar
+                          section="explanation"
+                          index={i}
+                          total={(editData.explanation as string[]).length}
+                          onAction={handleEditorAction}
                         />
                       </div>
-                      {(editData.reading_paragraphs as string[])?.map((p, i) => (
+                    ))}
+                    <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary" onClick={() => handleEditorAction({ type: 'add', section: 'explanation' })}>
+                      + Add Paragraph
+                    </Button>
+                  </div>
+
+                  {/* Reading Passage */}
+                  <div className="space-y-2 border-t border-border pt-6">
+                    <div className="flex items-center gap-2">
+                      <span>📖</span>
+                      <Input
+                        value={editData.reading_title || ''}
+                        onChange={e => setEditData({ ...editData, reading_title: e.target.value })}
+                        className="text-lg font-semibold border-dashed"
+                        placeholder="Reading title"
+                      />
+                    </div>
+                    {((editData.reading_paragraphs as string[]) || []).map((p, i) => (
+                      <div key={i} className="flex items-start gap-1">
                         <Textarea
-                          key={i}
                           value={p}
                           onChange={e => updateEditArray('reading_paragraphs', i, e.target.value)}
                           rows={4}
-                          className="text-sm border-dashed"
+                          className="flex-1 border-dashed"
                         />
-                      ))}
-                    </div>
-                  )}
+                        <ItemToolbar
+                          section="reading"
+                          index={i}
+                          total={(editData.reading_paragraphs as string[]).length}
+                          onAction={handleEditorAction}
+                        />
+                      </div>
+                    ))}
+                    <Button variant="ghost" size="sm" className="text-xs gap-1 text-primary" onClick={() => handleEditorAction({ type: 'add', section: 'reading' })}>
+                      + Add Paragraph
+                    </Button>
+                  </div>
 
-                </>
+                </div>
               ) : (
                 /* ─── READ MODE ─── */
                 <>
