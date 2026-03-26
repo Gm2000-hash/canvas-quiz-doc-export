@@ -67,15 +67,15 @@ Also generate a "reading" object with:
 
     const formatInstructions = format === "textbook"
       ? `Output the lesson:
-- title, objectives (3-5), key_terms (8-12 {term, definition}), intro (6-8 paragraphs), explanation (8-12 paragraphs), quiz (12-15 questions)
+- title, objectives (3-5), key_terms (8-12 {term, definition}), intro (6-8 paragraphs), explanation (8-12 paragraphs)
 ${readingInstructions}`
       : format === "scripted"
       ? `Output as scripted lesson plan:
-- title, hook (3-5 paragraphs), key_concepts (6-8 {heading, content}), assignment ({title, description, instructions}), formative_assessment (8-10 questions)
+- title, hook (3-5 paragraphs), key_concepts (6-8 {heading, content}), assignment ({title, description, instructions})
 ${readingInstructions}`
       : `Output in BOTH formats under "textbook" and "scripted" keys. Include "reading" at the top level.
-FORMAT 1 "textbook": title, objectives, key_terms, intro, explanation, quiz
-FORMAT 2 "scripted": title, hook, key_concepts, assignment, formative_assessment
+FORMAT 1 "textbook": title, objectives, key_terms, intro, explanation
+FORMAT 2 "scripted": title, hook, key_concepts, assignment
 ${readingInstructions}`;
 
     const systemPrompt = `You are an expert middle school science curriculum designer specializing in NGSS-aligned lesson creation. You write engaging, narrative-driven lessons appropriate for ${grade_level} students.
