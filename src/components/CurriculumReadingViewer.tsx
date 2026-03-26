@@ -96,7 +96,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
       explanation: [...(lesson.explanation as string[])],
       reading_title: lesson.reading_title,
       reading_paragraphs: [...(lesson.reading_paragraphs as string[] || [])],
-      reading_questions: [...(lesson.reading_questions as any[] || [])].map(q => typeof q === 'string' ? q : { ...q }),
     });
     setEditing(true);
   };
