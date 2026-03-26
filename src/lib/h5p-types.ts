@@ -82,7 +82,7 @@ export interface PQOption { text: string; profileScores: Record<string, number>;
 export interface PQQuestion { id: string; question: string; options: PQOption[]; }
 export interface PersonalityQuizContent { profiles: PersonalityProfile[]; questions: PQQuestion[]; }
 export interface GameMapStage { id: string; label: string; x: number; y: number; type: ActivityType; content: any; }
-export interface GameMapContent { title: string; stages: GameMapStage[]; }
+export interface GameMapContent { title: string; backgroundImage?: string; stages: GameMapStage[]; }
 
 // ─── New content types ─────────────────────────────────────
 
