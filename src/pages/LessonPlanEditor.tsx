@@ -42,6 +42,12 @@ interface ResourceItem {
   type: "video" | "article" | "activity" | "other";
 }
 
+interface EmbeddedActivityRef {
+  activity_id: string;
+  title: string;
+  activity_type: string;
+}
+
 interface LessonPlan {
   id: string;
   unit_id: string | null;
@@ -56,6 +62,7 @@ interface LessonPlan {
   notes: string;
   vocabulary: VocabularyItem[];
   resources: ResourceItem[];
+  embedded_activities: EmbeddedActivityRef[];
 }
 
 interface Standard {
