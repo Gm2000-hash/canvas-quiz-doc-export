@@ -153,6 +153,7 @@ export type Database = {
           created_at: string
           differentiation: string | null
           duration_minutes: number | null
+          embedded_activities: Json | null
           id: string
           lesson_date: string | null
           materials: string | null
@@ -172,6 +173,7 @@ export type Database = {
           created_at?: string
           differentiation?: string | null
           duration_minutes?: number | null
+          embedded_activities?: Json | null
           id?: string
           lesson_date?: string | null
           materials?: string | null
@@ -191,6 +193,7 @@ export type Database = {
           created_at?: string
           differentiation?: string | null
           duration_minutes?: number | null
+          embedded_activities?: Json | null
           id?: string
           lesson_date?: string | null
           materials?: string | null
