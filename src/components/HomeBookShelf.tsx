@@ -67,7 +67,7 @@ export const HomeBookShelf = React.forwardRef<HTMLDivElement, React.HTMLAttribut
     <div ref={ref} className={className} {...props}>
       <div>
         <div className="flex items-center gap-2 mb-3">
-          <BookOpenCheck className="h-4 w-4 text-earth-terracotta" />
+          <BookOpenCheck className="h-4 w-4 text-primary" />
           <h2 className="text-lg font-semibold text-foreground">Reading Library</h2>
         </div>
         <div className="flex gap-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-thin">

@@ -207,15 +207,15 @@ export default function Home() {
           {/* Today's Lessons */}
           {todayLessons.length > 0 ? (
             <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-earth-clay uppercase tracking-wider">Today's Lessons:</span>
+              <span className="text-xs font-semibold text-primary uppercase tracking-wider">Today's Lessons:</span>
               {todayLessons.map(l => (
-                <Badge key={l.id} variant="secondary" className="rounded-lg text-xs bg-earth-sand text-earth-clay border-earth-sand">
+                <Badge key={l.id} variant="secondary" className="rounded-lg text-xs">
                   {l.title}
                 </Badge>
               ))}
             </div>
           ) : (
-            <p className="text-xs text-earth-moss italic">No lessons scheduled for today</p>
+            <p className="text-xs text-muted-foreground italic">No lessons scheduled for today</p>
           )}
         </PageBanner>
 
@@ -235,9 +235,9 @@ export default function Home() {
                   onDragStart={(e) => handleDragStart(e, idx)}
                   onDragEnd={handleDragEnd}
                   onDragOver={(e) => handleDragOver(e, idx)}
-                  className={`group relative rounded-2xl border bg-card text-left transition-all duration-200 hover:shadow-lg hover:border-earth-terracotta/30 hover:-translate-y-0.5 cursor-grab active:cursor-grabbing ${
+                  className={`group relative rounded-2xl border bg-card text-left transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 cursor-grab active:cursor-grabbing ${
                     overIdx === idx && dragIdx !== null && dragIdx !== idx
-                      ? "ring-2 ring-earth-terracotta/40 border-earth-terracotta/40"
+                      ? "ring-2 ring-primary/40 border-primary/40"
                       : "border-border/60"
                   }`}
                 >
@@ -249,7 +249,7 @@ export default function Home() {
                     className="w-full p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="shrink-0 h-14 w-14 rounded-xl bg-earth-sand/60 flex items-center justify-center overflow-hidden">
+                      <div className="shrink-0 h-14 w-14 rounded-xl bg-secondary flex items-center justify-center overflow-hidden">
                         {card.image ? (
                           <img
                             src={card.image}
@@ -258,11 +258,11 @@ export default function Home() {
                             loading="lazy"
                           />
                         ) : (
-                          <Icon className="h-6 w-6 text-earth-terracotta transition-transform duration-200 group-hover:scale-110" />
+                          <Icon className="h-6 w-6 text-primary transition-transform duration-200 group-hover:scale-110" />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-semibold text-foreground group-hover:text-earth-terracotta transition-colors">
+                        <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                           {card.title}
                         </h3>
                         <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
@@ -279,10 +279,10 @@ export default function Home() {
 
         {/* Shared Book Shelf */}
         <HomeBookShelf />
-        <div className="mx-auto max-w-lg rounded-2xl border border-earth-sand bg-earth-warm/50 p-5 text-center">
+        <div className="mx-auto max-w-lg rounded-2xl border border-border bg-card p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <Lightbulb className="h-4 w-4 text-earth-terracotta" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-earth-terracotta">
+            <Lightbulb className="h-4 w-4 text-neon-yellow" />
+            <span className="text-xs font-semibold uppercase tracking-wider text-neon-yellow">
               {todayTip.author === "Tip" ? "Daily Teaching Tip" : "Daily Inspiration"}
             </span>
           </div>

@@ -32,9 +32,9 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
     : compact ? "h-10 w-10" : "h-14 w-14 sm:h-16 sm:w-16";
 
   const avatarEl = avatarUrl !== undefined ? (
-    <Avatar className={`${sizeClass} ring-2 ring-earth-sand shrink-0`}>
+    <Avatar className={`${sizeClass} ring-2 ring-neon-pink/40 shrink-0`}>
       <AvatarImage src={avatarUrl} alt="Profile" />
-      <AvatarFallback className="bg-earth-sand text-earth-clay font-semibold">
+      <AvatarFallback className="bg-secondary text-primary font-semibold">
         {avatarFallback || "?"}
       </AvatarFallback>
     </Avatar>
@@ -43,16 +43,16 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
   return (
     <div
       ref={ref}
-      className={`relative overflow-hidden rounded-2xl bg-earth-warm border border-earth-sand ${compact ? "p-5" : "p-6 sm:p-8"}`}
+      className={`relative overflow-hidden rounded-2xl gradient-banner border border-border ${compact ? "p-5" : "p-6 sm:p-8"}`}
     >
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-earth-terracotta/10" />
-        <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-earth-sage/10" />
-        <div className="absolute top-6 right-1/4 w-16 h-16 rounded-xl bg-earth-terracotta/[0.06] rotate-12" />
-        <div className="absolute bottom-4 right-1/3 w-8 h-8 rounded-full bg-earth-moss/10" />
-        <div className="absolute top-1/2 -left-4 w-24 h-3 rounded-full bg-earth-sage/[0.06] -rotate-6" />
-        <div className="absolute top-3 left-1/3 w-3 h-3 rounded-full bg-earth-clay/10" />
-        <div className="absolute top-8 left-[38%] w-2 h-2 rounded-full bg-earth-terracotta/10" />
+        <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-neon-pink/8" />
+        <div className="absolute -bottom-8 -left-8 w-28 h-28 rounded-full bg-neon-cyan/8" />
+        <div className="absolute top-6 right-1/4 w-16 h-16 rounded-xl bg-neon-purple/6 rotate-12" />
+        <div className="absolute bottom-4 right-1/3 w-8 h-8 rounded-full bg-neon-green/8" />
+        <div className="absolute top-1/2 -left-4 w-24 h-3 rounded-full bg-neon-cyan/5 -rotate-6" />
+        <div className="absolute top-3 left-1/3 w-3 h-3 rounded-full bg-neon-orange/10" />
+        <div className="absolute top-8 left-[38%] w-2 h-2 rounded-full bg-neon-pink/10" />
       </div>
 
       <div className="relative z-10">
@@ -60,12 +60,12 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
           {avatarPosition === "left" && avatarEl}
           <div className="flex-1 min-w-0 text-left pl-2 sm:pl-4 lg:pl-8">
             {greeting && (
-              <h1 className={`font-bold text-earth-clay ${compact ? "text-xl" : "text-2xl sm:text-3xl lg:text-4xl"}`}>
+              <h1 className={`font-bold text-foreground ${compact ? "text-xl" : "text-2xl sm:text-3xl lg:text-4xl"}`}>
                 {greeting}
               </h1>
             )}
             {subtitle && (
-              <p className="text-base sm:text-lg text-earth-moss mt-1">{subtitle}</p>
+              <p className="text-base sm:text-lg text-muted-foreground mt-1">{subtitle}</p>
             )}
           </div>
           {avatarPosition === "right" && (
@@ -79,10 +79,10 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
           <div className={`flex flex-wrap gap-4 sm:gap-6 ${greeting || avatarUrl ? "mt-4" : ""}`}>
             {stats.map((stat) => (
               <div key={stat.label} className="flex flex-col">
-                <span className="text-2xl sm:text-3xl font-bold text-earth-clay tabular-nums">
+                <span className="text-2xl sm:text-3xl font-bold text-primary tabular-nums">
                   {stat.value}
                 </span>
-                <span className="text-xs text-earth-moss font-medium mt-0.5">
+                <span className="text-xs text-muted-foreground font-medium mt-0.5">
                   {stat.label}
                 </span>
               </div>
