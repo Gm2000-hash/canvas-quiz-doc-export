@@ -111,7 +111,8 @@ const LessonPlanEditor = () => {
         activities: (Array.isArray(d.activities) ? d.activities : []) as Activity[],
         vocabulary: (Array.isArray(d.vocabulary) ? d.vocabulary : []) as VocabularyItem[],
         resources: (Array.isArray(d.resources) ? d.resources : []) as ResourceItem[],
-      });
+        embedded_activities: (Array.isArray(d.embedded_activities) ? d.embedded_activities : []) as EmbeddedActivityRef[],
+      } as LessonPlan);
       setStandards(stdsRes.data || []);
       setLoading(false);
 
