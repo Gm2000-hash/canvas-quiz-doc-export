@@ -96,7 +96,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
       explanation: [...(lesson.explanation as string[])],
       reading_title: lesson.reading_title,
       reading_paragraphs: [...(lesson.reading_paragraphs as string[] || [])],
-      reading_questions: [...(lesson.reading_questions as any[] || [])].map(q => typeof q === 'string' ? q : { ...q }),
     });
     setEditing(true);
   };
@@ -120,7 +119,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
           explanation: editData.explanation as any,
           reading_title: editData.reading_title,
           reading_paragraphs: editData.reading_paragraphs as any,
-          reading_questions: editData.reading_questions as any,
           updated_at: new Date().toISOString(),
         })
         .eq('id', lesson.id)
@@ -157,16 +155,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
     setEditData({ ...editData, key_terms: terms });
   };
 
-  const updateEditQuestion = (index: number, value: string) => {
-    if (!editData) return;
-    const questions = [...(editData.reading_questions as any[])];
-    if (typeof questions[index] === 'string') {
-      questions[index] = value;
-    } else {
-      questions[index] = { ...questions[index], question: value };
-    }
-    setEditData({ ...editData, reading_questions: questions });
-  };
 
   return (
     <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex flex-col">
@@ -386,25 +374,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     </div>
                   )}
 
-                  {/* Reading Questions */}
-                  {(editData.reading_questions as any[])?.length > 0 && (
-                    <div className="space-y-2 rounded-xl bg-muted/50 p-4">
-                      <Label className="text-xs font-semibold text-muted-foreground uppercase">Comprehension Questions</Label>
-                      {(editData.reading_questions as any[]).map((q, i) => {
-                        const text = typeof q === 'string' ? q : q.question || q.text || '';
-                        return (
-                          <div key={i} className="flex gap-2 items-center">
-                            <span className="text-xs text-muted-foreground w-5 shrink-0">{i + 1}.</span>
-                            <Input
-                              value={text}
-                              onChange={e => updateEditQuestion(i, e.target.value)}
-                              className="text-sm border-dashed"
-                            />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
                 </>
               ) : (
                 /* ─── READ MODE ─── */
@@ -465,39 +434,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     </div>
                   )}
 
-                  {/* Reading Questions */}
-                  {(lesson.reading_questions as any[])?.length > 0 && (
-                    <div className="space-y-3 rounded-xl bg-muted/50 p-4">
-                      <h3 className="text-sm font-semibold text-foreground">Comprehension Questions</h3>
-                      {(lesson.reading_questions as any[]).map((q, i) => {
-                        const text = typeof q === 'string' ? q : q.question || q.text || '';
-                        return (
-                          <p key={i} className="text-sm text-foreground/80" dangerouslySetInnerHTML={{ __html: `${i + 1}. ${text}` }} />
-                        );
-                      })}
-                    </div>
-                  )}
-
-                  {/* Quiz */}
-                  {(lesson.quiz as any[])?.length > 0 && (
-                    <div className="space-y-3 border-t border-border pt-6">
-                      <h3 className="text-lg font-semibold text-foreground">Quiz</h3>
-                      {(lesson.quiz as any[]).map((q, i) => {
-                        const text = typeof q === 'string' ? q : q.question || q.text || '';
-                        const options = q.options as string[] | undefined;
-                        return (
-                          <div key={i} className="space-y-1">
-                            <p className="text-sm font-medium text-foreground" dangerouslySetInnerHTML={{ __html: `${i + 1}. ${text}` }} />
-                            {options?.map((opt, oi) => (
-                              <p key={oi} className="text-sm text-muted-foreground ml-4">
-                                {String.fromCharCode(65 + oi)}) {opt}
-                              </p>
-                            ))}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
                 </>
               )}
             </div>
@@ -615,15 +551,6 @@ function PushReadingsToCanvasDialog({
       parts.push(`<h3>Reading: ${lesson.reading_title}</h3>`);
       (lesson.reading_paragraphs as string[])?.forEach(p => parts.push(`<p>${p}</p>`));
 
-      const rqs = lesson.reading_questions as any[];
-      if (rqs?.length) {
-        parts.push('<h4>Comprehension Questions</h4><ol>');
-        rqs.forEach(q => {
-          const text = typeof q === 'string' ? q : q.question || q.text || '';
-          parts.push(`<li>${text}</li>`);
-        });
-        parts.push('</ol>');
-      }
     }
 
     return parts.join('\n');

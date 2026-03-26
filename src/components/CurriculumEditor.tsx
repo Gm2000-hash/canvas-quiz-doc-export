@@ -335,9 +335,6 @@ function UnitSection({
                       {lesson.reading_title && (
                         <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-medium text-primary">Reading</span>
                       )}
-                      {(lesson.quiz as any[])?.length > 0 && (
-                        <span className="rounded bg-accent/20 px-1.5 py-0.5 text-[10px] font-medium text-accent-foreground">Quiz</span>
-                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
