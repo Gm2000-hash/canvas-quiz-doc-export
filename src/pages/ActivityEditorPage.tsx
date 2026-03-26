@@ -130,6 +130,12 @@ export default function ActivityEditorPage() {
       setContent(fnData.content as ActivityContent);
       setShowAIDialog(false);
       toast({ title: "Content generated with AI!", description: "Review and save when ready." });
+      // Auto-tag with NGSS standards
+      if (id) {
+        tagActivity(id, activityType, fnData.content, title).then(() => {
+          fetchStandards([id]).then(map => setStandards(map[id] || []));
+        });
+      }
     } catch (err: any) {
       toast({ title: "Generation failed", description: err.message, variant: "destructive" });
     } finally {
