@@ -75,14 +75,25 @@ export default function ActivityEditorPage() {
 
   const renderEditor = () => {
     switch (activityType) {
-      case "fill_in_blanks":
-        return <FillInBlanksEditor content={content as FillInBlanksContent} onChange={setContent} />;
-      case "drag_the_words":
-        return <DragTheWordsEditor content={content as DragTheWordsContent} onChange={setContent} />;
-      case "accordion":
-        return <AccordionEditor content={content as AccordionContent} onChange={setContent} />;
-      case "timeline":
-        return <TimelineEditor content={content as TimelineContent} onChange={setContent} />;
+      case "fill_in_blanks": return <FillInBlanksEditor content={content as FillInBlanksContent} onChange={setContent} />;
+      case "drag_the_words": return <DragTheWordsEditor content={content as DragTheWordsContent} onChange={setContent} />;
+      case "accordion": return <AccordionEditor content={content as AccordionContent} onChange={setContent} />;
+      case "timeline": return <TimelineEditor content={content as TimelineContent} onChange={setContent} />;
+      case "multiple_choice": return <MultipleChoiceEditor content={content as MultipleChoiceContent} onChange={setContent} />;
+      case "true_false": return <TrueFalseEditor content={content as TrueFalseContent} onChange={setContent} />;
+      case "single_choice_set": return <SingleChoiceSetEditor content={content as SingleChoiceSetContent} onChange={setContent} />;
+      case "mark_the_words": return <MarkTheWordsEditor content={content as MarkTheWordsContent} onChange={setContent} />;
+      case "essay": return <EssayEditor content={content as EssayContent} onChange={setContent} />;
+      case "summary": return <SummaryEditor content={content as SummaryContent} onChange={setContent} />;
+      case "dialog_cards": return <DialogCardsEditor content={content as DialogCardsContent} onChange={setContent} />;
+      case "flashcards": return <FlashcardsEditor content={content as FlashcardsContent} onChange={setContent} />;
+      case "memory_game": return <MemoryGameEditor content={content as MemoryGameContent} onChange={setContent} />;
+      case "arithmetic_quiz": return <ArithmeticQuizEditor content={content as ArithmeticQuizContent} onChange={setContent} />;
+      case "drag_and_drop": return <DragAndDropEditor content={content as DragAndDropContent} onChange={setContent} />;
+      case "question_set": return <QuestionSetEditor content={content as QuestionSetContent} onChange={setContent} />;
+      case "personality_quiz": return <PersonalityQuizEditor content={content as PersonalityQuizContent} onChange={setContent} />;
+      case "game_map": return <GameMapEditor content={content as GameMapContent} onChange={setContent} />;
+      default: return <p className="text-sm text-muted-foreground">Unknown type</p>;
     }
   };
 
