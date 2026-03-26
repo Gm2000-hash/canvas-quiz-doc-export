@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { exportLessonToDocx } from "@/lib/export-lesson-docx";
 import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
+import { RegenerateLessonDialog } from "@/components/RegenerateLessonDialog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CurriculumReadingViewer } from "@/components/CurriculumReadingViewer";
 import type { Json } from "@/integrations/supabase/types";
