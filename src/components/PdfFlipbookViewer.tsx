@@ -34,7 +34,7 @@ interface FlipPageProps {
 }
 
 const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width, height }, ref) => (
-  <div ref={ref} className="bg-white flex items-center justify-center overflow-hidden relative">
+  <div ref={ref} className="bg-white flex items-center justify-center overflow-hidden relative pdf-links">
     <Page
       pageNumber={pageNumber}
       width={width}
@@ -42,9 +42,6 @@ const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width,
       renderTextLayer={false}
       renderAnnotationLayer={true}
       className="pdf-page-render"
-      onItemClick={({ dest, pageNumber: targetPage }) => {
-        // External links are handled natively by the annotation layer
-      }}
     />
   </div>
 ));
