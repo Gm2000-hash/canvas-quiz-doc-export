@@ -78,12 +78,7 @@ FORMAT 1 "textbook": title, objectives, key_terms, intro, explanation
 FORMAT 2 "scripted": title, hook, key_concepts, assignment
 ${readingInstructions}`;
 
-    const systemPrompt = `You are an expert middle school science curriculum designer specializing in NGSS-aligned lesson creation. You write engaging, narrative-driven lessons appropriate for ${grade_level} students.
-
-When creating quiz/assessment questions, use these answer formats:
-- multiple_choice_question: answers: [{id,text,weight}] where weight=100 for correct, 0 for incorrect. Always 4 options.
-- true_false_question: answers: [{id,text:"True"|"False",weight}]
-- short_answer_question: answers: [{id,text:"sample answer",weight:100}]`;
+    const systemPrompt = `You are an expert middle school science curriculum designer specializing in NGSS-aligned lesson creation. You write engaging, narrative-driven lessons appropriate for ${grade_level} students.`;
 
     const userPrompt = `Create a ${grade_level} science lesson about "${subject_area}".
 
