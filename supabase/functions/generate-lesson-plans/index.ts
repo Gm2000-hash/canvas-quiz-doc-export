@@ -70,9 +70,10 @@ CRITICAL REQUIREMENTS FOR DETAIL:
 - DIFFERENTIATION: Provide specific accommodations for ELL students, students with IEPs, gifted learners, and struggling readers.
 - NOTES: Include teacher tips, common misconceptions students may have, and how to address them.
 - RESOURCES: For EVERY lesson, provide at least 3 real, reputable online resources with working URLs. Include a mix of videos (YouTube, Khan Academy, etc.), articles (National Geographic, NASA, Smithsonian, CK-12, etc.), and interactive activities (PhET simulations, BrainPOP, etc.). These should be real URLs that teachers can actually use.
+- VOCABULARY: For EVERY lesson, include AT LEAST 4 key science vocabulary terms with clear, student-friendly definitions. These are critical terms students must understand. Include more terms for vocabulary-heavy lessons.
+- NGSS STANDARDS: For EVERY lesson, you MUST tag it with at least one relevant NGSS Middle School performance expectation (MS-LS, MS-PS, MS-ESS, MS-ETS codes). Include the COMPLETE standard text. This is MANDATORY — no lesson should be returned without at least one NGSS standard.
 
-Include a variety of activities: direct instruction, labs, group work, discussions, and assessments.
-Map each lesson to relevant NGSS Middle School performance expectations (MS-LS, MS-PS, MS-ESS, MS-ETS codes). Always include the COMPLETE standard text.`;
+Include a variety of activities: direct instruction, labs, group work, discussions, and assessments.`;
 
     const userPrompt = `Create ${numLessons} sequential, FULLY SCRIPTED lesson plans for a unit called "${unitTitle}" focused on "${topic}".
 ${additionalContext ? `Additional instructions: ${additionalContext}` : ""}
@@ -84,6 +85,8 @@ Each lesson should be 50 minutes with EXACTLY 3 learning objectives and AT LEAST
 - Key vocabulary with definitions
 - Transition phrases between activities
 - At least 3 online resources per lesson (videos, readings, interactive activities) with real URLs
+- AT LEAST 4 key vocabulary terms per lesson with student-friendly definitions
+- AT LEAST 1 NGSS standard per lesson (this is MANDATORY — every lesson MUST have standards_json populated)
 
 Make these detailed enough that a substitute teacher with no science background could pick them up and teach effectively.`;
 
@@ -135,7 +138,7 @@ Make these detailed enough that a substitute teacher with no science background 
                         notes: { type: "string", description: "Teacher tips, common student misconceptions, and how to address them" },
                         vocabulary_json: {
                           type: "string",
-                          description: "JSON string of vocabulary array. Each item has term (string) and definition (string). Include 5-10 key science vocabulary terms. Example: [{\"term\":\"Photosynthesis\",\"definition\":\"The process by which green plants use sunlight...\"}]",
+                          description: "REQUIRED. JSON string of vocabulary array with AT LEAST 4 terms. Each item has term (string) and definition (string). Example: [{\"term\":\"Photosynthesis\",\"definition\":\"The process by which green plants use sunlight...\"}]",
                         },
                         resources_json: {
                           type: "string",
@@ -143,10 +146,10 @@ Make these detailed enough that a substitute teacher with no science background 
                         },
                         standards_json: {
                           type: "string",
-                          description: "JSON string of NGSS standards array. Each standard has code (string like MS-LS1-1) and description (the FULL COMPLETE text of the performance expectation). Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation to provide evidence that living things are made of cells...\"}]",
+                          description: "REQUIRED. JSON string of NGSS standards array with AT LEAST 1 standard. Each standard has code (string like MS-LS1-1) and description (the FULL COMPLETE text of the performance expectation). EVERY lesson MUST have at least one standard. Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation to provide evidence that living things are made of cells...\"}]",
                         },
                       },
-                      required: ["title", "duration_minutes", "objectives", "activities", "materials", "assessment", "differentiation", "resources_json"],
+                      required: ["title", "duration_minutes", "objectives", "activities", "materials", "assessment", "differentiation", "resources_json", "vocabulary_json", "standards_json"],
                       additionalProperties: false,
                     },
                   },
