@@ -249,7 +249,7 @@ export default function Home() {
                     className="w-full p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="shrink-0 h-14 w-14 rounded-xl bg-earth-sand/60 flex items-center justify-center overflow-hidden">
+                      <div className="shrink-0 h-14 w-14 rounded-xl bg-secondary flex items-center justify-center overflow-hidden">
                         {card.image ? (
                           <img
                             src={card.image}
