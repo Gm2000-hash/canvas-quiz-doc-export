@@ -265,9 +265,11 @@ export default function Library() {
                       onClick={() => openBook(book)}
                       disabled={isOpening}
                     >
-                      <div className="aspect-[3/4] bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 flex items-center justify-center relative">
+                      <div className="aspect-[3/4] bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 flex items-center justify-center relative overflow-hidden">
                         {isOpening ? (
                           <Loader2 className="h-10 w-10 animate-spin text-primary/50" />
+                        ) : book.cover_url ? (
+                          <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover" />
                         ) : (
                           <FileText className="h-10 w-10 text-primary/40" />
                         )}
