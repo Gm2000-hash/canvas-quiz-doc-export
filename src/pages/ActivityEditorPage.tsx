@@ -46,8 +46,19 @@ import type {
   ColumnContent, CoursePresentationContent, DocumentationToolContent, ImageHotspotsContent,
   InteractiveBookContent, InteractiveVideoContent, VirtualTourContent, CrosswordContent, AgamottoContent,
 } from "@/lib/h5p-types";
-import { ArrowLeft, Save, Puzzle, Download } from "lucide-react";
+import { ArrowLeft, Save, Puzzle, Download, Sparkles, Loader2 } from "lucide-react";
 import { exportActivityAsH5P } from "@/lib/export-h5p";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+const AI_SUPPORTED_TYPES: ActivityType[] = [
+  "fill_in_blanks", "drag_the_words", "multiple_choice", "true_false", "single_choice_set",
+  "mark_the_words", "essay", "summary", "dialog_cards", "flashcards", "memory_game",
+  "accordion", "timeline", "crossword", "drag_and_drop", "question_set",
+  "course_presentation", "interactive_book", "column",
+];
+
+interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
 
 export default function ActivityEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -60,6 +71,10 @@ export default function ActivityEditorPage() {
   const [content, setContent] = useState<ActivityContent>({ text: "", acceptAlternatives: true });
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [showAIDialog, setShowAIDialog] = useState(false);
+  const [sources, setSources] = useState<SourceOption[]>([]);
+  const [selectedSource, setSelectedSource] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -84,6 +99,43 @@ export default function ActivityEditorPage() {
   };
 
   const typeInfo = ACTIVITY_TYPES.find(t => t.type === activityType);
+  const supportsAI = AI_SUPPORTED_TYPES.includes(activityType);
+
+  const openAIDialog = async () => {
+    if (sources.length === 0 && user) {
+      const [lp, cl] = await Promise.all([
+        supabase.from("lesson_plans").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
+        supabase.from("curriculum_lessons").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
+      ]);
+      const opts: SourceOption[] = [
+        ...((lp.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "lesson_plan" as const })),
+        ...((cl.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "curriculum_lesson" as const })),
+      ];
+      setSources(opts);
+      if (opts.length > 0) setSelectedSource(opts[0].id);
+    }
+    setShowAIDialog(true);
+  };
+
+  const handleGenerate = async () => {
+    const source = sources.find(s => s.id === selectedSource);
+    if (!source) return;
+    setGenerating(true);
+    try {
+      const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
+        body: { activityType, sourceType: source.type, sourceId: source.id },
+      });
+      if (fnError) throw fnError;
+      if (fnData?.error) throw new Error(fnData.error);
+      setContent(fnData.content as ActivityContent);
+      setShowAIDialog(false);
+      toast({ title: "Content generated with AI!", description: "Review and save when ready." });
+    } catch (err: any) {
+      toast({ title: "Generation failed", description: err.message, variant: "destructive" });
+    } finally {
+      setGenerating(false);
+    }
+  };
 
   const renderEditor = () => {
     switch (activityType) {
@@ -132,6 +184,12 @@ export default function ActivityEditorPage() {
           {typeInfo?.label ?? "Activity"}
         </span>
         <div className="flex-1" />
+        {supportsAI && (
+          <Button variant="outline" size="sm" onClick={openAIDialog} disabled={generating}>
+            {generating ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Sparkles className="h-4 w-4 mr-1.5" />}
+            {generating ? "Generating…" : "Generate with AI"}
+          </Button>
+        )}
         <Button
           variant="outline"
           size="sm"
@@ -174,6 +232,52 @@ export default function ActivityEditorPage() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* AI Generation Dialog */}
+      <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> Generate Content with AI
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <p className="text-sm text-muted-foreground">
+              Select a lesson or reading to use as the source material. AI will generate {typeInfo?.label} content based on it.
+            </p>
+            <div>
+              <Label className="text-sm">Source lesson or reading</Label>
+              {sources.length === 0 ? (
+                <p className="text-xs text-muted-foreground mt-2">No lessons found. Create a lesson plan or curriculum lesson first.</p>
+              ) : (
+                <Select value={selectedSource} onValueChange={setSelectedSource}>
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue placeholder="Select a lesson..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sources.map(s => (
+                      <SelectItem key={s.id} value={s.id}>
+                        <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+                          {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
+                        </span>
+                        {s.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <Button onClick={handleGenerate} disabled={!selectedSource || generating} className="w-full gap-2">
+              {generating ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
+              ) : (
+                <><Sparkles className="h-4 w-4" /> Generate Content</>
+              )}
+            </Button>
+            <p className="text-xs text-muted-foreground text-center">This will replace the current activity content.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

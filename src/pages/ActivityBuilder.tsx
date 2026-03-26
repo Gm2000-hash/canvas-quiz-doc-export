@@ -9,12 +9,23 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ACTIVITY_TYPES, getDefaultContent } from "@/lib/h5p-types";
 import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
-import { Plus, Puzzle, Search, ArrowLeft } from "lucide-react";
+import { Plus, Puzzle, Search, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
+
+interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
+
+// Activity types that support AI generation
+const AI_SUPPORTED_TYPES: ActivityType[] = [
+  "fill_in_blanks", "drag_the_words", "multiple_choice", "true_false", "single_choice_set",
+  "mark_the_words", "essay", "summary", "dialog_cards", "flashcards", "memory_game",
+  "accordion", "timeline", "crossword", "drag_and_drop", "question_set",
+  "course_presentation", "interactive_book", "column",
+];
 
 interface Activity {
   id: string;
@@ -37,6 +48,10 @@ export default function ActivityBuilder() {
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState<ActivityType>("fill_in_blanks");
+  const [useAI, setUseAI] = useState(false);
+  const [sources, setSources] = useState<SourceOption[]>([]);
+  const [selectedSource, setSelectedSource] = useState<string>("");
+  const [generating, setGenerating] = useState(false);
 
   // Preview dialog
   const [previewActivity, setPreviewActivity] = useState<Activity | null>(null);
@@ -54,8 +69,55 @@ export default function ActivityBuilder() {
 
   useEffect(() => { fetchActivities(); }, [user]);
 
+  // Fetch sources when AI toggle is enabled
+  useEffect(() => {
+    if (!useAI || !user || sources.length > 0) return;
+    Promise.all([
+      supabase.from("lesson_plans").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
+      supabase.from("curriculum_lessons").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
+    ]).then(([lp, cl]) => {
+      const opts: SourceOption[] = [
+        ...((lp.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "lesson_plan" as const })),
+        ...((cl.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "curriculum_lesson" as const })),
+      ];
+      setSources(opts);
+      if (opts.length > 0) setSelectedSource(opts[0].id);
+    });
+  }, [useAI, user]);
+
   const handleCreate = async () => {
     if (!user || !newTitle.trim()) return;
+
+    if (useAI && selectedSource) {
+      const source = sources.find(s => s.id === selectedSource);
+      if (!source) return;
+      setGenerating(true);
+      try {
+        const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
+          body: { activityType: newType, sourceType: source.type, sourceId: source.id },
+        });
+        if (fnError) throw fnError;
+        if (fnData?.error) throw new Error(fnData.error);
+        const content = fnData.content;
+        const { data, error } = await supabase
+          .from("h5p_activities")
+          .insert({ user_id: user.id, title: newTitle.trim(), activity_type: newType, content: content as any })
+          .select()
+          .single();
+        if (error) throw error;
+        setShowCreate(false);
+        setNewTitle("");
+        setUseAI(false);
+        toast({ title: "Activity generated with AI!" });
+        navigate(`/activities/${(data as any).id}`);
+      } catch (err: any) {
+        toast({ title: "Generation failed", description: err.message, variant: "destructive" });
+      } finally {
+        setGenerating(false);
+      }
+      return;
+    }
+
     const content = getDefaultContent(newType);
     const { data, error } = await supabase
       .from("h5p_activities")
@@ -182,8 +244,55 @@ export default function ActivityBuilder() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handleCreate} disabled={!newTitle.trim()} className="w-full">
-              Create Activity
+
+            {/* AI Generation Toggle */}
+            {AI_SUPPORTED_TYPES.includes(newType) && (
+              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                    <Sparkles className="h-4 w-4 text-primary" /> Generate with AI
+                  </Label>
+                  <Switch checked={useAI} onCheckedChange={setUseAI} />
+                </div>
+                {useAI && (
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Source lesson or reading</Label>
+                    {sources.length === 0 ? (
+                      <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
+                    ) : (
+                      <Select value={selectedSource} onValueChange={setSelectedSource}>
+                        <SelectTrigger className="mt-1.5">
+                          <SelectValue placeholder="Select a lesson..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {sources.map(s => (
+                            <SelectItem key={s.id} value={s.id}>
+                              <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+                                {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
+                              </span>
+                              {s.title}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Button
+              onClick={handleCreate}
+              disabled={!newTitle.trim() || generating || (useAI && !selectedSource)}
+              className="w-full gap-2"
+            >
+              {generating ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
+              ) : useAI ? (
+                <><Sparkles className="h-4 w-4" /> Generate Activity</>
+              ) : (
+                "Create Activity"
+              )}
             </Button>
           </div>
         </DialogContent>
