@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { getCourses, createCanvasQuiz, createCanvasQuizQuestion, type CanvasConfig, type Course } from "@/lib/canvas-api";
 import type { QuestionBankItem } from "@/lib/question-bank";
 import { toast } from "sonner";
@@ -56,7 +57,7 @@ function buildCanvasAnswers(q: QuestionBankItem) {
 export default function PushToCanvasDialog({ open, onOpenChange, questions, config }: PushToCanvasDialogProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
-  const [selectedCourseId, setSelectedCourseId] = useState<string>("");
+  const [selectedCourseIds, setSelectedCourseIds] = useState<Set<string>>(new Set());
   const [quizTitle, setQuizTitle] = useState("Quiz from Question Bank");
   const [quizType, setQuizType] = useState<string>("assignment");
   const [publishImmediately, setPublishImmediately] = useState(false);
