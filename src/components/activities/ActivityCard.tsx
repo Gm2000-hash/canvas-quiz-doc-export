@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ACTIVITY_TYPES } from "@/lib/h5p-types";
-import { Play, Pencil, Trash2 } from "lucide-react";
+import { Play, Pencil, Trash2, Copy } from "lucide-react";
 import type { ActivityStandard } from "@/hooks/useActivityStandards";
 
 interface ActivityCardProps {
