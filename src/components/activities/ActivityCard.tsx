@@ -47,6 +47,9 @@ export function ActivityCard({ title, activityType, updatedAt, standards, onPlay
         <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onEdit} title="Edit">
           <Pencil className="h-4 w-4" />
         </Button>
+        <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onDuplicate} title="Duplicate">
+          <Copy className="h-4 w-4" />
+        </Button>
         <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={onDelete} title="Delete">
           <Trash2 className="h-4 w-4" />
         </Button>
