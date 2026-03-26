@@ -25,6 +25,15 @@ import { DragAndDropEditor } from "@/components/activities/editors/DragAndDropEd
 import { QuestionSetEditor } from "@/components/activities/editors/QuestionSetEditor";
 import { PersonalityQuizEditor } from "@/components/activities/editors/PersonalityQuizEditor";
 import { GameMapEditor } from "@/components/activities/editors/GameMapEditor";
+import { ColumnEditor } from "@/components/activities/editors/ColumnEditor";
+import { CoursePresentationEditor } from "@/components/activities/editors/CoursePresentationEditor";
+import { DocumentationToolEditor } from "@/components/activities/editors/DocumentationToolEditor";
+import { ImageHotspotsEditor } from "@/components/activities/editors/ImageHotspotsEditor";
+import { InteractiveBookEditor } from "@/components/activities/editors/InteractiveBookEditor";
+import { InteractiveVideoEditor } from "@/components/activities/editors/InteractiveVideoEditor";
+import { VirtualTourEditor } from "@/components/activities/editors/VirtualTourEditor";
+import { CrosswordEditor } from "@/components/activities/editors/CrosswordEditor";
+import { AgamottoEditor } from "@/components/activities/editors/AgamottoEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +43,8 @@ import type {
   MultipleChoiceContent, TrueFalseContent, SingleChoiceSetContent, MarkTheWordsContent,
   EssayContent, SummaryContent, DialogCardsContent, FlashcardsContent, MemoryGameContent,
   ArithmeticQuizContent, DragAndDropContent, QuestionSetContent, PersonalityQuizContent, GameMapContent,
+  ColumnContent, CoursePresentationContent, DocumentationToolContent, ImageHotspotsContent,
+  InteractiveBookContent, InteractiveVideoContent, VirtualTourContent, CrosswordContent, AgamottoContent,
 } from "@/lib/h5p-types";
 import { ArrowLeft, Save, Puzzle } from "lucide-react";
 
@@ -93,6 +104,15 @@ export default function ActivityEditorPage() {
       case "question_set": return <QuestionSetEditor content={content as QuestionSetContent} onChange={setContent} />;
       case "personality_quiz": return <PersonalityQuizEditor content={content as PersonalityQuizContent} onChange={setContent} />;
       case "game_map": return <GameMapEditor content={content as GameMapContent} onChange={setContent} />;
+      case "column": return <ColumnEditor content={content as ColumnContent} onChange={setContent} />;
+      case "course_presentation": return <CoursePresentationEditor content={content as CoursePresentationContent} onChange={setContent} />;
+      case "documentation_tool": return <DocumentationToolEditor content={content as DocumentationToolContent} onChange={setContent} />;
+      case "image_hotspots": return <ImageHotspotsEditor content={content as ImageHotspotsContent} onChange={setContent} />;
+      case "interactive_book": return <InteractiveBookEditor content={content as InteractiveBookContent} onChange={setContent} />;
+      case "interactive_video": return <InteractiveVideoEditor content={content as InteractiveVideoContent} onChange={setContent} />;
+      case "virtual_tour": return <VirtualTourEditor content={content as VirtualTourContent} onChange={setContent} />;
+      case "crossword": return <CrosswordEditor content={content as CrosswordContent} onChange={setContent} />;
+      case "agamotto": return <AgamottoEditor content={content as AgamottoContent} onChange={setContent} />;
       default: return <p className="text-sm text-muted-foreground">Unknown type</p>;
     }
   };

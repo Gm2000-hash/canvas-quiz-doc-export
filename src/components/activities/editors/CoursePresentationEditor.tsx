@@ -1,0 +1,33 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Plus, Trash2 } from "lucide-react";
+import type { CoursePresentationContent } from "@/lib/h5p-types";
+
+interface Props { content: CoursePresentationContent; onChange: (c: CoursePresentationContent) => void; }
+
+export function CoursePresentationEditor({ content, onChange }: Props) {
+  return (
+    <div className="space-y-4">
+      <Label className="text-sm font-medium">Slides</Label>
+      {content.slides.map((s, i) => (
+        <div key={s.id} className="border border-border/60 rounded-xl p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium text-muted-foreground">Slide {i + 1}</span>
+            <div className="flex-1" />
+            <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => onChange({ slides: content.slides.filter(x => x.id !== s.id) })}>
+              <Trash2 className="h-3.5 w-3.5" />
+            </Button>
+          </div>
+          <Input placeholder="Slide title" value={s.title} onChange={e => onChange({ slides: content.slides.map(x => x.id === s.id ? { ...x, title: e.target.value } : x) })} />
+          <Textarea placeholder="Slide content..." className="min-h-[100px] text-sm" value={s.content} onChange={e => onChange({ slides: content.slides.map(x => x.id === s.id ? { ...x, content: e.target.value } : x) })} />
+          <Input placeholder="Speaker notes (optional)" value={s.notes ?? ""} onChange={e => onChange({ slides: content.slides.map(x => x.id === s.id ? { ...x, notes: e.target.value } : x) })} />
+        </div>
+      ))}
+      <Button variant="outline" size="sm" className="w-full" onClick={() => onChange({ slides: [...content.slides, { id: crypto.randomUUID(), title: "", content: "", notes: "" }] })}>
+        <Plus className="h-4 w-4 mr-1.5" /> Add Slide
+      </Button>
+    </div>
+  );
+}

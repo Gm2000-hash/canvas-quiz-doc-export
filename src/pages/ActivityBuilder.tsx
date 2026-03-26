@@ -14,7 +14,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { ACTIVITY_TYPES, getDefaultContent } from "@/lib/h5p-types";
 import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
-import { Plus, Puzzle, Search } from "lucide-react";
+import { Plus, Puzzle, Search, ArrowLeft } from "lucide-react";
 
 interface Activity {
   id: string;
@@ -84,6 +84,9 @@ export default function ActivityBuilder() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
+        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate("/")}>
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
         <span className="text-base font-semibold text-foreground flex items-center gap-2">
           <Puzzle className="h-4 w-4 text-primary" />
           Activity Builder
