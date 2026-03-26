@@ -132,6 +132,20 @@ export default function ActivityEditorPage() {
           {typeInfo?.label ?? "Activity"}
         </span>
         <div className="flex-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={async () => {
+            try {
+              await exportActivityAsH5P(title, activityType, content);
+              toast({ title: "H5P file downloaded" });
+            } catch (err: any) {
+              toast({ title: "Export failed", description: err.message, variant: "destructive" });
+            }
+          }}
+        >
+          <Download className="h-4 w-4 mr-1.5" /> Export H5P
+        </Button>
         <Button onClick={handleSave} disabled={saving} size="sm">
           <Save className="h-4 w-4 mr-1.5" /> {saving ? "Saving..." : "Save"}
         </Button>
