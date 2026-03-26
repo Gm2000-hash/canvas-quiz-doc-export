@@ -31,6 +31,7 @@ interface FlipPageProps {
   pageNumber: number;
   width: number;
   height: number;
+  pdfDoc: any;
 }
 
 interface LinkAnnotation {
