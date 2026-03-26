@@ -103,6 +103,19 @@ const LessonPlanEditor = () => {
       });
       setStandards(stdsRes.data || []);
       setLoading(false);
+
+      // Fetch unit discipline for "Open Reading" link
+      if (d.unit_id) {
+        const { data: unitData } = await supabase
+          .from("units")
+          .select("discipline, title")
+          .eq("id", d.unit_id)
+          .single();
+        if (unitData?.discipline) {
+          setUnitDiscipline(unitData.discipline);
+          setUnitTitle(unitData.title || '');
+        }
+      }
     };
     fetchData();
   }, [user, id]);
