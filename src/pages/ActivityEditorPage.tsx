@@ -232,6 +232,52 @@ export default function ActivityEditorPage() {
           </TabsContent>
         </Tabs>
       </main>
+
+      {/* AI Generation Dialog */}
+      <Dialog open={showAIDialog} onOpenChange={setShowAIDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> Generate Content with AI
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <p className="text-sm text-muted-foreground">
+              Select a lesson or reading to use as the source material. AI will generate {typeInfo?.label} content based on it.
+            </p>
+            <div>
+              <Label className="text-sm">Source lesson or reading</Label>
+              {sources.length === 0 ? (
+                <p className="text-xs text-muted-foreground mt-2">No lessons found. Create a lesson plan or curriculum lesson first.</p>
+              ) : (
+                <Select value={selectedSource} onValueChange={setSelectedSource}>
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue placeholder="Select a lesson..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {sources.map(s => (
+                      <SelectItem key={s.id} value={s.id}>
+                        <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+                          {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
+                        </span>
+                        {s.title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <Button onClick={handleGenerate} disabled={!selectedSource || generating} className="w-full gap-2">
+              {generating ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
+              ) : (
+                <><Sparkles className="h-4 w-4" /> Generate Content</>
+              )}
+            </Button>
+            <p className="text-xs text-muted-foreground text-center">This will replace the current activity content.</p>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
