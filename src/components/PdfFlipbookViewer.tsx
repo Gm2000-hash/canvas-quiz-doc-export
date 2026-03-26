@@ -141,9 +141,8 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
 
   const { width: pageWidth, height: pageHeight } = getPageDimensions();
 
-  const onDocumentLoadSuccess = useCallback((pdf: any) => {
-    setNumPages(pdf.numPages);
-    setPdfDoc(pdf);
+  const onDocumentLoadSuccess = useCallback(({ numPages: total }: { numPages: number }) => {
+    setNumPages(total);
     setLoading(false);
   }, []);
 
