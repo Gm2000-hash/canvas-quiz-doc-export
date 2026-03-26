@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical, BookOpenCheck, Puzzle, Download } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical, BookOpenCheck, Puzzle, Download, RefreshCw } from "lucide-react";
 import { EmbedActivityPicker, type EmbeddedActivity } from "@/components/EmbedActivityPicker";
 import { ActivityPlayer } from "@/components/activities/ActivityPlayer";
 import { ACTIVITY_TYPES, type ActivityType, type ActivityContent } from "@/lib/h5p-types";
@@ -22,6 +22,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { exportLessonToDocx } from "@/lib/export-lesson-docx";
 import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
+import { RegenerateLessonDialog } from "@/components/RegenerateLessonDialog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CurriculumReadingViewer } from "@/components/CurriculumReadingViewer";
 import type { Json } from "@/integrations/supabase/types";
@@ -90,10 +91,12 @@ const LessonPlanEditor = () => {
   const [saving, setSaving] = useState(false);
   const [standardsOpen, setStandardsOpen] = useState(false);
   const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
+  const [regenerateOpen, setRegenerateOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
   const [embedPickerOpen, setEmbedPickerOpen] = useState(false);
   const [previewingActivity, setPreviewingActivity] = useState<{ type: ActivityType; content: ActivityContent } | null>(null);
   const [unitDiscipline, setUnitDiscipline] = useState<string | null>(null);
+  const [unitGradeLevel, setUnitGradeLevel] = useState<string>("");
   const [unitTitle, setUnitTitle] = useState('');
 
   useEffect(() => {
@@ -123,12 +126,13 @@ const LessonPlanEditor = () => {
       if (d.unit_id) {
         const { data: unitData } = await supabase
           .from("units")
-          .select("discipline, title")
+          .select("discipline, title, grade_level")
           .eq("id", d.unit_id)
           .single();
-        if (unitData?.discipline) {
-          setUnitDiscipline(unitData.discipline);
+        if (unitData) {
+          setUnitDiscipline(unitData.discipline || null);
           setUnitTitle(unitData.title || '');
+          setUnitGradeLevel(unitData.grade_level || '');
         }
       }
     };
@@ -282,6 +286,15 @@ const LessonPlanEditor = () => {
             <span className="hidden sm:inline">Open Reading</span>
           </Button>
         )}
+        <Button
+          size="sm"
+          variant="outline"
+          className="gap-1.5 rounded-xl"
+          onClick={() => setRegenerateOpen(true)}
+        >
+          <RefreshCw className="h-4 w-4" />
+          <span className="hidden sm:inline">Regenerate</span>
+        </Button>
         <Button
           size="sm"
           variant="outline"
@@ -593,6 +606,21 @@ const LessonPlanEditor = () => {
           vocabulary: lesson.vocabulary.map(v => v.term).join(", "),
         }}
       />
+
+      {lesson && (
+        <RegenerateLessonDialog
+          open={regenerateOpen}
+          onOpenChange={setRegenerateOpen}
+          lesson={lesson}
+          discipline={unitDiscipline || "Science"}
+          gradeLevel={unitGradeLevel || "Middle School"}
+          unitTitle={unitTitle || lesson.title}
+          onRegenerated={() => {
+            // Re-fetch lesson data
+            window.location.reload();
+          }}
+        />
+      )}
 
       {readingOpen && unitDiscipline && (
         <CurriculumReadingViewer
