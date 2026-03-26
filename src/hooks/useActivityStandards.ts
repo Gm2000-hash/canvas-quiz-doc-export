@@ -143,5 +143,18 @@ export function useActivityStandards() {
     return map;
   };
 
-  return { tagActivity, fetchStandards, tagging };
+  const addStandard = async (activityId: string, code: string, description: string) => {
+    const { error } = await supabase
+      .from("h5p_activity_standards" as any)
+      .insert({ activity_id: activityId, ngss_code: code, ngss_description: description, matched_terms: [] });
+    if (error && !error.message.includes("duplicate")) {
+      toast({ title: "Error adding standard", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const removeStandard = async (standardId: string) => {
+    await supabase.from("h5p_activity_standards" as any).delete().eq("id", standardId);
+  };
+
+  return { tagActivity, fetchStandards, addStandard, removeStandard, tagging };
 }

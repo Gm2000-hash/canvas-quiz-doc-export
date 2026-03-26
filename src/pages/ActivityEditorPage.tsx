@@ -52,6 +52,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useActivityStandards, type ActivityStandard } from "@/hooks/useActivityStandards";
 import { Badge } from "@/components/ui/badge";
+import { ActivityStandardsPicker } from "@/components/ActivityStandardsPicker";
 
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
 
@@ -60,7 +61,7 @@ export default function ActivityEditorPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { tagActivity, fetchStandards, tagging } = useActivityStandards();
+  const { tagActivity, fetchStandards, addStandard, removeStandard, tagging } = useActivityStandards();
 
   const [title, setTitle] = useState("");
   const [activityType, setActivityType] = useState<ActivityType>("fill_in_blanks");
@@ -221,17 +222,27 @@ export default function ActivityEditorPage() {
           <Input value={title} onChange={e => setTitle(e.target.value)} className="mt-1.5 text-lg font-semibold" />
         </div>
 
-        {standards.length > 0 && (
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-xs font-medium text-muted-foreground">NGSS Standards:</span>
-            {standards.map(s => (
-              <Badge key={s.ngss_code} variant="outline" className="text-xs font-mono border-primary/30 text-primary" title={s.ngss_description}>
-                {s.ngss_code}
-              </Badge>
-            ))}
-            {tagging && <span className="text-xs text-muted-foreground animate-pulse">Tagging…</span>}
-          </div>
-        )}
+        <ActivityStandardsPicker
+          standards={standards}
+          tagging={tagging}
+          onAdd={async (code, description) => {
+            if (!id) return;
+            await addStandard(id, code, description);
+            const map = await fetchStandards([id]);
+            setStandards(map[id] || []);
+          }}
+          onRemove={async (standardId) => {
+            if (!id) return;
+            await removeStandard(standardId);
+            setStandards(prev => prev.filter(s => s.id !== standardId));
+          }}
+          onAutoTag={() => {
+            if (!id) return;
+            tagActivity(id, activityType, content, title).then(() => {
+              fetchStandards([id]).then(map => setStandards(map[id] || []));
+            });
+          }}
+        />
 
         <Tabs defaultValue="edit">
           <TabsList>
