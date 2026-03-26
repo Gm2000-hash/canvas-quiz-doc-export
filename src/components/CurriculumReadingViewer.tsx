@@ -584,7 +584,7 @@ function PushReadingsToCanvasDialog({
 }) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
-  const [selectedCourseId, setSelectedCourseId] = useState('');
+  const [selectedCourseIds, setSelectedCourseIds] = useState<Set<string>>(new Set());
   const [pageTitle, setPageTitle] = useState(bookTitle);
   const [pushing, setPushing] = useState(false);
   const [progress, setProgress] = useState(0);
