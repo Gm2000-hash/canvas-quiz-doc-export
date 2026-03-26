@@ -31,20 +31,80 @@ interface FlipPageProps {
   pageNumber: number;
   width: number;
   height: number;
+  pdfDoc: any;
 }
 
-const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width, height }, ref) => (
-  <div ref={ref} className="bg-white flex items-center justify-center overflow-hidden relative pdf-links">
-    <Page
-      pageNumber={pageNumber}
-      width={width}
-      height={height}
-      renderTextLayer={false}
-      renderAnnotationLayer={true}
-      className="pdf-page-render"
-    />
-  </div>
-));
+interface LinkAnnotation {
+  url: string;
+  rect: [number, number, number, number];
+}
+
+const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width, height, pdfDoc }, ref) => {
+  const [links, setLinks] = useState<LinkAnnotation[]>([]);
+  const [viewport, setViewport] = useState<{ width: number; height: number } | null>(null);
+
+  useEffect(() => {
+    if (!pdfDoc) return;
+    let cancelled = false;
+    pdfDoc.getPage(pageNumber).then((page: any) => {
+      if (cancelled) return;
+      const vp = page.getViewport({ scale: 1 });
+      setViewport({ width: vp.width, height: vp.height });
+      return page.getAnnotations();
+    }).then((annotations: any[]) => {
+      if (cancelled || !annotations) return;
+      const found: LinkAnnotation[] = [];
+      for (const a of annotations) {
+        if (a.subtype === 'Link' && a.url) {
+          found.push({ url: a.url, rect: a.rect });
+        }
+      }
+      setLinks(found);
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, [pageNumber, pdfDoc]);
+
+  const scaleX = viewport ? width / viewport.width : 1;
+  const scaleY = viewport ? height / viewport.height : 1;
+
+  return (
+    <div ref={ref} className="bg-white flex items-center justify-center overflow-hidden relative">
+      <Page
+        pageNumber={pageNumber}
+        width={width}
+        height={height}
+        renderTextLayer={false}
+        renderAnnotationLayer={false}
+        className="pdf-page-render"
+      />
+      {viewport && links.map((link, i) => {
+        const left = link.rect[0] * scaleX;
+        const bottom = link.rect[1] * scaleY;
+        const right = link.rect[2] * scaleX;
+        const top = link.rect[3] * scaleY;
+        return (
+          <a
+            key={i}
+            href={link.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'absolute',
+              left: `${left}px`,
+              top: `${height - top}px`,
+              width: `${right - left}px`,
+              height: `${top - bottom}px`,
+              zIndex: 50,
+              cursor: 'pointer',
+            }}
+            title={link.url}
+          />
+        );
+      })}
+    </div>
+  );
+});
 FlipPage.displayName = 'FlipPage';
 
 export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewerProps) {
@@ -53,8 +113,16 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [pdfDoc, setPdfDoc] = useState<any>(null);
   const flipBookRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Load PDF independently for annotation extraction
+  useEffect(() => {
+    if (!fileUrl) return;
+    const loadingTask = pdfjs.getDocument(fileUrl);
+    loadingTask.promise.then((doc) => setPdfDoc(doc)).catch(() => {});
+  }, [fileUrl]);
 
   // Calculate page dimensions based on container
   const getPageDimensions = useCallback(() => {
@@ -142,7 +210,7 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
           </div>
         )}
 
-        <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading="">
+        <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading="" externalLinkTarget="_blank">
           {numPages > 0 && (
             <div className="flipbook-container" style={{ perspective: '2000px' }}>
               {/* @ts-ignore - react-pageflip typing issues */}
@@ -179,6 +247,7 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
                     pageNumber={i + 1}
                     width={pageWidth}
                     height={pageHeight}
+                    pdfDoc={pdfDoc}
                   />
                 ))}
               </HTMLFlipBook>
