@@ -60,6 +60,7 @@ export default function ActivityEditorPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { tagActivity, fetchStandards, tagging } = useActivityStandards();
 
   const [title, setTitle] = useState("");
   const [activityType, setActivityType] = useState<ActivityType>("fill_in_blanks");
@@ -70,6 +71,7 @@ export default function ActivityEditorPage() {
   const [sources, setSources] = useState<SourceOption[]>([]);
   const [selectedSource, setSelectedSource] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [standards, setStandards] = useState<ActivityStandard[]>([]);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -80,6 +82,9 @@ export default function ActivityEditorPage() {
       setContent((data as any).content as ActivityContent);
       setLoading(false);
     });
+    // Fetch standards
+    fetchStandards([id]).then(map => setStandards(map[id] || []));
+  }, [id, user]);
   }, [id, user]);
 
   const handleSave = async () => {
