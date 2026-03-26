@@ -607,6 +607,21 @@ const LessonPlanEditor = () => {
         }}
       />
 
+      {lesson && (
+        <RegenerateLessonDialog
+          open={regenerateOpen}
+          onOpenChange={setRegenerateOpen}
+          lesson={lesson}
+          discipline={unitDiscipline || "Science"}
+          gradeLevel={unitGradeLevel || "Middle School"}
+          unitTitle={unitTitle || lesson.title}
+          onRegenerated={() => {
+            // Re-fetch lesson data
+            window.location.reload();
+          }}
+        />
+      )}
+
       {readingOpen && unitDiscipline && (
         <CurriculumReadingViewer
           discipline={unitDiscipline}
