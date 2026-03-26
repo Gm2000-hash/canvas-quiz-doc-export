@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Plus, Calendar, List, Trash2, GripVertical, Clock, Sparkles, Download, Lock, Copy } from "lucide-react";
+import { ArrowLeft, Plus, Calendar, List, Trash2, GripVertical, Clock, Sparkles, Download, Lock, Copy, BookOpen } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
