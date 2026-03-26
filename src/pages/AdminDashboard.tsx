@@ -465,10 +465,9 @@ export default function AdminDashboard() {
                   {filteredQuestions.map((q) => (
                     <Card key={q.id} className="p-3">
                       <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <p
-                          className="text-sm font-medium leading-snug flex-1"
-                          dangerouslySetInnerHTML={{ __html: q.question_text }}
-                        />
+                        <p className="text-sm font-medium leading-snug flex-1">
+                          {q.question_text}
+                        </p>
                         <Badge variant="outline" className="text-[10px] shrink-0">
                           {q.question_type}
                         </Badge>
