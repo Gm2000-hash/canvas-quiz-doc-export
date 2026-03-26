@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical, BookOpenCheck } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { ActivityList } from "@/components/ActivityList";
 import { BrainstormChat, type LessonField } from "@/components/BrainstormChat";
@@ -18,6 +18,7 @@ import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { exportLessonToDocx } from "@/lib/export-lesson-docx";
 import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { CurriculumReadingViewer } from "@/components/CurriculumReadingViewer";
 import type { Json } from "@/integrations/supabase/types";
 
 interface Activity {
@@ -77,6 +78,9 @@ const LessonPlanEditor = () => {
   const [saving, setSaving] = useState(false);
   const [standardsOpen, setStandardsOpen] = useState(false);
   const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
+  const [readingOpen, setReadingOpen] = useState(false);
+  const [unitDiscipline, setUnitDiscipline] = useState<string | null>(null);
+  const [unitTitle, setUnitTitle] = useState('');
 
   useEffect(() => {
     if (!user || !id) return;
@@ -99,6 +103,19 @@ const LessonPlanEditor = () => {
       });
       setStandards(stdsRes.data || []);
       setLoading(false);
+
+      // Fetch unit discipline for "Open Reading" link
+      if (d.unit_id) {
+        const { data: unitData } = await supabase
+          .from("units")
+          .select("discipline, title")
+          .eq("id", d.unit_id)
+          .single();
+        if (unitData?.discipline) {
+          setUnitDiscipline(unitData.discipline);
+          setUnitTitle(unitData.title || '');
+        }
+      }
     };
     fetchData();
   }, [user, id]);
@@ -238,6 +255,17 @@ const LessonPlanEditor = () => {
           }}
           onCopyToField={handleCopyToField}
         />
+        {unitDiscipline && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5 rounded-xl"
+            onClick={() => setReadingOpen(true)}
+          >
+            <BookOpenCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">Open Reading</span>
+          </Button>
+        )}
         <Button
           size="sm"
           variant="outline"
@@ -468,6 +496,14 @@ const LessonPlanEditor = () => {
           vocabulary: lesson.vocabulary.map(v => v.term).join(", "),
         }}
       />
+
+      {readingOpen && unitDiscipline && (
+        <CurriculumReadingViewer
+          discipline={unitDiscipline}
+          title={`${unitTitle} Readings`}
+          onClose={() => setReadingOpen(false)}
+        />
+      )}
     </div>
   );
 };
