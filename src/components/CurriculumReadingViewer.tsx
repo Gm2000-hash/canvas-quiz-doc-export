@@ -90,6 +90,11 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
           </div>
         </div>
         <div className="flex items-center gap-2">
+          {lessons.length > 1 && (
+            <Button variant="ghost" size="icon" onClick={() => setShowToc(t => !t)} title="Table of Contents">
+              <List className="h-4 w-4" />
+            </Button>
+          )}
           {config && lessons.length > 0 && (
             <Button variant="outline" size="sm" className="gap-2" onClick={() => setPushOpen(true)}>
               <Upload className="h-3.5 w-3.5" /> Push to Canvas
@@ -100,6 +105,43 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
           </Button>
         </div>
       </div>
+
+      {/* Search & TOC panel */}
+      {!loading && lessons.length > 0 && showToc && (
+        <div className="border-b border-border bg-card/60 px-4 py-2 space-y-2">
+          <div className="relative max-w-sm">
+            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              placeholder="Search lessons, terms, readings..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="pl-8 h-8 text-sm"
+            />
+          </div>
+          <ScrollArea className="max-h-48">
+            <div className="space-y-0.5">
+              {filteredIndices.length === 0 ? (
+                <p className="text-xs text-muted-foreground py-2">No lessons match "{searchQuery}"</p>
+              ) : (
+                filteredIndices.map(idx => (
+                  <button
+                    key={idx}
+                    onClick={() => { setCurrentLesson(idx); setShowToc(false); }}
+                    className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
+                      idx === currentLesson
+                        ? 'bg-primary/10 text-primary font-medium'
+                        : 'hover:bg-muted text-foreground'
+                    }`}
+                  >
+                    <span className="text-xs text-muted-foreground mr-2">{idx + 1}.</span>
+                    {lessons[idx].title}
+                  </button>
+                ))
+              )}
+            </div>
+          </ScrollArea>
+        </div>
+      )}
 
       {/* Content */}
       {loading ? (
