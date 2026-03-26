@@ -50,6 +50,8 @@ import { ArrowLeft, Save, Puzzle, Download, Sparkles, Loader2 } from "lucide-rea
 import { exportActivityAsH5P } from "@/lib/export-h5p";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useActivityStandards, type ActivityStandard } from "@/hooks/useActivityStandards";
+import { Badge } from "@/components/ui/badge";
 
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
 
@@ -58,6 +60,7 @@ export default function ActivityEditorPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { tagActivity, fetchStandards, tagging } = useActivityStandards();
 
   const [title, setTitle] = useState("");
   const [activityType, setActivityType] = useState<ActivityType>("fill_in_blanks");
@@ -68,6 +71,7 @@ export default function ActivityEditorPage() {
   const [sources, setSources] = useState<SourceOption[]>([]);
   const [selectedSource, setSelectedSource] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [standards, setStandards] = useState<ActivityStandard[]>([]);
 
   useEffect(() => {
     if (!id || !user) return;
@@ -78,6 +82,8 @@ export default function ActivityEditorPage() {
       setContent((data as any).content as ActivityContent);
       setLoading(false);
     });
+    // Fetch standards
+    fetchStandards([id]).then(map => setStandards(map[id] || []));
   }, [id, user]);
 
   const handleSave = async () => {
@@ -124,6 +130,12 @@ export default function ActivityEditorPage() {
       setContent(fnData.content as ActivityContent);
       setShowAIDialog(false);
       toast({ title: "Content generated with AI!", description: "Review and save when ready." });
+      // Auto-tag with NGSS standards
+      if (id) {
+        tagActivity(id, activityType, fnData.content, title).then(() => {
+          fetchStandards([id]).then(map => setStandards(map[id] || []));
+        });
+      }
     } catch (err: any) {
       toast({ title: "Generation failed", description: err.message, variant: "destructive" });
     } finally {
@@ -208,6 +220,18 @@ export default function ActivityEditorPage() {
           <Label className="text-sm font-medium">Activity Title</Label>
           <Input value={title} onChange={e => setTitle(e.target.value)} className="mt-1.5 text-lg font-semibold" />
         </div>
+
+        {standards.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-medium text-muted-foreground">NGSS Standards:</span>
+            {standards.map(s => (
+              <Badge key={s.ngss_code} variant="outline" className="text-xs font-mono border-primary/30 text-primary" title={s.ngss_description}>
+                {s.ngss_code}
+              </Badge>
+            ))}
+            {tagging && <span className="text-xs text-muted-foreground animate-pulse">Tagging…</span>}
+          </div>
+        )}
 
         <Tabs defaultValue="edit">
           <TabsList>

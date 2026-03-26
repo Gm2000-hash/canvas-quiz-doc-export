@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { PageBanner } from "@/components/PageBanner";
@@ -10,12 +10,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useActivityStandards, type ActivityStandard } from "@/hooks/useActivityStandards";
 import { ACTIVITY_TYPES, getDefaultContent } from "@/lib/h5p-types";
 import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
-import { Plus, Puzzle, Search, ArrowLeft, Sparkles, Loader2 } from "lucide-react";
+import { Plus, Puzzle, Search, ArrowLeft, Sparkles, Loader2, LayoutGrid, List } from "lucide-react";
 
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
 
@@ -31,10 +33,13 @@ export default function ActivityBuilder() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
+  const { tagActivity, fetchStandards } = useActivityStandards();
   const [activities, setActivities] = useState<Activity[]>([]);
+  const [standardsMap, setStandardsMap] = useState<Record<string, ActivityStandard[]>>({});
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
+  const [viewMode, setViewMode] = useState<"list" | "grouped">("grouped");
 
   // Create dialog
   const [showCreate, setShowCreate] = useState(false);
@@ -56,8 +61,15 @@ export default function ActivityBuilder() {
       .select("*")
       .eq("user_id", user.id)
       .order("updated_at", { ascending: false });
-    setActivities((data as Activity[]) ?? []);
+    const acts = (data as Activity[]) ?? [];
+    setActivities(acts);
     setLoading(false);
+
+    // Fetch standards for all activities
+    if (acts.length > 0) {
+      const map = await fetchStandards(acts.map(a => a.id));
+      setStandardsMap(map);
+    }
   };
 
   useEffect(() => { fetchActivities(); }, [user]);
@@ -100,11 +112,16 @@ export default function ActivityBuilder() {
           .select()
           .single();
         if (error) throw error;
+        const actId = (data as any).id;
         setShowCreate(false);
         setNewTitle("");
         setUseAI(false);
         toast({ title: "Activity generated with AI!" });
-        navigate(`/activities/${(data as any).id}`);
+
+        // Auto-tag with NGSS standards (non-blocking)
+        tagActivity(actId, newType, content, newTitle.trim());
+
+        navigate(`/activities/${actId}`);
       } catch (err: any) {
         toast({ title: "Generation failed", description: err.message, variant: "destructive" });
       } finally {
@@ -137,6 +154,24 @@ export default function ActivityBuilder() {
     return true;
   });
 
+  // Group activities by type for library view
+  const grouped = useMemo(() => {
+    const map = new Map<string, Activity[]>();
+    filtered.forEach(a => {
+      if (!map.has(a.activity_type)) map.set(a.activity_type, []);
+      map.get(a.activity_type)!.push(a);
+    });
+    // Sort groups by ACTIVITY_TYPES order
+    const sorted: { type: string; label: string; activities: Activity[] }[] = [];
+    ACTIVITY_TYPES.forEach(t => {
+      const acts = map.get(t.type);
+      if (acts && acts.length > 0) {
+        sorted.push({ type: t.type, label: t.label, activities: acts });
+      }
+    });
+    return sorted;
+  }, [filtered]);
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
@@ -146,14 +181,14 @@ export default function ActivityBuilder() {
         </Button>
         <span className="text-base font-semibold text-foreground flex items-center gap-2">
           <Puzzle className="h-4 w-4 text-primary" />
-          Activity Builder
+          Activity Library
         </span>
       </header>
 
       <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full space-y-6">
         <PageBanner
-          greeting="Activity Builder"
-          subtitle="Create interactive H5P-style activities for your students"
+          greeting="Activity Library"
+          subtitle="Browse, create and manage interactive H5P-style activities organized by type"
           compact
         />
 
@@ -178,6 +213,26 @@ export default function ActivityBuilder() {
               ))}
             </SelectContent>
           </Select>
+          <div className="flex items-center gap-1 border border-border rounded-lg p-0.5">
+            <Button
+              variant={viewMode === "grouped" ? "secondary" : "ghost"}
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setViewMode("grouped")}
+              title="Grouped view"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === "list" ? "secondary" : "ghost"}
+              size="icon"
+              className="h-8 w-8"
+              onClick={() => setViewMode("list")}
+              title="List view"
+            >
+              <List className="h-4 w-4" />
+            </Button>
+          </div>
           <Button onClick={() => setShowCreate(true)}>
             <Plus className="h-4 w-4 mr-1.5" /> New Activity
           </Button>
@@ -192,7 +247,7 @@ export default function ActivityBuilder() {
               {activities.length === 0 ? "No activities yet. Create your first one!" : "No matching activities."}
             </p>
           </div>
-        ) : (
+        ) : viewMode === "list" ? (
           <div className="space-y-3">
             {filtered.map(a => (
               <ActivityCard
@@ -201,10 +256,37 @@ export default function ActivityBuilder() {
                 title={a.title}
                 activityType={a.activity_type}
                 updatedAt={a.updated_at}
+                standards={standardsMap[a.id]}
                 onPlay={() => setPreviewActivity(a)}
                 onEdit={() => navigate(`/activities/${a.id}`)}
                 onDelete={() => handleDelete(a.id)}
               />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-6">
+            {grouped.map(group => (
+              <div key={group.type}>
+                <div className="flex items-center gap-2 mb-3">
+                  <h2 className="text-sm font-semibold text-foreground">{group.label}</h2>
+                  <Badge variant="secondary" className="text-xs">{group.activities.length}</Badge>
+                </div>
+                <div className="space-y-2 pl-1">
+                  {group.activities.map(a => (
+                    <ActivityCard
+                      key={a.id}
+                      id={a.id}
+                      title={a.title}
+                      activityType={a.activity_type}
+                      updatedAt={a.updated_at}
+                      standards={standardsMap[a.id]}
+                      onPlay={() => setPreviewActivity(a)}
+                      onEdit={() => navigate(`/activities/${a.id}`)}
+                      onDelete={() => handleDelete(a.id)}
+                    />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         )}
@@ -241,42 +323,40 @@ export default function ActivityBuilder() {
             </div>
 
             {/* AI Generation Toggle */}
-            {true && (
-              <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
-                <div className="flex items-center justify-between">
-                  <Label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
-                    <Sparkles className="h-4 w-4 text-primary" /> Generate with AI
-                  </Label>
-                  <Switch checked={useAI} onCheckedChange={setUseAI} />
-                </div>
-                {useAI && (
-                  <div>
-                    <Label className="text-xs text-muted-foreground">Source lesson or reading</Label>
-                    {!sourcesLoaded ? (
-                      <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
-                    ) : sources.length === 0 ? (
-                      <p className="text-xs text-muted-foreground mt-1">No lessons found. Create a lesson plan or curriculum lesson first.</p>
-                    ) : (
-                      <Select value={selectedSource} onValueChange={setSelectedSource}>
-                        <SelectTrigger className="mt-1.5">
-                          <SelectValue placeholder="Select a lesson..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {sources.map(s => (
-                            <SelectItem key={s.id} value={s.id}>
-                              <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
-                                {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
-                              </span>
-                              {s.title}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    )}
-                  </div>
-                )}
+            <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <Label className="flex items-center gap-2 text-sm font-medium cursor-pointer">
+                  <Sparkles className="h-4 w-4 text-primary" /> Generate with AI
+                </Label>
+                <Switch checked={useAI} onCheckedChange={setUseAI} />
               </div>
-            )}
+              {useAI && (
+                <div>
+                  <Label className="text-xs text-muted-foreground">Source lesson or reading</Label>
+                  {!sourcesLoaded ? (
+                    <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
+                  ) : sources.length === 0 ? (
+                    <p className="text-xs text-muted-foreground mt-1">No lessons found. Create a lesson plan or curriculum lesson first.</p>
+                  ) : (
+                    <Select value={selectedSource} onValueChange={setSelectedSource}>
+                      <SelectTrigger className="mt-1.5">
+                        <SelectValue placeholder="Select a lesson..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {sources.map(s => (
+                          <SelectItem key={s.id} value={s.id}>
+                            <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+                              {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
+                            </span>
+                            {s.title}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                </div>
+              )}
+            </div>
 
             <Button
               onClick={handleCreate}
