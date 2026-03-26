@@ -254,7 +254,7 @@ export default function Home() {
                           <img
                             src={card.image}
                             alt={card.title}
-                            className="h-10 w-10 object-contain transition-transform duration-200 group-hover:scale-110 brightness-150 contrast-125"
+                            className="h-10 w-10 object-contain transition-transform duration-200 group-hover:scale-110"
                             loading="lazy"
                           />
                         ) : (
