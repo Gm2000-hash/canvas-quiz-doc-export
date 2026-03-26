@@ -37,6 +37,11 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [editData, setEditData] = useState<Partial<CurriculumLesson> | null>(null);
+  const [editFont, setEditFont] = useState('font-sans');
+  const [editFontSize, setEditFontSize] = useState('text-sm');
+  const [editLineSpacing, setEditLineSpacing] = useState('leading-relaxed');
+  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+  const [videoUrl, setVideoUrl] = useState('');
 
   const filteredIndices = lessons.reduce<number[]>((acc, lesson, i) => {
     if (!searchQuery.trim()) { acc.push(i); return acc; }
