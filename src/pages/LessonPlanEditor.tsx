@@ -9,7 +9,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical, BookOpenCheck } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical, BookOpenCheck, Puzzle, Download } from "lucide-react";
+import { EmbedActivityPicker, type EmbeddedActivity } from "@/components/EmbedActivityPicker";
+import { ActivityPlayer } from "@/components/activities/ActivityPlayer";
+import { ACTIVITY_TYPES, type ActivityType, type ActivityContent } from "@/lib/h5p-types";
+import { exportActivityAsH5P } from "@/lib/export-h5p";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { ActivityList } from "@/components/ActivityList";
 import { BrainstormChat, type LessonField } from "@/components/BrainstormChat";
@@ -38,6 +43,12 @@ interface ResourceItem {
   type: "video" | "article" | "activity" | "other";
 }
 
+interface EmbeddedActivityRef {
+  activity_id: string;
+  title: string;
+  activity_type: string;
+}
+
 interface LessonPlan {
   id: string;
   unit_id: string | null;
@@ -52,6 +63,7 @@ interface LessonPlan {
   notes: string;
   vocabulary: VocabularyItem[];
   resources: ResourceItem[];
+  embedded_activities: EmbeddedActivityRef[];
 }
 
 interface Standard {
@@ -79,6 +91,8 @@ const LessonPlanEditor = () => {
   const [standardsOpen, setStandardsOpen] = useState(false);
   const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
+  const [embedPickerOpen, setEmbedPickerOpen] = useState(false);
+  const [previewingActivity, setPreviewingActivity] = useState<{ type: ActivityType; content: ActivityContent } | null>(null);
   const [unitDiscipline, setUnitDiscipline] = useState<string | null>(null);
   const [unitTitle, setUnitTitle] = useState('');
 
@@ -100,7 +114,8 @@ const LessonPlanEditor = () => {
         activities: (Array.isArray(d.activities) ? d.activities : []) as Activity[],
         vocabulary: (Array.isArray(d.vocabulary) ? d.vocabulary : []) as VocabularyItem[],
         resources: (Array.isArray(d.resources) ? d.resources : []) as ResourceItem[],
-      });
+        embedded_activities: (Array.isArray(d.embedded_activities) ? d.embedded_activities : []) as EmbeddedActivityRef[],
+      } as LessonPlan);
       setStandards(stdsRes.data || []);
       setLoading(false);
 
@@ -135,6 +150,7 @@ const LessonPlanEditor = () => {
       notes: lesson.notes,
       vocabulary: lesson.vocabulary,
       resources: lesson.resources,
+      embedded_activities: lesson.embedded_activities,
       updated_at: new Date().toISOString(),
     };
     const { error } = await (supabase.from("lesson_plans") as any).update(updateData).eq("id", lesson.id);
@@ -443,7 +459,88 @@ const LessonPlanEditor = () => {
           </CardContent>
         </Card>
 
-        {/* Materials */}
+        {/* Embedded H5P Activities */}
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm flex items-center gap-2"><Puzzle className="h-4 w-4 text-primary" /> Interactive Activities</CardTitle>
+              <span className="text-xs text-muted-foreground">{lesson.embedded_activities.length} embedded</span>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {lesson.embedded_activities.map((ea, idx) => {
+              const typeInfo = ACTIVITY_TYPES.find(t => t.type === ea.activity_type);
+              return (
+                <div key={ea.activity_id} className="flex items-center gap-3 p-2.5 rounded-xl bg-accent/50">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                    <Puzzle className="h-4 w-4 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{ea.title}</p>
+                    <Badge variant="secondary" className="text-[10px]">{typeInfo?.label ?? ea.activity_type}</Badge>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    title="Preview"
+                    onClick={async () => {
+                      const { data } = await supabase.from("h5p_activities").select("content, activity_type").eq("id", ea.activity_id).single();
+                      if (data) setPreviewingActivity({ type: (data as any).activity_type as ActivityType, content: (data as any).content as ActivityContent });
+                    }}
+                  >
+                    <BookOpen className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-7 w-7"
+                    title="Export as H5P"
+                    onClick={async () => {
+                      const { data } = await supabase.from("h5p_activities").select("content, activity_type, title").eq("id", ea.activity_id).single();
+                      if (data) {
+                        await exportActivityAsH5P((data as any).title, (data as any).activity_type as ActivityType, (data as any).content as ActivityContent);
+                        toast({ title: "H5P file downloaded" });
+                      }
+                    }}
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-destructive" onClick={() => {
+                    setLesson({ ...lesson, embedded_activities: lesson.embedded_activities.filter((_, i) => i !== idx) });
+                  }}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              );
+            })}
+            <Button variant="outline" size="sm" className="w-full rounded-xl gap-1.5" onClick={() => setEmbedPickerOpen(true)}>
+              <Plus className="h-3.5 w-3.5" /> Embed Activity
+            </Button>
+          </CardContent>
+        </Card>
+        <EmbedActivityPicker
+          open={embedPickerOpen}
+          onOpenChange={setEmbedPickerOpen}
+          excludeIds={lesson.embedded_activities.map(e => e.activity_id)}
+          onSelect={(a) => {
+            setLesson({
+              ...lesson,
+              embedded_activities: [...lesson.embedded_activities, { activity_id: a.id, title: a.title, activity_type: a.activity_type }],
+            });
+          }}
+        />
+        {previewingActivity && (
+          <Dialog open={!!previewingActivity} onOpenChange={() => setPreviewingActivity(null)}>
+            <DialogContent className="max-w-2xl max-h-[80vh] overflow-auto">
+              <DialogHeader>
+                <DialogTitle>Activity Preview</DialogTitle>
+              </DialogHeader>
+              <ActivityPlayer type={previewingActivity.type} content={previewingActivity.content} />
+            </DialogContent>
+          </Dialog>
+        )}
+
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /> Materials & Resources</CardTitle>

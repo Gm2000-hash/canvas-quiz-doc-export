@@ -46,7 +46,8 @@ import type {
   ColumnContent, CoursePresentationContent, DocumentationToolContent, ImageHotspotsContent,
   InteractiveBookContent, InteractiveVideoContent, VirtualTourContent, CrosswordContent, AgamottoContent,
 } from "@/lib/h5p-types";
-import { ArrowLeft, Save, Puzzle } from "lucide-react";
+import { ArrowLeft, Save, Puzzle, Download } from "lucide-react";
+import { exportActivityAsH5P } from "@/lib/export-h5p";
 
 export default function ActivityEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -131,6 +132,20 @@ export default function ActivityEditorPage() {
           {typeInfo?.label ?? "Activity"}
         </span>
         <div className="flex-1" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={async () => {
+            try {
+              await exportActivityAsH5P(title, activityType, content);
+              toast({ title: "H5P file downloaded" });
+            } catch (err: any) {
+              toast({ title: "Export failed", description: err.message, variant: "destructive" });
+            }
+          }}
+        >
+          <Download className="h-4 w-4 mr-1.5" /> Export H5P
+        </Button>
         <Button onClick={handleSave} disabled={saving} size="sm">
           <Save className="h-4 w-4 mr-1.5" /> {saving ? "Saving..." : "Save"}
         </Button>

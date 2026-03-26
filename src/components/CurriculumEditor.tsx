@@ -10,8 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Plus, Trash2, Pencil, ChevronDown, ChevronRight, GripVertical,
-  BookOpen, Sparkles, Loader2, Eye, RotateCcw, Save, X, FileDown, Library, ExternalLink,
+  BookOpen, Sparkles, Loader2, Eye, RotateCcw, Save, X, FileDown, Library, ExternalLink, Puzzle, Download,
 } from "lucide-react";
+import { EmbedActivityPicker, type EmbeddedActivity } from "@/components/EmbedActivityPicker";
+import { ACTIVITY_TYPES } from "@/lib/h5p-types";
+import { exportActivityAsH5P } from "@/lib/export-h5p";
+import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
 import { useNavigate } from "react-router-dom";
 import { exportCurriculumUnitToDocx, exportCurriculumLessonToDocx } from "@/lib/export-curriculum-docx";
 import { toast as sonnerToast } from "sonner";
@@ -480,6 +484,10 @@ function LessonEditorDialog({
   const [explanation, setExplanation] = useState<string[]>(lesson.explanation || []);
   const [readingTitle, setReadingTitle] = useState(lesson.reading_title || "");
   const [readingParagraphs, setReadingParagraphs] = useState<string[]>(lesson.reading_paragraphs || []);
+  const [interactiveActivities, setInteractiveActivities] = useState<{ activity_id: string; title: string; activity_type: string }[]>(
+    (lesson.interactive_activities as any[]) || []
+  );
+  const [embedPickerOpen, setEmbedPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -494,6 +502,7 @@ function LessonEditorDialog({
         explanation: explanation as any,
         reading_title: readingTitle || null,
         reading_paragraphs: readingParagraphs as any,
+        interactive_activities: interactiveActivities as any,
         updated_at: new Date().toISOString(),
       } as any)
       .eq("id", lesson.id);
@@ -570,6 +579,51 @@ function LessonEditorDialog({
             <Button variant="outline" size="sm" onClick={() => setReadingParagraphs([...readingParagraphs, ""])} className="gap-1">
               <Plus className="h-3 w-3" /> Add Paragraph
             </Button>
+          </div>
+
+          {/* Interactive Activities */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-1.5"><Puzzle className="h-3.5 w-3.5 text-primary" /> Interactive Activities</Label>
+              <span className="text-xs text-muted-foreground">{interactiveActivities.length} embedded</span>
+            </div>
+            {interactiveActivities.map((ea, idx) => {
+              const typeInfo = ACTIVITY_TYPES.find(t => t.type === ea.activity_type);
+              return (
+                <div key={ea.activity_id} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-accent/50">
+                  <Puzzle className="h-3.5 w-3.5 text-primary shrink-0" />
+                  <span className="text-sm flex-1 truncate">{ea.title}</span>
+                  <span className="text-[10px] text-muted-foreground">{typeInfo?.label}</span>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6"
+                    title="Export H5P"
+                    onClick={async () => {
+                      const { data } = await supabase.from("h5p_activities").select("content, activity_type, title").eq("id", ea.activity_id).single();
+                      if (data) {
+                        await exportActivityAsH5P((data as any).title, (data as any).activity_type as ActivityType, (data as any).content as ActivityContent);
+                        sonnerToast.success("H5P file downloaded");
+                      }
+                    }}
+                  >
+                    <Download className="h-3 w-3" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive/70" onClick={() => setInteractiveActivities(interactiveActivities.filter((_, i) => i !== idx))}>
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              );
+            })}
+            <Button variant="outline" size="sm" className="w-full gap-1" onClick={() => setEmbedPickerOpen(true)}>
+              <Plus className="h-3 w-3" /> Embed Activity
+            </Button>
+            <EmbedActivityPicker
+              open={embedPickerOpen}
+              onOpenChange={setEmbedPickerOpen}
+              excludeIds={interactiveActivities.map(e => e.activity_id)}
+              onSelect={(a) => setInteractiveActivities([...interactiveActivities, { activity_id: a.id, title: a.title, activity_type: a.activity_type }])}
+            />
           </div>
 
           {/* Intro & Explanation (collapsible sections) */}
