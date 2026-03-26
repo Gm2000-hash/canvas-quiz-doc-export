@@ -55,15 +55,20 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
       setLoading(true);
       const { data: units } = await supabase
         .from('units')
-        .select('id')
+        .select('id, title, sort_order')
         .eq('user_id', user.id)
-        .eq('discipline', discipline);
+        .eq('discipline', discipline)
+        .order('sort_order');
 
       if (!units?.length) {
         setLessons([]);
         setLoading(false);
         return;
       }
+
+      const uMap: Record<string, string> = {};
+      units.forEach(u => { uMap[u.id] = u.title; });
+      setUnitMap(uMap);
 
       const unitIds = units.map(u => u.id);
       const { data: lessonData } = await supabase
