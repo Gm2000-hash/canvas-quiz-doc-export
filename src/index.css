@@ -166,6 +166,11 @@
   }
 }
 
+/* Clickable links inside curriculum reading viewer */
+.prose-links a {
+  @apply text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer;
+}
+
 /* iOS-style frosted glass effect for headers */
 @layer utilities {
   .glass-header {

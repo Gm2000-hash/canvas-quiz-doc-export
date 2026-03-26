@@ -159,14 +159,24 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
       ) : lesson ? (
         <div className="flex-1 flex flex-col overflow-hidden">
           <ScrollArea className="flex-1">
-            <div className="max-w-2xl mx-auto px-6 py-8 space-y-6">
+            <div
+              className="max-w-2xl mx-auto px-6 py-8 space-y-6 prose-links"
+              onClick={(e) => {
+                const target = e.target as HTMLElement;
+                if (target.tagName === 'A') {
+                  e.preventDefault();
+                  const href = (target as HTMLAnchorElement).href;
+                  if (href) window.open(href, '_blank', 'noopener');
+                }
+              }}
+            >
               {/* Lesson Title */}
               <div className="text-center space-y-2 pb-4 border-b border-border">
                 <h1 className="text-2xl font-bold text-foreground">{lesson.title}</h1>
                 {(lesson.objectives as string[])?.length > 0 && (
                   <div className="text-sm text-muted-foreground">
                     {(lesson.objectives as string[]).map((obj, i) => (
-                      <p key={i}>• {obj}</p>
+                      <p key={i} dangerouslySetInnerHTML={{ __html: `• ${obj}` }} />
                     ))}
                   </div>
                 )}
@@ -179,7 +189,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
                   <div className="space-y-1">
                     {(lesson.key_terms as { term: string; definition: string }[]).map((kt, i) => (
                       <p key={i} className="text-sm text-foreground">
-                        <span className="font-semibold">{kt.term}</span> — {kt.definition}
+                        <span className="font-semibold">{kt.term}</span> — <span dangerouslySetInnerHTML={{ __html: kt.definition }} />
                       </p>
                     ))}
                   </div>
@@ -191,7 +201,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-foreground">Introduction</h3>
                   {(lesson.intro as string[]).map((p, i) => (
-                    <p key={i} className="text-sm leading-relaxed text-foreground/90">{p}</p>
+                    <p key={i} className="text-sm leading-relaxed text-foreground/90" dangerouslySetInnerHTML={{ __html: p }} />
                   ))}
                 </div>
               )}
@@ -201,7 +211,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
                 <div className="space-y-3">
                   <h3 className="text-lg font-semibold text-foreground">Explanation</h3>
                   {(lesson.explanation as string[]).map((p, i) => (
-                    <p key={i} className="text-sm leading-relaxed text-foreground/90">{p}</p>
+                    <p key={i} className="text-sm leading-relaxed text-foreground/90" dangerouslySetInnerHTML={{ __html: p }} />
                   ))}
                 </div>
               )}
@@ -211,7 +221,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
                 <div className="space-y-3 border-t border-border pt-6">
                   <h3 className="text-lg font-semibold text-foreground">📖 {lesson.reading_title}</h3>
                   {(lesson.reading_paragraphs as string[])?.map((p, i) => (
-                    <p key={i} className="text-sm leading-relaxed text-foreground/90 indent-8">{p}</p>
+                    <p key={i} className="text-sm leading-relaxed text-foreground/90 indent-8" dangerouslySetInnerHTML={{ __html: p }} />
                   ))}
                 </div>
               )}
@@ -223,9 +233,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
                   {(lesson.reading_questions as any[]).map((q, i) => {
                     const text = typeof q === 'string' ? q : q.question || q.text || '';
                     return (
-                      <p key={i} className="text-sm text-foreground/80">
-                        {i + 1}. {text}
-                      </p>
+                      <p key={i} className="text-sm text-foreground/80" dangerouslySetInnerHTML={{ __html: `${i + 1}. ${text}` }} />
                     );
                   })}
                 </div>
@@ -240,7 +248,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
                     const options = q.options as string[] | undefined;
                     return (
                       <div key={i} className="space-y-1">
-                        <p className="text-sm font-medium text-foreground">{i + 1}. {text}</p>
+                        <p className="text-sm font-medium text-foreground" dangerouslySetInnerHTML={{ __html: `${i + 1}. ${text}` }} />
                         {options?.map((opt, oi) => (
                           <p key={oi} className="text-sm text-muted-foreground ml-4">
                             {String.fromCharCode(65 + oi)}) {opt}
