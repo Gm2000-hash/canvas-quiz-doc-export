@@ -22,6 +22,7 @@ interface LibraryBook {
   created_at: string;
   is_published: boolean;
   source_discipline: string | null;
+  cover_url: string | null;
 }
 
 interface ViewingBook {
