@@ -25,6 +25,15 @@ import { DragAndDropEditor } from "@/components/activities/editors/DragAndDropEd
 import { QuestionSetEditor } from "@/components/activities/editors/QuestionSetEditor";
 import { PersonalityQuizEditor } from "@/components/activities/editors/PersonalityQuizEditor";
 import { GameMapEditor } from "@/components/activities/editors/GameMapEditor";
+import { ColumnEditor } from "@/components/activities/editors/ColumnEditor";
+import { CoursePresentationEditor } from "@/components/activities/editors/CoursePresentationEditor";
+import { DocumentationToolEditor } from "@/components/activities/editors/DocumentationToolEditor";
+import { ImageHotspotsEditor } from "@/components/activities/editors/ImageHotspotsEditor";
+import { InteractiveBookEditor } from "@/components/activities/editors/InteractiveBookEditor";
+import { InteractiveVideoEditor } from "@/components/activities/editors/InteractiveVideoEditor";
+import { VirtualTourEditor } from "@/components/activities/editors/VirtualTourEditor";
+import { CrosswordEditor } from "@/components/activities/editors/CrosswordEditor";
+import { AgamottoEditor } from "@/components/activities/editors/AgamottoEditor";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -34,6 +43,8 @@ import type {
   MultipleChoiceContent, TrueFalseContent, SingleChoiceSetContent, MarkTheWordsContent,
   EssayContent, SummaryContent, DialogCardsContent, FlashcardsContent, MemoryGameContent,
   ArithmeticQuizContent, DragAndDropContent, QuestionSetContent, PersonalityQuizContent, GameMapContent,
+  ColumnContent, CoursePresentationContent, DocumentationToolContent, ImageHotspotsContent,
+  InteractiveBookContent, InteractiveVideoContent, VirtualTourContent, CrosswordContent, AgamottoContent,
 } from "@/lib/h5p-types";
 import { ArrowLeft, Save, Puzzle } from "lucide-react";
 
