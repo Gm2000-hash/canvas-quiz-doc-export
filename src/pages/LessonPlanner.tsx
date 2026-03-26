@@ -45,6 +45,9 @@ const LessonPlanner = () => {
   const { user, signOut } = useAuth();
   const { defaultGradeLevel, defaultDiscipline } = useProfileDefaults();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") === "curriculum" ? "curriculum" : "units";
+  const [activeTab, setActiveTab] = useState(initialTab);
   const { toast } = useToast();
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
