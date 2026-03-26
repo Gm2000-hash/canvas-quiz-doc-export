@@ -48,6 +48,10 @@ export default function ActivityBuilder() {
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState<ActivityType>("fill_in_blanks");
+  const [useAI, setUseAI] = useState(false);
+  const [sources, setSources] = useState<SourceOption[]>([]);
+  const [selectedSource, setSelectedSource] = useState<string>("");
+  const [generating, setGenerating] = useState(false);
 
   // Preview dialog
   const [previewActivity, setPreviewActivity] = useState<Activity | null>(null);
