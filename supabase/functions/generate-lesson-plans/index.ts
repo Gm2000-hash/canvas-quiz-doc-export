@@ -146,7 +146,7 @@ Make these detailed enough that a substitute teacher with no science background 
                         },
                         standards_json: {
                           type: "string",
-                          description: "JSON string of NGSS standards array. Each standard has code (string like MS-LS1-1) and description (the FULL COMPLETE text of the performance expectation). Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation to provide evidence that living things are made of cells...\"}]",
+                          description: "REQUIRED. JSON string of NGSS standards array with AT LEAST 1 standard. Each standard has code (string like MS-LS1-1) and description (the FULL COMPLETE text of the performance expectation). EVERY lesson MUST have at least one standard. Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation to provide evidence that living things are made of cells...\"}]",
                         },
                       },
                       required: ["title", "duration_minutes", "objectives", "activities", "materials", "assessment", "differentiation", "resources_json"],
