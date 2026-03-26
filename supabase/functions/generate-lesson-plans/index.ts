@@ -138,7 +138,7 @@ Make these detailed enough that a substitute teacher with no science background 
                         notes: { type: "string", description: "Teacher tips, common student misconceptions, and how to address them" },
                         vocabulary_json: {
                           type: "string",
-                          description: "JSON string of vocabulary array. Each item has term (string) and definition (string). Include 5-10 key science vocabulary terms. Example: [{\"term\":\"Photosynthesis\",\"definition\":\"The process by which green plants use sunlight...\"}]",
+                          description: "REQUIRED. JSON string of vocabulary array with AT LEAST 4 terms. Each item has term (string) and definition (string). Example: [{\"term\":\"Photosynthesis\",\"definition\":\"The process by which green plants use sunlight...\"}]",
                         },
                         resources_json: {
                           type: "string",
