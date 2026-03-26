@@ -85,6 +85,8 @@ Each lesson should be 50 minutes with EXACTLY 3 learning objectives and AT LEAST
 - Key vocabulary with definitions
 - Transition phrases between activities
 - At least 3 online resources per lesson (videos, readings, interactive activities) with real URLs
+- AT LEAST 4 key vocabulary terms per lesson with student-friendly definitions
+- AT LEAST 1 NGSS standard per lesson (this is MANDATORY — every lesson MUST have standards_json populated)
 
 Make these detailed enough that a substitute teacher with no science background could pick them up and teach effectively.`;
 
