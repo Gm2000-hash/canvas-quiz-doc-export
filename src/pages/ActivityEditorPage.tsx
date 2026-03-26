@@ -118,8 +118,9 @@ export default function ActivityEditorPage() {
       const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
         body: { activityType, sourceType: source.type, sourceId: source.id },
       });
-      if (fnError) throw fnError;
       if (fnData?.error) throw new Error(fnData.error);
+      if (fnError) throw fnError;
+      if (!fnData?.content) throw new Error("No content generated");
       setContent(fnData.content as ActivityContent);
       setShowAIDialog(false);
       toast({ title: "Content generated with AI!", description: "Review and save when ready." });

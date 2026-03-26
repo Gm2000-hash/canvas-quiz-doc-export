@@ -42,6 +42,7 @@ export default function ActivityBuilder() {
   const [newType, setNewType] = useState<ActivityType>("fill_in_blanks");
   const [useAI, setUseAI] = useState(false);
   const [sources, setSources] = useState<SourceOption[]>([]);
+  const [sourcesLoaded, setSourcesLoaded] = useState(false);
   const [selectedSource, setSelectedSource] = useState<string>("");
   const [generating, setGenerating] = useState(false);
 
@@ -63,7 +64,7 @@ export default function ActivityBuilder() {
 
   // Fetch sources when AI toggle is enabled
   useEffect(() => {
-    if (!useAI || !user || sources.length > 0) return;
+    if (!useAI || !user || sourcesLoaded) return;
     Promise.all([
       supabase.from("lesson_plans").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
       supabase.from("curriculum_lessons").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
@@ -73,9 +74,10 @@ export default function ActivityBuilder() {
         ...((cl.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "curriculum_lesson" as const })),
       ];
       setSources(opts);
+      setSourcesLoaded(true);
       if (opts.length > 0) setSelectedSource(opts[0].id);
     });
-  }, [useAI, user]);
+  }, [useAI, user, sourcesLoaded]);
 
   const handleCreate = async () => {
     if (!user || !newTitle.trim()) return;
@@ -88,8 +90,9 @@ export default function ActivityBuilder() {
         const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
           body: { activityType: newType, sourceType: source.type, sourceId: source.id },
         });
-        if (fnError) throw fnError;
         if (fnData?.error) throw new Error(fnData.error);
+        if (fnError) throw fnError;
+        if (!fnData?.content) throw new Error("No content generated");
         const content = fnData.content;
         const { data, error } = await supabase
           .from("h5p_activities")
@@ -249,8 +252,10 @@ export default function ActivityBuilder() {
                 {useAI && (
                   <div>
                     <Label className="text-xs text-muted-foreground">Source lesson or reading</Label>
-                    {sources.length === 0 ? (
+                    {!sourcesLoaded ? (
                       <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
+                    ) : sources.length === 0 ? (
+                      <p className="text-xs text-muted-foreground mt-1">No lessons found. Create a lesson plan or curriculum lesson first.</p>
                     ) : (
                       <Select value={selectedSource} onValueChange={setSelectedSource}>
                         <SelectTrigger className="mt-1.5">
