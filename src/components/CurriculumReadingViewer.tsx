@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useCanvasConfig } from '@/hooks/useCanvasConfig';
@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save } from 'lucide-react';
 import { toast } from 'sonner';
 import type { CurriculumLesson } from '@/hooks/useCurriculum';
 
@@ -17,17 +18,22 @@ interface CurriculumReadingViewerProps {
   discipline: string;
   title: string;
   onClose: () => void;
+  /** If provided, scroll to this lesson index on open */
+  initialLessonIndex?: number;
 }
 
-export function CurriculumReadingViewer({ discipline, title, onClose }: CurriculumReadingViewerProps) {
+export function CurriculumReadingViewer({ discipline, title, onClose, initialLessonIndex }: CurriculumReadingViewerProps) {
   const { user } = useAuth();
   const { config } = useCanvasConfig();
   const [lessons, setLessons] = useState<CurriculumLesson[]>([]);
   const [loading, setLoading] = useState(true);
-  const [currentLesson, setCurrentLesson] = useState(0);
+  const [currentLesson, setCurrentLesson] = useState(initialLessonIndex ?? 0);
   const [pushOpen, setPushOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showToc, setShowToc] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [editData, setEditData] = useState<Partial<CurriculumLesson> | null>(null);
 
   const filteredIndices = lessons.reduce<number[]>((acc, lesson, i) => {
     if (!searchQuery.trim()) { acc.push(i); return acc; }
@@ -46,7 +52,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
     if (!user) return;
     (async () => {
       setLoading(true);
-      // Get all units for this discipline
       const { data: units } = await supabase
         .from('units')
         .select('id')
@@ -72,7 +77,96 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
     })();
   }, [user, discipline]);
 
+  useEffect(() => {
+    if (initialLessonIndex != null && initialLessonIndex >= 0) {
+      setCurrentLesson(initialLessonIndex);
+    }
+  }, [initialLessonIndex]);
+
   const lesson = lessons[currentLesson];
+
+  // Enter edit mode
+  const startEditing = () => {
+    if (!lesson) return;
+    setEditData({
+      title: lesson.title,
+      objectives: [...(lesson.objectives as string[])],
+      key_terms: [...(lesson.key_terms as { term: string; definition: string }[])].map(kt => ({ ...kt })),
+      intro: [...(lesson.intro as string[])],
+      explanation: [...(lesson.explanation as string[])],
+      reading_title: lesson.reading_title,
+      reading_paragraphs: [...(lesson.reading_paragraphs as string[] || [])],
+      reading_questions: [...(lesson.reading_questions as any[] || [])].map(q => typeof q === 'string' ? q : { ...q }),
+    });
+    setEditing(true);
+  };
+
+  const cancelEditing = () => {
+    setEditing(false);
+    setEditData(null);
+  };
+
+  const saveEdits = async () => {
+    if (!lesson || !editData || !user) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from('curriculum_lessons')
+        .update({
+          title: editData.title,
+          objectives: editData.objectives as any,
+          key_terms: editData.key_terms as any,
+          intro: editData.intro as any,
+          explanation: editData.explanation as any,
+          reading_title: editData.reading_title,
+          reading_paragraphs: editData.reading_paragraphs as any,
+          reading_questions: editData.reading_questions as any,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', lesson.id)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+
+      // Update local state
+      const updated = [...lessons];
+      updated[currentLesson] = { ...lesson, ...editData } as CurriculumLesson;
+      setLessons(updated);
+      setEditing(false);
+      setEditData(null);
+      toast.success('Reading saved');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to save');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Helper to update editData arrays
+  const updateEditArray = (field: keyof CurriculumLesson, index: number, value: string) => {
+    if (!editData) return;
+    const arr = [...(editData[field] as string[])];
+    arr[index] = value;
+    setEditData({ ...editData, [field]: arr });
+  };
+
+  const updateEditKeyTerm = (index: number, key: 'term' | 'definition', value: string) => {
+    if (!editData) return;
+    const terms = [...(editData.key_terms as { term: string; definition: string }[])];
+    terms[index] = { ...terms[index], [key]: value };
+    setEditData({ ...editData, key_terms: terms });
+  };
+
+  const updateEditQuestion = (index: number, value: string) => {
+    if (!editData) return;
+    const questions = [...(editData.reading_questions as any[])];
+    if (typeof questions[index] === 'string') {
+      questions[index] = value;
+    } else {
+      questions[index] = { ...questions[index], question: value };
+    }
+    setEditData({ ...editData, reading_questions: questions });
+  };
 
   return (
     <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex flex-col">
@@ -95,7 +189,22 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
               <List className="h-4 w-4" />
             </Button>
           )}
-          {config && lessons.length > 0 && (
+          {/* Edit / Save toggle */}
+          {lesson && !editing && (
+            <Button variant="outline" size="sm" className="gap-2" onClick={startEditing}>
+              <Pencil className="h-3.5 w-3.5" /> Edit
+            </Button>
+          )}
+          {editing && (
+            <>
+              <Button variant="ghost" size="sm" onClick={cancelEditing} disabled={saving}>Cancel</Button>
+              <Button size="sm" className="gap-2" onClick={saveEdits} disabled={saving}>
+                {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
+                Save
+              </Button>
+            </>
+          )}
+          {config && lessons.length > 0 && !editing && (
             <Button variant="outline" size="sm" className="gap-2" onClick={() => setPushOpen(true)}>
               <Upload className="h-3.5 w-3.5" /> Push to Canvas
             </Button>
@@ -126,7 +235,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
                 filteredIndices.map(idx => (
                   <button
                     key={idx}
-                    onClick={() => { setCurrentLesson(idx); setShowToc(false); }}
+                    onClick={() => { setCurrentLesson(idx); setShowToc(false); if (editing) cancelEditing(); }}
                     className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
                       idx === currentLesson
                         ? 'bg-primary/10 text-primary font-medium'
@@ -162,6 +271,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
             <div
               className="max-w-2xl mx-auto px-6 py-8 space-y-6 prose-links"
               onClick={(e) => {
+                if (editing) return;
                 const target = e.target as HTMLElement;
                 if (target.tagName === 'A') {
                   e.preventDefault();
@@ -170,94 +280,225 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
                 }
               }}
             >
-              {/* Lesson Title */}
-              <div className="text-center space-y-2 pb-4 border-b border-border">
-                <h1 className="text-2xl font-bold text-foreground">{lesson.title}</h1>
-                {(lesson.objectives as string[])?.length > 0 && (
-                  <div className="text-sm text-muted-foreground">
-                    {(lesson.objectives as string[]).map((obj, i) => (
-                      <p key={i} dangerouslySetInnerHTML={{ __html: `• ${obj}` }} />
-                    ))}
+              {editing && editData ? (
+                /* ─── EDIT MODE ─── */
+                <>
+                  {/* Title */}
+                  <div className="text-center space-y-2 pb-4 border-b border-border">
+                    <Input
+                      value={editData.title || ''}
+                      onChange={e => setEditData({ ...editData, title: e.target.value })}
+                      className="text-2xl font-bold text-center border-dashed"
+                    />
                   </div>
-                )}
-              </div>
 
-              {/* Key Terms */}
-              {(lesson.key_terms as any[])?.length > 0 && (
-                <div className="rounded-xl bg-primary/5 border border-primary/10 p-4 space-y-2">
-                  <h3 className="text-sm font-semibold text-primary">Key Terms</h3>
-                  <div className="space-y-1">
-                    {(lesson.key_terms as { term: string; definition: string }[]).map((kt, i) => (
-                      <p key={i} className="text-sm text-foreground">
-                        <span className="font-semibold">{kt.term}</span> — <span dangerouslySetInnerHTML={{ __html: kt.definition }} />
-                      </p>
-                    ))}
+                  {/* Objectives */}
+                  {(editData.objectives as string[])?.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-muted-foreground uppercase">Objectives</Label>
+                      {(editData.objectives as string[]).map((obj, i) => (
+                        <Input
+                          key={i}
+                          value={obj}
+                          onChange={e => updateEditArray('objectives', i, e.target.value)}
+                          className="text-sm border-dashed"
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Key Terms */}
+                  {(editData.key_terms as any[])?.length > 0 && (
+                    <div className="rounded-xl bg-primary/5 border border-primary/10 p-4 space-y-3">
+                      <Label className="text-xs font-semibold text-primary uppercase">Key Terms</Label>
+                      {(editData.key_terms as { term: string; definition: string }[]).map((kt, i) => (
+                        <div key={i} className="flex gap-2">
+                          <Input
+                            value={kt.term}
+                            onChange={e => updateEditKeyTerm(i, 'term', e.target.value)}
+                            className="w-1/3 text-sm font-semibold border-dashed"
+                            placeholder="Term"
+                          />
+                          <Input
+                            value={kt.definition}
+                            onChange={e => updateEditKeyTerm(i, 'definition', e.target.value)}
+                            className="flex-1 text-sm border-dashed"
+                            placeholder="Definition"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Introduction */}
+                  {(editData.intro as string[])?.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-muted-foreground uppercase">Introduction</Label>
+                      {(editData.intro as string[]).map((p, i) => (
+                        <Textarea
+                          key={i}
+                          value={p}
+                          onChange={e => updateEditArray('intro', i, e.target.value)}
+                          rows={3}
+                          className="text-sm border-dashed"
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Explanation */}
+                  {(editData.explanation as string[])?.length > 0 && (
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-muted-foreground uppercase">Explanation</Label>
+                      {(editData.explanation as string[]).map((p, i) => (
+                        <Textarea
+                          key={i}
+                          value={p}
+                          onChange={e => updateEditArray('explanation', i, e.target.value)}
+                          rows={3}
+                          className="text-sm border-dashed"
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Reading Passage */}
+                  {editData.reading_title != null && (
+                    <div className="space-y-2 border-t border-border pt-6">
+                      <div className="flex items-center gap-2">
+                        <span>📖</span>
+                        <Input
+                          value={editData.reading_title || ''}
+                          onChange={e => setEditData({ ...editData, reading_title: e.target.value })}
+                          className="text-lg font-semibold border-dashed"
+                          placeholder="Reading title"
+                        />
+                      </div>
+                      {(editData.reading_paragraphs as string[])?.map((p, i) => (
+                        <Textarea
+                          key={i}
+                          value={p}
+                          onChange={e => updateEditArray('reading_paragraphs', i, e.target.value)}
+                          rows={4}
+                          className="text-sm border-dashed"
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Reading Questions */}
+                  {(editData.reading_questions as any[])?.length > 0 && (
+                    <div className="space-y-2 rounded-xl bg-muted/50 p-4">
+                      <Label className="text-xs font-semibold text-muted-foreground uppercase">Comprehension Questions</Label>
+                      {(editData.reading_questions as any[]).map((q, i) => {
+                        const text = typeof q === 'string' ? q : q.question || q.text || '';
+                        return (
+                          <div key={i} className="flex gap-2 items-center">
+                            <span className="text-xs text-muted-foreground w-5 shrink-0">{i + 1}.</span>
+                            <Input
+                              value={text}
+                              onChange={e => updateEditQuestion(i, e.target.value)}
+                              className="text-sm border-dashed"
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* ─── READ MODE ─── */
+                <>
+                  {/* Lesson Title */}
+                  <div className="text-center space-y-2 pb-4 border-b border-border">
+                    <h1 className="text-2xl font-bold text-foreground">{lesson.title}</h1>
+                    {(lesson.objectives as string[])?.length > 0 && (
+                      <div className="text-sm text-muted-foreground">
+                        {(lesson.objectives as string[]).map((obj, i) => (
+                          <p key={i} dangerouslySetInnerHTML={{ __html: `• ${obj}` }} />
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
 
-              {/* Introduction */}
-              {(lesson.intro as string[])?.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-lg font-semibold text-foreground">Introduction</h3>
-                  {(lesson.intro as string[]).map((p, i) => (
-                    <p key={i} className="text-sm leading-relaxed text-foreground/90" dangerouslySetInnerHTML={{ __html: p }} />
-                  ))}
-                </div>
-              )}
-
-              {/* Explanation */}
-              {(lesson.explanation as string[])?.length > 0 && (
-                <div className="space-y-3">
-                  <h3 className="text-lg font-semibold text-foreground">Explanation</h3>
-                  {(lesson.explanation as string[]).map((p, i) => (
-                    <p key={i} className="text-sm leading-relaxed text-foreground/90" dangerouslySetInnerHTML={{ __html: p }} />
-                  ))}
-                </div>
-              )}
-
-              {/* Reading Passage */}
-              {lesson.reading_title && (
-                <div className="space-y-3 border-t border-border pt-6">
-                  <h3 className="text-lg font-semibold text-foreground">📖 {lesson.reading_title}</h3>
-                  {(lesson.reading_paragraphs as string[])?.map((p, i) => (
-                    <p key={i} className="text-sm leading-relaxed text-foreground/90 indent-8" dangerouslySetInnerHTML={{ __html: p }} />
-                  ))}
-                </div>
-              )}
-
-              {/* Reading Questions */}
-              {(lesson.reading_questions as any[])?.length > 0 && (
-                <div className="space-y-3 rounded-xl bg-muted/50 p-4">
-                  <h3 className="text-sm font-semibold text-foreground">Comprehension Questions</h3>
-                  {(lesson.reading_questions as any[]).map((q, i) => {
-                    const text = typeof q === 'string' ? q : q.question || q.text || '';
-                    return (
-                      <p key={i} className="text-sm text-foreground/80" dangerouslySetInnerHTML={{ __html: `${i + 1}. ${text}` }} />
-                    );
-                  })}
-                </div>
-              )}
-
-              {/* Quiz */}
-              {(lesson.quiz as any[])?.length > 0 && (
-                <div className="space-y-3 border-t border-border pt-6">
-                  <h3 className="text-lg font-semibold text-foreground">Quiz</h3>
-                  {(lesson.quiz as any[]).map((q, i) => {
-                    const text = typeof q === 'string' ? q : q.question || q.text || '';
-                    const options = q.options as string[] | undefined;
-                    return (
-                      <div key={i} className="space-y-1">
-                        <p className="text-sm font-medium text-foreground" dangerouslySetInnerHTML={{ __html: `${i + 1}. ${text}` }} />
-                        {options?.map((opt, oi) => (
-                          <p key={oi} className="text-sm text-muted-foreground ml-4">
-                            {String.fromCharCode(65 + oi)}) {opt}
+                  {/* Key Terms */}
+                  {(lesson.key_terms as any[])?.length > 0 && (
+                    <div className="rounded-xl bg-primary/5 border border-primary/10 p-4 space-y-2">
+                      <h3 className="text-sm font-semibold text-primary">Key Terms</h3>
+                      <div className="space-y-1">
+                        {(lesson.key_terms as { term: string; definition: string }[]).map((kt, i) => (
+                          <p key={i} className="text-sm text-foreground">
+                            <span className="font-semibold">{kt.term}</span> — <span dangerouslySetInnerHTML={{ __html: kt.definition }} />
                           </p>
                         ))}
                       </div>
-                    );
-                  })}
-                </div>
+                    </div>
+                  )}
+
+                  {/* Introduction */}
+                  {(lesson.intro as string[])?.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-foreground">Introduction</h3>
+                      {(lesson.intro as string[]).map((p, i) => (
+                        <p key={i} className="text-sm leading-relaxed text-foreground/90" dangerouslySetInnerHTML={{ __html: p }} />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Explanation */}
+                  {(lesson.explanation as string[])?.length > 0 && (
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-foreground">Explanation</h3>
+                      {(lesson.explanation as string[]).map((p, i) => (
+                        <p key={i} className="text-sm leading-relaxed text-foreground/90" dangerouslySetInnerHTML={{ __html: p }} />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Reading Passage */}
+                  {lesson.reading_title && (
+                    <div className="space-y-3 border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold text-foreground">📖 {lesson.reading_title}</h3>
+                      {(lesson.reading_paragraphs as string[])?.map((p, i) => (
+                        <p key={i} className="text-sm leading-relaxed text-foreground/90 indent-8" dangerouslySetInnerHTML={{ __html: p }} />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Reading Questions */}
+                  {(lesson.reading_questions as any[])?.length > 0 && (
+                    <div className="space-y-3 rounded-xl bg-muted/50 p-4">
+                      <h3 className="text-sm font-semibold text-foreground">Comprehension Questions</h3>
+                      {(lesson.reading_questions as any[]).map((q, i) => {
+                        const text = typeof q === 'string' ? q : q.question || q.text || '';
+                        return (
+                          <p key={i} className="text-sm text-foreground/80" dangerouslySetInnerHTML={{ __html: `${i + 1}. ${text}` }} />
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Quiz */}
+                  {(lesson.quiz as any[])?.length > 0 && (
+                    <div className="space-y-3 border-t border-border pt-6">
+                      <h3 className="text-lg font-semibold text-foreground">Quiz</h3>
+                      {(lesson.quiz as any[]).map((q, i) => {
+                        const text = typeof q === 'string' ? q : q.question || q.text || '';
+                        const options = q.options as string[] | undefined;
+                        return (
+                          <div key={i} className="space-y-1">
+                            <p className="text-sm font-medium text-foreground" dangerouslySetInnerHTML={{ __html: `${i + 1}. ${text}` }} />
+                            {options?.map((opt, oi) => (
+                              <p key={oi} className="text-sm text-muted-foreground ml-4">
+                                {String.fromCharCode(65 + oi)}) {opt}
+                              </p>
+                            ))}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </ScrollArea>
@@ -267,8 +508,8 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
             <Button
               variant="outline"
               size="sm"
-              disabled={currentLesson === 0}
-              onClick={() => setCurrentLesson(c => c - 1)}
+              disabled={currentLesson === 0 || editing}
+              onClick={() => { setCurrentLesson(c => c - 1); if (editing) cancelEditing(); }}
               className="gap-2"
             >
               <ChevronLeft className="h-4 w-4" /> Previous
@@ -279,8 +520,8 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
             <Button
               variant="outline"
               size="sm"
-              disabled={currentLesson >= lessons.length - 1}
-              onClick={() => setCurrentLesson(c => c + 1)}
+              disabled={currentLesson >= lessons.length - 1 || editing}
+              onClick={() => { setCurrentLesson(c => c + 1); if (editing) cancelEditing(); }}
               className="gap-2"
             >
               Next <ChevronRight className="h-4 w-4" />
