@@ -172,16 +172,32 @@
 }
 
 /* PDF annotation links clickable above flipbook */
-.pdf-links .react-pdf__Page__annotations {
+.pdf-links .react-pdf__Page__annotations,
+.pdf-links .react-pdf__Page__annotations.annotationLayer {
   position: absolute;
   inset: 0;
-  z-index: 10;
-  pointer-events: auto;
+  z-index: 50;
+  pointer-events: none;
 }
 
-.pdf-links .react-pdf__Page__annotations a {
-  pointer-events: auto;
+.pdf-links .react-pdf__Page__annotations a,
+.pdf-links .react-pdf__Page__annotations .linkAnnotation,
+.pdf-links .annotationLayer a,
+.pdf-links .annotationLayer section {
+  pointer-events: auto !important;
   cursor: pointer;
+  z-index: 51;
+  position: relative;
+}
+
+/* Ensure flipbook doesn't block annotation clicks */
+.flipbook-container .stf__item {
+  overflow: visible;
+}
+
+.pdf-links .annotationLayer a[href] {
+  color: transparent;
+  display: block;
 }
 
 /* iOS-style frosted glass effect for headers */
