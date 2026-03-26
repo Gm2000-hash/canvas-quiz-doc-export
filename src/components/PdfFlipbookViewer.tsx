@@ -36,7 +36,7 @@ interface FlipPageProps {
 
 interface LinkAnnotation {
   url: string;
-  rect: [number, number, number, number]; // [x1, y1, x2, y2] in PDF coords
+  rect: [number, number, number, number];
 }
 
 const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width, height, pdfDoc }, ref) => {
@@ -46,24 +46,23 @@ const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width,
   useEffect(() => {
     if (!pdfDoc) return;
     let cancelled = false;
-    (async () => {
-      try {
-        const page = await pdfDoc.getPage(pageNumber);
-        const vp = page.getViewport({ scale: 1 });
-        if (!cancelled) setViewport({ width: vp.width, height: vp.height });
-
-        const annotations = await page.getAnnotations();
-        const linkAnnots: LinkAnnotation[] = [];
-        for (const annot of annotations) {
-          if (annot.subtype === 'Link' && annot.url) {
-            linkAnnots.push({ url: annot.url, rect: annot.rect });
-          }
+    pdfDoc.getPage(pageNumber).then((page: any) => {
+      if (cancelled) return;
+      const vp = page.getViewport({ scale: 1 });
+      setViewport({ width: vp.width, height: vp.height });
+      return page.getAnnotations();
+    }).then((annotations: any[]) => {
+      if (cancelled || !annotations) return;
+      const found: LinkAnnotation[] = [];
+      for (const a of annotations) {
+        if (a.subtype === 'Link' && a.url) {
+          found.push({ url: a.url, rect: a.rect });
         }
-        if (!cancelled) setLinks(linkAnnots);
-      } catch { /* ignore */ }
-    })();
+      }
+      setLinks(found);
+    }).catch(() => {});
     return () => { cancelled = true; };
-  }, [pageNumber]);
+  }, [pageNumber, pdfDoc]);
 
   const scaleX = viewport ? width / viewport.width : 1;
   const scaleY = viewport ? height / viewport.height : 1;
@@ -78,28 +77,24 @@ const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width,
         renderAnnotationLayer={false}
         className="pdf-page-render"
       />
-      {/* Render clickable link overlays */}
       {viewport && links.map((link, i) => {
         const left = link.rect[0] * scaleX;
         const bottom = link.rect[1] * scaleY;
         const right = link.rect[2] * scaleX;
         const top = link.rect[3] * scaleY;
-        const w = right - left;
-        const h = top - bottom;
-        const y = height - top; // PDF coords are bottom-up
         return (
           <a
             key={i}
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
-            onClick={(e) => { e.stopPropagation(); }}
+            onClick={(e) => e.stopPropagation()}
             style={{
               position: 'absolute',
               left: `${left}px`,
-              top: `${y}px`,
-              width: `${w}px`,
-              height: `${h}px`,
+              top: `${height - top}px`,
+              width: `${right - left}px`,
+              height: `${top - bottom}px`,
               zIndex: 50,
               cursor: 'pointer',
             }}
