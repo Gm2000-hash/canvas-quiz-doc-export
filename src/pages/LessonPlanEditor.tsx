@@ -255,6 +255,17 @@ const LessonPlanEditor = () => {
           }}
           onCopyToField={handleCopyToField}
         />
+        {unitDiscipline && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="gap-1.5 rounded-xl"
+            onClick={() => setReadingOpen(true)}
+          >
+            <BookOpenCheck className="h-4 w-4" />
+            <span className="hidden sm:inline">Open Reading</span>
+          </Button>
+        )}
         <Button
           size="sm"
           variant="outline"
