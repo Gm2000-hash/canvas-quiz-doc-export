@@ -484,6 +484,10 @@ function LessonEditorDialog({
   const [explanation, setExplanation] = useState<string[]>(lesson.explanation || []);
   const [readingTitle, setReadingTitle] = useState(lesson.reading_title || "");
   const [readingParagraphs, setReadingParagraphs] = useState<string[]>(lesson.reading_paragraphs || []);
+  const [interactiveActivities, setInteractiveActivities] = useState<{ activity_id: string; title: string; activity_type: string }[]>(
+    (lesson.interactive_activities as any[]) || []
+  );
+  const [embedPickerOpen, setEmbedPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
