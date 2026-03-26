@@ -90,6 +90,8 @@ const LessonPlanEditor = () => {
   const [standardsOpen, setStandardsOpen] = useState(false);
   const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
+  const [embedPickerOpen, setEmbedPickerOpen] = useState(false);
+  const [previewingActivity, setPreviewingActivity] = useState<{ type: ActivityType; content: ActivityContent } | null>(null);
   const [unitDiscipline, setUnitDiscipline] = useState<string | null>(null);
   const [unitTitle, setUnitTitle] = useState('');
 
