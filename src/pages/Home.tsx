@@ -262,7 +262,7 @@ export default function Home() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-semibold text-foreground group-hover:text-earth-terracotta transition-colors">
+                        <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
                           {card.title}
                         </h3>
                         <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
