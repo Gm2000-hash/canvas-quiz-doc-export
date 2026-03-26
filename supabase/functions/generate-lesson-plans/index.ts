@@ -179,9 +179,22 @@ Make these detailed enough that a substitute teacher with no science background 
 
     const result = await response.json();
     const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) throw new Error("No tool call in response");
+    let parsed: any;
 
-    const parsed = JSON.parse(toolCall.function.arguments);
+    if (toolCall) {
+      parsed = JSON.parse(toolCall.function.arguments);
+    } else {
+      // Fallback: try to extract JSON from the message content
+      const content = result.choices?.[0]?.message?.content || "";
+      console.warn("No tool call in response, attempting to parse content as JSON");
+      const jsonMatch = content.match(/\{[\s\S]*"lessons"[\s\S]*\}/);
+      if (jsonMatch) {
+        parsed = JSON.parse(jsonMatch[0]);
+      } else {
+        console.error("AI response had no tool call and no parseable JSON:", content.substring(0, 500));
+        throw new Error("AI did not return structured lesson data. Please try again.");
+      }
+    }
 
     const lessons = parsed.lessons.map((l: any) => {
       let activities = [];
