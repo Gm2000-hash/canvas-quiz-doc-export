@@ -3,23 +3,29 @@ import { cn } from "@/lib/utils";
 import avatarDog from "@/assets/avatars/dog.png";
 import avatarSquirrel from "@/assets/avatars/squirrel.png";
 import avatarCat from "@/assets/avatars/cat.png";
-import avatarButterfly from "@/assets/avatars/butterfly.png";
-import avatarSun from "@/assets/avatars/sun.png";
-import avatarFish from "@/assets/avatars/fish.png";
 import avatarBear from "@/assets/avatars/man.png";
 import avatarWoman from "@/assets/avatars/woman.png";
 import avatarTurtle from "@/assets/avatars/turtle.png";
 import avatarSkateboard from "@/assets/avatars/skateboard.png";
-import avatarTree from "@/assets/avatars/tree.png";
+import avatarKoala from "@/assets/avatars/koala.png";
+import avatarKangaroo from "@/assets/avatars/kangaroo.png";
+import avatarPenguin from "@/assets/avatars/penguin.png";
+import avatarSkategirl from "@/assets/avatars/skategirl.png";
+import avatarRabbit from "@/assets/avatars/rabbit.png";
+import avatarPanda from "@/assets/avatars/panda.png";
+import avatarElephant from "@/assets/avatars/elephant.png";
 
 export const PRESET_AVATARS = [
   { src: avatarDog, label: "Dog" },
   { src: avatarSquirrel, label: "Squirrel" },
   { src: avatarCat, label: "Cat" },
-  { src: avatarButterfly, label: "Deer" },
-  { src: avatarSun, label: "Snake" },
-  { src: avatarTree, label: "Tree" },
-  { src: avatarFish, label: "Fish" },
+  { src: avatarKoala, label: "Koala" },
+  { src: avatarKangaroo, label: "Kangaroo" },
+  { src: avatarPenguin, label: "Penguin" },
+  { src: avatarSkategirl, label: "Skater Girl" },
+  { src: avatarRabbit, label: "Rabbit" },
+  { src: avatarPanda, label: "Panda" },
+  { src: avatarElephant, label: "Elephant" },
   { src: avatarBear, label: "Bear" },
   { src: avatarWoman, label: "Woman" },
   { src: avatarTurtle, label: "Turtle" },
