@@ -63,8 +63,7 @@ serve(async (req) => {
 IMPORTANT — Connected Reading:
 Also generate a "reading" object with:
 - reading_title: A compelling title for a standalone reading passage connected to the lesson topic
-- reading_paragraphs: Array of 8-12 detailed, engaging paragraphs that form a cohesive reading passage. Write at a middle-school reading level with rich vocabulary.
-- reading_questions: Array of 4-5 comprehension questions about the reading, each with {question_text, question_type, answers, points_possible}.`;
+- reading_paragraphs: Array of 8-12 detailed, engaging paragraphs that form a cohesive reading passage. Write at a middle-school reading level with rich vocabulary.`;
 
     const formatInstructions = format === "textbook"
       ? `Output the lesson:
