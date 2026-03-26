@@ -26,8 +26,9 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   const { user } = useAuth();
   const { config } = useCanvasConfig();
   const [lessons, setLessons] = useState<CurriculumLesson[]>([]);
+  const [unitMap, setUnitMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
-  const [currentLesson, setCurrentLesson] = useState(initialLessonIndex ?? 0);
+  const [currentLesson, setCurrentLesson] = useState<number | null>(initialLessonIndex ?? null);
   const [pushOpen, setPushOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showToc, setShowToc] = useState(false);
