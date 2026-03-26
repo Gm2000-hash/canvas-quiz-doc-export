@@ -89,7 +89,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
     }
   }, [initialLessonIndex]);
 
-  const lesson = lessons[currentLesson];
+  const lesson = currentLesson !== null ? lessons[currentLesson] : undefined;
 
   // Enter edit mode
   const startEditing = () => {
