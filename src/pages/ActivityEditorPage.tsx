@@ -52,6 +52,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useActivityStandards, type ActivityStandard } from "@/hooks/useActivityStandards";
 import { Badge } from "@/components/ui/badge";
+import { ActivityStandardsPicker } from "@/components/ActivityStandardsPicker";
 
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
 
