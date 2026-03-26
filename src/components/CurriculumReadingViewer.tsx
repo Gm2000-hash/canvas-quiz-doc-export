@@ -26,6 +26,21 @@ export function CurriculumReadingViewer({ discipline, title, onClose }: Curricul
   const [loading, setLoading] = useState(true);
   const [currentLesson, setCurrentLesson] = useState(0);
   const [pushOpen, setPushOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showToc, setShowToc] = useState(false);
+
+  const filteredIndices = lessons.reduce<number[]>((acc, lesson, i) => {
+    if (!searchQuery.trim()) { acc.push(i); return acc; }
+    const q = searchQuery.toLowerCase();
+    const titleMatch = lesson.title.toLowerCase().includes(q);
+    const termsMatch = (lesson.key_terms as { term: string; definition: string }[])?.some(
+      kt => kt.term.toLowerCase().includes(q) || kt.definition.toLowerCase().includes(q)
+    );
+    const readingMatch = lesson.reading_title?.toLowerCase().includes(q);
+    const textMatch = (lesson.reading_paragraphs as string[])?.some(p => p.toLowerCase().includes(q));
+    if (titleMatch || termsMatch || readingMatch || textMatch) acc.push(i);
+    return acc;
+  }, []);
 
   useEffect(() => {
     if (!user) return;
