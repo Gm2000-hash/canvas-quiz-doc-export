@@ -496,24 +496,35 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                   {/* Lesson Title */}
                   <div className="text-center space-y-2 pb-4 border-b border-border">
                     <h1 className="text-2xl font-bold text-foreground">{lesson.title}</h1>
-                    {(lesson.objectives as string[])?.length > 0 && (
-                      <div className="text-sm text-muted-foreground">
-                        {(lesson.objectives as string[]).map((obj, i) => (
-                          <p key={i} dangerouslySetInnerHTML={{ __html: `• ${obj}` }} />
-                        ))}
-                      </div>
-                    )}
+                    {(() => {
+                      const raw = (lesson.objectives as string[]) || [];
+                      const seen = new Set<string>();
+                      const unique = raw.filter(o => {
+                        const key = o.toLowerCase().trim();
+                        if (seen.has(key)) return false;
+                        seen.add(key);
+                        return true;
+                      });
+                      return unique.length > 0 ? (
+                        <div className="text-sm text-muted-foreground leading-relaxed">
+                          {unique.map((obj, i) => (
+                            <p key={i} dangerouslySetInnerHTML={{ __html: `• ${obj}` }} />
+                          ))}
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
 
                   {/* Key Terms */}
                   {(lesson.key_terms as any[])?.length > 0 && (
-                    <div className="rounded-xl bg-primary/5 border border-primary/10 p-4 space-y-2">
-                      <h3 className="text-sm font-semibold text-primary">Key Terms</h3>
-                      <div className="space-y-1">
+                    <div className="space-y-3">
+                      <h3 className="text-sm font-semibold text-primary uppercase tracking-wide">Key Terms</h3>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {(lesson.key_terms as { term: string; definition: string }[]).map((kt, i) => (
-                          <p key={i} className="text-sm text-foreground">
-                            <span className="font-semibold">{kt.term}</span> — <span dangerouslySetInnerHTML={{ __html: kt.definition }} />
-                          </p>
+                          <div key={i} className="rounded-2xl border border-primary/15 bg-primary/5 p-4">
+                            <p className="text-sm font-bold text-foreground mb-1">{kt.term}</p>
+                            <p className="text-sm leading-relaxed text-muted-foreground" dangerouslySetInnerHTML={{ __html: kt.definition }} />
+                          </div>
                         ))}
                       </div>
                     </div>
