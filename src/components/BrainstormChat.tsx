@@ -67,8 +67,16 @@ function renderMarkdown(text: string) {
   return <div className="space-y-0.5">{elements}</div>;
 }
 
-function inlineMarkdown(text: string): string {
+function escapeHtml(text: string): string {
   return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function inlineMarkdown(text: string): string {
+  return escapeHtml(text)
     .replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>")
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     .replace(/`(.+?)`/g, '<code class="bg-background/50 px-1 py-0.5 rounded text-xs font-mono">$1</code>');
