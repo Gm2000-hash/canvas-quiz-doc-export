@@ -14,6 +14,7 @@ import avatarSkategirl from "@/assets/avatars/skategirl.png";
 import avatarRabbit from "@/assets/avatars/rabbit.png";
 import avatarPanda from "@/assets/avatars/panda.png";
 import avatarElephant from "@/assets/avatars/elephant.png";
+import avatarPangolin from "@/assets/avatars/pangolin.png";
 
 export const PRESET_AVATARS = [
   { src: avatarDog, label: "Dog" },
@@ -25,7 +26,8 @@ export const PRESET_AVATARS = [
   { src: avatarSkategirl, label: "Skater Girl" },
   { src: avatarRabbit, label: "Naiad" },
   { src: avatarPanda, label: "Panda" },
-  { src: avatarElephant, label: "Elephant" },
+  { src: avatarElephant, label: "Ferret" },
+  { src: avatarPangolin, label: "Pangolin" },
   { src: avatarBear, label: "Bear" },
   { src: avatarWoman, label: "Woman" },
   { src: avatarTurtle, label: "Ninja Mongoose" },
