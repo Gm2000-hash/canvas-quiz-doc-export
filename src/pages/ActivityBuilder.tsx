@@ -238,7 +238,7 @@ export default function ActivityBuilder() {
             </div>
 
             {/* AI Generation Toggle */}
-            {AI_SUPPORTED_TYPES.includes(newType) && (
+            {true && (
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <Label className="flex items-center gap-2 text-sm font-medium cursor-pointer">

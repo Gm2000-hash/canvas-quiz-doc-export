@@ -92,7 +92,7 @@ export default function ActivityEditorPage() {
   };
 
   const typeInfo = ACTIVITY_TYPES.find(t => t.type === activityType);
-  const supportsAI = AI_SUPPORTED_TYPES.includes(activityType);
+  const supportsAI = true; // All activity types now support AI generation
 
   const openAIDialog = async () => {
     if (sources.length === 0 && user) {
