@@ -294,6 +294,18 @@ function UnitSection({
 
       {isExpanded && (
         <div className="border-t border-border">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-1.5 px-4 py-2 text-xs text-muted-foreground bg-muted/20 border-b border-border/50">
+            <BookOpen className="h-3 w-3" />
+            <span>Curriculum</span>
+            <ChevronRight className="h-3 w-3" />
+            <button
+              onClick={() => navigate(`/units/${unit.id}`)}
+              className="font-medium text-primary hover:underline transition-colors"
+            >
+              {unit.title}
+            </button>
+          </div>
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
