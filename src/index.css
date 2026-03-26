@@ -171,6 +171,19 @@
   @apply text-primary underline underline-offset-2 hover:text-primary/80 transition-colors cursor-pointer;
 }
 
+/* PDF annotation links clickable above flipbook */
+.pdf-links .react-pdf__Page__annotations {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  pointer-events: auto;
+}
+
+.pdf-links .react-pdf__Page__annotations a {
+  pointer-events: auto;
+  cursor: pointer;
+}
+
 /* iOS-style frosted glass effect for headers */
 @layer utilities {
   .glass-header {

@@ -34,13 +34,13 @@ interface FlipPageProps {
 }
 
 const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width, height }, ref) => (
-  <div ref={ref} className="bg-white flex items-center justify-center overflow-hidden">
+  <div ref={ref} className="bg-white flex items-center justify-center overflow-hidden relative pdf-links">
     <Page
       pageNumber={pageNumber}
       width={width}
       height={height}
       renderTextLayer={false}
-      renderAnnotationLayer={false}
+      renderAnnotationLayer={true}
       className="pdf-page-render"
     />
   </div>
