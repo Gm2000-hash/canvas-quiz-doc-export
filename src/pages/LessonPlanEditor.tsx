@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical, BookOpenCheck } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { ActivityList } from "@/components/ActivityList";
 import { BrainstormChat, type LessonField } from "@/components/BrainstormChat";
@@ -18,6 +18,7 @@ import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { exportLessonToDocx } from "@/lib/export-lesson-docx";
 import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { CurriculumReadingViewer } from "@/components/CurriculumReadingViewer";
 import type { Json } from "@/integrations/supabase/types";
 
 interface Activity {
