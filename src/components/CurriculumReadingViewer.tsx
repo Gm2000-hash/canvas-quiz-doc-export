@@ -155,16 +155,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
     setEditData({ ...editData, key_terms: terms });
   };
 
-  const updateEditQuestion = (index: number, value: string) => {
-    if (!editData) return;
-    const questions = [...(editData.reading_questions as any[])];
-    if (typeof questions[index] === 'string') {
-      questions[index] = value;
-    } else {
-      questions[index] = { ...questions[index], question: value };
-    }
-    setEditData({ ...editData, reading_questions: questions });
-  };
 
   return (
     <div className="fixed inset-0 z-[100] bg-background/95 backdrop-blur-sm flex flex-col">
