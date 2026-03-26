@@ -28,7 +28,7 @@ export const PRESET_AVATARS = [
   { src: avatarElephant, label: "Elephant" },
   { src: avatarBear, label: "Bear" },
   { src: avatarWoman, label: "Woman" },
-  { src: avatarTurtle, label: "Turtle" },
+  { src: avatarTurtle, label: "Ninja Mongoose" },
   { src: avatarSkateboard, label: "Skateboard" },
 ] as const;
 
