@@ -84,7 +84,7 @@ export default function Library() {
       if (uploadError) throw uploadError;
 
       const title = file.name.replace(/\.pdf$/i, '');
-      const { error: insertError } = await supabase
+      const { data: insertData, error: insertError } = await supabase
         .from('library_books')
         .insert({
           user_id: user.id,
@@ -92,9 +92,22 @@ export default function Library() {
           file_path: filePath,
           file_size: file.size,
           is_published: false,
-        });
+        })
+        .select('id')
+        .single();
 
       if (insertError) throw insertError;
+
+      // Generate thumbnail from first page
+      if (insertData) {
+        const coverUrl = await generatePdfThumbnail(file, insertData.id);
+        if (coverUrl) {
+          await supabase
+            .from('library_books')
+            .update({ cover_url: coverUrl })
+            .eq('id', insertData.id);
+        }
+      }
 
       toast.success(`"${title}" uploaded as unpublished`);
       fetchBooks();
