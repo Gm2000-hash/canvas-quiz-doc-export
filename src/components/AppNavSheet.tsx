@@ -4,7 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, FileText, BookOpen, Layers, PenLine, Settings, LogOut, Home, ShieldCheck, Library, UserCircle } from "lucide-react";
+import { Menu, FileText, BookOpen, Layers, PenLine, Settings, LogOut, Home, ShieldCheck, Library, UserCircle, Puzzle } from "lucide-react";
 
 const navItems = [
   { label: "Home", path: "/", icon: Home, description: "Dashboard" },
@@ -13,6 +13,7 @@ const navItems = [
   { label: "Create Question", path: "/create-question", icon: PenLine, description: "Build a new question" },
   { label: "Lesson Planner", path: "/lesson-planner", icon: Layers, description: "Units, lessons & pacing" },
   { label: "Standards Browser", path: "/standards", icon: Library, description: "Browse Idaho & NGSS standards" },
+  { label: "Activity Builder", path: "/activities", icon: Puzzle, description: "Create interactive H5P activities" },
 ];
 
 interface AppNavSheetProps {

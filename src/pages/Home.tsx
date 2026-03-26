@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   GraduationCap, Lightbulb, FileText, BookOpen, PenLine, Layers,
-  Library, GripVertical, UserCircle, ArrowRight, BarChart3,
+  Library, GripVertical, UserCircle, ArrowRight, BarChart3, Puzzle,
 } from "lucide-react";
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
 import sketchQuestionBank from "@/assets/sketch-question-bank.png";
@@ -19,6 +19,7 @@ import sketchLessonPlanner from "@/assets/sketch-lesson-planner.png";
 import sketchCreateQuestion from "@/assets/sketch-create-question.png";
 import sketchStandardsBrowser from "@/assets/sketch-standards-browser.png";
 import sketchProfileSettings from "@/assets/sketch-profile-settings.png";
+import sketchActivityBuilder from "@/assets/sketch-activity-builder.png";
 
 const dailyTips = [
   { text: "The best teachers don't give you the answer — they spark the desire to find it.", author: "Unknown" },
@@ -70,6 +71,7 @@ const ALL_CARDS: DashboardCard[] = [
   { id: "lesson-planner", title: "Lesson Planner", description: "Organize units, generate AI lesson plans, and export pacing guides.", path: "/lesson-planner", icon: Layers, image: sketchLessonPlanner },
   { id: "standards", title: "Standards Browser", description: "Browse Idaho and NGSS standards organized by subject, grade, and category.", path: "/standards", icon: Library, image: sketchStandardsBrowser },
   { id: "canvas-results", title: "Canvas Results", description: "Pull student quiz scores and analyze performance by standard.", path: "/canvas-results", icon: BarChart3 },
+  { id: "activities", title: "Activity Builder", description: "Create interactive H5P-style activities like fill-in-the-blanks and timelines.", path: "/activities", icon: Puzzle, image: sketchActivityBuilder },
   { id: "profile", title: "Profile Settings", description: "Update your photo, contact info, and teaching preferences.", path: "/profile", icon: UserCircle, image: sketchProfileSettings },
 ];
 
