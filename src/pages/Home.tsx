@@ -249,12 +249,12 @@ export default function Home() {
                     className="w-full p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="shrink-0 h-14 w-14 rounded-xl bg-secondary flex items-center justify-center overflow-hidden">
+                      <div className="shrink-0 h-14 w-14 rounded-xl bg-primary/15 flex items-center justify-center overflow-hidden">
                         {card.image ? (
                           <img
                             src={card.image}
                             alt={card.title}
-                            className="h-10 w-10 object-contain transition-transform duration-200 group-hover:scale-110"
+                            className="h-10 w-10 object-contain transition-transform duration-200 group-hover:scale-110 brightness-150 contrast-125"
                             loading="lazy"
                           />
                         ) : (
