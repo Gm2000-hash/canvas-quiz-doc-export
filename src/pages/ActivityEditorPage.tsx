@@ -61,7 +61,7 @@ export default function ActivityEditorPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();
-  const { tagActivity, fetchStandards, tagging } = useActivityStandards();
+  const { tagActivity, fetchStandards, addStandard, removeStandard, tagging } = useActivityStandards();
 
   const [title, setTitle] = useState("");
   const [activityType, setActivityType] = useState<ActivityType>("fill_in_blanks");
