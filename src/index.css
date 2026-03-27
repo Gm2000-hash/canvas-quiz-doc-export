@@ -65,6 +65,9 @@
     --neon-orange: 25 95% 55%;
     --neon-green: 150 60% 42%;
     --neon-yellow: 45 95% 52%;
+    --page-green: 150 97% 57%;
+    --page-lime: 80 85% 55%;
+    --page-tangerine: 30 95% 55%;
 
     --shadow-2xs: 0 1px 2px 0 hsl(220 20% 30% / 0.04);
     --shadow-xs: 0 1px 3px 0 hsl(220 20% 30% / 0.06);
