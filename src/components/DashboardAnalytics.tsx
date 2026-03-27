@@ -187,7 +187,7 @@ export function DashboardAnalytics({ userId }: Props) {
                   <CalendarDays className="h-3.5 w-3.5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-foreground truncate">{l.title}</p>
+                  <p className="text-xs font-medium truncate text-sidebar-foreground">{l.title}</p>
                   <p className="text-[10px] text-muted-foreground">
                     {new Date(l.lesson_date + "T00:00:00").toLocaleDateString("en-US", {
                       weekday: "short",
