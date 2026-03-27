@@ -14,6 +14,38 @@ export type Database = {
   }
   public: {
     Tables: {
+      curriculum_lesson_standards: {
+        Row: {
+          id: string
+          lesson_id: string
+          matched_terms: string[]
+          ngss_code: string
+          ngss_description: string
+        }
+        Insert: {
+          id?: string
+          lesson_id: string
+          matched_terms?: string[]
+          ngss_code: string
+          ngss_description: string
+        }
+        Update: {
+          id?: string
+          lesson_id?: string
+          matched_terms?: string[]
+          ngss_code?: string
+          ngss_description?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "curriculum_lesson_standards_lesson_id_fkey"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "curriculum_lessons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       curriculum_lessons: {
         Row: {
           created_at: string
