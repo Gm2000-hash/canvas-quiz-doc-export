@@ -663,12 +663,11 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                               onAction={handleEditorAction}
                             />
                           </div>
-                          <Textarea
-                            value={kt.definition}
-                            onChange={e => updateEditKeyTerm(i, 'definition', e.target.value)}
-                            rows={2}
-                            className="border-dashed text-sm"
+                          <RichTextEditor
+                            content={kt.definition}
+                            onChange={v => updateEditKeyTerm(i, 'definition', v)}
                             placeholder="Definition"
+                            minimal
                           />
                         </div>
                       ))}
