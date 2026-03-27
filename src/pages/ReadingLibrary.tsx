@@ -48,6 +48,9 @@ export default function ReadingLibrary() {
   const [viewingCurriculum, setViewingCurriculum] = useState<{ title: string; discipline: string } | null>(null);
   const [openingId, setOpeningId] = useState<string | null>(null);
 
+  // Upload state
+  const [uploading, setUploading] = useState(false);
+
   // Share states
   const [sharingId, setSharingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
