@@ -93,7 +93,6 @@ export default function SharedReading() {
           discipline={book.source_discipline}
           title={book.title}
           onClose={() => window.close()}
-          fullPage
         />
       </div>
     );
