@@ -5,10 +5,21 @@ export interface CanvasConfig {
   apiToken: string;
 }
 
+export interface CourseTerm {
+  id: number;
+  name: string;
+  start_at: string | null;
+  end_at: string | null;
+}
+
 export interface Course {
   id: number;
   name: string;
   course_code: string;
+  workflow_state?: string;
+  term?: CourseTerm;
+  total_students?: number;
+  created_at?: string;
 }
 
 export interface Quiz {

@@ -100,7 +100,7 @@ serve(async (req) => {
 
     switch (action) {
       case 'get_courses':
-        url = `${baseUrl}/api/v1/courses?per_page=100&enrollment_state=active`;
+        url = `${baseUrl}/api/v1/courses?per_page=100&include[]=term&include[]=total_students`;
         break;
       case 'get_quizzes':
         if (!courseId) throw new Error('courseId is required');
