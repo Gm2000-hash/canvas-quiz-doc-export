@@ -623,10 +623,11 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     {((editData.objectives as string[]) || []).map((obj, i) => (
                       <div key={i} className="flex items-start gap-1 group">
                         <div className="flex-1">
-                          <Input
-                            value={obj}
-                            onChange={e => updateEditArray('objectives', i, e.target.value)}
-                            className="border-dashed"
+                          <RichTextEditor
+                            content={obj}
+                            onChange={v => updateEditArray('objectives', i, v)}
+                            placeholder="Objective..."
+                            minimal
                           />
                         </div>
                         <ItemToolbar
