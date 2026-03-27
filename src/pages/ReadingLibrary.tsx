@@ -146,7 +146,7 @@ export default function ReadingLibrary() {
         />
 
         {/* Toolbar */}
-        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
+        <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center border-card-foreground border-0">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
@@ -170,7 +170,7 @@ export default function ReadingLibrary() {
             </SelectContent>
           </Select>
 
-          <div className="flex items-center gap-1 border border-border rounded-lg p-0.5">
+          <div className="flex items-center gap-1 rounded-lg p-0.5 border-2 border-card-foreground">
             <button
               onClick={() => setViewMode("grid")}
               className={`p-1.5 rounded-md transition-colors ${viewMode === "grid" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
@@ -185,7 +185,7 @@ export default function ReadingLibrary() {
             </button>
           </div>
 
-          <Button onClick={() => setGenerateOpen(true)} className="gap-2 rounded-xl" size="sm">
+          <Button onClick={() => setGenerateOpen(true)} className="gap-2 rounded-xl border-card-foreground border-2 bg-muted-foreground" size="sm">
             <Sparkles className="h-4 w-4" />
             AI Generate
           </Button>
@@ -206,7 +206,7 @@ export default function ReadingLibrary() {
             </p>
           </div>
         ) : viewMode === "grid" ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mx-0 pl-[300px] pt-[300px] pr-[300px] pb-[300px] bg-[#fef7ec]">
             {filtered.map(book => (
               <div key={book.id} className="group">
                 <button
@@ -214,22 +214,22 @@ export default function ReadingLibrary() {
                   disabled={openingId === book.id}
                   className="w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-xl disabled:opacity-70"
                 >
-                  <div className="aspect-[3/4] rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 border border-border/60 flex items-center justify-center relative overflow-hidden transition-all duration-200 group-hover:shadow-lg group-hover:-translate-y-1 group-active:scale-[0.97]">
+                  <div className="aspect-[3/4] rounded-xl bg-gradient-to-br from-primary/20 via-primary/10 to-accent/10 items-center justify-center relative overflow-hidden transition-all duration-200 group-hover:shadow-lg group-hover:-translate-y-1 group-active:scale-[0.97] text-card-foreground border-popover-foreground border-2 flex flex-col text-left bg-destructive-foreground">
                     {openingId === book.id ? (
                       <div className="h-8 w-8 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
                     ) : book.cover_url ? (
                       <img src={book.cover_url} alt={book.title} className="w-full h-full object-cover rounded-xl" />
                     ) : (
-                      <FileText className="h-8 w-8 text-primary/30" />
+                      <FileText className="h-8 w-8 text-popover-foreground" />
                     )}
                     {!book.cover_url && <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary/25 rounded-l-xl" />}
                     {book.source_discipline && (
-                      <Badge className="absolute bottom-1.5 right-1.5 text-[9px] px-1.5 py-0" variant="secondary">
+                      <Badge className="absolute bottom-1.5 right-1.5 text-[9px] px-1.5 py-0 text-popover-foreground" variant="secondary">
                         {book.source_discipline}
                       </Badge>
                     )}
                     {!book.source_discipline && (
-                      <Badge className="absolute bottom-1.5 right-1.5 text-[9px] px-1.5 py-0" variant="outline">
+                      <Badge className="absolute bottom-1.5 right-1.5 text-[9px] px-1.5 py-0 text-popover-foreground" variant="outline">
                         PDF
                       </Badge>
                     )}
