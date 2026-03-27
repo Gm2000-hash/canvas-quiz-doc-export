@@ -10,8 +10,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  GraduationCap, Lightbulb, FileText, BookOpen, PenLine, Layers,
-  Library, GripVertical, UserCircle, ArrowRight, BarChart3, Puzzle,
+  GraduationCap, Lightbulb, FileText, BookOpen, Layers,
+  Library, GripVertical, ArrowRight, Puzzle, BookOpenCheck,
 } from "lucide-react";
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
 import sketchQuestionBank from "@/assets/sketch-question-bank.png";
