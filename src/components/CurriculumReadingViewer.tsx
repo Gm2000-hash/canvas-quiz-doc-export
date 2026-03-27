@@ -188,7 +188,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
       updated[currentLesson] = { ...lesson, ...editData } as CurriculumLesson;
       setLessons(updated);
       setEditing(false);
-      setEditData(null);
+      resetEditData(null);
       toast.success('Reading saved');
     } catch (err: any) {
       toast.error(err?.message || 'Failed to save');
