@@ -164,6 +164,15 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
         />
       )}
 
+      {/* Reading Preview Dialog */}
+      {previewingLesson && (
+        <ReadingPreviewDialog
+          lesson={previewingLesson}
+          open={!!previewingLesson}
+          onOpenChange={(open) => !open && setPreviewingLesson(null)}
+        />
+      )}
+
       {/* AI Generate Dialog */}
       <Dialog open={!!genDialogUnit} onOpenChange={(open) => !open && setGenDialogUnit(null)}>
         <DialogContent className="sm:max-w-lg">
