@@ -173,10 +173,10 @@ export function WeeklyDashboard() {
   return (
     <div className="mb-6 rounded-3xl bg-primary-foreground">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-foreground border-transparent">{headerLabel}</h2>
-        </div>
+       <div className="flex items-center justify-between mb-3 pt-[10px]">
+         <div className="flex items-center gap-3 pl-0">
+           <h2 className="text-lg font-semibold text-foreground border-transparent pl-[40px]">{headerLabel}</h2>
+         </div>
         <div className="flex items-center gap-1">
           {/* View toggle */}
           <div className="flex items-center border border-border/60 rounded-lg p-0.5 mr-2">
