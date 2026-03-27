@@ -175,7 +175,7 @@ export function WeeklyDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-foreground">{headerLabel}</h2>
+          <h2 className="text-lg font-semibold text-foreground border-2 border-primary-foreground">{headerLabel}</h2>
         </div>
         <div className="flex items-center gap-1">
           {/* View toggle */}
