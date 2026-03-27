@@ -395,11 +395,26 @@ const LessonPlanner = () => {
           </TabsContent>
 
           <TabsContent value="curriculum" className="mt-4">
+            <div className="flex justify-end mb-4">
+              <Button onClick={() => setGenerateOpen(true)} className="gap-2 rounded-xl" size="sm">
+                <Sparkles className="h-4 w-4" />
+                AI Generate
+              </Button>
+            </div>
             <CurriculumEditor
               units={units.map(u => ({ id: u.id, title: u.title, discipline: u.discipline, grade_level: u.grade_level, description: u.description }))}
               onRefreshUnits={fetchUnits}
             />
           </TabsContent>
+        </Tabs>
+      </main>
+
+      <GenerateContentDialog
+        open={generateOpen}
+        onOpenChange={setGenerateOpen}
+        onComplete={fetchUnits}
+        defaultContentType="reading"
+      />
         </Tabs>
       </main>
     </div>
