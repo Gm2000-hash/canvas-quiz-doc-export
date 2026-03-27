@@ -173,10 +173,10 @@ export function WeeklyDashboard() {
   return (
     <div className="mb-6 rounded-3xl bg-primary-foreground">
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-foreground border-transparent">{headerLabel}</h2>
-        </div>
+       <div className="flex items-center justify-between mb-3 pt-[10px]">
+         <div className="flex items-center gap-3 pl-0">
+           <h2 className="text-lg font-semibold text-foreground border-transparent pl-[40px]">{headerLabel}</h2>
+         </div>
         <div className="flex items-center gap-1">
           {/* View toggle */}
           <div className="flex items-center border border-border/60 rounded-lg p-0.5 mr-2">
@@ -191,7 +191,7 @@ export function WeeklyDashboard() {
             <Button
               variant={viewMode === "month" ? "secondary" : "ghost"}
               size="sm"
-              className="h-7 px-2.5 rounded-md text-xs gap-1 border-card-foreground border-2"
+              className="h-7 px-2.5 rounded-md text-xs gap-1 border-card-foreground border-2 ml-[10px] mr-[10px]"
               onClick={() => setViewMode("month")}
             >
               <CalendarRange className="h-3.5 w-3.5" /> Month
@@ -216,8 +216,8 @@ export function WeeklyDashboard() {
             const dayLessons = getLessonsForDay(day);
             const today = isToday(day);
             return (
-              <div key={day.toISOString()} className="space-y-1.5 border-4 border-primary-foreground">
-                <div className={`text-center text-xs font-medium py-1 rounded-lg border-card-foreground border-2 bg-transparent text-card-foreground text-popover-foreground ${today ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+              <div key={day.toISOString()} className="space-y-1.5 border-4 border-primary-foreground pl-[5px] pr-[5px]">
+                <div className={`text-center text-xs font-medium py-1 rounded-lg border-card-foreground border-2 bg-transparent text-card-foreground text-popover-foreground pl-0 ${today ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
                   <div className="text-card-foreground">{format(day, "EEE")}</div>
                   <div className={`text-sm font-semibold text-card-foreground bg-primary-foreground border-2 border-card-foreground rounded-full w-8 h-8 flex items-center justify-center mx-auto ${today ? "border-transparent bg-transparent" : "text-foreground"}`}>{format(day, "d")}</div>
                 </div>
