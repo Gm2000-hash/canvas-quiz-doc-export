@@ -2,7 +2,6 @@ import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { PageBanner } from "@/components/PageBanner";
-import { HomeBookShelf } from "@/components/HomeBookShelf";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile, SUBJECT_OPTIONS } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
