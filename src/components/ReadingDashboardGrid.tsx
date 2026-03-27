@@ -3,7 +3,8 @@ import { GridLayout, verticalCompactor } from "react-grid-layout";
 import type { LayoutItem } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { FileText, Link2, Check, Loader2 } from "lucide-react";
+import { FileText, Link2, Check, Loader2, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface LibraryBook {
@@ -68,6 +69,12 @@ export function ReadingDashboardGrid({
     localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(mutable));
   }, []);
 
+  const resetLayout = useCallback(() => {
+    const defaultLayout = generateDefaultLayout(books);
+    setLayout(defaultLayout);
+    localStorage.removeItem(LAYOUT_STORAGE_KEY);
+  }, [books]);
+
   const bookMap = useMemo(() => {
     const map = new Map<string, LibraryBook>();
     books.forEach(b => map.set(b.id, b));
@@ -86,9 +93,15 @@ export function ReadingDashboardGrid({
 
   return (
     <div className="relative">
-      <p className="text-[10px] text-muted-foreground mb-2 italic">
-        Drag the handle to reposition • Resize from bottom-right corner
-      </p>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-[10px] text-muted-foreground italic">
+          Drag the handle to reposition • Resize from bottom-right corner
+        </p>
+        <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs" onClick={resetLayout}>
+          <RotateCcw className="h-3.5 w-3.5" />
+          Reset Layout
+        </Button>
+      </div>
       <GridLayout
         layout={currentLayout}
         width={900}
