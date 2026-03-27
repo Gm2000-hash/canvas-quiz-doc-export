@@ -108,6 +108,33 @@ export type Database = {
           },
         ]
       }
+      dashboard_layouts: {
+        Row: {
+          created_at: string
+          id: string
+          layout_data: Json
+          layout_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          layout_data?: Json
+          layout_key?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          layout_data?: Json
+          layout_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       h5p_activities: {
         Row: {
           activity_type: string
