@@ -343,7 +343,7 @@ export default function ActivityBuilder() {
                 onPlay={() => setPreviewActivity(a)}
                 onEdit={() => navigate(`/activities/${a.id}`)}
                 onDuplicate={() => handleDuplicate(a)}
-                onDelete={() => handleDelete(a.id)}
+                onDelete={() => setDeleteTarget({ id: a.id, title: a.title })}
               />
             ))}
           </div>
