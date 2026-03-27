@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { exportCurriculumUnitToDocx, exportCurriculumLessonToDocx } from "@/lib/export-curriculum-docx";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { toast as sonnerToast } from "sonner";
+import GenerateContentDialog from "@/components/GenerateContentDialog";
 
 /** Convert a string[] (from DB) into a single HTML string for TipTap */
 function arrayToHtml(arr: string[]): string {
