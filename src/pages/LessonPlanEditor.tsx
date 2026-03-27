@@ -231,6 +231,34 @@ const LessonPlanEditor = () => {
     setStandards(data || []);
   };
 
+  const handleAiTag = async () => {
+    if (!lesson || !id) return;
+    setAiTagging(true);
+    try {
+      const questionText = `${lesson.title}\n\nObjectives: ${lesson.objectives}\n\nVocabulary: ${lesson.vocabulary.map(v => v.term).join(', ')}\n\nActivities: ${lesson.activities.map(a => a.description).join('\n')}`;
+      const { data, error } = await supabase.functions.invoke('standards-tagger', {
+        body: {
+          questions: [{ id: 1, question_text: questionText }],
+          framework: 'ngss',
+        },
+      });
+      if (error) throw error;
+      const tags = data?.tags?.[0]?.standards || [];
+      if (tags.length === 0) {
+        toast({ title: 'No matching standards found', description: 'Try adding more detail to objectives or activities.' });
+        setAiTagging(false);
+        return;
+      }
+      const selected = tags.map((t: any) => ({ code: t.code, description: t.description }));
+      await handleStandardsChange(selected);
+      toast({ title: `AI tagged ${tags.length} standard${tags.length !== 1 ? 's' : ''}` });
+    } catch (err: any) {
+      toast({ title: 'AI tagging failed', description: err?.message || 'Please try again', variant: 'destructive' });
+    } finally {
+      setAiTagging(false);
+    }
+  };
+
   const totalActivityTime = lesson?.activities.reduce((s, a) => s + (a.duration || 0), 0) || 0;
 
   const handleCopyToField = (field: LessonField, content: string) => {
