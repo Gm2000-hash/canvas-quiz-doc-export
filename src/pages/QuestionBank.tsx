@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb, Upload, Hash, Landmark } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
-import GenerateQuestionsDialog from "@/components/GenerateQuestionsDialog";
+import GenerateContentDialog from "@/components/GenerateContentDialog";
 import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import PushToCanvasDialog from "@/components/PushToCanvasDialog";
