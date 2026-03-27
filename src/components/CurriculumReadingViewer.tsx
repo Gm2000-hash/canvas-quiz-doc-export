@@ -749,6 +749,18 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     })()}
                   </div>
 
+                  {/* NGSS Standards */}
+                  {lessonStandards.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Target className="h-4 w-4 text-primary shrink-0" />
+                      {lessonStandards.map(s => (
+                        <Badge key={s.id} variant="secondary" className="text-xs" title={s.ngss_description}>
+                          {s.ngss_code}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
                   {/* Key Terms */}
                   {(lesson.key_terms as any[])?.length > 0 && (
                     <div className="space-y-3">
