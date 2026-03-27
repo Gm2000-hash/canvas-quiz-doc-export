@@ -53,6 +53,7 @@ const LessonPlanner = () => {
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
   const [newUnit, setNewUnit] = useState({ title: "", description: "", grade_level: defaultGradeLevel, discipline: defaultDiscipline, date_start: "", date_end: "" });
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
