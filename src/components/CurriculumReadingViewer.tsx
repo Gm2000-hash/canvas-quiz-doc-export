@@ -11,7 +11,8 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save, Undo2, Redo2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save, Undo2, Redo2, Sparkles, Target } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { ReadingEditToolbar, ItemToolbar, type EditorAction, type SectionKind } from '@/components/ReadingEditToolbar';
 import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { toast } from 'sonner';
@@ -43,6 +44,8 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   const [editLineSpacing, setEditLineSpacing] = useState('leading-relaxed');
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
+  const [lessonStandards, setLessonStandards] = useState<{ id: string; ngss_code: string; ngss_description: string; matched_terms: string[] }[]>([]);
+  const [aiTagging, setAiTagging] = useState(false);
 
   const filteredIndices = lessons.reduce<number[]>((acc, lesson, i) => {
     if (!searchQuery.trim()) { acc.push(i); return acc; }
@@ -141,6 +144,52 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   }, [initialLessonIndex]);
 
   const lesson = currentLesson !== null ? lessons[currentLesson] : undefined;
+
+  // Load standards for current lesson
+  useEffect(() => {
+    if (!lesson) { setLessonStandards([]); return; }
+    supabase
+      .from('curriculum_lesson_standards' as any)
+      .select('*')
+      .eq('lesson_id', lesson.id)
+      .then(({ data }: any) => setLessonStandards(data || []));
+  }, [lesson?.id]);
+
+  const handleAiTagReading = async () => {
+    if (!lesson) return;
+    setAiTagging(true);
+    try {
+      const objectives = ((lesson.objectives as string[]) || []).join('. ');
+      const terms = ((lesson.key_terms as { term: string }[]) || []).map(k => k.term).join(', ');
+      const intro = ((lesson.intro as string[]) || []).join(' ');
+      const explanation = ((lesson.explanation as string[]) || []).join(' ');
+      const reading = ((lesson.reading_paragraphs as string[]) || []).join(' ');
+      const text = `${lesson.title}\n\nObjectives: ${objectives}\n\nKey Terms: ${terms}\n\n${intro}\n\n${explanation}\n\n${reading}`.substring(0, 4000);
+
+      const { data, error } = await supabase.functions.invoke('standards-tagger', {
+        body: { questions: [{ id: 1, question_text: text }], framework: 'ngss' },
+      });
+      if (error) throw error;
+      const tags = data?.tags?.[0]?.standards || [];
+      if (tags.length === 0) {
+        toast.info('No matching NGSS standards found for this reading.');
+        setAiTagging(false);
+        return;
+      }
+      await (supabase.from('curriculum_lesson_standards' as any) as any).delete().eq('lesson_id', lesson.id);
+      const inserts = tags.map((t: any) => ({
+        lesson_id: lesson.id, ngss_code: t.code, ngss_description: t.description, matched_terms: t.matched_terms || [],
+      }));
+      await (supabase.from('curriculum_lesson_standards' as any) as any).insert(inserts);
+      const { data: refreshed } = await (supabase.from('curriculum_lesson_standards' as any) as any).select('*').eq('lesson_id', lesson.id);
+      setLessonStandards(refreshed || []);
+      toast.success(`Tagged with ${tags.length} NGSS standard${tags.length !== 1 ? 's' : ''}`);
+    } catch (err: any) {
+      toast.error(err?.message || 'AI tagging failed');
+    } finally {
+      setAiTagging(false);
+    }
+  };
 
   // Enter edit mode
   const startEditing = () => {
@@ -328,9 +377,15 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
           )}
           {/* Edit / Save toggle */}
           {lesson && !editing && (
-            <Button variant="outline" size="sm" className="gap-2" onClick={startEditing}>
-              <Pencil className="h-3.5 w-3.5" /> Edit
-            </Button>
+            <>
+              <Button variant="outline" size="sm" className="gap-2" onClick={handleAiTagReading} disabled={aiTagging}>
+                {aiTagging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                {aiTagging ? 'Tagging…' : 'AI Tag'}
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={startEditing}>
+                <Pencil className="h-3.5 w-3.5" /> Edit
+              </Button>
+            </>
           )}
           {editing && (
             <>
@@ -693,6 +748,18 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                       ) : null;
                     })()}
                   </div>
+
+                  {/* NGSS Standards */}
+                  {lessonStandards.length > 0 && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Target className="h-4 w-4 text-primary shrink-0" />
+                      {lessonStandards.map(s => (
+                        <Badge key={s.id} variant="secondary" className="text-xs" title={s.ngss_description}>
+                          {s.ngss_code}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
 
                   {/* Key Terms */}
                   {(lesson.key_terms as any[])?.length > 0 && (

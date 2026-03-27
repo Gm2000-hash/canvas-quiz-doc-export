@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical, BookOpenCheck, Puzzle, Download, RefreshCw } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical, BookOpenCheck, Puzzle, Download, RefreshCw, Sparkles, Loader2 } from "lucide-react";
 import { EmbedActivityPicker, type EmbeddedActivity } from "@/components/EmbedActivityPicker";
 import { ActivityPlayer } from "@/components/activities/ActivityPlayer";
 import { ACTIVITY_TYPES, type ActivityType, type ActivityContent } from "@/lib/h5p-types";
@@ -90,6 +90,7 @@ const LessonPlanEditor = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [standardsOpen, setStandardsOpen] = useState(false);
+  const [aiTagging, setAiTagging] = useState(false);
   const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
   const [regenerateOpen, setRegenerateOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
@@ -230,6 +231,34 @@ const LessonPlanEditor = () => {
     setStandards(data || []);
   };
 
+  const handleAiTag = async () => {
+    if (!lesson || !id) return;
+    setAiTagging(true);
+    try {
+      const questionText = `${lesson.title}\n\nObjectives: ${lesson.objectives}\n\nVocabulary: ${lesson.vocabulary.map(v => v.term).join(', ')}\n\nActivities: ${lesson.activities.map(a => a.description).join('\n')}`;
+      const { data, error } = await supabase.functions.invoke('standards-tagger', {
+        body: {
+          questions: [{ id: 1, question_text: questionText }],
+          framework: 'ngss',
+        },
+      });
+      if (error) throw error;
+      const tags = data?.tags?.[0]?.standards || [];
+      if (tags.length === 0) {
+        toast({ title: 'No matching standards found', description: 'Try adding more detail to objectives or activities.' });
+        setAiTagging(false);
+        return;
+      }
+      const selected = tags.map((t: any) => ({ code: t.code, description: t.description }));
+      await handleStandardsChange(selected);
+      toast({ title: `AI tagged ${tags.length} standard${tags.length !== 1 ? 's' : ''}` });
+    } catch (err: any) {
+      toast({ title: 'AI tagging failed', description: err?.message || 'Please try again', variant: 'destructive' });
+    } finally {
+      setAiTagging(false);
+    }
+  };
+
   const totalActivityTime = lesson?.activities.reduce((s, a) => s + (a.duration || 0), 0) || 0;
 
   const handleCopyToField = (field: LessonField, content: string) => {
@@ -358,9 +387,15 @@ const LessonPlanEditor = () => {
                 <Badge key={s.id} variant="secondary" className="text-xs">{s.ngss_code}</Badge>
               ))}
             </div>
-            <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={() => setStandardsOpen(true)}>
-              Edit Standards
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={() => setStandardsOpen(true)}>
+                Edit Standards
+              </Button>
+              <Button variant="outline" size="sm" className="rounded-xl text-xs gap-1.5" onClick={handleAiTag} disabled={aiTagging}>
+                {aiTagging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                {aiTagging ? 'Tagging…' : 'AI Tag'}
+              </Button>
+            </div>
             <LessonStandardsPicker
               open={standardsOpen}
               onOpenChange={setStandardsOpen}
