@@ -94,7 +94,7 @@ export function LessonStandardsPicker({ open, onOpenChange, selected, onSave }: 
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-lg z-[200]">
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Select Standards</DialogTitle>
         </DialogHeader>
