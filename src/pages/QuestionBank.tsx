@@ -529,6 +529,27 @@ const QuestionBank = () => {
           subtitle="Browse, search, and manage your library of assessment questions"
           stats={[{ label: "Total Questions", value: questions.length }]}
         />
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "questions" | "isat")} className="w-full">
+          <TabsList>
+            <TabsTrigger value="questions" className="gap-1.5">
+              <FileText className="h-4 w-4" />
+              Question Bank
+            </TabsTrigger>
+            <TabsTrigger value="isat" className="gap-1.5">
+              <ClipboardCheck className="h-4 w-4" />
+              ISAT Practice Exams
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {activeTab === "isat" ? (
+          <ISATExamList
+            refreshKey={isatRefreshKey}
+            onTakeExam={(examId) => navigate(`/isat-exam/${examId}`)}
+            onGenerateNew={() => setShowISATDialog(true)}
+          />
+        ) : (
+        <>
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
