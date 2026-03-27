@@ -67,7 +67,7 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
               </h1>
             )}
             {subtitle && (
-              <p className="text-base sm:text-lg text-muted-foreground mt-1">{subtitle}</p>
+              <p className="text-base sm:text-lg mt-1 text-card-foreground">{subtitle}</p>
             )}
           </div>
           {avatarPosition === "right" && (
@@ -81,10 +81,10 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
           <div className={`flex flex-wrap gap-4 sm:gap-6 ${greeting || avatarUrl ? "mt-4" : ""}`}>
             {stats.map((stat) => (
               <div key={stat.label} className="flex flex-col">
-                <span className="text-2xl sm:text-3xl font-bold text-primary tabular-nums">
+                <span className="text-2xl sm:text-3xl font-bold tabular-nums text-card-foreground">
                   {stat.value}
                 </span>
-                <span className="text-xs text-muted-foreground font-medium mt-0.5">
+                <span className="text-xs font-medium mt-0.5 text-card-foreground">
                   {stat.label}
                 </span>
               </div>

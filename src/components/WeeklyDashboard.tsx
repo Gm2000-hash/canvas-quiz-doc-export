@@ -171,7 +171,7 @@ export function WeeklyDashboard() {
     : format(currentDate, "MMMM yyyy");
 
   return (
-    <div className="mb-6">
+    <div className="mb-6 bg-primary-foreground">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
@@ -183,7 +183,7 @@ export function WeeklyDashboard() {
             <Button
               variant={viewMode === "week" ? "secondary" : "ghost"}
               size="sm"
-              className="h-7 px-2.5 rounded-md text-xs gap-1"
+              className="h-7 px-2.5 rounded-md text-xs gap-1 bg-primary-foreground text-card-foreground"
               onClick={() => setViewMode("week")}
             >
               <CalendarDays className="h-3.5 w-3.5" /> Week
@@ -216,8 +216,8 @@ export function WeeklyDashboard() {
             const dayLessons = getLessonsForDay(day);
             const today = isToday(day);
             return (
-              <div key={day.toISOString()} className="space-y-1.5">
-                <div className={`text-center text-xs font-medium py-1 rounded-lg ${today ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+              <div key={day.toISOString()} className="space-y-1.5 border-4 border-primary-foreground">
+                <div className={`text-center text-xs font-medium py-1 rounded-lg bg-primary-foreground text-card-foreground ${today ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
                   <div>{format(day, "EEE")}</div>
                   <div className={`text-sm font-semibold ${today ? "" : "text-foreground"}`}>{format(day, "d")}</div>
                 </div>
@@ -251,7 +251,7 @@ export function WeeklyDashboard() {
                     })}
                     <button
                       onClick={() => openQuickAdd(day)}
-                      className="w-full h-7 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                      className="w-full h-7 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors bg-primary-foreground"
                     >
                       <Plus className="h-3 w-3" />
                     </button>
