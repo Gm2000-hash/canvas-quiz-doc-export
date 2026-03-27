@@ -231,7 +231,7 @@ export function DashboardAnalytics({ userId }: Props) {
                 >
                   <Icon className={`h-3.5 w-3.5 shrink-0 ${typeColor[item.type]}`} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-foreground truncate">{item.title}</p>
+                    <p className="text-xs font-medium truncate text-sidebar-foreground">{item.title}</p>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                       <Clock className="h-2.5 w-2.5" />
                       {formatDistanceToNow(new Date(item.updated_at), { addSuffix: true })}
