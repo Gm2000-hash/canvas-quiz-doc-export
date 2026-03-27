@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +22,7 @@ import { useNavigate } from "react-router-dom";
 import { exportCurriculumUnitToDocx, exportCurriculumLessonToDocx } from "@/lib/export-curriculum-docx";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { toast as sonnerToast } from "sonner";
+import GenerateContentDialog from "@/components/GenerateContentDialog";
 
 /** Convert a string[] (from DB) into a single HTML string for TipTap */
 function arrayToHtml(arr: string[]): string {
@@ -56,8 +57,6 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
   const [refreshKey, setRefreshKey] = useState(0);
   const [editingLesson, setEditingLesson] = useState<CurriculumLesson | null>(null);
   const [previewingLesson, setPreviewingLesson] = useState<CurriculumLesson | null>(null);
-  const [generatingFor, setGeneratingFor] = useState<string | null>(null);
-  const [genForm, setGenForm] = useState({ subject_area: "", objectives: "", key_terms: "", format: "textbook" as "textbook" | "scripted" | "both" });
   const [genDialogUnit, setGenDialogUnit] = useState<string | null>(null);
   const [syncing, setSyncing] = useState(false);
 
@@ -146,10 +145,7 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
               onToggle={() => setExpandedUnit(expandedUnit === unit.id ? null : unit.id)}
               onEditLesson={setEditingLesson}
               onPreviewLesson={setPreviewingLesson}
-              onOpenGenerate={() => {
-                setGenDialogUnit(unit.id);
-                setGenForm({ subject_area: unit.title, objectives: "", key_terms: "", format: "textbook" });
-              }}
+              onOpenGenerate={() => setGenDialogUnit(unit.id)}
             />
           ))}
         </div>
@@ -173,71 +169,17 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
         />
       )}
 
-      {/* AI Generate Dialog */}
-      <Dialog open={!!genDialogUnit} onOpenChange={(open) => !open && setGenDialogUnit(null)}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Generate Curriculum Reading
-            </DialogTitle>
-          </DialogHeader>
-          <GenerateForm
-            form={genForm}
-            setForm={setGenForm}
-            generating={!!generatingFor}
-            onGenerate={async () => {
-              if (!genDialogUnit || !user) return;
-              setGeneratingFor(genDialogUnit);
-              try {
-                const { data, error } = await supabase.functions.invoke("generate-curriculum-reading", {
-                  body: {
-                    subject_area: genForm.subject_area,
-                    objectives: genForm.objectives,
-                    key_terms: genForm.key_terms || undefined,
-                    format: genForm.format,
-                  },
-                });
-                if (error) throw new Error(error.message);
-                if (data?.error) throw new Error(data.error);
-                if (!data?.lesson) throw new Error("No lesson returned");
-
-                const lesson = data.lesson;
-                const tb = genForm.format === "both" ? lesson.textbook : genForm.format === "textbook" ? lesson : null;
-                const sc = genForm.format === "both" ? lesson.scripted : genForm.format === "scripted" ? lesson : null;
-                const source = tb || sc;
-
-                // Count existing lessons for sort_order
-                const { count } = await supabase
-                  .from("curriculum_lessons")
-                  .select("id", { count: "exact", head: true })
-                  .eq("unit_id", genDialogUnit);
-
-                await supabase.from("curriculum_lessons").insert({
-                  unit_id: genDialogUnit,
-                  user_id: user.id,
-                  title: source?.title || genForm.subject_area,
-                  sort_order: (count || 0),
-                  objectives: tb?.objectives || [],
-                  intro: tb?.intro || sc?.hook || [],
-                  explanation: tb?.explanation || sc?.key_concepts?.map((kc: any) => `**${kc.heading}**\n\n${kc.content}`) || [],
-                  key_terms: tb?.key_terms || [],
-                  reading_title: lesson.reading?.reading_title || null,
-                  reading_paragraphs: lesson.reading?.reading_paragraphs || [],
-                } as any);
-
-                sonnerToast.success("Lesson generated and saved!");
-                setGenDialogUnit(null);
-                setRefreshKey(k => k + 1);
-              } catch (err: any) {
-                sonnerToast.error(err.message || "Failed to generate");
-              } finally {
-                setGeneratingFor(null);
-              }
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* AI Generate Dialog (unified) */}
+      <GenerateContentDialog
+        open={!!genDialogUnit}
+        onOpenChange={(open) => !open && setGenDialogUnit(null)}
+        onComplete={() => {
+          setGenDialogUnit(null);
+          setRefreshKey(k => k + 1);
+        }}
+        defaultContentType="reading"
+        unitId={genDialogUnit || undefined}
+      />
     </div>
   );
 };
@@ -460,78 +402,6 @@ function UnitSection({
   );
 }
 
-/* ─── Generate Form ─── */
-function GenerateForm({
-  form,
-  setForm,
-  generating,
-  onGenerate,
-}: {
-  form: { subject_area: string; objectives: string; key_terms: string; format: string };
-  setForm: (f: any) => void;
-  generating: boolean;
-  onGenerate: () => void;
-}) {
-  return (
-    <div className="space-y-4 pt-2">
-      <div className="space-y-2">
-        <Label>Subject Area / Topic *</Label>
-        <Input
-          value={form.subject_area}
-          onChange={(e) => setForm({ ...form, subject_area: e.target.value })}
-          placeholder="e.g. Photosynthesis, Plate Tectonics"
-        />
-      </div>
-      <div className="space-y-2">
-        <Label>Learning Objectives *</Label>
-        <Textarea
-          value={form.objectives}
-          onChange={(e) => setForm({ ...form, objectives: e.target.value })}
-          placeholder="Enter 2-4 objectives, one per line"
-          rows={3}
-        />
-      </div>
-      <div className="space-y-2">
-        <Label>Key Terms</Label>
-        <Input
-          value={form.key_terms}
-          onChange={(e) => setForm({ ...form, key_terms: e.target.value })}
-          placeholder="Comma-separated: chlorophyll, glucose, ..."
-        />
-      </div>
-      <div className="space-y-2">
-        <Label>Output Format</Label>
-        <div className="flex gap-2">
-          {[
-            { value: "textbook", label: "Textbook" },
-            { value: "scripted", label: "Scripted" },
-            { value: "both", label: "Both" },
-          ].map((opt) => (
-            <button
-              key={opt.value}
-              onClick={() => setForm({ ...form, format: opt.value })}
-              className={`flex-1 rounded-lg px-3 py-2 text-xs font-medium transition-colors ${
-                form.format === opt.value
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted text-muted-foreground hover:bg-muted/80"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      </div>
-      <Button
-        onClick={onGenerate}
-        disabled={generating || !form.subject_area.trim() || !form.objectives.trim()}
-        className="w-full gap-2 rounded-xl"
-      >
-        {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-        {generating ? "Generating…" : "Generate Lesson"}
-      </Button>
-    </div>
-  );
-}
 
 /* ─── Lesson Editor Dialog ─── */
 function LessonEditorDialog({
