@@ -441,7 +441,7 @@ export default function ISATExamPlayer() {
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
         <Breadcrumbs items={[
-          { label: "Question Bank", href: "/question-bank" },
+          { label: "Question Bank", path: "/question-bank" },
           { label: exam.title },
         ]} />
       </header>
