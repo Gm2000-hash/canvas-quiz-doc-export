@@ -22,6 +22,7 @@ import Profile from "./pages/Profile";
 import ActivityBuilder from "./pages/ActivityBuilder";
 import ActivityEditorPage from "./pages/ActivityEditorPage";
 import ReadingLibrary from "./pages/ReadingLibrary";
+import SharedReading from "./pages/SharedReading";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -98,6 +99,7 @@ const App = () => (
           <Route path="/activities/:id" element={<ProtectedRoute><ActivityEditorPage /></ProtectedRoute>} />
           <Route path="/reading-library" element={<ProtectedRoute><ReadingLibrary /></ProtectedRoute>} />
           <Route path="/library" element={<Navigate to="/admin/library" replace />} />
+          <Route path="/shared-reading/:token" element={<SharedReading />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
