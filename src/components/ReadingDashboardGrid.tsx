@@ -1,5 +1,6 @@
 import { useState, useCallback, useMemo } from "react";
-import GridLayout from "react-grid-layout";
+import { GridLayout, verticalCompactor } from "react-grid-layout";
+import type { LayoutItem } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { FileText, Link2, Check, Loader2 } from "lucide-react";
@@ -15,18 +16,6 @@ interface LibraryBook {
   share_token: string | null;
 }
 
-interface LayoutItem {
-  i: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  minW?: number;
-  minH?: number;
-  maxW?: number;
-  maxH?: number;
-}
-
 interface ReadingDashboardGridProps {
   books: LibraryBook[];
   onOpenBook: (book: LibraryBook) => void;
@@ -40,18 +29,12 @@ const LAYOUT_STORAGE_KEY = "reading_dashboard_layout";
 const COLS = 6;
 const ROW_HEIGHT = 120;
 
+function makeItem(id: string, x: number, y: number, w = 1, h = 2): LayoutItem {
+  return { i: id, x, y, w, h, minW: 1, minH: 1, maxW: 4, maxH: 4 };
+}
+
 function generateDefaultLayout(books: LibraryBook[]): LayoutItem[] {
-  return books.map((book, i) => ({
-    i: book.id,
-    x: (i % COLS),
-    y: Math.floor(i / COLS) * 2,
-    w: 1,
-    h: 2,
-    minW: 1,
-    minH: 1,
-    maxW: 4,
-    maxH: 4,
-  }));
+  return books.map((book, i) => makeItem(book.id, i % COLS, Math.floor(i / COLS) * 2));
 }
 
 export function ReadingDashboardGrid({
@@ -72,26 +55,17 @@ export function ReadingDashboardGrid({
         const existingIds = new Set(existing.map(l => l.i));
         const newBooks = books.filter(b => !existingIds.has(b.id));
         const maxY = existing.length > 0 ? Math.max(...existing.map(l => l.y + l.h)) : 0;
-        const newLayouts: LayoutItem[] = newBooks.map((book, i) => ({
-          i: book.id,
-          x: (i % COLS),
-          y: maxY + Math.floor(i / COLS) * 2,
-          w: 1,
-          h: 2,
-          minW: 1,
-          minH: 1,
-          maxW: 4,
-          maxH: 4,
-        }));
+        const newLayouts = newBooks.map((book, i) => makeItem(book.id, i % COLS, maxY + Math.floor(i / COLS) * 2));
         return [...existing, ...newLayouts];
       }
     } catch { /* ignore */ }
     return generateDefaultLayout(books);
   });
 
-  const onLayoutChange = useCallback((newLayout: LayoutItem[]) => {
-    setLayout(newLayout);
-    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(newLayout));
+  const onLayoutChange = useCallback((newLayout: readonly LayoutItem[]) => {
+    const mutable = [...newLayout];
+    setLayout(mutable);
+    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(mutable));
   }, []);
 
   const bookMap = useMemo(() => {
@@ -106,17 +80,7 @@ export function ReadingDashboardGrid({
     const filtered = layout.filter(l => bookIds.has(l.i));
     const newBooks = books.filter(b => !layoutIds.has(b.id));
     const maxY = filtered.length > 0 ? Math.max(...filtered.map(l => l.y + l.h)) : 0;
-    const newLayouts: LayoutItem[] = newBooks.map((book, i) => ({
-      i: book.id,
-      x: (i % COLS),
-      y: maxY + Math.floor(i / COLS) * 2,
-      w: 1,
-      h: 2,
-      minW: 1,
-      minH: 1,
-      maxW: 4,
-      maxH: 4,
-    }));
+    const newLayouts = newBooks.map((book, i) => makeItem(book.id, i % COLS, maxY + Math.floor(i / COLS) * 2));
     return [...filtered, ...newLayouts];
   }, [layout, books]);
 
@@ -126,17 +90,13 @@ export function ReadingDashboardGrid({
         Drag the handle to reposition • Resize from bottom-right corner
       </p>
       <GridLayout
-        className="layout"
-        layout={currentLayout as any}
-        cols={COLS}
-        rowHeight={ROW_HEIGHT}
+        layout={currentLayout}
         width={900}
-        onLayoutChange={onLayoutChange as any}
-        draggableHandle=".drag-handle"
-        isResizable
-        isDraggable
-        compactType="vertical"
-        margin={[12, 12] as [number, number]}
+        gridConfig={{ cols: COLS, rowHeight: ROW_HEIGHT, margin: [12, 12] as const, containerPadding: null, maxRows: Infinity }}
+        onLayoutChange={onLayoutChange}
+        dragConfig={{ enabled: true, handle: ".drag-handle" }}
+        resizeConfig={{ enabled: true }}
+        compactor={verticalCompactor}
       >
         {currentLayout.map(item => {
           const book = bookMap.get(item.i);
@@ -157,7 +117,7 @@ export function ReadingDashboardGrid({
                 </div>
               </div>
 
-              {/* Content area */}
+              {/* Content */}
               <button
                 onClick={() => onOpenBook(book)}
                 disabled={openingId === book.id}
