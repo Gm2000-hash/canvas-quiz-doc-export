@@ -222,12 +222,17 @@ You may ONLY use standards from this exact list:
 ${keyTermsSection}
 RULES:
 - ONLY use standards from the MS- prefix list. Do NOT use any HS- (high school) standards.
-- Use the KEY TERMS section above as strong hints for matching.
-- Content-specific vocabulary matters more than the formal standard description.
-- Try HARD to match every question. Use inference: a question about "dinosaurs" relates to fossils (MS-LS4-1 or MS-ESS1-4). A question about "weather" relates to MS-ESS2-5 or MS-ESS2-6. A question about "cells" relates to MS-LS1-1 or MS-LS1-2.
-- Strip HTML tags mentally — focus on the actual content words in the question.
-- If a question tests knowledge that partially overlaps with a standard, tag it. Only return an empty array if the question is truly unrelated to ANY middle school science standard (e.g., a math-only or reading-only question).
-- Return the standard code, a brief description, and 2-5 key terms from the question text that led you to choose this standard.
+- **KEYWORD MATCHING from the STANDARD'S LANGUAGE**: Pay close attention to the specific verbs and nouns used in each standard's description. Look for those same words or close synonyms in the content. For example:
+  - MS-LS1-2 says "function of an organism" and "subcellular components" → match content mentioning organelles, cell parts, cell function.
+  - MS-ESS2-4 says "cycling of water" → match content about water cycle, evaporation, condensation, precipitation.
+  - MS-LS1-1 says "all living things are made up of cells" → match content about cell theory, basic unit of life.
+  - MS-PS1-1 says "properties" and "identify materials" → match content about matter properties, physical/chemical properties.
+- Use the KEY TERMS section above as additional strong hints for matching.
+- The standard's own language (verbs like "develop a model", "construct an explanation", nouns like "cycling", "gravity", "fossils") should be the PRIMARY basis for matching.
+- Try HARD to match every piece of content. Use inference: content about "dinosaurs" relates to fossils (MS-LS4-1 or MS-ESS1-4). Content about "weather" relates to MS-ESS2-5 or MS-ESS2-6. Content about "cells" relates to MS-LS1-1 or MS-LS1-2.
+- Strip HTML tags mentally — focus on the actual content words.
+- If content partially overlaps with a standard, tag it. Only return an empty array if the content is truly unrelated to ANY middle school science standard (e.g., purely about general study skills with no science content).
+- Return the standard code, a brief description, and 2-5 key terms from the content that led you to choose this standard — include terms that appear in BOTH the content AND the standard's description when possible.
 
 Use the tool provided to return your analysis.`;
 }
@@ -241,12 +246,12 @@ ${standardsList}
 ${keyTermsSection}
 RULES:
 - ONLY use standards from the list above. Do NOT invent standard codes.
-- Use the KEY TERMS section above as strong hints for matching.
-- Content-specific vocabulary matters more than the formal standard description.
-- Try HARD to match every question. Use inference from context clues, synonyms, and related concepts. Strip HTML tags mentally — focus on the actual content words.
-- If a question tests knowledge that partially overlaps with a standard, tag it. Only return an empty array if the question is truly unrelated to ANY standard in the list.
-- Prefer the most specific standard that matches the question content.
-- Return the standard code, a brief description, and 2-5 key terms from the question text that led you to choose this standard.
+- **KEYWORD MATCHING from the STANDARD'S LANGUAGE**: Pay close attention to the specific verbs and nouns used in each standard's description. Look for those same words or close synonyms in the content. The standard's own language should be the PRIMARY basis for matching.
+- Use the KEY TERMS section above as additional strong hints for matching.
+- Try HARD to match every piece of content. Use inference from context clues, synonyms, and related concepts. Strip HTML tags mentally — focus on the actual content words.
+- If content partially overlaps with a standard, tag it. Only return an empty array if the content is truly unrelated to ANY standard in the list.
+- Prefer the most specific standard that matches the content.
+- Return the standard code, a brief description, and 2-5 key terms from the content that led you to choose this standard — include terms that appear in BOTH the content AND the standard's description when possible.
 
 Use the tool provided to return your analysis.`;
 }

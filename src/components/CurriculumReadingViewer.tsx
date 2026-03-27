@@ -761,7 +761,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                 /* ─── READ MODE ─── */
                 <>
                   {/* Lesson Title */}
-                  <div className="text-center space-y-2 pb-4 border-b border-border">
+                   <div className="text-center space-y-3 pb-4 border-b border-border">
                     <h1 className="text-2xl font-bold text-foreground">{lesson.title}</h1>
                     {(() => {
                       const raw = (lesson.objectives as string[]) || [];
@@ -780,26 +780,26 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                         </div>
                       ) : null;
                     })()}
-                  </div>
 
-                  {/* NGSS Standards */}
-                  {lessonStandards.length > 0 && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Target className="h-4 w-4 text-primary shrink-0" />
-                      {lessonStandards.map(s => (
-                        <Badge key={s.id} variant="secondary" className="text-xs gap-1 pr-1" title={s.ngss_description}>
-                          {s.ngss_code}
-                          <button
-                            onClick={() => handleRemoveStandard(s.id)}
-                            className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
-                            title="Remove standard"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
+                    {/* NGSS Standards — inside the same box */}
+                    {lessonStandards.length > 0 && (
+                      <div className="flex flex-wrap items-center justify-center gap-2 pt-2 border-t border-border/50">
+                        <Target className="h-4 w-4 text-primary shrink-0" />
+                        {lessonStandards.map(s => (
+                          <Badge key={s.id} variant="secondary" className="text-xs gap-1 pr-1" title={s.ngss_description}>
+                            {s.ngss_code}
+                            <button
+                              onClick={() => handleRemoveStandard(s.id)}
+                              className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+                              title="Remove standard"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
+                  </div>
 
                   {/* Key Terms */}
                   {(lesson.key_terms as any[])?.length > 0 && (
