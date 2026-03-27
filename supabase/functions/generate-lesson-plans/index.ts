@@ -48,7 +48,13 @@ serve(async (req) => {
 
   try {
     console.log("Authenticated generate-lesson-plans request from", userId);
-    const { unitTitle, discipline, gradeLevel, topic, numLessons, additionalContext } = await req.json();
+    const rawBody = await req.text();
+    if (!rawBody.trim()) {
+      return new Response(JSON.stringify({ error: "Request body is empty" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { unitTitle, discipline, gradeLevel, topic, numLessons, additionalContext } = JSON.parse(rawBody);
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
