@@ -14,8 +14,9 @@ import { useToast } from "@/hooks/use-toast";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import {
   Sparkles, Search, FileText, BookOpenCheck, Share2, Copy, Check, Link2, Loader2,
-  LayoutGrid, List,
+  LayoutGrid, List, LayoutDashboard,
 } from "lucide-react";
+import { ReadingDashboardGrid } from "@/components/ReadingDashboardGrid";
 import { toast } from "sonner";
 
 interface LibraryBook {
@@ -35,7 +36,7 @@ export default function ReadingLibrary() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "dashboard">("grid");
 
   // Viewer states
   const [viewingBook, setViewingBook] = useState<{ title: string; url: string } | null>(null);
@@ -183,6 +184,13 @@ export default function ReadingLibrary() {
             >
               <List className="h-4 w-4" />
             </button>
+            <button
+              onClick={() => setViewMode("dashboard")}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === "dashboard" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              title="Dashboard layout (drag & resize)"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+            </button>
           </div>
 
           <Button onClick={() => setGenerateOpen(true)} className="gap-2 rounded-xl border-card-foreground border-2 bg-muted-foreground" size="sm">
@@ -255,6 +263,15 @@ export default function ReadingLibrary() {
               </div>
             ))}
           </div>
+        ) : viewMode === "dashboard" ? (
+          <ReadingDashboardGrid
+            books={filtered}
+            onOpenBook={openBook}
+            onShare={handleShare}
+            openingId={openingId}
+            sharingId={sharingId}
+            copiedId={copiedId}
+          />
         ) : (
           <div className="space-y-2">
             {filtered.map(book => (
