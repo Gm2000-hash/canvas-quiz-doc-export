@@ -516,7 +516,7 @@ const QuestionBank = () => {
         <Breadcrumbs items={[{ label: "Question Bank" }]} />
       </header>
 
-      <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-6 bg-page-green">
+      <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-6 bg-page-green border-warning-foreground border-0">
         <PageBanner
           compact
           greeting="Question Bank"
@@ -538,7 +538,7 @@ const QuestionBank = () => {
             <Button variant={viewMode === "grouped" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grouped")} className="gap-1.5">
               <LayoutGrid className="h-4 w-4" /> By Standard
             </Button>
-            <Button variant={viewMode === "flat" ? "default" : "outline"} size="sm" onClick={() => setViewMode("flat")} className="gap-1.5">
+            <Button variant={viewMode === "flat" ? "default" : "outline"} size="sm" onClick={() => setViewMode("flat")} className="gap-1.5 border-popover-foreground border-2">
               <List className="h-4 w-4" /> Flat List
             </Button>
             {questions.some(q => q.dok_level == null || q.blooms_level == null) && (
@@ -549,7 +549,7 @@ const QuestionBank = () => {
             )}
           </div>
         </div>
-        <div className="flex flex-wrap gap-2 sm:gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3 border-card-foreground border-0">
           <Select value={filterDok} onValueChange={setFilterDok}>
             <SelectTrigger className="w-full sm:w-[180px] h-9 text-sm">
               <SelectValue placeholder="DOK Level" />
