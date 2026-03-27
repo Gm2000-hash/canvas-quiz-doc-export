@@ -420,6 +420,26 @@ const LessonPlanner = () => {
         onComplete={fetchUnits}
         defaultContentType="reading"
       />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Unit</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>"{deleteTarget?.title}"</strong> and all its lessons? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && handleDelete(deleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Unit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
