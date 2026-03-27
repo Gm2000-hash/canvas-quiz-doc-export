@@ -595,7 +595,7 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /> Materials & Resources</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea placeholder="List materials, links, handouts..." value={lesson.materials} onChange={e => setLesson({ ...lesson, materials: e.target.value })} rows={3} />
+            <RichTextEditor content={lesson.materials} onChange={v => setLesson({ ...lesson, materials: v })} placeholder="List materials, links, handouts..." compact />
           </CardContent>
         </Card>
 
