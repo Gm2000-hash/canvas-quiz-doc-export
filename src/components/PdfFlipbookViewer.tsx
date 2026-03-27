@@ -49,16 +49,8 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [pdfDoc, setPdfDoc] = useState<any>(null);
   const flipBookRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-
-  // Load PDF independently for annotation extraction
-  useEffect(() => {
-    if (!fileUrl) return;
-    const loadingTask = pdfjs.getDocument(fileUrl);
-    loadingTask.promise.then((doc) => setPdfDoc(doc)).catch(() => {});
-  }, [fileUrl]);
 
   // Calculate page dimensions based on container
   const getPageDimensions = useCallback(() => {
