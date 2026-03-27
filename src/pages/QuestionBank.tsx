@@ -549,7 +549,7 @@ const QuestionBank = () => {
             )}
           </div>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <Select value={filterDok} onValueChange={setFilterDok}>
             <SelectTrigger className="w-[180px] h-9 text-sm">
               <SelectValue placeholder="DOK Level" />
