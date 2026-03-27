@@ -475,7 +475,7 @@ const QuestionBank = () => {
             <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" onClick={e => { e.stopPropagation(); openEdit(q); }}>
               <Pencil className="h-3.5 w-3.5" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); handleDelete(q.id); }}>
+            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); setSingleDeleteTarget({ id: q.id, text: stripHtml(q.question_text).slice(0, 80) }); }}>
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
