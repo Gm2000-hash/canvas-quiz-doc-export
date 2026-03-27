@@ -37,7 +37,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   const [showToc, setShowToc] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [editData, setEditData] = useState<Partial<CurriculumLesson> | null>(null);
+  const { state: editData, set: setEditData, undo: undoEdit, redo: redoEdit, reset: resetEditData, canUndo, canRedo } = useUndoRedo<Partial<CurriculumLesson>>(null);
   const [editFont, setEditFont] = useState('font-sans');
   const [editFontSize, setEditFontSize] = useState('text-sm');
   const [editLineSpacing, setEditLineSpacing] = useState('leading-relaxed');
