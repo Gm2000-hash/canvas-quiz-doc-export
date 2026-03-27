@@ -17,6 +17,7 @@ import { ReadingEditToolbar, ItemToolbar, type EditorAction, type SectionKind } 
 import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { toast } from 'sonner';
 import type { CurriculumLesson } from '@/hooks/useCurriculum';
+import { LessonStandardsPicker } from '@/components/LessonStandardsPicker';
 
 interface CurriculumReadingViewerProps {
   discipline: string;
@@ -46,6 +47,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   const [videoUrl, setVideoUrl] = useState('');
   const [lessonStandards, setLessonStandards] = useState<{ id: string; ngss_code: string; ngss_description: string; matched_terms: string[] }[]>([]);
   const [aiTagging, setAiTagging] = useState(false);
+  const [standardsPickerOpen, setStandardsPickerOpen] = useState(false);
 
   const filteredIndices = lessons.reduce<number[]>((acc, lesson, i) => {
     if (!searchQuery.trim()) { acc.push(i); return acc; }
@@ -188,6 +190,34 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
       toast.error(err?.message || 'AI tagging failed');
     } finally {
       setAiTagging(false);
+    }
+  };
+
+  const handleManualStandardsSave = async (selected: { code: string; description: string }[]) => {
+    if (!lesson) return;
+    try {
+      await (supabase.from('curriculum_lesson_standards' as any) as any).delete().eq('lesson_id', lesson.id);
+      if (selected.length > 0) {
+        const inserts = selected.map(s => ({
+          lesson_id: lesson.id, ngss_code: s.code, ngss_description: s.description, matched_terms: [],
+        }));
+        await (supabase.from('curriculum_lesson_standards' as any) as any).insert(inserts);
+      }
+      const { data: refreshed } = await (supabase.from('curriculum_lesson_standards' as any) as any).select('*').eq('lesson_id', lesson.id);
+      setLessonStandards(refreshed || []);
+      toast.success('Standards updated');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update standards');
+    }
+  };
+
+  const handleRemoveStandard = async (standardId: string) => {
+    try {
+      await (supabase.from('curriculum_lesson_standards' as any) as any).delete().eq('id', standardId);
+      setLessonStandards(prev => prev.filter(s => s.id !== standardId));
+      toast.success('Standard removed');
+    } catch (err: any) {
+      toast.error('Failed to remove standard');
     }
   };
 
@@ -378,6 +408,9 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
           {/* Edit / Save toggle */}
           {lesson && !editing && (
             <>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => setStandardsPickerOpen(true)}>
+                <Target className="h-3.5 w-3.5" /> Edit Standards
+              </Button>
               <Button variant="outline" size="sm" className="gap-2" onClick={handleAiTagReading} disabled={aiTagging}>
                 {aiTagging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                 {aiTagging ? 'Tagging…' : 'AI Tag'}
@@ -754,8 +787,15 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     <div className="flex flex-wrap items-center gap-2">
                       <Target className="h-4 w-4 text-primary shrink-0" />
                       {lessonStandards.map(s => (
-                        <Badge key={s.id} variant="secondary" className="text-xs" title={s.ngss_description}>
+                        <Badge key={s.id} variant="secondary" className="text-xs gap-1 pr-1" title={s.ngss_description}>
                           {s.ngss_code}
+                          <button
+                            onClick={() => handleRemoveStandard(s.id)}
+                            className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+                            title="Remove standard"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
                         </Badge>
                       ))}
                     </div>
@@ -865,6 +905,13 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
           bookTitle={title}
         />
       )}
+
+      <LessonStandardsPicker
+        open={standardsPickerOpen}
+        onOpenChange={setStandardsPickerOpen}
+        selected={lessonStandards.map(s => ({ code: s.ngss_code, description: s.ngss_description }))}
+        onSave={handleManualStandardsSave}
+      />
     </div>
   );
 }
