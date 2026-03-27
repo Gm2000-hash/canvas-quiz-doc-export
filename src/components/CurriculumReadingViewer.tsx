@@ -408,6 +408,9 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
           {/* Edit / Save toggle */}
           {lesson && !editing && (
             <>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => setStandardsPickerOpen(true)}>
+                <Target className="h-3.5 w-3.5" /> Edit Standards
+              </Button>
               <Button variant="outline" size="sm" className="gap-2" onClick={handleAiTagReading} disabled={aiTagging}>
                 {aiTagging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                 {aiTagging ? 'Tagging…' : 'AI Tag'}
