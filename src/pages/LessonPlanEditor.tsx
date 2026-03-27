@@ -434,7 +434,7 @@ const LessonPlanEditor = () => {
               <div key={idx} className="flex gap-2 items-start p-2.5 rounded-xl bg-accent/50">
                 <div className="flex-1 space-y-1.5">
                   <Input placeholder="Term" value={v.term} onChange={e => updateVocabulary(idx, "term", e.target.value)} className="text-sm h-8 font-medium" />
-                  <Textarea placeholder="Definition..." value={v.definition} onChange={e => updateVocabulary(idx, "definition", e.target.value)} rows={2} className="text-sm" />
+                  <RichTextEditor content={v.definition} onChange={val => updateVocabulary(idx, "definition", val)} placeholder="Definition..." minimal />
                 </div>
                 <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeVocabulary(idx)}>
                   <Trash2 className="h-3.5 w-3.5" />
