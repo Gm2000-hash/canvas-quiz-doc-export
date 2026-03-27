@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -10,7 +10,8 @@ import { tagQuestionsWithStandards, type StandardMatch } from '@/lib/standards-a
 import { exportQuizToDocx } from '@/lib/export-docx';
 import { saveQuestionsToBank } from '@/lib/question-bank';
 import { toast } from 'sonner';
-import { BookOpen, FileText, Download, Loader2, ArrowLeft, ChevronRight, FlaskConical, Sparkles, Palette, GripVertical } from 'lucide-react';
+import { BookOpen, FileText, Download, Loader2, ArrowLeft, ChevronRight, FlaskConical, Sparkles, Palette, GripVertical, Pin, PinOff } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
 
 interface QuizBrowserProps {
   config: CanvasConfig;
@@ -41,37 +42,39 @@ const ALL_COLORS = [
 ];
 
 function loadCourseColors(): Record<string, string> {
-  try {
-    return JSON.parse(localStorage.getItem('course-tile-colors') || '{}');
-  } catch { return {}; }
+  try { return JSON.parse(localStorage.getItem('course-tile-colors') || '{}'); } catch { return {}; }
 }
-
 function saveCourseColors(map: Record<string, string>) {
   localStorage.setItem('course-tile-colors', JSON.stringify(map));
 }
-
-function loadCourseOrder(): number[] {
-  try {
-    return JSON.parse(localStorage.getItem('course-tile-order') || '[]');
-  } catch { return []; }
+function loadPinnedCourses(): number[] {
+  try { return JSON.parse(localStorage.getItem('course-pinned') || '[]'); } catch { return []; }
 }
-
+function savePinnedCourses(ids: number[]) {
+  localStorage.setItem('course-pinned', JSON.stringify(ids));
+}
+function loadCourseOrder(): number[] {
+  try { return JSON.parse(localStorage.getItem('course-tile-order') || '[]'); } catch { return []; }
+}
 function saveCourseOrder(order: number[]) {
   localStorage.setItem('course-tile-order', JSON.stringify(order));
 }
-
 function applyStoredOrder(courses: Course[]): Course[] {
   const order = loadCourseOrder();
   if (order.length === 0) return courses;
   const map = new Map(courses.map(c => [c.id, c]));
   const ordered: Course[] = [];
-  for (const id of order) {
-    const c = map.get(id);
-    if (c) { ordered.push(c); map.delete(id); }
-  }
-  // Append any new courses not in stored order
+  for (const id of order) { const c = map.get(id); if (c) { ordered.push(c); map.delete(id); } }
   for (const c of map.values()) ordered.push(c);
   return ordered;
+}
+
+function isActiveCourse(course: Course): boolean {
+  if (course.workflow_state === 'completed' || course.workflow_state === 'deleted') return false;
+  if (course.term?.end_at) {
+    return new Date(course.term.end_at) >= new Date();
+  }
+  return course.workflow_state === 'available' || !course.workflow_state;
 }
 
 export function QuizBrowser({ config }: QuizBrowserProps) {
@@ -85,8 +88,11 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
   const [loadingQuizzes, setLoadingQuizzes] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [courseColors, setCourseColors] = useState<Record<string, string>>(loadCourseColors);
+  const [pinnedIds, setPinnedIds] = useState<number[]>(loadPinnedCourses);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+  const [dragSection, setDragSection] = useState<'active' | 'other' | null>(null);
+
   const getColorForCourse = useCallback((courseId: number, idx: number) => {
     return courseColors[String(courseId)] || COURSE_COLORS[idx % COURSE_COLORS.length];
   }, [courseColors]);
@@ -99,7 +105,14 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
     });
   }, []);
 
-  // NGSS tagging state
+  const togglePin = useCallback((courseId: number) => {
+    setPinnedIds(prev => {
+      const next = prev.includes(courseId) ? prev.filter(id => id !== courseId) : [...prev, courseId];
+      savePinnedCourses(next);
+      return next;
+    });
+  }, []);
+
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
   const [ngssTags, setNgssTags] = useState<Map<number, StandardMatch[]>>(new Map());
   const [loadingNGSS, setLoadingNGSS] = useState(false);
@@ -113,33 +126,39 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
       .finally(() => setLoadingCourses(false));
   }, [config]);
 
-  const handleDragStart = (idx: number) => {
-    setDragIdx(idx);
-  };
+  const { activeCourses, otherCourses } = useMemo(() => {
+    const pinned = courses.filter(c => pinnedIds.includes(c.id));
+    const unpinned = courses.filter(c => !pinnedIds.includes(c.id));
+    const active = unpinned.filter(c => isActiveCourse(c));
+    const other = unpinned.filter(c => !isActiveCourse(c));
+    return { activeCourses: [...pinned, ...active], otherCourses: other };
+  }, [courses, pinnedIds]);
 
+  const handleDragStart = (idx: number, section: 'active' | 'other') => {
+    setDragIdx(idx);
+    setDragSection(section);
+  };
   const handleDragOver = (e: React.DragEvent, idx: number) => {
     e.preventDefault();
     setDragOverIdx(idx);
   };
-
-  const handleDrop = (idx: number) => {
-    if (dragIdx === null || dragIdx === idx) {
-      setDragIdx(null);
-      setDragOverIdx(null);
+  const handleDrop = (idx: number, section: 'active' | 'other') => {
+    if (dragIdx === null || dragSection !== section || dragIdx === idx) {
+      setDragIdx(null); setDragOverIdx(null); setDragSection(null);
       return;
     }
-    const reordered = [...courses];
-    const [moved] = reordered.splice(dragIdx, 1);
-    reordered.splice(idx, 0, moved);
-    setCourses(reordered);
-    saveCourseOrder(reordered.map(c => c.id));
-    setDragIdx(null);
-    setDragOverIdx(null);
+    const list = section === 'active' ? [...activeCourses] : [...otherCourses];
+    const [moved] = list.splice(dragIdx, 1);
+    list.splice(idx, 0, moved);
+    const activeList = section === 'active' ? list : activeCourses;
+    const otherList = section === 'other' ? list : otherCourses;
+    const fullOrder = [...activeList, ...otherList];
+    setCourses(fullOrder);
+    saveCourseOrder(fullOrder.map(c => c.id));
+    setDragIdx(null); setDragOverIdx(null); setDragSection(null);
   };
-
   const handleDragEnd = () => {
-    setDragIdx(null);
-    setDragOverIdx(null);
+    setDragIdx(null); setDragOverIdx(null); setDragSection(null);
   };
 
   const handleSelectCourse = (course: Course) => {
@@ -168,10 +187,7 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
     setSelectedQuizId(quizId);
     setNgssTags(new Map());
     setNgssLoaded(false);
-
     if (!selectedCourse) return;
-
-    // Fetch questions and auto-tag with NGSS
     setLoadingNGSS(true);
     try {
       const qs = await getQuizQuestions(config, selectedCourse.id, Number(quizId));
@@ -195,31 +211,13 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
   };
 
   const handleExport = async () => {
-    if (!selectedCourse || !selectedQuizId) {
-      toast.error('Please select a quiz');
-      return;
-    }
-
+    if (!selectedCourse || !selectedQuizId) { toast.error('Please select a quiz'); return; }
     setExporting(true);
     try {
       const quiz = await getQuiz(config, selectedCourse.id, Number(selectedQuizId));
       const qs = questions.length > 0 ? questions : await getQuizQuestions(config, selectedCourse.id, Number(selectedQuizId));
-
-      await exportQuizToDocx(
-        quiz,
-        qs,
-        selectedCourse.name,
-        includeAnswerKey,
-        includeNGSS ? ngssTags : undefined
-      );
-
-      // Auto-save to question bank
-      try {
-        await saveQuestionsToBank(qs, ngssTags, selectedCourse.name, quiz.title);
-      } catch (err) {
-        console.warn('Question bank save skipped:', err);
-      }
-
+      await exportQuizToDocx(quiz, qs, selectedCourse.name, includeAnswerKey, includeNGSS ? ngssTags : undefined);
+      try { await saveQuestionsToBank(qs, ngssTags, selectedCourse.name, quiz.title); } catch (err) { console.warn('Question bank save skipped:', err); }
       toast.success(includeAnswerKey ? 'Quiz and answer key downloaded!' : 'Quiz downloaded!');
     } catch (err) {
       toast.error('Failed to export quiz. Please try again.');
@@ -237,7 +235,7 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
     );
   }
 
-  // Course detail / quiz view
+  // Quiz detail view
   if (selectedCourse) {
     const colorIdx = courses.indexOf(selectedCourse);
     const colorClass = getColorForCourse(selectedCourse.id, colorIdx);
@@ -245,24 +243,19 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
 
     return (
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* iOS-style back nav */}
-        <button
-          onClick={handleBack}
-          className="flex items-center gap-1 text-primary font-medium text-sm hover:opacity-70 transition-opacity -mb-2"
-        >
+        <button onClick={handleBack} className="flex items-center gap-1 text-primary font-medium text-sm hover:opacity-70 transition-opacity -mb-2">
           <ArrowLeft className="h-4 w-4" />
           All Courses
         </button>
 
-        {/* Course banner */}
         <div className={`${colorClass} rounded-2xl p-6 text-primary-foreground relative overflow-hidden`}>
           <h2 className="text-2xl font-bold">{selectedCourse.name}</h2>
-          {selectedCourse.course_code && (
-            <p className="text-sm opacity-80 mt-1">{selectedCourse.course_code}</p>
+          {selectedCourse.course_code && <p className="text-sm opacity-80 mt-1">{selectedCourse.course_code}</p>}
+          {selectedCourse.term?.name && (
+            <Badge variant="secondary" className="mt-2 bg-primary-foreground/20 text-primary-foreground border-0 text-xs">{selectedCourse.term.name}</Badge>
           )}
         </div>
 
-        {/* NGSS Standards Preview & Export — moved to top */}
         {selectedQuizId && (
           <>
             {loadingNGSS ? (
@@ -290,14 +283,7 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
                             {standards.length > 0 ? (
                               <div className="flex flex-wrap gap-1">
                                 {standards.map((s) => (
-                                  <Badge
-                                    key={s.code}
-                                    variant="secondary"
-                                    className="text-xs cursor-help"
-                                    title={s.description}
-                                  >
-                                    {s.code}
-                                  </Badge>
+                                  <Badge key={s.code} variant="secondary" className="text-xs cursor-help" title={s.description}>{s.code}</Badge>
                                 ))}
                               </div>
                             ) : (
@@ -312,41 +298,21 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
               </Card>
             ) : null}
 
-            {/* Export bar */}
             <Card className="border-primary/20 bg-card">
               <CardContent className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4">
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="answerKey"
-                      checked={includeAnswerKey}
-                      onCheckedChange={(checked) => setIncludeAnswerKey(checked === true)}
-                    />
+                    <Checkbox id="answerKey" checked={includeAnswerKey} onCheckedChange={(c) => setIncludeAnswerKey(c === true)} />
                     <Label htmlFor="answerKey" className="text-sm">Include Answer Key</Label>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="includeNGSS"
-                      checked={includeNGSS}
-                      onCheckedChange={(checked) => setIncludeNGSS(checked === true)}
-                      disabled={ngssTags.size === 0}
-                    />
+                    <Checkbox id="includeNGSS" checked={includeNGSS} onCheckedChange={(c) => setIncludeNGSS(c === true)} disabled={ngssTags.size === 0} />
                     <Label htmlFor="includeNGSS" className="text-sm">Include NGSS Standards</Label>
                   </div>
                 </div>
                 <div className="sm:ml-auto">
                   <Button onClick={handleExport} disabled={exporting || loadingNGSS} size="lg" className="gap-2">
-                    {exporting ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Generating...
-                      </>
-                    ) : (
-                      <>
-                        <Download className="h-4 w-4" />
-                        Export as Word
-                      </>
-                    )}
+                    {exporting ? (<><Loader2 className="h-4 w-4 animate-spin" />Generating...</>) : (<><Download className="h-4 w-4" />Export as Word</>)}
                   </Button>
                 </div>
               </CardContent>
@@ -354,13 +320,11 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
           </>
         )}
 
-        {/* Quizzes list */}
         <div>
           <h3 className="text-lg font-semibold text-foreground mb-4">Quizzes</h3>
           {loadingQuizzes ? (
             <div className="flex items-center gap-2 text-muted-foreground py-8 justify-center">
-              <Loader2 className="h-5 w-5 animate-spin" />
-              Loading quizzes...
+              <Loader2 className="h-5 w-5 animate-spin" />Loading quizzes...
             </div>
           ) : quizzes.length === 0 ? (
             <Card>
@@ -399,86 +363,127 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
     );
   }
 
-  // Course grid
-  return (
-    <div className="max-w-5xl mx-auto">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {courses.map((course, idx) => {
-          const colorClass = getColorForCourse(course.id, idx);
-          return (
-            <Card
-              key={course.id}
-              draggable
-              onDragStart={() => handleDragStart(idx)}
-              onDragOver={(e) => handleDragOver(e, idx)}
-              onDrop={() => handleDrop(idx)}
-              onDragEnd={handleDragEnd}
-              className={`overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 group relative ${
-                dragIdx === idx ? 'opacity-50 scale-95' : ''
-              } ${dragOverIdx === idx && dragIdx !== idx ? 'ring-2 ring-primary ring-offset-2' : ''}`}
-              onClick={() => handleSelectCourse(course)}
-            >
-              <div className={`${colorClass} p-5 pb-12 text-primary-foreground relative`}>
-                {/* Drag handle */}
-                <button
-                  onMouseDown={(e) => e.stopPropagation()}
-                  className="absolute top-3 left-3 h-7 w-7 rounded-lg bg-primary-foreground/20 hover:bg-primary-foreground/40 flex items-center justify-center transition-colors backdrop-blur-sm cursor-grab active:cursor-grabbing"
-                  title="Drag to reorder"
-                >
-                  <GripVertical className="h-3.5 w-3.5 text-primary-foreground" />
-                </button>
-                <h3 className="text-lg font-bold leading-tight line-clamp-2 pr-8 pl-8">{course.name}</h3>
-                {course.course_code && (
-                  <p className="text-sm opacity-80 mt-1">{course.course_code}</p>
-                )}
-                {/* Color picker button */}
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <button
-                      onClick={(e) => e.stopPropagation()}
-                      className="absolute top-3 right-3 h-7 w-7 rounded-lg bg-primary-foreground/20 hover:bg-primary-foreground/40 flex items-center justify-center transition-colors backdrop-blur-sm"
-                      title="Change tile color"
-                    >
-                      <Palette className="h-3.5 w-3.5 text-primary-foreground" />
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-48 p-3"
-                    align="end"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <p className="text-xs font-medium text-muted-foreground mb-2">Tile Color</p>
-                    <div className="grid grid-cols-4 gap-2">
-                      {ALL_COLORS.map((c) => (
-                        <button
-                          key={c.label}
-                          title={c.label}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setCourseColor(course.id, c.class);
-                          }}
-                          className={`h-8 w-8 rounded-lg transition-all duration-150 hover:scale-110 ring-offset-2 ring-offset-background ${
-                            colorClass === c.class ? 'ring-2 ring-primary scale-110' : ''
-                          }`}
-                          style={{ backgroundColor: c.swatch }}
-                        />
-                      ))}
-                    </div>
-                  </PopoverContent>
-                </Popover>
+  // ── Course Grid with Active / Other split ──
+  const renderCourseCard = (course: Course, idx: number, section: 'active' | 'other') => {
+    const globalIdx = courses.indexOf(course);
+    const colorClass = getColorForCourse(course.id, globalIdx);
+    const isPinned = pinnedIds.includes(course.id);
+
+    return (
+      <Card
+        key={course.id}
+        draggable
+        onDragStart={() => handleDragStart(idx, section)}
+        onDragOver={(e) => handleDragOver(e, idx)}
+        onDrop={() => handleDrop(idx, section)}
+        onDragEnd={handleDragEnd}
+        className={`overflow-hidden cursor-pointer hover:shadow-lg hover:-translate-y-1 active:scale-[0.98] transition-all duration-200 group relative ${
+          dragIdx === idx && dragSection === section ? 'opacity-50 scale-95' : ''
+        } ${dragOverIdx === idx && dragSection === section && dragIdx !== idx ? 'ring-2 ring-primary ring-offset-2' : ''}`}
+        onClick={() => handleSelectCourse(course)}
+      >
+        <div className={`${colorClass} p-5 pb-12 text-primary-foreground relative`}>
+          <button
+            onMouseDown={(e) => e.stopPropagation()}
+            className="absolute top-3 left-3 h-7 w-7 rounded-lg bg-primary-foreground/20 hover:bg-primary-foreground/40 flex items-center justify-center transition-colors backdrop-blur-sm cursor-grab active:cursor-grabbing"
+            title="Drag to reorder"
+          >
+            <GripVertical className="h-3.5 w-3.5 text-primary-foreground" />
+          </button>
+
+          <button
+            onClick={(e) => { e.stopPropagation(); togglePin(course.id); }}
+            className={`absolute top-3 right-12 h-7 w-7 rounded-lg flex items-center justify-center transition-colors backdrop-blur-sm ${
+              isPinned ? 'bg-primary-foreground/40' : 'bg-primary-foreground/20 hover:bg-primary-foreground/40 opacity-0 group-hover:opacity-100'
+            }`}
+            title={isPinned ? 'Unpin course' : 'Pin to top'}
+          >
+            {isPinned ? <PinOff className="h-3.5 w-3.5 text-primary-foreground" /> : <Pin className="h-3.5 w-3.5 text-primary-foreground" />}
+          </button>
+
+          <h3 className="text-lg font-bold leading-tight line-clamp-2 pr-20 pl-8">{course.name}</h3>
+          {course.course_code && <p className="text-sm opacity-80 mt-1 pl-8">{course.course_code}</p>}
+          {course.term?.name && <p className="text-xs opacity-60 mt-0.5 pl-8">{course.term.name}</p>}
+
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                onClick={(e) => e.stopPropagation()}
+                className="absolute top-3 right-3 h-7 w-7 rounded-lg bg-primary-foreground/20 hover:bg-primary-foreground/40 flex items-center justify-center transition-colors backdrop-blur-sm"
+                title="Change tile color"
+              >
+                <Palette className="h-3.5 w-3.5 text-primary-foreground" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-48 p-3" align="end" onClick={(e) => e.stopPropagation()}>
+              <p className="text-xs font-medium text-muted-foreground mb-2">Tile Color</p>
+              <div className="grid grid-cols-4 gap-2">
+                {ALL_COLORS.map((c) => (
+                  <button
+                    key={c.label}
+                    title={c.label}
+                    onClick={(e) => { e.stopPropagation(); setCourseColor(course.id, c.class); }}
+                    className={`h-8 w-8 rounded-lg transition-all duration-150 hover:scale-110 ring-offset-2 ring-offset-background ${
+                      colorClass === c.class ? 'ring-2 ring-primary scale-110' : ''
+                    }`}
+                    style={{ backgroundColor: c.swatch }}
+                  />
+                ))}
               </div>
-              <CardContent className="p-4 flex items-center justify-between -mt-6 relative">
-                <div className="h-12 w-12 rounded-full bg-card border-2 border-background shadow flex items-center justify-center">
-                  <BookOpen className="h-5 w-5 text-primary" />
-                </div>
-                <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">
-                  View quizzes →
-                </span>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
+            </PopoverContent>
+          </Popover>
+        </div>
+        <CardContent className="p-4 flex items-center justify-between -mt-6 relative">
+          <div className="h-12 w-12 rounded-full bg-card border-2 border-background shadow flex items-center justify-center">
+            <BookOpen className="h-5 w-5 text-primary" />
+          </div>
+          <div className="flex items-center gap-2">
+            {isPinned && <Pin className="h-3 w-3 text-primary" />}
+            <span className="text-xs text-muted-foreground group-hover:text-primary transition-colors">View quizzes →</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  return (
+    <div className="max-w-5xl mx-auto space-y-6">
+      {activeCourses.length > 0 && (
+        <div>
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-green-500" />
+            Active Courses
+          </h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {activeCourses.map((course, idx) => renderCourseCard(course, idx, 'active'))}
+          </div>
+        </div>
+      )}
+
+      {activeCourses.length > 0 && otherCourses.length > 0 && (
+        <div className="flex items-center gap-3">
+          <Separator className="flex-1" />
+          <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">Past Courses</span>
+          <Separator className="flex-1" />
+        </div>
+      )}
+
+      {otherCourses.length > 0 && (
+        <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {otherCourses.map((course, idx) => renderCourseCard(course, idx, 'other'))}
+          </div>
+        </div>
+      )}
+
+      {courses.length === 0 && (
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">
+            <BookOpen className="h-10 w-10 mx-auto mb-3 opacity-40" />
+            <p>No courses found in your Canvas account.</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
