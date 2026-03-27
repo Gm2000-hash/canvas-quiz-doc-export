@@ -12,6 +12,7 @@ import {
   GraduationCap, Lightbulb, FileText, BookOpen, Layers,
   Library, GripVertical, ArrowRight, Puzzle, BookOpenCheck,
 } from "lucide-react";
+import { DashboardAnalytics } from "@/components/DashboardAnalytics";
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
 import sketchQuestionBank from "@/assets/sketch-question-bank.png";
 import sketchLessonPlanner from "@/assets/sketch-lesson-planner.png";
@@ -271,6 +272,9 @@ export default function Home() {
             })}
           </div>
         </div>
+
+        {/* Analytics Widgets */}
+        {user && <DashboardAnalytics userId={user.id} />}
 
         {/* Daily Tip */}
         <div className="mx-auto max-w-lg rounded-2xl border border-border bg-card p-5 text-center">
