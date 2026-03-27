@@ -24,9 +24,12 @@ interface ReadingDashboardGridProps {
   openingId: string | null;
   sharingId: string | null;
   copiedId: string | null;
+  savedLayout: LayoutItem[] | null;
+  layoutLoading: boolean;
+  onLayoutSave: (layout: LayoutItem[]) => void;
+  onLayoutReset: () => void;
 }
 
-const LAYOUT_STORAGE_KEY = "reading_dashboard_layout";
 const COLS = 6;
 const ROW_HEIGHT = 120;
 
@@ -38,6 +41,17 @@ function generateDefaultLayout(books: LibraryBook[]): LayoutItem[] {
   return books.map((book, i) => makeItem(book.id, i % COLS, Math.floor(i / COLS) * 2));
 }
 
+function mergeLayout(saved: LayoutItem[] | null, books: LibraryBook[]): LayoutItem[] {
+  if (!saved || saved.length === 0) return generateDefaultLayout(books);
+  const bookIds = new Set(books.map(b => b.id));
+  const existing = saved.filter(l => bookIds.has(l.i));
+  const existingIds = new Set(existing.map(l => l.i));
+  const newBooks = books.filter(b => !existingIds.has(b.id));
+  const maxY = existing.length > 0 ? Math.max(...existing.map(l => l.y + l.h)) : 0;
+  const newLayouts = newBooks.map((book, i) => makeItem(book.id, i % COLS, maxY + Math.floor(i / COLS) * 2));
+  return [...existing, ...newLayouts];
+}
+
 export function ReadingDashboardGrid({
   books,
   onOpenBook,
@@ -45,35 +59,16 @@ export function ReadingDashboardGrid({
   openingId,
   sharingId,
   copiedId,
+  savedLayout,
+  layoutLoading,
+  onLayoutSave,
+  onLayoutReset,
 }: ReadingDashboardGridProps) {
-  const [layout, setLayout] = useState<LayoutItem[]>(() => {
-    try {
-      const stored = localStorage.getItem(LAYOUT_STORAGE_KEY);
-      if (stored) {
-        const parsed: LayoutItem[] = JSON.parse(stored);
-        const bookIds = new Set(books.map(b => b.id));
-        const existing = parsed.filter(l => bookIds.has(l.i));
-        const existingIds = new Set(existing.map(l => l.i));
-        const newBooks = books.filter(b => !existingIds.has(b.id));
-        const maxY = existing.length > 0 ? Math.max(...existing.map(l => l.y + l.h)) : 0;
-        const newLayouts = newBooks.map((book, i) => makeItem(book.id, i % COLS, maxY + Math.floor(i / COLS) * 2));
-        return [...existing, ...newLayouts];
-      }
-    } catch { /* ignore */ }
-    return generateDefaultLayout(books);
-  });
+  const currentLayout = useMemo(() => mergeLayout(savedLayout, books), [savedLayout, books]);
 
   const onLayoutChange = useCallback((newLayout: readonly LayoutItem[]) => {
-    const mutable = [...newLayout];
-    setLayout(mutable);
-    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(mutable));
-  }, []);
-
-  const resetLayout = useCallback(() => {
-    const defaultLayout = generateDefaultLayout(books);
-    setLayout(defaultLayout);
-    localStorage.removeItem(LAYOUT_STORAGE_KEY);
-  }, [books]);
+    onLayoutSave([...newLayout]);
+  }, [onLayoutSave]);
 
   const bookMap = useMemo(() => {
     const map = new Map<string, LibraryBook>();
@@ -81,15 +76,13 @@ export function ReadingDashboardGrid({
     return map;
   }, [books]);
 
-  const currentLayout = useMemo(() => {
-    const layoutIds = new Set(layout.map(l => l.i));
-    const bookIds = new Set(books.map(b => b.id));
-    const filtered = layout.filter(l => bookIds.has(l.i));
-    const newBooks = books.filter(b => !layoutIds.has(b.id));
-    const maxY = filtered.length > 0 ? Math.max(...filtered.map(l => l.y + l.h)) : 0;
-    const newLayouts = newBooks.map((book, i) => makeItem(book.id, i % COLS, maxY + Math.floor(i / COLS) * 2));
-    return [...filtered, ...newLayouts];
-  }, [layout, books]);
+  if (layoutLoading) {
+    return (
+      <div className="flex justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative">
@@ -97,7 +90,7 @@ export function ReadingDashboardGrid({
         <p className="text-[10px] text-muted-foreground italic">
           Drag the handle to reposition • Resize from bottom-right corner
         </p>
-        <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs" onClick={resetLayout}>
+        <Button variant="ghost" size="sm" className="h-7 gap-1.5 text-xs" onClick={onLayoutReset}>
           <RotateCcw className="h-3.5 w-3.5" />
           Reset Layout
         </Button>
