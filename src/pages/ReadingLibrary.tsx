@@ -36,7 +36,7 @@ export default function ReadingLibrary() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [subjectFilter, setSubjectFilter] = useState("all");
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "dashboard">("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "dashboard">("dashboard");
 
   // Viewer states
   const [viewingBook, setViewingBook] = useState<{ title: string; url: string } | null>(null);
