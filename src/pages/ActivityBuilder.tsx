@@ -56,8 +56,30 @@ export default function ActivityBuilder() {
   const [sourcesLoaded, setSourcesLoaded] = useState(false);
   const [selectedSource, setSelectedSource] = useState<string>("");
   const [selectedStandard, setSelectedStandard] = useState<{ code: string; description: string } | null>(null);
+  const [standardFramework, setStandardFramework] = useState<"ngss" | "idaho">("idaho");
+  const [idahoFilter, setIdahoFilter] = useState<string>("all");
+  const [standardSearch, setStandardSearch] = useState("");
   const [generating, setGenerating] = useState(false);
   const { defaultFramework } = useProfileDefaults();
+
+  const filteredStandards = useMemo(() => {
+    let list: { code: string; description: string; category?: string }[] = [];
+    if (standardFramework === "ngss") {
+      list = Object.values(ALL_SUBSTANDARDS).flat();
+    } else {
+      let stds = ALL_IDAHO_STANDARDS_FLAT as { code: string; description: string; category?: string; subject?: string; grade?: string }[];
+      if (idahoFilter !== "all") {
+        const [subject, grade] = idahoFilter.split("|");
+        stds = stds.filter(s => s.subject === subject && s.grade === grade);
+      }
+      list = stds;
+    }
+    if (standardSearch.trim()) {
+      const q = standardSearch.toLowerCase();
+      list = list.filter(s => s.code.toLowerCase().includes(q) || s.description.toLowerCase().includes(q));
+    }
+    return list;
+  }, [standardFramework, idahoFilter, standardSearch]);
 
   // Preview dialog
   const [previewActivity, setPreviewActivity] = useState<Activity | null>(null);
@@ -440,25 +462,79 @@ export default function ActivityBuilder() {
                       )}
                     </div>
                   ) : (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Select a standard</Label>
-                      <ScrollArea className="h-[180px] border rounded-md mt-1.5">
+                    <div className="space-y-2">
+                      <Label className="text-xs text-muted-foreground">Framework</Label>
+                      <div className="flex gap-1 p-1 rounded-lg bg-muted/50 border border-border">
+                        <button
+                          onClick={() => setStandardFramework("idaho")}
+                          className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                            standardFramework === "idaho"
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                          }`}
+                        >
+                          Idaho
+                        </button>
+                        <button
+                          onClick={() => setStandardFramework("ngss")}
+                          className={`flex-1 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                            standardFramework === "ngss"
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                          }`}
+                        >
+                          NGSS
+                        </button>
+                      </div>
+
+                      {standardFramework === "idaho" && (
+                        <Select value={idahoFilter} onValueChange={setIdahoFilter}>
+                          <SelectTrigger className="h-8 text-xs">
+                            <SelectValue placeholder="All subjects" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All Subjects & Grades</SelectItem>
+                            {ALL_IDAHO_STANDARDS.map(gs => (
+                              <SelectItem key={`${gs.subject}|${gs.grade}`} value={`${gs.subject}|${gs.grade}`}>
+                                {gs.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+
+                      <Input
+                        placeholder="Search standards..."
+                        value={standardSearch}
+                        onChange={e => setStandardSearch(e.target.value)}
+                        className="h-8 text-xs"
+                      />
+
+                      <ScrollArea className="h-[180px] border rounded-md">
                         <div className="p-1 space-y-0.5">
-                          {Object.entries(ALL_SUBSTANDARDS).flatMap(([coreIdea, subs]) =>
-                            subs.map(s => (
-                              <button
-                                key={s.code}
-                                onClick={() => setSelectedStandard(s)}
-                                className={`w-full text-left px-2 py-1.5 rounded text-xs transition-colors ${
-                                  selectedStandard?.code === s.code
-                                    ? "bg-primary/10 border border-primary/30"
-                                    : "hover:bg-accent/50"
-                                }`}
-                              >
+                          {filteredStandards.map(s => (
+                            <button
+                              key={s.code + (s.category || "")}
+                              onClick={() => setSelectedStandard({ code: s.code, description: s.description })}
+                              className={`w-full text-left px-2 py-1.5 rounded text-xs transition-colors ${
+                                selectedStandard?.code === s.code
+                                  ? "bg-primary/10 border border-primary/30"
+                                  : "hover:bg-accent/50"
+                              }`}
+                            >
+                              <div className="flex items-center gap-1.5">
                                 <span className="font-semibold">{s.code}</span>
-                                <p className="text-muted-foreground leading-snug line-clamp-2">{s.description}</p>
-                              </button>
-                            ))
+                                {s.category && (
+                                  <Badge variant="outline" className="text-[9px] px-1 py-0">
+                                    {IDAHO_CATEGORY_LABELS[s.category] || s.category}
+                                  </Badge>
+                                )}
+                              </div>
+                              <p className="text-muted-foreground leading-snug line-clamp-2">{s.description}</p>
+                            </button>
+                          ))}
+                          {filteredStandards.length === 0 && (
+                            <p className="text-xs text-muted-foreground p-3 text-center">No matching standards</p>
                           )}
                         </div>
                       </ScrollArea>
