@@ -374,11 +374,7 @@ function UnitSection({
                       <Copy className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      onClick={async () => {
-                        if (!confirm(`Delete "${lesson.title}"?`)) return;
-                        await deleteLesson(lesson.id);
-                        sonnerToast.success("Lesson deleted");
-                      }}
+                      onClick={() => setDeletingLesson({ id: lesson.id, title: lesson.title })}
                       title="Delete"
                       className="rounded-md p-1.5 text-muted-foreground hover:text-destructive"
                     >
