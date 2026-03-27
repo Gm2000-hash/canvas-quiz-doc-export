@@ -3,7 +3,8 @@ import { GridLayout, verticalCompactor } from "react-grid-layout";
 import type { LayoutItem } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { FileText, Link2, Check, Loader2 } from "lucide-react";
+import { FileText, Link2, Check, Loader2, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
 interface LibraryBook {
