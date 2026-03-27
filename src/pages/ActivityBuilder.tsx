@@ -50,10 +50,13 @@ export default function ActivityBuilder() {
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState<ActivityType>("fill_in_blanks");
   const [useAI, setUseAI] = useState(false);
+  const [aiSourceMode, setAiSourceMode] = useState<"lesson" | "standard">("lesson");
   const [sources, setSources] = useState<SourceOption[]>([]);
   const [sourcesLoaded, setSourcesLoaded] = useState(false);
   const [selectedSource, setSelectedSource] = useState<string>("");
+  const [selectedStandard, setSelectedStandard] = useState<{ code: string; description: string } | null>(null);
   const [generating, setGenerating] = useState(false);
+  const { defaultFramework } = useProfileDefaults();
 
   // Preview dialog
   const [previewActivity, setPreviewActivity] = useState<Activity | null>(null);
