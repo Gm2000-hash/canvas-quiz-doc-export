@@ -37,7 +37,6 @@ const FlipPage = forwardRef<HTMLDivElement, { pageNumber: number; width: number;
         renderTextLayer={false}
         renderAnnotationLayer={true}
         className="pdf-page-render [&_.react-pdf__Page__annotations]:absolute [&_.react-pdf__Page__annotations]:inset-0 [&_.react-pdf__Page__annotations]:z-[1000] [&_.react-pdf__Page__annotations_a]:pointer-events-auto"
-        externalLinkTarget="_blank"
       />
     </div>
   );
