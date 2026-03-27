@@ -263,6 +263,15 @@ export default function ReadingLibrary() {
               </div>
             ))}
           </div>
+        ) : viewMode === "dashboard" ? (
+          <ReadingDashboardGrid
+            books={filtered}
+            onOpenBook={openBook}
+            onShare={handleShare}
+            openingId={openingId}
+            sharingId={sharingId}
+            copiedId={copiedId}
+          />
         ) : (
           <div className="space-y-2">
             {filtered.map(book => (
