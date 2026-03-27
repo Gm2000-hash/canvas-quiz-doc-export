@@ -77,7 +77,7 @@ export function RichTextEditor({
     const currentHTML = editor.getHTML();
     if (content !== currentHTML) {
       isUpdatingRef.current = true;
-      editor.commands.setContent(content, false);
+      editor.commands.setContent(content, false, { preserveWhitespace: 'full' });
       isUpdatingRef.current = false;
     }
   }, [content, editor]);
