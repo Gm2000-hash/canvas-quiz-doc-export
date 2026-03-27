@@ -101,13 +101,28 @@ export default function ActivityBuilder() {
   const handleCreate = async () => {
     if (!user || !newTitle.trim()) return;
 
-    if (useAI && selectedSource) {
-      const source = sources.find(s => s.id === selectedSource);
-      if (!source) return;
+    if (useAI) {
+      let invokeBody: any;
+
+      if (aiSourceMode === "standard" && selectedStandard) {
+        invokeBody = {
+          activityType: newType,
+          sourceType: "standard",
+          standardCode: selectedStandard.code,
+          standardDescription: selectedStandard.description,
+        };
+      } else if (aiSourceMode === "lesson" && selectedSource) {
+        const source = sources.find(s => s.id === selectedSource);
+        if (!source) return;
+        invokeBody = { activityType: newType, sourceType: source.type, sourceId: source.id };
+      } else {
+        return;
+      }
+
       setGenerating(true);
       try {
         const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
-          body: { activityType: newType, sourceType: source.type, sourceId: source.id },
+          body: invokeBody,
         });
         if (fnData?.error) throw new Error(fnData.error);
         if (fnError) throw fnError;
@@ -120,6 +135,16 @@ export default function ActivityBuilder() {
           .single();
         if (error) throw error;
         const actId = (data as any).id;
+
+        // If generated from a standard, auto-link that standard
+        if (aiSourceMode === "standard" && selectedStandard) {
+          await supabase.from("h5p_activity_standards").insert({
+            activity_id: actId,
+            ngss_code: selectedStandard.code,
+            ngss_description: selectedStandard.description,
+          });
+        }
+
         setShowCreate(false);
         setNewTitle("");
         setUseAI(false);
