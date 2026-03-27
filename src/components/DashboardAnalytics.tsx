@@ -274,7 +274,7 @@ export function DashboardAnalytics({ userId }: Props) {
             />
           </div>
           <div className="pt-1 flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary" className="text-[10px]">
+            <Badge variant="secondary" className="text-[10px] text-warning-foreground">
               🟢 {coverage.wellCovered} solid
             </Badge>
             <Badge variant="secondary" className="text-[10px]">
