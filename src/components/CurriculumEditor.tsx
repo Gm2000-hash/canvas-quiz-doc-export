@@ -23,6 +23,27 @@ import { exportCurriculumUnitToDocx, exportCurriculumLessonToDocx } from "@/lib/
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { toast as sonnerToast } from "sonner";
 
+/** Convert a string[] (from DB) into a single HTML string for TipTap */
+function arrayToHtml(arr: string[]): string {
+  if (!arr || arr.length === 0) return "";
+  return arr.map(p => {
+    // If already contains HTML tags, use as-is
+    if (/<[a-z][\s\S]*>/i.test(p)) return p;
+    return `<p>${p}</p>`;
+  }).join("");
+}
+
+/** Convert HTML back to a string[] for DB storage */
+function htmlToArray(html: string): string[] {
+  if (!html || html === "<p></p>") return [];
+  return [html];
+}
+
+/** Strip HTML tags for plain-text extraction (AI tagging) */
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
+
 interface CurriculumEditorProps {
   units: { id: string; title: string; discipline: string; grade_level: string; description: string }[];
   onRefreshUnits: () => void;
