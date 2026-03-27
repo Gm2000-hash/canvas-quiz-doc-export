@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfileDefaults } from "@/hooks/useProfileDefaults";
@@ -43,6 +44,7 @@ const GRADE_LEVELS = [
 ];
 
 const LessonPlanner = () => {
+  usePageTitle("Lesson Planner");
   const { user, signOut } = useAuth();
   const { defaultGradeLevel, defaultDiscipline } = useProfileDefaults();
   const navigate = useNavigate();

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -29,6 +30,7 @@ const GRADE_OPTIONS = [
 ];
 
 export default function Profile() {
+  usePageTitle("Profile");
   const { user } = useAuth();
   const { profile, loading, updateProfile } = useProfile();
   const navigate = useNavigate();

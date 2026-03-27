@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useProfile, SUBJECT_OPTIONS } from "@/hooks/useProfile";
@@ -37,6 +38,7 @@ type UserQuestion = {
 };
 
 export default function AdminDashboard() {
+  usePageTitle("Admin Dashboard");
   const navigate = useNavigate();
   const { isAdmin, loading: profileLoading } = useProfile();
   const [users, setUsers] = useState<UserRow[]>([]);

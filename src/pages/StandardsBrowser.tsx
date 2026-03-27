@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -118,6 +119,7 @@ function KeyTermsEditor({
 }
 
 export default function StandardsBrowser() {
+  usePageTitle("Standards Browser");
   const navigate = useNavigate();
   const { user } = useAuth();
   const [framework, setFramework] = useState<"idaho" | "ngss">("idaho");

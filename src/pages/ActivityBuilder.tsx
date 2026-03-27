@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -35,6 +36,7 @@ interface Activity {
 }
 
 export default function ActivityBuilder() {
+  usePageTitle("Activity Builder");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();

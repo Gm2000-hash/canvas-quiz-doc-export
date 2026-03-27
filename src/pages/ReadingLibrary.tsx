@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { PageBanner } from "@/components/PageBanner";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -28,6 +29,7 @@ interface LibraryBook {
 }
 
 export default function ReadingLibrary() {
+  usePageTitle("Reading Library");
   const [generateOpen, setGenerateOpen] = useState(false);
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [loading, setLoading] = useState(true);

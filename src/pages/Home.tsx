@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { PageBanner } from "@/components/PageBanner";
 import { useAuth } from "@/hooks/useAuth";
+import { usePageTitle } from "@/hooks/usePageTitle";
 import { useProfile, SUBJECT_OPTIONS } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -100,6 +101,7 @@ function orderCards(cards: DashboardCard[]): DashboardCard[] {
 }
 
 export default function Home() {
+  usePageTitle("Home");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile } = useProfile();
