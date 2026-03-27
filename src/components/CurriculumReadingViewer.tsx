@@ -738,11 +738,10 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     </div>
                     {((editData.reading_paragraphs as string[]) || []).map((p, i) => (
                       <div key={i} className="flex items-start gap-1">
-                        <Textarea
-                          value={p}
-                          onChange={e => updateEditArray('reading_paragraphs', i, e.target.value)}
-                          rows={4}
-                          className="flex-1 border-dashed"
+                        <RichTextEditor
+                          content={p}
+                          onChange={v => updateEditArray('reading_paragraphs', i, v)}
+                          placeholder="Reading paragraph..."
                         />
                         <ItemToolbar
                           section="reading"
