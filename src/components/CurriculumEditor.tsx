@@ -483,10 +483,10 @@ function LessonEditorDialog({
   const [title, setTitle] = useState(lesson.title);
   const [objectives, setObjectives] = useState<string[]>(lesson.objectives || []);
   const [keyTerms, setKeyTerms] = useState<{ term: string; definition: string }[]>(lesson.key_terms || []);
-  const [intro, setIntro] = useState<string[]>(lesson.intro || []);
-  const [explanation, setExplanation] = useState<string[]>(lesson.explanation || []);
+  const [introHtml, setIntroHtml] = useState(() => arrayToHtml(lesson.intro || []));
+  const [explanationHtml, setExplanationHtml] = useState(() => arrayToHtml(lesson.explanation || []));
   const [readingTitle, setReadingTitle] = useState(lesson.reading_title || "");
-  const [readingParagraphs, setReadingParagraphs] = useState<string[]>(lesson.reading_paragraphs || []);
+  const [readingHtml, setReadingHtml] = useState(() => arrayToHtml(lesson.reading_paragraphs || []));
   const [interactiveActivities, setInteractiveActivities] = useState<{ activity_id: string; title: string; activity_type: string }[]>(
     (lesson.interactive_activities as any[]) || []
   );
