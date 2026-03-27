@@ -140,6 +140,34 @@ export default function ReadingLibrary() {
     }
   };
 
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    if (file.type !== "application/pdf") { toast.error("Only PDF files are supported"); return; }
+    if (file.size > 50 * 1024 * 1024) { toast.error("File must be under 50 MB"); return; }
+    setUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const bookId = crypto.randomUUID();
+      const filePath = `${user.id}/${bookId}.pdf`;
+      const { error: uploadError } = await supabase.storage.from("library-pdfs").upload(filePath, file, { contentType: "application/pdf" });
+      if (uploadError) throw uploadError;
+      const coverUrl = await generatePdfThumbnail(file, bookId);
+      const title = file.name.replace(/\.pdf$/i, "");
+      const { error: insertError } = await supabase.from("library_books").insert({ id: bookId, user_id: user.id, title, file_path: filePath, file_size: file.size, cover_url: coverUrl });
+      if (insertError) throw insertError;
+      toast.success(`"${title}" uploaded successfully`);
+      fetchBooks();
+    } catch (err: any) {
+      console.error("Upload failed:", err);
+      toast.error(err.message || "Failed to upload PDF");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
