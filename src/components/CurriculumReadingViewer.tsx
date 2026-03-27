@@ -145,7 +145,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   // Enter edit mode
   const startEditing = () => {
     if (!lesson) return;
-    setEditData({
+    resetEditData({
       title: lesson.title,
       objectives: [...(lesson.objectives as string[])],
       key_terms: [...(lesson.key_terms as { term: string; definition: string }[])].map(kt => ({ ...kt })),
@@ -159,7 +159,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
 
   const cancelEditing = () => {
     setEditing(false);
-    setEditData(null);
+    resetEditData(null);
   };
 
   const saveEdits = async () => {
