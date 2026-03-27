@@ -305,7 +305,7 @@ export default function StandardsBrowser() {
         <Breadcrumbs items={[{ label: "Standards Browser" }]} />
       </header>
 
-      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-5xl mx-auto px-4 py-6 space-y-6 bg-page-green">
         <PageBanner
           compact
           greeting="Standards Browser"

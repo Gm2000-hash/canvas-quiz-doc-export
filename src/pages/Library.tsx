@@ -200,7 +200,7 @@ export default function Library() {
         <Breadcrumbs items={[{ label: 'Manage Library' }]} />
       </header>
 
-      <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8">
+      <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 bg-page-green">
         <div className="max-w-5xl mx-auto space-y-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>

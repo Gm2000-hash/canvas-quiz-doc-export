@@ -138,7 +138,7 @@ export default function ReadingLibrary() {
         <Breadcrumbs items={[{ label: "Reading Library" }]} />
       </header>
 
-      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-6">
+      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-6 bg-page-green">
         <PageBanner
           greeting="Reading Library"
           subtitle="Shared curriculum readings and PDF resources"

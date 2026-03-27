@@ -179,7 +179,7 @@ export default function Profile() {
         </div>
       </header>
 
-      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <main className="max-w-2xl mx-auto px-4 py-6 space-y-6 bg-page-green">
         {/* Avatar Section */}
         <Card className="border-border/60">
           <CardContent className="pt-6">

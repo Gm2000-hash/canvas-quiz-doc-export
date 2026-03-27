@@ -217,7 +217,7 @@ const LessonPlanner = () => {
         <Breadcrumbs items={[{ label: "Lesson Planner" }]} />
       </header>
 
-      <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-6">
+      <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-6 bg-page-green">
         <PageBanner
           compact
           greeting="Lesson Planner"
