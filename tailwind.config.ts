@@ -71,6 +71,7 @@ export default {
   				green: 'hsl(var(--page-green))',
   				lime: 'hsl(var(--page-lime))',
   				tangerine: 'hsl(var(--page-tangerine))',
+  			},
   			sidebar: {
   				DEFAULT: 'hsl(var(--sidebar-background))',
   				foreground: 'hsl(var(--sidebar-foreground))',
