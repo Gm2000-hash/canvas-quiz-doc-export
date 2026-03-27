@@ -264,8 +264,8 @@ export function DashboardAnalytics({ userId }: Props) {
             <Progress value={100} className="h-2" />
           </div>
           <div>
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-muted-foreground">Well-covered (3+ questions)</span>
+            <div className="flex justify-between text-xs mb-1 text-card-foreground">
+              <span className="text-card-foreground">Well-covered (3+ questions)</span>
               <span className="font-semibold text-foreground">{coverage.wellCovered}</span>
             </div>
             <Progress
