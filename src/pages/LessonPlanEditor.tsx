@@ -412,11 +412,11 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Learning Objectives</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea
+            <RichTextEditor
+              content={lesson.objectives}
+              onChange={v => setLesson({ ...lesson, objectives: v })}
               placeholder="Students will be able to..."
-              value={lesson.objectives}
-              onChange={e => setLesson({ ...lesson, objectives: e.target.value })}
-              rows={3}
+              compact
             />
           </CardContent>
         </Card>
