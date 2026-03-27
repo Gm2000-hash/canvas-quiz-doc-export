@@ -3,6 +3,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfileDefaults } from "@/hooks/useProfileDefaults";
+import { useProfile } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,8 +14,9 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText, Copy, GripVertical, Sparkles } from "lucide-react";
+import { Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText, Copy, GripVertical, Sparkles, Library } from "lucide-react";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
+import PrepopulateStandardsDialog from "@/components/PrepopulateStandardsDialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CurriculumEditor } from "@/components/CurriculumEditor";
 import { AppNavSheet } from "@/components/AppNavSheet";
@@ -57,6 +59,8 @@ const LessonPlanner = () => {
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [prepopulateOpen, setPrepopulateOpen] = useState(false);
+  const { profile } = useProfile();
   const [newUnit, setNewUnit] = useState({ title: "", description: "", grade_level: defaultGradeLevel, discipline: defaultDiscipline, date_start: "", date_end: "" });
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
@@ -244,6 +248,11 @@ const LessonPlanner = () => {
                 <h2 className="text-xl font-bold text-foreground">Units</h2>
                 <p className="text-sm text-muted-foreground mt-0.5 shadow-none">Organize lesson plans into units with pacing guides</p>
               </div>
+              <div className="flex gap-2">
+                <Button variant="outline" className="gap-2 rounded-xl border-2 border-card-foreground" onClick={() => setPrepopulateOpen(true)}>
+                  <Library className="h-4 w-4" />
+                  Prepopulate from Standards
+                </Button>
               <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                 <DialogTrigger asChild>
                   <Button className="gap-2 rounded-xl border-2 border-card-foreground bg-primary-foreground text-card-foreground">
@@ -298,6 +307,7 @@ const LessonPlanner = () => {
                   </div>
                 </DialogContent>
               </Dialog>
+              </div>
             </div>
 
             {loading ? (
@@ -419,6 +429,12 @@ const LessonPlanner = () => {
         onOpenChange={setGenerateOpen}
         onComplete={fetchUnits}
         defaultContentType="reading"
+      />
+      <PrepopulateStandardsDialog
+        open={prepopulateOpen}
+        onOpenChange={setPrepopulateOpen}
+        onComplete={fetchUnits}
+        teacherSubjects={profile?.subjects ?? []}
       />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
