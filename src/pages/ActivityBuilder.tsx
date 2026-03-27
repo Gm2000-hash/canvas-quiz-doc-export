@@ -394,28 +394,86 @@ export default function ActivityBuilder() {
                 <Switch checked={useAI} onCheckedChange={setUseAI} />
               </div>
               {useAI && (
-                <div>
-                  <Label className="text-xs text-muted-foreground">Source lesson or reading</Label>
-                  {!sourcesLoaded ? (
-                    <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
-                  ) : sources.length === 0 ? (
-                    <p className="text-xs text-muted-foreground mt-1">No lessons found. Create a lesson plan or curriculum lesson first.</p>
+                <div className="space-y-3">
+                  {/* Source mode toggle */}
+                  <div className="flex gap-1 p-1 rounded-lg bg-muted/50 border border-border">
+                    <button
+                      onClick={() => setAiSourceMode("lesson")}
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        aiSourceMode === "lesson"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                      }`}
+                    >
+                      <FileText className="h-3 w-3" /> From Lesson
+                    </button>
+                    <button
+                      onClick={() => setAiSourceMode("standard")}
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        aiSourceMode === "standard"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                      }`}
+                    >
+                      <BookOpen className="h-3 w-3" /> From Standard
+                    </button>
+                  </div>
+
+                  {aiSourceMode === "lesson" ? (
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Source lesson or reading</Label>
+                      {!sourcesLoaded ? (
+                        <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
+                      ) : sources.length === 0 ? (
+                        <p className="text-xs text-muted-foreground mt-1">No lessons found. Create a lesson plan or curriculum lesson first.</p>
+                      ) : (
+                        <Select value={selectedSource} onValueChange={setSelectedSource}>
+                          <SelectTrigger className="mt-1.5">
+                            <SelectValue placeholder="Select a lesson..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {sources.map(s => (
+                              <SelectItem key={s.id} value={s.id}>
+                                <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+                                  {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
+                                </span>
+                                {s.title}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
                   ) : (
-                    <Select value={selectedSource} onValueChange={setSelectedSource}>
-                      <SelectTrigger className="mt-1.5">
-                        <SelectValue placeholder="Select a lesson..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {sources.map(s => (
-                          <SelectItem key={s.id} value={s.id}>
-                            <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
-                              {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
-                            </span>
-                            {s.title}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Select a standard</Label>
+                      <ScrollArea className="h-[180px] border rounded-md mt-1.5">
+                        <div className="p-1 space-y-0.5">
+                          {Object.entries(ALL_SUBSTANDARDS).flatMap(([coreIdea, subs]) =>
+                            subs.map(s => (
+                              <button
+                                key={s.code}
+                                onClick={() => setSelectedStandard(s)}
+                                className={`w-full text-left px-2 py-1.5 rounded text-xs transition-colors ${
+                                  selectedStandard?.code === s.code
+                                    ? "bg-primary/10 border border-primary/30"
+                                    : "hover:bg-accent/50"
+                                }`}
+                              >
+                                <span className="font-semibold">{s.code}</span>
+                                <p className="text-muted-foreground leading-snug line-clamp-2">{s.description}</p>
+                              </button>
+                            ))
+                          )}
+                        </div>
+                      </ScrollArea>
+                      {selectedStandard && (
+                        <div className="mt-2 p-2 rounded-md bg-muted/50 border border-border">
+                          <Badge variant="default" className="text-[10px]">{selectedStandard.code}</Badge>
+                          <p className="text-[11px] text-muted-foreground mt-1">{selectedStandard.description}</p>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
@@ -423,7 +481,7 @@ export default function ActivityBuilder() {
 
             <Button
               onClick={handleCreate}
-              disabled={!newTitle.trim() || generating || (useAI && !selectedSource)}
+              disabled={!newTitle.trim() || generating || (useAI && aiSourceMode === "lesson" && !selectedSource) || (useAI && aiSourceMode === "standard" && !selectedStandard)}
               className="w-full gap-2"
             >
               {generating ? (
