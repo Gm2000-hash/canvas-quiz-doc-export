@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ALL_SUBSTANDARDS, getAllStandardsFlat } from "@/lib/ngss-data";
+import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
+import { useProfileDefaults } from "@/hooks/useProfileDefaults";
 import type { ActivityStandard } from "@/hooks/useActivityStandards";
 import { Plus, X, Search, Tag, Loader2, Sparkles } from "lucide-react";
 
@@ -17,35 +20,55 @@ interface ActivityStandardsPickerProps {
 }
 
 export function ActivityStandardsPicker({ standards, onAdd, onRemove, onAutoTag, tagging }: ActivityStandardsPickerProps) {
+  const { defaultFramework } = useProfileDefaults();
   const [search, setSearch] = useState("");
   const [open, setOpen] = useState(false);
   const [adding, setAdding] = useState<string | null>(null);
+  const [framework, setFramework] = useState<"ngss" | "idaho">(defaultFramework);
+  const [idahoFilter, setIdahoFilter] = useState<string>("all");
 
   const existingCodes = new Set(standards.map(s => s.ngss_code));
 
-  const allStandards = useMemo(() => getAllStandardsFlat(), []);
+  const ngssFlat = useMemo(() => getAllStandardsFlat(), []);
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return allStandards.filter(s => !existingCodes.has(s.code));
-    const q = search.toLowerCase();
-    return allStandards.filter(s =>
-      !existingCodes.has(s.code) &&
-      (s.code.toLowerCase().includes(q) ||
-       s.description.toLowerCase().includes(q) ||
-       s.keyTerms.some(t => t.toLowerCase().includes(q)))
-    );
-  }, [search, allStandards, existingCodes]);
+    let list: { code: string; description: string; keyTerms?: string[]; category?: string; subject?: string; grade?: string }[];
 
-  // Group by core idea
+    if (framework === "ngss") {
+      list = ngssFlat as any[];
+    } else {
+      let stds = [...ALL_IDAHO_STANDARDS_FLAT] as any[];
+      if (idahoFilter !== "all") {
+        const [subject, grade] = idahoFilter.split("|");
+        stds = stds.filter((s: any) => s.subject === subject && s.grade === grade);
+      }
+      list = stds;
+    }
+
+    list = list.filter(s => !existingCodes.has(s.code));
+
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      list = list.filter(s =>
+        s.code.toLowerCase().includes(q) ||
+        s.description.toLowerCase().includes(q) ||
+        (s.keyTerms || []).some((t: string) => t.toLowerCase().includes(q))
+      );
+    }
+    return list;
+  }, [search, framework, idahoFilter, ngssFlat, existingCodes]);
+
   const grouped = useMemo(() => {
     const map = new Map<string, typeof filtered>();
     filtered.forEach(s => {
-      const group = s.code.replace(/-\d+$/, "");
+      const group = framework === "ngss"
+        ? s.code.replace(/-\d+$/, "")
+        : (s as any).subject ? `${(s as any).subject} ${(s as any).grade}` : s.code.replace(/\.\d+$/, "");
       if (!map.has(group)) map.set(group, []);
       map.get(group)!.push(s);
     });
     return Array.from(map.entries());
-  }, [filtered]);
+  }, [filtered, framework]);
 
   const handleAdd = async (code: string, description: string) => {
     setAdding(code);
@@ -57,7 +80,7 @@ export function ActivityStandardsPicker({ standards, onAdd, onRemove, onAutoTag,
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
-          <Tag className="h-3.5 w-3.5" /> NGSS Standards
+          <Tag className="h-3.5 w-3.5" /> Standards
         </span>
         <div className="flex items-center gap-1.5">
           <Button
@@ -77,7 +100,45 @@ export function ActivityStandardsPicker({ standards, onAdd, onRemove, onAutoTag,
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-80 p-0" align="end">
-              <div className="p-2 border-b border-border">
+              {/* Framework toggle */}
+              <div className="p-2 border-b border-border space-y-2">
+                <div className="flex gap-1 p-0.5 rounded-lg bg-muted/50 border border-border">
+                  <button
+                    onClick={() => setFramework("idaho")}
+                    className={`flex-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                      framework === "idaho"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    Idaho
+                  </button>
+                  <button
+                    onClick={() => setFramework("ngss")}
+                    className={`flex-1 px-2 py-1 rounded-md text-[11px] font-medium transition-colors ${
+                      framework === "ngss"
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    NGSS
+                  </button>
+                </div>
+                {framework === "idaho" && (
+                  <Select value={idahoFilter} onValueChange={setIdahoFilter}>
+                    <SelectTrigger className="h-7 text-[11px]">
+                      <SelectValue placeholder="All subjects" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Subjects & Grades</SelectItem>
+                      {ALL_IDAHO_STANDARDS.map(gs => (
+                        <SelectItem key={`${gs.subject}|${gs.grade}`} value={`${gs.subject}|${gs.grade}`}>
+                          {gs.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
                   <Input
@@ -100,13 +161,20 @@ export function ActivityStandardsPicker({ standards, onAdd, onRemove, onAutoTag,
                         <p className="text-[10px] font-semibold text-muted-foreground px-2 py-1 uppercase">{group}</p>
                         {stds.map(s => (
                           <button
-                            key={s.code}
+                            key={s.code + ((s as any).category || "")}
                             className="w-full text-left px-2 py-1.5 rounded hover:bg-accent text-xs flex items-start gap-2 disabled:opacity-50"
                             onClick={() => handleAdd(s.code, s.description)}
                             disabled={adding === s.code}
                           >
                             <span className="font-mono text-primary shrink-0 mt-0.5">{s.code}</span>
-                            <span className="text-muted-foreground line-clamp-2">{s.description}</span>
+                            <div className="min-w-0">
+                              {(s as any).category && (
+                                <Badge variant="outline" className="text-[9px] px-1 py-0 mr-1">
+                                  {IDAHO_CATEGORY_LABELS[(s as any).category] || (s as any).category}
+                                </Badge>
+                              )}
+                              <span className="text-muted-foreground line-clamp-2">{s.description}</span>
+                            </div>
                           </button>
                         ))}
                       </div>
