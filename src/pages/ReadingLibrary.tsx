@@ -14,8 +14,9 @@ import { useToast } from "@/hooks/use-toast";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import {
   Sparkles, Search, FileText, BookOpenCheck, Share2, Copy, Check, Link2, Loader2,
-  LayoutGrid, List, LayoutDashboard,
+  LayoutGrid, List, LayoutDashboard, Upload,
 } from "lucide-react";
+import { generatePdfThumbnail } from "@/lib/pdf-thumbnail";
 import { ReadingDashboardGrid } from "@/components/ReadingDashboardGrid";
 import { useDashboardLayout } from "@/hooks/useDashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
@@ -46,6 +47,9 @@ export default function ReadingLibrary() {
   const [viewingBook, setViewingBook] = useState<{ title: string; url: string } | null>(null);
   const [viewingCurriculum, setViewingCurriculum] = useState<{ title: string; discipline: string } | null>(null);
   const [openingId, setOpeningId] = useState<string | null>(null);
+
+  // Upload state
+  const [uploading, setUploading] = useState(false);
 
   // Share states
   const [sharingId, setSharingId] = useState<string | null>(null);
@@ -136,6 +140,34 @@ export default function ReadingLibrary() {
     }
   };
 
+  const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = "";
+    if (file.type !== "application/pdf") { toast.error("Only PDF files are supported"); return; }
+    if (file.size > 50 * 1024 * 1024) { toast.error("File must be under 50 MB"); return; }
+    setUploading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const bookId = crypto.randomUUID();
+      const filePath = `${user.id}/${bookId}.pdf`;
+      const { error: uploadError } = await supabase.storage.from("library-pdfs").upload(filePath, file, { contentType: "application/pdf" });
+      if (uploadError) throw uploadError;
+      const coverUrl = await generatePdfThumbnail(file, bookId);
+      const title = file.name.replace(/\.pdf$/i, "");
+      const { error: insertError } = await supabase.from("library_books").insert({ id: bookId, user_id: user.id, title, file_path: filePath, file_size: file.size, cover_url: coverUrl });
+      if (insertError) throw insertError;
+      toast.success(`"${title}" uploaded successfully`);
+      fetchBooks();
+    } catch (err: any) {
+      console.error("Upload failed:", err);
+      toast.error(err.message || "Failed to upload PDF");
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
@@ -197,6 +229,23 @@ export default function ReadingLibrary() {
             </button>
           </div>
 
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 rounded-xl border-card-foreground border-2"
+            disabled={uploading}
+            onClick={() => document.getElementById("pdf-upload-input")?.click()}
+          >
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            Upload PDF
+          </Button>
+          <input
+            id="pdf-upload-input"
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={handleUpload}
+          />
           <Button onClick={() => setGenerateOpen(true)} className="gap-2 rounded-xl border-card-foreground border-2 bg-muted-foreground" size="sm">
             <Sparkles className="h-4 w-4" />
             AI Generate
