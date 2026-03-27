@@ -175,7 +175,7 @@ export function DashboardAnalytics({ userId }: Props) {
         </CardHeader>
         <CardContent className="space-y-2">
           {upcoming.length === 0 ? (
-            <p className="text-xs text-muted-foreground italic">No lessons scheduled this week</p>
+            <p className="text-xs italic text-sidebar-foreground">No lessons scheduled this week</p>
           ) : (
             upcoming.map((l) => (
               <button

@@ -192,7 +192,7 @@ export default function Home() {
         </div>
       </header>
 
-      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-8 font-sans font-medium text-left text-3xl bg-muted-foreground text-sidebar-foreground">
+      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-8 font-sans font-medium text-left text-3xl bg-muted-foreground text-sidebar-foreground text-[#27fc91]">
         {/* Welcome Banner */}
         <PageBanner
           greeting={`Good ${new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}${profile?.display_name ? `, ${profile.display_name}` : ""}`}
