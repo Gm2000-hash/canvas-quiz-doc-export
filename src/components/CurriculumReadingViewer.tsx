@@ -193,6 +193,34 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
     }
   };
 
+  const handleManualStandardsSave = async (selected: { code: string; description: string }[]) => {
+    if (!lesson) return;
+    try {
+      await (supabase.from('curriculum_lesson_standards' as any) as any).delete().eq('lesson_id', lesson.id);
+      if (selected.length > 0) {
+        const inserts = selected.map(s => ({
+          lesson_id: lesson.id, ngss_code: s.code, ngss_description: s.description, matched_terms: [],
+        }));
+        await (supabase.from('curriculum_lesson_standards' as any) as any).insert(inserts);
+      }
+      const { data: refreshed } = await (supabase.from('curriculum_lesson_standards' as any) as any).select('*').eq('lesson_id', lesson.id);
+      setLessonStandards(refreshed || []);
+      toast.success('Standards updated');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to update standards');
+    }
+  };
+
+  const handleRemoveStandard = async (standardId: string) => {
+    try {
+      await (supabase.from('curriculum_lesson_standards' as any) as any).delete().eq('id', standardId);
+      setLessonStandards(prev => prev.filter(s => s.id !== standardId));
+      toast.success('Standard removed');
+    } catch (err: any) {
+      toast.error('Failed to remove standard');
+    }
+  };
+
   // Enter edit mode
   const startEditing = () => {
     if (!lesson) return;
