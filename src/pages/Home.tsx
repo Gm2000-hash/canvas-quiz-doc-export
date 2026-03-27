@@ -65,14 +65,12 @@ interface DashboardCard {
 }
 
 const ALL_CARDS: DashboardCard[] = [
-  { id: "canvas", title: "Canvas Quiz Exporter", description: "Connect to Canvas LMS and export quizzes as formatted Word documents.", path: "/canvas", icon: FileText, image: sketchCanvas },
+  { id: "canvas", title: "Canvas Export", description: "Connect to Canvas LMS and export quizzes as formatted Word documents.", path: "/canvas", icon: FileText, image: sketchCanvas },
+  { id: "lesson-planner", title: "Curriculum", description: "Build units, lessons, readings, and pacing guides for your courses.", path: "/lesson-planner", icon: Layers, image: sketchLessonPlanner },
   { id: "question-bank", title: "Question Bank", description: "Browse, search, and manage your library of assessment questions.", path: "/question-bank", icon: BookOpen, image: sketchQuestionBank },
-  { id: "create-question", title: "Create Question", description: "Build new questions with DOK levels, Bloom's taxonomy, and standards tags.", path: "/create-question", icon: PenLine, image: sketchCreateQuestion },
-  { id: "lesson-planner", title: "Lesson Planner", description: "Organize units, generate AI lesson plans, and export pacing guides.", path: "/lesson-planner", icon: Layers, image: sketchLessonPlanner },
-  { id: "standards", title: "Standards Browser", description: "Browse Idaho and NGSS standards organized by subject, grade, and category.", path: "/standards", icon: Library, image: sketchStandardsBrowser },
-  { id: "canvas-results", title: "Canvas Results", description: "Pull student quiz scores and analyze performance by standard.", path: "/canvas-results", icon: BarChart3 },
   { id: "activities", title: "Activity Builder", description: "Create interactive H5P-style activities like fill-in-the-blanks and timelines.", path: "/activities", icon: Puzzle, image: sketchActivityBuilder },
-  { id: "profile", title: "Profile Settings", description: "Update your photo, contact info, and teaching preferences.", path: "/profile", icon: UserCircle, image: sketchProfileSettings },
+  { id: "standards", title: "Standards Browser", description: "Browse Idaho and NGSS standards organized by subject, grade, and category.", path: "/standards", icon: Library, image: sketchStandardsBrowser },
+  { id: "reading-library", title: "Reading Library", description: "Access shared curriculum readings and PDF resources for your classes.", path: "/reading-library", icon: BookOpenCheck },
 ];
 
 const STORAGE_KEY = "dashboard-card-order";
