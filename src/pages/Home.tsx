@@ -233,7 +233,7 @@ export default function Home() {
                   onDragStart={(e) => handleDragStart(e, idx)}
                   onDragEnd={handleDragEnd}
                   onDragOver={(e) => handleDragOver(e, idx)}
-                  className={`group relative rounded-2xl border bg-card/60 backdrop-blur-sm text-left transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 cursor-grab active:cursor-grabbing ${
+                  className={`group relative rounded-2xl border bg-white text-left transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 cursor-grab active:cursor-grabbing ${
                     overIdx === idx && dragIdx !== null && dragIdx !== idx
                       ? "ring-2 ring-primary/40 border-primary/40"
                       : "border-border/60"
