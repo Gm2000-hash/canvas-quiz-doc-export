@@ -415,8 +415,6 @@ const LessonPlanner = () => {
         onComplete={fetchUnits}
         defaultContentType="reading"
       />
-        </Tabs>
-      </main>
     </div>
   );
 };
