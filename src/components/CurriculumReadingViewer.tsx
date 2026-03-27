@@ -906,12 +906,14 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
         />
       )}
 
-      <LessonStandardsPicker
-        open={standardsPickerOpen}
-        onOpenChange={setStandardsPickerOpen}
-        selected={lessonStandards.map(s => ({ code: s.ngss_code, description: s.ngss_description }))}
-        onSave={handleManualStandardsSave}
-      />
+      <div className="relative z-[200]">
+        <LessonStandardsPicker
+          open={standardsPickerOpen}
+          onOpenChange={setStandardsPickerOpen}
+          selected={lessonStandards.map(s => ({ code: s.ngss_code, description: s.ngss_description }))}
+          onSave={handleManualStandardsSave}
+        />
+      </div>
     </div>
   );
 }
