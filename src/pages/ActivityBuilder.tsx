@@ -56,8 +56,30 @@ export default function ActivityBuilder() {
   const [sourcesLoaded, setSourcesLoaded] = useState(false);
   const [selectedSource, setSelectedSource] = useState<string>("");
   const [selectedStandard, setSelectedStandard] = useState<{ code: string; description: string } | null>(null);
+  const [standardFramework, setStandardFramework] = useState<"ngss" | "idaho">("idaho");
+  const [idahoFilter, setIdahoFilter] = useState<string>("all");
+  const [standardSearch, setStandardSearch] = useState("");
   const [generating, setGenerating] = useState(false);
   const { defaultFramework } = useProfileDefaults();
+
+  const filteredStandards = useMemo(() => {
+    let list: { code: string; description: string; category?: string }[] = [];
+    if (standardFramework === "ngss") {
+      list = Object.values(ALL_SUBSTANDARDS).flat();
+    } else {
+      let stds = ALL_IDAHO_STANDARDS_FLAT as { code: string; description: string; category?: string; subject?: string; grade?: string }[];
+      if (idahoFilter !== "all") {
+        const [subject, grade] = idahoFilter.split("|");
+        stds = stds.filter(s => s.subject === subject && s.grade === grade);
+      }
+      list = stds;
+    }
+    if (standardSearch.trim()) {
+      const q = standardSearch.toLowerCase();
+      list = list.filter(s => s.code.toLowerCase().includes(q) || s.description.toLowerCase().includes(q));
+    }
+    return list;
+  }, [standardFramework, idahoFilter, standardSearch]);
 
   // Preview dialog
   const [previewActivity, setPreviewActivity] = useState<Activity | null>(null);
