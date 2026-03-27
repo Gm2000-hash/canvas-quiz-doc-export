@@ -33,6 +33,8 @@ interface LibraryBook {
 
 export default function ReadingLibrary() {
   usePageTitle("Reading Library");
+  const { user } = useAuth();
+  const { layout: savedLayout, loading: layoutLoading, saveLayout, resetLayout: resetDashboardLayout } = useDashboardLayout(user?.id);
   const [generateOpen, setGenerateOpen] = useState(false);
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [loading, setLoading] = useState(true);
