@@ -12,6 +12,7 @@ import {
   GraduationCap, Lightbulb, FileText, BookOpen, Layers,
   Library, GripVertical, ArrowRight, Puzzle, BookOpenCheck,
 } from "lucide-react";
+import { DashboardAnalytics } from "@/components/DashboardAnalytics";
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
 import sketchQuestionBank from "@/assets/sketch-question-bank.png";
 import sketchLessonPlanner from "@/assets/sketch-lesson-planner.png";
