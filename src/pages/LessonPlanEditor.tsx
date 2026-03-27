@@ -625,7 +625,7 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><StickyNote className="h-4 w-4 text-primary" /> Teacher Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea placeholder="Additional notes, reminders..." value={lesson.notes} onChange={e => setLesson({ ...lesson, notes: e.target.value })} rows={3} />
+            <RichTextEditor content={lesson.notes} onChange={v => setLesson({ ...lesson, notes: v })} placeholder="Additional notes, reminders..." compact />
           </CardContent>
         </Card>
 
