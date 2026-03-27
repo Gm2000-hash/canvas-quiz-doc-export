@@ -185,6 +185,7 @@ const QuestionBank = () => {
       await deleteFromBank(id);
       setQuestions(q => q.filter(item => item.id !== id));
       setSelected(prev => { const next = new Set(prev); next.delete(id); return next; });
+      setSingleDeleteTarget(null);
       toast.success("Question removed");
     } catch {
       toast.error("Failed to delete question");
