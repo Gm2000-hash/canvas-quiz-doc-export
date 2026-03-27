@@ -27,46 +27,7 @@ const PageCover = forwardRef<HTMLDivElement, PageCoverProps>(({ children }, ref)
 ));
 PageCover.displayName = 'PageCover';
 
-interface FlipPageProps {
-  pageNumber: number;
-  width: number;
-  height: number;
-  pdfDoc: any;
-}
-
-interface LinkAnnotation {
-  url: string;
-  rect: [number, number, number, number];
-}
-
-const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width, height, pdfDoc }, ref) => {
-  const [links, setLinks] = useState<LinkAnnotation[]>([]);
-  const [viewport, setViewport] = useState<{ width: number; height: number } | null>(null);
-
-  useEffect(() => {
-    if (!pdfDoc) return;
-    let cancelled = false;
-    pdfDoc.getPage(pageNumber).then((page: any) => {
-      if (cancelled) return;
-      const vp = page.getViewport({ scale: 1 });
-      setViewport({ width: vp.width, height: vp.height });
-      return page.getAnnotations();
-    }).then((annotations: any[]) => {
-      if (cancelled || !annotations) return;
-      const found: LinkAnnotation[] = [];
-      for (const a of annotations) {
-        if (a.subtype === 'Link' && a.url) {
-          found.push({ url: a.url, rect: a.rect });
-        }
-      }
-      setLinks(found);
-    }).catch(() => {});
-    return () => { cancelled = true; };
-  }, [pageNumber, pdfDoc]);
-
-  const scaleX = viewport ? width / viewport.width : 1;
-  const scaleY = viewport ? height / viewport.height : 1;
-
+const FlipPage = forwardRef<HTMLDivElement, { pageNumber: number; width: number; height: number }>(({ pageNumber, width, height }, ref) => {
   return (
     <div ref={ref} className="bg-white flex items-center justify-center overflow-hidden relative">
       <Page
@@ -74,38 +35,10 @@ const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width,
         width={width}
         height={height}
         renderTextLayer={false}
-        renderAnnotationLayer={false}
-        className="pdf-page-render"
+        renderAnnotationLayer={true}
+        className="pdf-page-render [&_.react-pdf__Page__annotations]:absolute [&_.react-pdf__Page__annotations]:inset-0 [&_.react-pdf__Page__annotations]:z-[1000] [&_.react-pdf__Page__annotations_a]:pointer-events-auto"
+        externalLinkTarget="_blank"
       />
-      {viewport && links.map((link, i) => {
-        const left = link.rect[0] * scaleX;
-        const bottom = link.rect[1] * scaleY;
-        const right = link.rect[2] * scaleX;
-        const top = link.rect[3] * scaleY;
-        return (
-          <a
-            key={i}
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onPointerDown={(e) => e.stopPropagation()}
-            onMouseDown={(e) => e.stopPropagation()}
-            onTouchStart={(e) => e.stopPropagation()}
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              position: 'absolute',
-              left: `${left}px`,
-              top: `${height - top}px`,
-              width: `${right - left}px`,
-              height: `${top - bottom}px`,
-              zIndex: 999,
-              cursor: 'pointer',
-              pointerEvents: 'auto',
-            }}
-            title={link.url}
-          />
-        );
-      })}
     </div>
   );
 });
