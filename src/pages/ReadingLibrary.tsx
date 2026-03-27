@@ -17,6 +17,8 @@ import {
   LayoutGrid, List, LayoutDashboard,
 } from "lucide-react";
 import { ReadingDashboardGrid } from "@/components/ReadingDashboardGrid";
+import { useDashboardLayout } from "@/hooks/useDashboardLayout";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 interface LibraryBook {
