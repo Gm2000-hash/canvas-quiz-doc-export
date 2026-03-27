@@ -156,6 +156,7 @@ const LessonPlanner = () => {
       toast({ title: "Error deleting unit", description: error.message, variant: "destructive" });
       return;
     }
+    setDeleteTarget(null);
     fetchUnits();
     toast({ title: "Unit deleted" });
   };
