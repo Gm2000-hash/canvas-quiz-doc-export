@@ -88,6 +88,9 @@ const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width,
             href={link.url}
             target="_blank"
             rel="noopener noreferrer"
+            onPointerDown={(e) => e.stopPropagation()}
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchStart={(e) => e.stopPropagation()}
             onClick={(e) => e.stopPropagation()}
             style={{
               position: 'absolute',
@@ -95,8 +98,9 @@ const FlipPage = forwardRef<HTMLDivElement, FlipPageProps>(({ pageNumber, width,
               top: `${height - top}px`,
               width: `${right - left}px`,
               height: `${top - bottom}px`,
-              zIndex: 50,
+              zIndex: 999,
               cursor: 'pointer',
+              pointerEvents: 'auto',
             }}
             title={link.url}
           />
