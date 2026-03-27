@@ -171,7 +171,7 @@ export function WeeklyDashboard() {
     : format(currentDate, "MMMM yyyy");
 
   return (
-    <div className="mb-6">
+    <div className="mb-6 bg-primary-foreground">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">

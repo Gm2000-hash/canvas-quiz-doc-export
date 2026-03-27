@@ -67,7 +67,7 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
               </h1>
             )}
             {subtitle && (
-              <p className="text-base sm:text-lg text-muted-foreground mt-1">{subtitle}</p>
+              <p className="text-base sm:text-lg mt-1 text-card-foreground">{subtitle}</p>
             )}
           </div>
           {avatarPosition === "right" && (
