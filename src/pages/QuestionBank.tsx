@@ -105,6 +105,7 @@ function getDisciplineForCode(code: string): string | null {
 }
 
 const QuestionBank = () => {
+  usePageTitle("Question Bank");
   const [questions, setQuestions] = useState<QuestionBankItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");

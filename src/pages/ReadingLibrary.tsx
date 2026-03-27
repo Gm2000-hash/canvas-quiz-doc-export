@@ -29,6 +29,7 @@ interface LibraryBook {
 }
 
 export default function ReadingLibrary() {
+  usePageTitle("Reading Library");
   const [generateOpen, setGenerateOpen] = useState(false);
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [loading, setLoading] = useState(true);

@@ -30,6 +30,7 @@ const GRADE_OPTIONS = [
 ];
 
 export default function Profile() {
+  usePageTitle("Profile");
   const { user } = useAuth();
   const { profile, loading, updateProfile } = useProfile();
   const navigate = useNavigate();

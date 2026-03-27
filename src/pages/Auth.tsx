@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Loader2, FileText } from "lucide-react";
 
 const Auth = () => {
+  usePageTitle("Sign In");
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

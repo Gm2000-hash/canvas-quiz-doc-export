@@ -36,6 +36,7 @@ interface Activity {
 }
 
 export default function ActivityBuilder() {
+  usePageTitle("Activity Builder");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { toast } = useToast();

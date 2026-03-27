@@ -119,6 +119,7 @@ function KeyTermsEditor({
 }
 
 export default function StandardsBrowser() {
+  usePageTitle("Standards Browser");
   const navigate = useNavigate();
   const { user } = useAuth();
   const [framework, setFramework] = useState<"idaho" | "ngss">("idaho");

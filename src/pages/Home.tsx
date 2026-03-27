@@ -101,6 +101,7 @@ function orderCards(cards: DashboardCard[]): DashboardCard[] {
 }
 
 export default function Home() {
+  usePageTitle("Home");
   const navigate = useNavigate();
   const { user } = useAuth();
   const { profile } = useProfile();

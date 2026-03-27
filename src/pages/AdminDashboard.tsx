@@ -38,6 +38,7 @@ type UserQuestion = {
 };
 
 export default function AdminDashboard() {
+  usePageTitle("Admin Dashboard");
   const navigate = useNavigate();
   const { isAdmin, loading: profileLoading } = useProfile();
   const [users, setUsers] = useState<UserRow[]>([]);

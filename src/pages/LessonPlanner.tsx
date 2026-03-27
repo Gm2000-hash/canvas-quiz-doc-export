@@ -44,6 +44,7 @@ const GRADE_LEVELS = [
 ];
 
 const LessonPlanner = () => {
+  usePageTitle("Lesson Planner");
   const { user, signOut } = useAuth();
   const { defaultGradeLevel, defaultDiscipline } = useProfileDefaults();
   const navigate = useNavigate();
