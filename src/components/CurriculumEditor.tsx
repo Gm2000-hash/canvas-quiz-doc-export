@@ -209,6 +209,7 @@ function UnitSection({
   const { lessons, loading, createLesson, deleteLesson, reorderLessons } = useCurriculumLessons(isExpanded ? unit.id : undefined, refreshKey);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [deletingLesson, setDeletingLesson] = useState<{ id: string; title: string } | null>(null);
 
   const handleDrop = async (targetId: string) => {
     if (!dragId || dragId === targetId) return;
