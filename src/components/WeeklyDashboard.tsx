@@ -251,7 +251,7 @@ export function WeeklyDashboard() {
                     })}
                     <button
                       onClick={() => openQuickAdd(day)}
-                      className="w-full h-7 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 hover:bg-primary/5 transition-colors"
+                      className="w-full h-7 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors bg-primary-foreground"
                     >
                       <Plus className="h-3 w-3" />
                     </button>

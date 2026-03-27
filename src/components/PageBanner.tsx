@@ -84,7 +84,7 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
                 <span className="text-2xl sm:text-3xl font-bold tabular-nums text-card-foreground">
                   {stat.value}
                 </span>
-                <span className="text-xs text-muted-foreground font-medium mt-0.5">
+                <span className="text-xs font-medium mt-0.5 text-card-foreground">
                   {stat.label}
                 </span>
               </div>
