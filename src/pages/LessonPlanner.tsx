@@ -307,6 +307,7 @@ const LessonPlanner = () => {
                   </div>
                 </DialogContent>
               </Dialog>
+              </div>
             </div>
 
             {loading ? (
