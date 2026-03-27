@@ -213,7 +213,7 @@ export default function Home() {
               ))}
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground italic">No lessons scheduled for today</p>
+            <p className="text-xs italic text-sidebar-foreground">No lessons scheduled for today</p>
           )}
         </PageBanner>
 

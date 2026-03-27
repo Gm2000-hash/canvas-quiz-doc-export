@@ -277,7 +277,7 @@ export function DashboardAnalytics({ userId }: Props) {
             <Badge variant="secondary" className="text-[10px] text-warning-foreground">
               🟢 {coverage.wellCovered} solid
             </Badge>
-            <Badge variant="secondary" className="text-[10px]">
+            <Badge variant="secondary" className="text-[10px] text-info-foreground">
               🟡 {coverage.covered - coverage.wellCovered} needs work
             </Badge>
           </div>
