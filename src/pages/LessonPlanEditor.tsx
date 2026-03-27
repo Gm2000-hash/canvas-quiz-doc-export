@@ -605,7 +605,7 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Assessment</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea placeholder="How will you assess student understanding?" value={lesson.assessment} onChange={e => setLesson({ ...lesson, assessment: e.target.value })} rows={3} />
+            <RichTextEditor content={lesson.assessment} onChange={v => setLesson({ ...lesson, assessment: v })} placeholder="How will you assess student understanding?" compact />
           </CardContent>
         </Card>
 
