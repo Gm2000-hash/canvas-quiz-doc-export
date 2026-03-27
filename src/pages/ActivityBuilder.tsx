@@ -204,6 +204,7 @@ export default function ActivityBuilder() {
   const handleDelete = async (id: string) => {
     await supabase.from("h5p_activities").delete().eq("id", id);
     setActivities(prev => prev.filter(a => a.id !== id));
+    setDeleteTarget(null);
     toast({ title: "Activity deleted" });
   };
 
