@@ -290,6 +290,7 @@ export type Database = {
           id: string
           is_published: boolean
           page_count: number | null
+          share_token: string | null
           source_discipline: string | null
           title: string
           updated_at: string
@@ -303,6 +304,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           page_count?: number | null
+          share_token?: string | null
           source_discipline?: string | null
           title: string
           updated_at?: string
@@ -316,6 +318,7 @@ export type Database = {
           id?: string
           is_published?: boolean
           page_count?: number | null
+          share_token?: string | null
           source_discipline?: string | null
           title?: string
           updated_at?: string
