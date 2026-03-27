@@ -275,6 +275,10 @@ export default function ReadingLibrary() {
             openingId={openingId}
             sharingId={sharingId}
             copiedId={copiedId}
+            savedLayout={savedLayout}
+            layoutLoading={layoutLoading}
+            onLayoutSave={saveLayout}
+            onLayoutReset={resetDashboardLayout}
           />
         ) : (
           <div className="space-y-2">
