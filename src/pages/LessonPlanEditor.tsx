@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -411,11 +412,11 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><Target className="h-4 w-4 text-primary" /> Learning Objectives</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea
+            <RichTextEditor
+              content={lesson.objectives}
+              onChange={v => setLesson({ ...lesson, objectives: v })}
               placeholder="Students will be able to..."
-              value={lesson.objectives}
-              onChange={e => setLesson({ ...lesson, objectives: e.target.value })}
-              rows={3}
+              compact
             />
           </CardContent>
         </Card>
@@ -433,7 +434,7 @@ const LessonPlanEditor = () => {
               <div key={idx} className="flex gap-2 items-start p-2.5 rounded-xl bg-accent/50">
                 <div className="flex-1 space-y-1.5">
                   <Input placeholder="Term" value={v.term} onChange={e => updateVocabulary(idx, "term", e.target.value)} className="text-sm h-8 font-medium" />
-                  <Textarea placeholder="Definition..." value={v.definition} onChange={e => updateVocabulary(idx, "definition", e.target.value)} rows={2} className="text-sm" />
+                  <RichTextEditor content={v.definition} onChange={val => updateVocabulary(idx, "definition", val)} placeholder="Definition..." minimal />
                 </div>
                 <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg shrink-0 text-muted-foreground hover:text-destructive" onClick={() => removeVocabulary(idx)}>
                   <Trash2 className="h-3.5 w-3.5" />
@@ -594,7 +595,7 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><BookOpen className="h-4 w-4 text-primary" /> Materials & Resources</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea placeholder="List materials, links, handouts..." value={lesson.materials} onChange={e => setLesson({ ...lesson, materials: e.target.value })} rows={3} />
+            <RichTextEditor content={lesson.materials} onChange={v => setLesson({ ...lesson, materials: v })} placeholder="List materials, links, handouts..." compact />
           </CardContent>
         </Card>
 
@@ -604,7 +605,7 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Assessment</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea placeholder="How will you assess student understanding?" value={lesson.assessment} onChange={e => setLesson({ ...lesson, assessment: e.target.value })} rows={3} />
+            <RichTextEditor content={lesson.assessment} onChange={v => setLesson({ ...lesson, assessment: v })} placeholder="How will you assess student understanding?" compact />
           </CardContent>
         </Card>
 
@@ -614,7 +615,7 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> Differentiation</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea placeholder="Accommodations, extensions, ELL support..." value={lesson.differentiation} onChange={e => setLesson({ ...lesson, differentiation: e.target.value })} rows={3} />
+            <RichTextEditor content={lesson.differentiation} onChange={v => setLesson({ ...lesson, differentiation: v })} placeholder="Accommodations, extensions, ELL support..." compact />
           </CardContent>
         </Card>
 
@@ -624,7 +625,7 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><StickyNote className="h-4 w-4 text-primary" /> Teacher Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea placeholder="Additional notes, reminders..." value={lesson.notes} onChange={e => setLesson({ ...lesson, notes: e.target.value })} rows={3} />
+            <RichTextEditor content={lesson.notes} onChange={v => setLesson({ ...lesson, notes: v })} placeholder="Additional notes, reminders..." compact />
           </CardContent>
         </Card>
 

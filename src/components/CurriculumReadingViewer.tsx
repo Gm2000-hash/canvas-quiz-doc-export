@@ -9,6 +9,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { RichTextEditor } from '@/components/RichTextEditor';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save, Undo2, Redo2, Sparkles, Target } from 'lucide-react';
@@ -622,10 +623,11 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     {((editData.objectives as string[]) || []).map((obj, i) => (
                       <div key={i} className="flex items-start gap-1 group">
                         <div className="flex-1">
-                          <Input
-                            value={obj}
-                            onChange={e => updateEditArray('objectives', i, e.target.value)}
-                            className="border-dashed"
+                          <RichTextEditor
+                            content={obj}
+                            onChange={v => updateEditArray('objectives', i, v)}
+                            placeholder="Objective..."
+                            minimal
                           />
                         </div>
                         <ItemToolbar
@@ -661,12 +663,11 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                               onAction={handleEditorAction}
                             />
                           </div>
-                          <Textarea
-                            value={kt.definition}
-                            onChange={e => updateEditKeyTerm(i, 'definition', e.target.value)}
-                            rows={2}
-                            className="border-dashed text-sm"
+                          <RichTextEditor
+                            content={kt.definition}
+                            onChange={v => updateEditKeyTerm(i, 'definition', v)}
                             placeholder="Definition"
+                            minimal
                           />
                         </div>
                       ))}
@@ -681,11 +682,11 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Introduction</Label>
                     {((editData.intro as string[]) || []).map((p, i) => (
                       <div key={i} className="flex items-start gap-1">
-                        <Textarea
-                          value={p}
-                          onChange={e => updateEditArray('intro', i, e.target.value)}
-                          rows={3}
-                          className="flex-1 border-dashed"
+                        <RichTextEditor
+                          content={p}
+                          onChange={v => updateEditArray('intro', i, v)}
+                          placeholder="Introduction paragraph..."
+                          compact
                         />
                         <ItemToolbar
                           section="intro"
@@ -705,11 +706,11 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Explanation</Label>
                     {((editData.explanation as string[]) || []).map((p, i) => (
                       <div key={i} className="flex items-start gap-1">
-                        <Textarea
-                          value={p}
-                          onChange={e => updateEditArray('explanation', i, e.target.value)}
-                          rows={3}
-                          className="flex-1 border-dashed"
+                        <RichTextEditor
+                          content={p}
+                          onChange={v => updateEditArray('explanation', i, v)}
+                          placeholder="Explanation paragraph..."
+                          compact
                         />
                         <ItemToolbar
                           section="explanation"
@@ -737,11 +738,10 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     </div>
                     {((editData.reading_paragraphs as string[]) || []).map((p, i) => (
                       <div key={i} className="flex items-start gap-1">
-                        <Textarea
-                          value={p}
-                          onChange={e => updateEditArray('reading_paragraphs', i, e.target.value)}
-                          rows={4}
-                          className="flex-1 border-dashed"
+                        <RichTextEditor
+                          content={p}
+                          onChange={v => updateEditArray('reading_paragraphs', i, v)}
+                          placeholder="Reading paragraph..."
                         />
                         <ItemToolbar
                           section="reading"
