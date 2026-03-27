@@ -682,11 +682,11 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     <Label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Introduction</Label>
                     {((editData.intro as string[]) || []).map((p, i) => (
                       <div key={i} className="flex items-start gap-1">
-                        <Textarea
-                          value={p}
-                          onChange={e => updateEditArray('intro', i, e.target.value)}
-                          rows={3}
-                          className="flex-1 border-dashed"
+                        <RichTextEditor
+                          content={p}
+                          onChange={v => updateEditArray('intro', i, v)}
+                          placeholder="Introduction paragraph..."
+                          compact
                         />
                         <ItemToolbar
                           section="intro"
