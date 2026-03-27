@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageBanner } from "@/components/PageBanner";
 import { Button } from "@/components/ui/button";
 import { ActivityCard } from "@/components/activities/ActivityCard";
@@ -21,7 +22,7 @@ import { ACTIVITY_TYPES, getDefaultContent } from "@/lib/h5p-types";
 import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
-import { Plus, Puzzle, Search, ArrowLeft, Sparkles, Loader2, LayoutGrid, List, FileText, BookOpen } from "lucide-react";
+import { Plus, Puzzle, Search, Sparkles, Loader2, LayoutGrid, List, FileText, BookOpen } from "lucide-react";
 
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
 
@@ -237,13 +238,7 @@ export default function ActivityBuilder() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
-        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate("/")}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-base font-semibold text-foreground flex items-center gap-2">
-          <Puzzle className="h-4 w-4 text-primary" />
-          Activity Library
-        </span>
+        <Breadcrumbs items={[{ label: "Activity Builder" }]} />
       </header>
 
       <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full space-y-6">

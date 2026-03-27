@@ -7,13 +7,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageBanner } from "@/components/PageBanner";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Search, ArrowLeft, BookOpen, FlaskConical, Calculator, Landmark, Filter, Tag, Plus, X, Save, Loader2, Sparkles } from "lucide-react";
+import { Search, BookOpen, FlaskConical, Calculator, Landmark, Filter, Tag, Plus, X, Save, Loader2, Sparkles } from "lucide-react";
 
 const CATEGORY_COLORS: Record<string, string> = {
   essential: "bg-primary/10 text-primary border-primary/20",
@@ -297,14 +298,9 @@ export default function StandardsBrowser() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b border-border/60">
-        <div className="max-w-5xl mx-auto px-4 h-14 flex items-center gap-3">
-          <AppNavSheet />
-          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => navigate(-1)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
-          <h1 className="text-lg font-bold tracking-tight">Standards Browser</h1>
-        </div>
+      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
+        <AppNavSheet />
+        <Breadcrumbs items={[{ label: "Standards Browser" }]} />
       </header>
 
       <main className="max-w-5xl mx-auto px-4 py-6 space-y-6">
