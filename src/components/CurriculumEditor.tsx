@@ -55,6 +55,7 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
   const [expandedUnit, setExpandedUnit] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [editingLesson, setEditingLesson] = useState<CurriculumLesson | null>(null);
+  const [previewingLesson, setPreviewingLesson] = useState<CurriculumLesson | null>(null);
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
   const [genForm, setGenForm] = useState({ subject_area: "", objectives: "", key_terms: "", format: "textbook" as "textbook" | "scripted" | "both" });
   const [genDialogUnit, setGenDialogUnit] = useState<string | null>(null);
@@ -144,6 +145,7 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
               isExpanded={expandedUnit === unit.id}
               onToggle={() => setExpandedUnit(expandedUnit === unit.id ? null : unit.id)}
               onEditLesson={setEditingLesson}
+              onPreviewLesson={setPreviewingLesson}
               onOpenGenerate={() => {
                 setGenDialogUnit(unit.id);
                 setGenForm({ subject_area: unit.title, objectives: "", key_terms: "", format: "textbook" });
@@ -159,6 +161,15 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
           lesson={editingLesson}
           open={!!editingLesson}
           onOpenChange={(open) => !open && setEditingLesson(null)}
+        />
+      )}
+
+      {/* Reading Preview Dialog */}
+      {previewingLesson && (
+        <ReadingPreviewDialog
+          lesson={previewingLesson}
+          open={!!previewingLesson}
+          onOpenChange={(open) => !open && setPreviewingLesson(null)}
         />
       )}
 
@@ -238,6 +249,7 @@ function UnitSection({
   isExpanded,
   onToggle,
   onEditLesson,
+  onPreviewLesson,
   onOpenGenerate,
   refreshKey,
 }: {
@@ -246,6 +258,7 @@ function UnitSection({
   isExpanded: boolean;
   onToggle: () => void;
   onEditLesson: (lesson: CurriculumLesson) => void;
+  onPreviewLesson: (lesson: CurriculumLesson) => void;
   onOpenGenerate: () => void;
   refreshKey: number;
 }) {
@@ -364,6 +377,13 @@ function UnitSection({
                     </div>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => onPreviewLesson(lesson)}
+                      title="Preview Reading"
+                      className="rounded-md p-1.5 text-muted-foreground hover:text-primary"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                    </button>
                     <button
                       onClick={() => navigate(`/units/${unit.id}`)}
                       title="View Lesson Plans"
@@ -853,6 +873,104 @@ function LessonEditorDialog({
             {saving ? "Saving…" : "Save Lesson"}
           </Button>
         </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+/* ─── Reading Preview Dialog ─── */
+function ReadingPreviewDialog({
+  lesson,
+  open,
+  onOpenChange,
+}: {
+  lesson: CurriculumLesson;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const readingHtml = arrayToHtml(lesson.reading_paragraphs || []);
+  const introHtml = arrayToHtml(lesson.intro || []);
+  const explanationHtml = arrayToHtml(lesson.explanation || []);
+  const hasReading = readingHtml && readingHtml !== "<p></p>";
+  const hasIntro = introHtml && introHtml !== "<p></p>";
+  const hasExplanation = explanationHtml && explanationHtml !== "<p></p>";
+  const hasContent = hasReading || hasIntro || hasExplanation || (lesson.objectives as any[])?.length > 0;
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Eye className="h-5 w-5 text-primary" />
+            Reading Preview
+          </DialogTitle>
+        </DialogHeader>
+
+        {!hasContent ? (
+          <div className="py-12 text-center">
+            <BookOpen className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+            <p className="text-sm text-muted-foreground">No reading content yet. Edit the lesson to add content.</p>
+          </div>
+        ) : (
+          <article className="prose prose-sm max-w-none space-y-6 pt-2">
+            {/* Title */}
+            <div className="border-b border-border pb-4">
+              <h1 className="text-xl font-bold text-foreground mb-1">{lesson.reading_title || lesson.title}</h1>
+              {(lesson.objectives as any[])?.length > 0 && (
+                <div className="mt-3 rounded-lg bg-primary/5 border border-primary/10 p-3">
+                  <p className="text-xs font-semibold text-primary mb-1.5">Learning Objectives</p>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    {(lesson.objectives as string[]).map((obj, i) => (
+                      <li key={i} className="text-xs text-foreground/80">{obj}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+
+            {/* Key Terms */}
+            {(lesson.key_terms as any[])?.length > 0 && (
+              <div className="grid grid-cols-2 gap-2">
+                {(lesson.key_terms as { term: string; definition: string }[]).map((kt, i) => (
+                  <div key={i} className="rounded-lg bg-accent/50 p-2.5">
+                    <span className="text-xs font-bold text-foreground">{kt.term}</span>
+                    <span className="text-xs text-muted-foreground"> — {kt.definition}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Introduction */}
+            {hasIntro && (
+              <section>
+                <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                  <span className="h-1 w-1 rounded-full bg-primary" /> Introduction
+                </h2>
+                <div className="text-sm text-foreground/90 leading-relaxed" dangerouslySetInnerHTML={{ __html: introHtml }} />
+              </section>
+            )}
+
+            {/* Explanation */}
+            {hasExplanation && (
+              <section>
+                <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                  <span className="h-1 w-1 rounded-full bg-primary" /> Explanation
+                </h2>
+                <div className="text-sm text-foreground/90 leading-relaxed" dangerouslySetInnerHTML={{ __html: explanationHtml }} />
+              </section>
+            )}
+
+            {/* Reading */}
+            {hasReading && (
+              <section>
+                <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-1.5">
+                  <span className="h-1 w-1 rounded-full bg-primary" /> Reading
+                </h2>
+                <div className="text-sm text-foreground/90 leading-relaxed" dangerouslySetInnerHTML={{ __html: readingHtml }} />
+              </section>
+            )}
+          </article>
+        )}
       </DialogContent>
     </Dialog>
   );
