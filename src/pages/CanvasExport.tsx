@@ -12,8 +12,8 @@ const CanvasExport = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
+    <div className="min-h-screen bg-white flex flex-col">
+      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
         <AppNavSheet showSettings={isConfigured} onOpenSettings={() => setSettingsOpen(true)} />
         <Breadcrumbs items={[{ label: "Canvas Quiz Exporter" }]} />
       </header>

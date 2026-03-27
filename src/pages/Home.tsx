@@ -181,7 +181,7 @@ export default function Home() {
   const gradeLabels = ((profile as any)?.grade_levels || []).map((g: string) => `Grade ${g}`);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-white flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
         <div className="flex items-center gap-2.5">

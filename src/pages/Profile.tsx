@@ -163,7 +163,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-white">
       {/* Header */}
       <header className="sticky top-0 z-30 bg-card/80 backdrop-blur border-b border-border/60">
         <div className="max-w-2xl mx-auto flex items-center gap-3 px-4 h-14">
