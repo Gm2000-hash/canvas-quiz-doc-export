@@ -46,14 +46,14 @@ function StandardChip({
       <TooltipTrigger asChild>
         <button
           type="button"
-          onClick={isGap && onGapClick ? onGapClick : undefined}
+          onClick={onGapClick ? onGapClick : undefined}
           className={`
-            px-1.5 py-0.5 rounded text-[10px] font-mono leading-tight transition-colors
+            px-1.5 py-0.5 rounded text-[10px] font-mono leading-tight transition-colors cursor-pointer
             ${isGap
-              ? "bg-destructive/10 text-destructive border border-destructive/30 ring-1 ring-destructive/20 cursor-pointer hover:bg-destructive/20 hover:ring-destructive/40"
+              ? "bg-destructive/10 text-destructive border border-destructive/30 ring-1 ring-destructive/20 hover:bg-destructive/20 hover:ring-destructive/40"
               : count <= 2
-                ? "bg-warning/15 text-warning border border-warning/30 cursor-default"
-                : "bg-success/15 text-success border border-success/30 cursor-default"
+                ? "bg-warning/15 text-warning border border-warning/30 hover:bg-warning/25 hover:border-warning/50"
+                : "bg-success/15 text-success border border-success/30 hover:bg-success/25 hover:border-success/50"
             }
           `}
         >
@@ -64,13 +64,12 @@ function StandardChip({
       <TooltipContent side="top" className="max-w-xs">
         <p className="font-semibold text-xs">{code}</p>
         <p className="text-xs text-muted-foreground">{description}</p>
-        {isGap ? (
-          <p className="text-xs font-medium mt-1 text-destructive flex items-center gap-1">
-            <Sparkles className="h-3 w-3" /> Click to generate questions
-          </p>
-        ) : (
-          <p className="text-xs font-medium mt-1 text-foreground">
-            {count} question{count !== 1 ? "s" : ""}
+        <p className="text-xs font-medium mt-1 text-primary flex items-center gap-1">
+          <Sparkles className="h-3 w-3" /> Click to generate questions
+        </p>
+        {!isGap && (
+          <p className="text-xs text-muted-foreground">
+            {count} question{count !== 1 ? "s" : ""} already
           </p>
         )}
       </TooltipContent>
