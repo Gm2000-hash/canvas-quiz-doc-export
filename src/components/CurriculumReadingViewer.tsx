@@ -334,6 +334,12 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
           )}
           {editing && (
             <>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={undoEdit} disabled={!canUndo || saving} title="Undo">
+                <Undo2 className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={redoEdit} disabled={!canRedo || saving} title="Redo">
+                <Redo2 className="h-4 w-4" />
+              </Button>
               <Button variant="ghost" size="sm" onClick={cancelEditing} disabled={saving}>Cancel</Button>
               <Button size="sm" className="gap-2" onClick={saveEdits} disabled={saving}>
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
