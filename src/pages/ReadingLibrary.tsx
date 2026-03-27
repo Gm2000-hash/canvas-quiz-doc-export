@@ -14,8 +14,9 @@ import { useToast } from "@/hooks/use-toast";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import {
   Sparkles, Search, FileText, BookOpenCheck, Share2, Copy, Check, Link2, Loader2,
-  LayoutGrid, List, LayoutDashboard,
+  LayoutGrid, List, LayoutDashboard, Upload,
 } from "lucide-react";
+import { generatePdfThumbnail } from "@/lib/pdf-thumbnail";
 import { ReadingDashboardGrid } from "@/components/ReadingDashboardGrid";
 import { useDashboardLayout } from "@/hooks/useDashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
