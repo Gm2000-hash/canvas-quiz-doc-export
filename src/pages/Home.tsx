@@ -182,7 +182,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
+      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -279,7 +279,7 @@ export default function Home() {
         {user && <DashboardAnalytics userId={user.id} />}
 
         {/* Daily Tip */}
-        <div className="mx-auto max-w-lg rounded-2xl border border-border bg-card p-5 text-center">
+        <div className="mx-auto max-w-lg rounded-2xl border border-border bg-white p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Lightbulb className="h-4 w-4 text-neon-yellow" />
             <span className="text-xs font-semibold uppercase tracking-wider text-neon-yellow">
