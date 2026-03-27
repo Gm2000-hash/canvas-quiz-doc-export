@@ -787,8 +787,15 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     <div className="flex flex-wrap items-center gap-2">
                       <Target className="h-4 w-4 text-primary shrink-0" />
                       {lessonStandards.map(s => (
-                        <Badge key={s.id} variant="secondary" className="text-xs" title={s.ngss_description}>
+                        <Badge key={s.id} variant="secondary" className="text-xs gap-1 pr-1" title={s.ngss_description}>
                           {s.ngss_code}
+                          <button
+                            onClick={() => handleRemoveStandard(s.id)}
+                            className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+                            title="Remove standard"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
                         </Badge>
                       ))}
                     </div>
