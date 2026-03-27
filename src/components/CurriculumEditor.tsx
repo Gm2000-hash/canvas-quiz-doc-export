@@ -541,9 +541,9 @@ function LessonEditorDialog({
     const parts: string[] = [title];
     objectives.forEach(o => parts.push(o));
     keyTerms.forEach(kt => { parts.push(kt.term); parts.push(kt.definition); });
-    intro.forEach(p => parts.push(p));
-    explanation.forEach(p => parts.push(p));
-    readingParagraphs.forEach(p => parts.push(p));
+    parts.push(stripHtml(introHtml));
+    parts.push(stripHtml(explanationHtml));
+    parts.push(stripHtml(readingHtml));
     const text = parts.filter(Boolean).join(" ").substring(0, 4000);
     if (text.length < 20) {
       sonnerToast.error("Not enough content to auto-tag");
