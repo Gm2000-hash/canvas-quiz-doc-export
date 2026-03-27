@@ -217,7 +217,7 @@ export function WeeklyDashboard() {
             const today = isToday(day);
             return (
               <div key={day.toISOString()} className="space-y-1.5 border-4 border-primary-foreground">
-                <div className={`text-center text-xs font-medium py-1 rounded-lg ${today ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+                <div className={`text-center text-xs font-medium py-1 rounded-lg bg-primary-foreground text-card-foreground ${today ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
                   <div>{format(day, "EEE")}</div>
                   <div className={`text-sm font-semibold ${today ? "" : "text-foreground"}`}>{format(day, "d")}</div>
                 </div>
