@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText, Copy, GripVertical, Sparkles } from "lucide-react";
+import GenerateContentDialog from "@/components/GenerateContentDialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { CurriculumEditor } from "@/components/CurriculumEditor";
 import { AppNavSheet } from "@/components/AppNavSheet";
@@ -52,6 +53,7 @@ const LessonPlanner = () => {
   const [units, setUnits] = useState<Unit[]>([]);
   const [loading, setLoading] = useState(true);
   const [createOpen, setCreateOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
   const [newUnit, setNewUnit] = useState({ title: "", description: "", grade_level: defaultGradeLevel, discipline: defaultDiscipline, date_start: "", date_end: "" });
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
@@ -393,6 +395,12 @@ const LessonPlanner = () => {
           </TabsContent>
 
           <TabsContent value="curriculum" className="mt-4">
+            <div className="flex justify-end mb-4">
+              <Button onClick={() => setGenerateOpen(true)} className="gap-2 rounded-xl" size="sm">
+                <Sparkles className="h-4 w-4" />
+                AI Generate
+              </Button>
+            </div>
             <CurriculumEditor
               units={units.map(u => ({ id: u.id, title: u.title, discipline: u.discipline, grade_level: u.grade_level, description: u.description }))}
               onRefreshUnits={fetchUnits}
@@ -400,6 +408,13 @@ const LessonPlanner = () => {
           </TabsContent>
         </Tabs>
       </main>
+
+      <GenerateContentDialog
+        open={generateOpen}
+        onOpenChange={setGenerateOpen}
+        onComplete={fetchUnits}
+        defaultContentType="reading"
+      />
     </div>
   );
 };
