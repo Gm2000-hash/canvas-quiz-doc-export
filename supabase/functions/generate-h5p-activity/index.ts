@@ -24,13 +24,20 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const { activityType, sourceType, sourceId } = await req.json();
+    const { activityType, sourceType, sourceId, standardCode, standardDescription } = await req.json();
 
     // Fetch source content
     let sourceText = "";
     let sourceTitle = "";
 
-    if (sourceType === "lesson_plan") {
+    if (sourceType === "standard") {
+      // Generate from a standards code/description directly
+      if (!standardCode || !standardDescription) {
+        return new Response(JSON.stringify({ error: 'standardCode and standardDescription are required for standard source type' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      sourceTitle = standardCode;
+      sourceText = `Standard: ${standardCode}\nDescription: ${standardDescription}\n\nCreate an activity that helps students demonstrate mastery of this standard. The content should directly assess or teach the concepts described in the standard.`;
+    } else if (sourceType === "lesson_plan") {
       const { data } = await supabase.from("lesson_plans").select("title, objectives, activities, vocabulary, materials, notes").eq("id", sourceId).single();
       if (data) {
         sourceTitle = data.title;
