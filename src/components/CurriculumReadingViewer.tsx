@@ -44,6 +44,8 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   const [editLineSpacing, setEditLineSpacing] = useState('leading-relaxed');
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
   const [videoUrl, setVideoUrl] = useState('');
+  const [lessonStandards, setLessonStandards] = useState<{ id: string; ngss_code: string; ngss_description: string; matched_terms: string[] }[]>([]);
+  const [aiTagging, setAiTagging] = useState(false);
 
   const filteredIndices = lessons.reduce<number[]>((acc, lesson, i) => {
     if (!searchQuery.trim()) { acc.push(i); return acc; }
