@@ -750,18 +750,13 @@ function LessonEditorDialog({
             <Input value={readingTitle} onChange={(e) => setReadingTitle(e.target.value)} placeholder="Reading passage title" />
           </div>
           <div className="space-y-2">
-            <Label>Reading Paragraphs</Label>
-            {readingParagraphs.map((p, i) => (
-              <div key={i} className="flex gap-2">
-                <Textarea value={p} onChange={(e) => { const n = [...readingParagraphs]; n[i] = e.target.value; setReadingParagraphs(n); }} rows={2} />
-                <Button variant="ghost" size="icon" className="shrink-0 self-start" onClick={() => setReadingParagraphs(readingParagraphs.filter((_, j) => j !== i))}>
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            ))}
-            <Button variant="outline" size="sm" onClick={() => setReadingParagraphs([...readingParagraphs, ""])} className="gap-1">
-              <Plus className="h-3 w-3" /> Add Paragraph
-            </Button>
+            <Label>Reading Content</Label>
+            <RichTextEditor
+              content={readingHtml}
+              onChange={setReadingHtml}
+              placeholder="Write the reading passage content..."
+              compact
+            />
           </div>
 
           {/* Interactive Activities */}
