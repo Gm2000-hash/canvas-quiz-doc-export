@@ -1793,6 +1793,11 @@ const QuestionBank = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <GenerateISATExamDialog
+        open={showISATDialog}
+        onOpenChange={setShowISATDialog}
+        onComplete={() => setIsatRefreshKey(k => k + 1)}
+      />
     </div>
   );
 };
