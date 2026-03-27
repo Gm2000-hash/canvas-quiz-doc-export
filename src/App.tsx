@@ -21,6 +21,7 @@ import Library from "./pages/Library";
 import Profile from "./pages/Profile";
 import ActivityBuilder from "./pages/ActivityBuilder";
 import ActivityEditorPage from "./pages/ActivityEditorPage";
+import ReadingLibrary from "./pages/ReadingLibrary";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
