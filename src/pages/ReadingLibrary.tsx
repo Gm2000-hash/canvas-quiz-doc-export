@@ -201,6 +201,23 @@ export default function ReadingLibrary() {
             </button>
           </div>
 
+          <Button
+            variant="outline"
+            size="sm"
+            className="gap-2 rounded-xl border-card-foreground border-2"
+            disabled={uploading}
+            onClick={() => document.getElementById("pdf-upload-input")?.click()}
+          >
+            {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+            Upload PDF
+          </Button>
+          <input
+            id="pdf-upload-input"
+            type="file"
+            accept="application/pdf"
+            className="hidden"
+            onChange={handleUpload}
+          />
           <Button onClick={() => setGenerateOpen(true)} className="gap-2 rounded-xl border-card-foreground border-2 bg-muted-foreground" size="sm">
             <Sparkles className="h-4 w-4" />
             AI Generate
