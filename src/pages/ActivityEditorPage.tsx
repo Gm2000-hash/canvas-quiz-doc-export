@@ -186,7 +186,7 @@ export default function ActivityEditorPage() {
         <AppNavSheet />
         <Breadcrumbs items={[
           { label: "Activity Builder", path: "/activities" },
-          { label: activity?.title || (typeInfo?.label ?? "Activity") },
+          { label: title || (typeInfo?.label ?? "Activity") },
         ]} />
         <div className="flex-1" />
         {supportsAI && (
