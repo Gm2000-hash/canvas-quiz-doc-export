@@ -208,6 +208,51 @@ export type Database = {
           },
         ]
       }
+      isat_exams: {
+        Row: {
+          answers: Json | null
+          completed_at: string | null
+          created_at: string
+          grade_level: string
+          id: string
+          question_count: number
+          questions: Json
+          score: number | null
+          title: string
+          total_points: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          answers?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          grade_level?: string
+          id?: string
+          question_count?: number
+          questions?: Json
+          score?: number | null
+          title: string
+          total_points?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          answers?: Json | null
+          completed_at?: string | null
+          created_at?: string
+          grade_level?: string
+          id?: string
+          question_count?: number
+          questions?: Json
+          score?: number | null
+          title?: string
+          total_points?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lesson_plan_standards: {
         Row: {
           id: string
