@@ -529,7 +529,7 @@ const QuestionBank = () => {
             <Input placeholder="Search questions..." value={search} onChange={e => setSearch(e.target.value)} className="pl-10" />
           </div>
           <div className="flex gap-2 flex-wrap">
-            <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5">
+            <Button size="sm" onClick={() => setShowCreateDialog(true)} className="gap-1.5 border-popover-foreground border-2">
               <Plus className="h-4 w-4" /> Create Question
             </Button>
             <Button size="sm" variant="outline" onClick={() => { setGenerateForStandard(null); setShowGenerateDialog(true); }} className="gap-1.5 border-2 border-card-foreground">
