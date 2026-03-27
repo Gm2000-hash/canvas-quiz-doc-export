@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageBanner } from "@/components/PageBanner";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";

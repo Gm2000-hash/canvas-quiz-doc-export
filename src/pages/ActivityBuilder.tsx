@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
+import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageBanner } from "@/components/PageBanner";
 import { Button } from "@/components/ui/button";
 import { ActivityCard } from "@/components/activities/ActivityCard";
