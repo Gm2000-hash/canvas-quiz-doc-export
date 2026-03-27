@@ -279,7 +279,7 @@ export default function Home() {
         {user && <DashboardAnalytics userId={user.id} />}
 
         {/* Daily Tip */}
-        <div className="mx-auto max-w-lg rounded-2xl border border-border bg-card p-5 text-center">
+        <div className="mx-auto max-w-lg rounded-2xl border border-border bg-white p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Lightbulb className="h-4 w-4 text-neon-yellow" />
             <span className="text-xs font-semibold uppercase tracking-wider text-neon-yellow">
