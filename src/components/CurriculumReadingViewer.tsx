@@ -1127,12 +1127,5 @@ function PushReadingsToCanvasDialog({
         )}
       </DialogContent>
     </Dialog>
-
-      <LessonStandardsPicker
-        open={standardsPickerOpen}
-        onOpenChange={setStandardsPickerOpen}
-        selected={lessonStandards.map(s => ({ code: s.ngss_code, description: s.ngss_description }))}
-        onSave={handleManualStandardsSave}
-      />
   );
 }
