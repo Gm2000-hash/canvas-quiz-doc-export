@@ -69,6 +69,12 @@ export function ReadingDashboardGrid({
     localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(mutable));
   }, []);
 
+  const resetLayout = useCallback(() => {
+    const defaultLayout = generateDefaultLayout(books);
+    setLayout(defaultLayout);
+    localStorage.removeItem(LAYOUT_STORAGE_KEY);
+  }, [books]);
+
   const bookMap = useMemo(() => {
     const map = new Map<string, LibraryBook>();
     books.forEach(b => map.set(b.id, b));
