@@ -386,7 +386,7 @@ const LessonPlanner = () => {
                             <DropdownMenuItem className="gap-2" onClick={() => handleDuplicate(unit)}>
                               <Copy className="h-3.5 w-3.5" /> Duplicate Unit
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleDelete(unit.id)}>
+                            <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => setDeleteTarget({ id: unit.id, title: unit.title })}>
                               <Trash2 className="h-3.5 w-3.5" /> Delete Unit
                             </DropdownMenuItem>
                           </DropdownMenuContent>
