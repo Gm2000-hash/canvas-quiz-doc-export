@@ -175,7 +175,7 @@ export function DashboardAnalytics({ userId }: Props) {
         </CardHeader>
         <CardContent className="space-y-2">
           {upcoming.length === 0 ? (
-            <p className="text-xs text-muted-foreground italic">No lessons scheduled this week</p>
+            <p className="text-xs italic text-sidebar-foreground">No lessons scheduled this week</p>
           ) : (
             upcoming.map((l) => (
               <button
@@ -187,7 +187,7 @@ export function DashboardAnalytics({ userId }: Props) {
                   <CalendarDays className="h-3.5 w-3.5 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium text-foreground truncate">{l.title}</p>
+                  <p className="text-xs font-medium truncate text-sidebar-foreground">{l.title}</p>
                   <p className="text-[10px] text-muted-foreground">
                     {new Date(l.lesson_date + "T00:00:00").toLocaleDateString("en-US", {
                       weekday: "short",
@@ -227,11 +227,11 @@ export function DashboardAnalytics({ userId }: Props) {
               return (
                 <div
                   key={`${item.type}-${item.id}`}
-                  className="flex items-center gap-2 rounded-lg p-2"
+                  className="flex items-center gap-2 rounded-lg p-2 text-foreground"
                 >
                   <Icon className={`h-3.5 w-3.5 shrink-0 ${typeColor[item.type]}`} />
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium text-foreground truncate">{item.title}</p>
+                    <p className="text-xs font-medium truncate text-sidebar-foreground">{item.title}</p>
                     <p className="text-[10px] text-muted-foreground flex items-center gap-1">
                       <Clock className="h-2.5 w-2.5" />
                       {formatDistanceToNow(new Date(item.updated_at), { addSuffix: true })}
@@ -258,14 +258,14 @@ export function DashboardAnalytics({ userId }: Props) {
         <CardContent className="space-y-3">
           <div>
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-muted-foreground">Standards tagged</span>
+              <span className="text-info-foreground">Standards tagged</span>
               <span className="font-semibold text-foreground">{coverage.covered}</span>
             </div>
             <Progress value={100} className="h-2" />
           </div>
           <div>
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-muted-foreground">Well-covered (3+ questions)</span>
+            <div className="flex justify-between text-xs mb-1 text-card-foreground">
+              <span className="text-card-foreground">Well-covered (3+ questions)</span>
               <span className="font-semibold text-foreground">{coverage.wellCovered}</span>
             </div>
             <Progress
@@ -274,10 +274,10 @@ export function DashboardAnalytics({ userId }: Props) {
             />
           </div>
           <div className="pt-1 flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary" className="text-[10px]">
+            <Badge variant="secondary" className="text-[10px] text-warning-foreground">
               🟢 {coverage.wellCovered} solid
             </Badge>
-            <Badge variant="secondary" className="text-[10px]">
+            <Badge variant="secondary" className="text-[10px] text-info-foreground">
               🟡 {coverage.covered - coverage.wellCovered} needs work
             </Badge>
           </div>
