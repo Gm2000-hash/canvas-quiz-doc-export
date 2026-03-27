@@ -2,7 +2,6 @@ import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { PageBanner } from "@/components/PageBanner";
-import { HomeBookShelf } from "@/components/HomeBookShelf";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile, SUBJECT_OPTIONS } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,15 +9,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  GraduationCap, Lightbulb, FileText, BookOpen, PenLine, Layers,
-  Library, GripVertical, UserCircle, ArrowRight, BarChart3, Puzzle,
+  GraduationCap, Lightbulb, FileText, BookOpen, Layers,
+  Library, GripVertical, ArrowRight, Puzzle, BookOpenCheck,
 } from "lucide-react";
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
 import sketchQuestionBank from "@/assets/sketch-question-bank.png";
 import sketchLessonPlanner from "@/assets/sketch-lesson-planner.png";
-import sketchCreateQuestion from "@/assets/sketch-create-question.png";
 import sketchStandardsBrowser from "@/assets/sketch-standards-browser.png";
-import sketchProfileSettings from "@/assets/sketch-profile-settings.png";
 import sketchActivityBuilder from "@/assets/sketch-activity-builder.png";
 
 const dailyTips = [
@@ -65,14 +62,12 @@ interface DashboardCard {
 }
 
 const ALL_CARDS: DashboardCard[] = [
-  { id: "canvas", title: "Canvas Quiz Exporter", description: "Connect to Canvas LMS and export quizzes as formatted Word documents.", path: "/canvas", icon: FileText, image: sketchCanvas },
+  { id: "canvas", title: "Canvas Export", description: "Connect to Canvas LMS and export quizzes as formatted Word documents.", path: "/canvas", icon: FileText, image: sketchCanvas },
+  { id: "lesson-planner", title: "Curriculum", description: "Build units, lessons, readings, and pacing guides for your courses.", path: "/lesson-planner", icon: Layers, image: sketchLessonPlanner },
   { id: "question-bank", title: "Question Bank", description: "Browse, search, and manage your library of assessment questions.", path: "/question-bank", icon: BookOpen, image: sketchQuestionBank },
-  { id: "create-question", title: "Create Question", description: "Build new questions with DOK levels, Bloom's taxonomy, and standards tags.", path: "/create-question", icon: PenLine, image: sketchCreateQuestion },
-  { id: "lesson-planner", title: "Lesson Planner", description: "Organize units, generate AI lesson plans, and export pacing guides.", path: "/lesson-planner", icon: Layers, image: sketchLessonPlanner },
-  { id: "standards", title: "Standards Browser", description: "Browse Idaho and NGSS standards organized by subject, grade, and category.", path: "/standards", icon: Library, image: sketchStandardsBrowser },
-  { id: "canvas-results", title: "Canvas Results", description: "Pull student quiz scores and analyze performance by standard.", path: "/canvas-results", icon: BarChart3 },
   { id: "activities", title: "Activity Builder", description: "Create interactive H5P-style activities like fill-in-the-blanks and timelines.", path: "/activities", icon: Puzzle, image: sketchActivityBuilder },
-  { id: "profile", title: "Profile Settings", description: "Update your photo, contact info, and teaching preferences.", path: "/profile", icon: UserCircle, image: sketchProfileSettings },
+  { id: "standards", title: "Standards Browser", description: "Browse Idaho and NGSS standards organized by subject, grade, and category.", path: "/standards", icon: Library, image: sketchStandardsBrowser },
+  { id: "reading-library", title: "Reading Library", description: "Access shared curriculum readings and PDF resources for your classes.", path: "/reading-library", icon: BookOpenCheck },
 ];
 
 const STORAGE_KEY = "dashboard-card-order";
@@ -277,8 +272,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Shared Book Shelf */}
-        <HomeBookShelf />
+        {/* Daily Tip */}
         <div className="mx-auto max-w-lg rounded-2xl border border-border bg-card p-5 text-center">
           <div className="flex items-center justify-center gap-2 mb-2">
             <Lightbulb className="h-4 w-4 text-neon-yellow" />

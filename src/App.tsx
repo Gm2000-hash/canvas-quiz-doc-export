@@ -21,6 +21,7 @@ import Library from "./pages/Library";
 import Profile from "./pages/Profile";
 import ActivityBuilder from "./pages/ActivityBuilder";
 import ActivityEditorPage from "./pages/ActivityEditorPage";
+import ReadingLibrary from "./pages/ReadingLibrary";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -95,6 +96,7 @@ const App = () => (
           <Route path="/canvas-results" element={<ProtectedRoute><CanvasResults /></ProtectedRoute>} />
           <Route path="/activities" element={<ProtectedRoute><ActivityBuilder /></ProtectedRoute>} />
           <Route path="/activities/:id" element={<ProtectedRoute><ActivityEditorPage /></ProtectedRoute>} />
+          <Route path="/reading-library" element={<ProtectedRoute><ReadingLibrary /></ProtectedRoute>} />
           <Route path="/library" element={<Navigate to="/admin/library" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
