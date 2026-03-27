@@ -387,9 +387,15 @@ const LessonPlanEditor = () => {
                 <Badge key={s.id} variant="secondary" className="text-xs">{s.ngss_code}</Badge>
               ))}
             </div>
-            <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={() => setStandardsOpen(true)}>
-              Edit Standards
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="rounded-xl text-xs" onClick={() => setStandardsOpen(true)}>
+                Edit Standards
+              </Button>
+              <Button variant="outline" size="sm" className="rounded-xl text-xs gap-1.5" onClick={handleAiTag} disabled={aiTagging}>
+                {aiTagging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
+                {aiTagging ? 'Tagging…' : 'AI Tag'}
+              </Button>
+            </div>
             <LessonStandardsPicker
               open={standardsOpen}
               onOpenChange={setStandardsOpen}
