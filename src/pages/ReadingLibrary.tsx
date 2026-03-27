@@ -17,6 +17,8 @@ import {
   LayoutGrid, List, LayoutDashboard,
 } from "lucide-react";
 import { ReadingDashboardGrid } from "@/components/ReadingDashboardGrid";
+import { useDashboardLayout } from "@/hooks/useDashboardLayout";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 
 interface LibraryBook {
@@ -31,6 +33,8 @@ interface LibraryBook {
 
 export default function ReadingLibrary() {
   usePageTitle("Reading Library");
+  const { user } = useAuth();
+  const { layout: savedLayout, loading: layoutLoading, saveLayout, resetLayout: resetDashboardLayout } = useDashboardLayout(user?.id);
   const [generateOpen, setGenerateOpen] = useState(false);
   const [books, setBooks] = useState<LibraryBook[]>([]);
   const [loading, setLoading] = useState(true);
@@ -271,6 +275,10 @@ export default function ReadingLibrary() {
             openingId={openingId}
             sharingId={sharingId}
             copiedId={copiedId}
+            savedLayout={savedLayout}
+            layoutLoading={layoutLoading}
+            onLayoutSave={saveLayout}
+            onLayoutReset={resetDashboardLayout}
           />
         ) : (
           <div className="space-y-2">
