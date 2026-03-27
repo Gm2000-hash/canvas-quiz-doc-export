@@ -292,7 +292,7 @@ const LessonPlanEditor = () => {
         <AppNavSheet />
         <Breadcrumbs items={[
           { label: "Lesson Planner", path: "/lesson-planner" },
-          ...(lesson.unit_id ? [{ label: "Unit", path: `/units/${lesson.unit_id}` }] : []),
+          ...(lesson.unit_id ? [{ label: unitTitle || "Unit", path: `/units/${lesson.unit_id}` }] : []),
           { label: lesson.title || "Untitled Lesson" },
         ]} />
         <div className="flex-1" />
