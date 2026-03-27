@@ -280,15 +280,15 @@ const LessonPlanEditor = () => {
 
   if (loading || !lesson) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
+    <div className="min-h-screen bg-white flex flex-col">
+      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
         <Breadcrumbs items={[
           { label: "Lesson Planner", path: "/lesson-planner" },

@@ -299,8 +299,8 @@ export default function StandardsBrowser() {
   }, [gradeFilter]);
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
+    <div className="min-h-screen bg-white">
+      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
         <Breadcrumbs items={[{ label: "Standards Browser" }]} />
       </header>

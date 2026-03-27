@@ -132,8 +132,8 @@ export default function ReadingLibrary() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-card/80 glass-header flex items-center px-4 gap-4">
+    <div className="min-h-screen bg-white flex flex-col">
+      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
         <Breadcrumbs items={[{ label: "Reading Library" }]} />
       </header>
