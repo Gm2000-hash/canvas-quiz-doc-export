@@ -1667,7 +1667,7 @@ const QuestionBank = () => {
         onOpenChange={setShowCreateDialog}
         onCreated={loadQuestions}
       />
-      <GenerateQuestionsDialog
+      <GenerateContentDialog
         open={showGenerateDialog}
         onOpenChange={(v) => {
           setShowGenerateDialog(v);
@@ -1675,6 +1675,7 @@ const QuestionBank = () => {
         }}
         onComplete={loadQuestions}
         initialStandard={generateForStandard}
+        defaultContentType="questions"
       />
       <DokBloomsSuggestionsDialog
         open={!!suggestionsQuestion}
