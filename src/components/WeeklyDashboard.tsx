@@ -191,7 +191,7 @@ export function WeeklyDashboard() {
             <Button
               variant={viewMode === "month" ? "secondary" : "ghost"}
               size="sm"
-              className="h-7 px-2.5 rounded-md text-xs gap-1 border-card-foreground border-2"
+              className="h-7 px-2.5 rounded-md text-xs gap-1 border-card-foreground border-2 ml-[10px] mr-[10px]"
               onClick={() => setViewMode("month")}
             >
               <CalendarRange className="h-3.5 w-3.5" /> Month
