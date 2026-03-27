@@ -246,7 +246,7 @@ const LessonPlanner = () => {
               </div>
               <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                 <DialogTrigger asChild>
-                  <Button className="gap-2 rounded-xl border-card-foreground bg-primary-foreground text-card-foreground">
+                  <Button className="gap-2 rounded-xl border-2 border-card-foreground bg-primary-foreground text-card-foreground">
                     <Plus className="h-4 w-4" />
                     New Unit
                   </Button>
