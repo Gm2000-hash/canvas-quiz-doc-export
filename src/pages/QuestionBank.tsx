@@ -535,7 +535,7 @@ const QuestionBank = () => {
             <Button size="sm" variant="outline" onClick={() => { setGenerateForStandard(null); setShowGenerateDialog(true); }} className="gap-1.5 border-2 border-card-foreground">
               <Sparkles className="h-4 w-4" /> Generate Sample Questions
             </Button>
-            <Button variant={viewMode === "grouped" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grouped")} className="gap-1.5">
+            <Button variant={viewMode === "grouped" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grouped")} className="gap-1.5 border-card-foreground border-2">
               <LayoutGrid className="h-4 w-4" /> By Standard
             </Button>
             <Button variant={viewMode === "flat" ? "default" : "outline"} size="sm" onClick={() => setViewMode("flat")} className="gap-1.5 border-popover-foreground border-2">
