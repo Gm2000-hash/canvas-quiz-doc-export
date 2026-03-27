@@ -905,6 +905,13 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
           bookTitle={title}
         />
       )}
+
+      <LessonStandardsPicker
+        open={standardsPickerOpen}
+        onOpenChange={setStandardsPickerOpen}
+        selected={lessonStandards.map(s => ({ code: s.ngss_code, description: s.ngss_description }))}
+        onSave={handleManualStandardsSave}
+      />
     </div>
   );
 }
