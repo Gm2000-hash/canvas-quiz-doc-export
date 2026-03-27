@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -21,6 +22,27 @@ import { useNavigate } from "react-router-dom";
 import { exportCurriculumUnitToDocx, exportCurriculumLessonToDocx } from "@/lib/export-curriculum-docx";
 import { LessonStandardsPicker } from "@/components/LessonStandardsPicker";
 import { toast as sonnerToast } from "sonner";
+
+/** Convert a string[] (from DB) into a single HTML string for TipTap */
+function arrayToHtml(arr: string[]): string {
+  if (!arr || arr.length === 0) return "";
+  return arr.map(p => {
+    // If already contains HTML tags, use as-is
+    if (/<[a-z][\s\S]*>/i.test(p)) return p;
+    return `<p>${p}</p>`;
+  }).join("");
+}
+
+/** Convert HTML back to a string[] for DB storage */
+function htmlToArray(html: string): string[] {
+  if (!html || html === "<p></p>") return [];
+  return [html];
+}
+
+/** Strip HTML tags for plain-text extraction (AI tagging) */
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim();
+}
 
 interface CurriculumEditorProps {
   units: { id: string; title: string; discipline: string; grade_level: string; description: string }[];
@@ -482,10 +504,10 @@ function LessonEditorDialog({
   const [title, setTitle] = useState(lesson.title);
   const [objectives, setObjectives] = useState<string[]>(lesson.objectives || []);
   const [keyTerms, setKeyTerms] = useState<{ term: string; definition: string }[]>(lesson.key_terms || []);
-  const [intro, setIntro] = useState<string[]>(lesson.intro || []);
-  const [explanation, setExplanation] = useState<string[]>(lesson.explanation || []);
+  const [introHtml, setIntroHtml] = useState(() => arrayToHtml(lesson.intro || []));
+  const [explanationHtml, setExplanationHtml] = useState(() => arrayToHtml(lesson.explanation || []));
   const [readingTitle, setReadingTitle] = useState(lesson.reading_title || "");
-  const [readingParagraphs, setReadingParagraphs] = useState<string[]>(lesson.reading_paragraphs || []);
+  const [readingHtml, setReadingHtml] = useState(() => arrayToHtml(lesson.reading_paragraphs || []));
   const [interactiveActivities, setInteractiveActivities] = useState<{ activity_id: string; title: string; activity_type: string }[]>(
     (lesson.interactive_activities as any[]) || []
   );
@@ -540,9 +562,9 @@ function LessonEditorDialog({
     const parts: string[] = [title];
     objectives.forEach(o => parts.push(o));
     keyTerms.forEach(kt => { parts.push(kt.term); parts.push(kt.definition); });
-    intro.forEach(p => parts.push(p));
-    explanation.forEach(p => parts.push(p));
-    readingParagraphs.forEach(p => parts.push(p));
+    parts.push(stripHtml(introHtml));
+    parts.push(stripHtml(explanationHtml));
+    parts.push(stripHtml(readingHtml));
     const text = parts.filter(Boolean).join(" ").substring(0, 4000);
     if (text.length < 20) {
       sonnerToast.error("Not enough content to auto-tag");
@@ -602,10 +624,10 @@ function LessonEditorDialog({
         title,
         objectives: objectives as any,
         key_terms: keyTerms as any,
-        intro: intro as any,
-        explanation: explanation as any,
+        intro: htmlToArray(introHtml) as any,
+        explanation: htmlToArray(explanationHtml) as any,
         reading_title: readingTitle || null,
-        reading_paragraphs: readingParagraphs as any,
+        reading_paragraphs: htmlToArray(readingHtml) as any,
         interactive_activities: interactiveActivities as any,
         updated_at: new Date().toISOString(),
       } as any)
@@ -728,18 +750,13 @@ function LessonEditorDialog({
             <Input value={readingTitle} onChange={(e) => setReadingTitle(e.target.value)} placeholder="Reading passage title" />
           </div>
           <div className="space-y-2">
-            <Label>Reading Paragraphs</Label>
-            {readingParagraphs.map((p, i) => (
-              <div key={i} className="flex gap-2">
-                <Textarea value={p} onChange={(e) => { const n = [...readingParagraphs]; n[i] = e.target.value; setReadingParagraphs(n); }} rows={2} />
-                <Button variant="ghost" size="icon" className="shrink-0 self-start" onClick={() => setReadingParagraphs(readingParagraphs.filter((_, j) => j !== i))}>
-                  <Trash2 className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            ))}
-            <Button variant="outline" size="sm" onClick={() => setReadingParagraphs([...readingParagraphs, ""])} className="gap-1">
-              <Plus className="h-3 w-3" /> Add Paragraph
-            </Button>
+            <Label>Reading Content</Label>
+            <RichTextEditor
+              content={readingHtml}
+              onChange={setReadingHtml}
+              placeholder="Write the reading passage content..."
+              compact
+            />
           </div>
 
           {/* Interactive Activities */}
@@ -787,40 +804,27 @@ function LessonEditorDialog({
             />
           </div>
 
-          {/* Intro & Explanation (collapsible sections) */}
-          <details className="space-y-2">
-            <summary className="cursor-pointer text-sm font-medium text-foreground">Introduction ({intro.length} paragraphs)</summary>
-            <div className="space-y-2 pt-2">
-              {intro.map((p, i) => (
-                <div key={i} className="flex gap-2">
-                  <Textarea value={p} onChange={(e) => { const n = [...intro]; n[i] = e.target.value; setIntro(n); }} rows={2} />
-                  <Button variant="ghost" size="icon" className="shrink-0 self-start" onClick={() => setIntro(intro.filter((_, j) => j !== i))}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              ))}
-              <Button variant="outline" size="sm" onClick={() => setIntro([...intro, ""])} className="gap-1">
-                <Plus className="h-3 w-3" /> Add
-              </Button>
-            </div>
-          </details>
+          {/* Introduction */}
+          <div className="space-y-2">
+            <Label>Introduction</Label>
+            <RichTextEditor
+              content={introHtml}
+              onChange={setIntroHtml}
+              placeholder="Write the lesson introduction..."
+              compact
+            />
+          </div>
 
-          <details className="space-y-2">
-            <summary className="cursor-pointer text-sm font-medium text-foreground">Explanation ({explanation.length} paragraphs)</summary>
-            <div className="space-y-2 pt-2">
-              {explanation.map((p, i) => (
-                <div key={i} className="flex gap-2">
-                  <Textarea value={p} onChange={(e) => { const n = [...explanation]; n[i] = e.target.value; setExplanation(n); }} rows={2} />
-                  <Button variant="ghost" size="icon" className="shrink-0 self-start" onClick={() => setExplanation(explanation.filter((_, j) => j !== i))}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              ))}
-              <Button variant="outline" size="sm" onClick={() => setExplanation([...explanation, ""])} className="gap-1">
-                <Plus className="h-3 w-3" /> Add
-              </Button>
-            </div>
-          </details>
+          {/* Explanation */}
+          <div className="space-y-2">
+            <Label>Explanation</Label>
+            <RichTextEditor
+              content={explanationHtml}
+              onChange={setExplanationHtml}
+              placeholder="Write the lesson explanation..."
+              compact
+            />
+          </div>
 
           <Button onClick={handleSave} disabled={saving} className="w-full gap-2 rounded-xl">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
