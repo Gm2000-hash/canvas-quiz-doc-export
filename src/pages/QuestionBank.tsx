@@ -124,7 +124,9 @@ const QuestionBank = () => {
   const [singleDeleteTarget, setSingleDeleteTarget] = useState<{ id: string; text: string } | null>(null);
   const [generateForStandard, setGenerateForStandard] = useState<{ code: string; description: string; framework: "NGSS" | "Idaho"; subject: string } | null>(null);
   const [showPushToCanvas, setShowPushToCanvas] = useState(false);
-  const [quizTitle, setQuizTitle] = useState("Custom Quiz");
+  const [showISATDialog, setShowISATDialog] = useState(false);
+  const [isatRefreshKey, setIsatRefreshKey] = useState(0);
+  const [activeTab, setActiveTab] = useState<"questions" | "isat">("questions");
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
   const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
