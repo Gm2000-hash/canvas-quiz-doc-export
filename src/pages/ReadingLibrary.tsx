@@ -14,8 +14,9 @@ import { useToast } from "@/hooks/use-toast";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import {
   Sparkles, Search, FileText, BookOpenCheck, Share2, Copy, Check, Link2, Loader2,
-  LayoutGrid, List,
+  LayoutGrid, List, LayoutDashboard,
 } from "lucide-react";
+import { ReadingDashboardGrid } from "@/components/ReadingDashboardGrid";
 import { toast } from "sonner";
 
 interface LibraryBook {
