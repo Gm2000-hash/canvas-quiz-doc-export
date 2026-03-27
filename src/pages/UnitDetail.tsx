@@ -16,7 +16,7 @@ import { AppNavSheet } from "@/components/AppNavSheet";
 import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog";
 import { useToast } from "@/hooks/use-toast";
 import { format, eachDayOfInterval, isWeekend, isSameDay, parseISO, addDays } from "date-fns";
-import { GenerateLessonDialog } from "@/components/GenerateLessonDialog";
+import GenerateContentDialog from "@/components/GenerateContentDialog";
 import { exportUnitToDocx } from "@/lib/export-lesson-docx";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import type { Json } from "@/integrations/supabase/types";
