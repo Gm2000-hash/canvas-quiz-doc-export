@@ -238,6 +238,7 @@ function UnitSection({
   isExpanded,
   onToggle,
   onEditLesson,
+  onPreviewLesson,
   onOpenGenerate,
   refreshKey,
 }: {
@@ -246,6 +247,7 @@ function UnitSection({
   isExpanded: boolean;
   onToggle: () => void;
   onEditLesson: (lesson: CurriculumLesson) => void;
+  onPreviewLesson: (lesson: CurriculumLesson) => void;
   onOpenGenerate: () => void;
   refreshKey: number;
 }) {
