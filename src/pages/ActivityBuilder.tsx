@@ -11,13 +11,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useActivityStandards, type ActivityStandard } from "@/hooks/useActivityStandards";
+import { useProfileDefaults } from "@/hooks/useProfileDefaults";
 import { ACTIVITY_TYPES, getDefaultContent } from "@/lib/h5p-types";
 import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
-import { Plus, Puzzle, Search, ArrowLeft, Sparkles, Loader2, LayoutGrid, List } from "lucide-react";
+import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
+import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
+import { Plus, Puzzle, Search, ArrowLeft, Sparkles, Loader2, LayoutGrid, List, FileText, BookOpen } from "lucide-react";
 
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
 
