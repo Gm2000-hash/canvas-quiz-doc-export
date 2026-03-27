@@ -394,7 +394,7 @@ export default function ActivityBuilder() {
                 <SelectTrigger className="mt-1.5">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent position="popper" sideOffset={4} className="z-[200] max-h-[300px] overflow-y-auto">
                   {ACTIVITY_TYPES.map(t => (
                     <SelectItem key={t.type} value={t.type}>
                       <div>
