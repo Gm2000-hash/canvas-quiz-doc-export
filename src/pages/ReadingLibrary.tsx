@@ -158,7 +158,7 @@ export default function ReadingLibrary() {
           </div>
 
           <Select value={subjectFilter} onValueChange={setSubjectFilter}>
-            <SelectTrigger className="w-[180px]">
+            <SelectTrigger className="w-full sm:w-[180px]">
               <SelectValue placeholder="All types" />
             </SelectTrigger>
             <SelectContent>

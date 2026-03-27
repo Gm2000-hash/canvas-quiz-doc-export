@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { ActivityCard } from "@/components/activities/ActivityCard";
 import { ActivityPlayer } from "@/components/activities/ActivityPlayer";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,6 +48,7 @@ export default function ActivityBuilder() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"list" | "grouped">("grouped");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
 
   // Create dialog
   const [showCreate, setShowCreate] = useState(false);
@@ -202,6 +204,7 @@ export default function ActivityBuilder() {
   const handleDelete = async (id: string) => {
     await supabase.from("h5p_activities").delete().eq("id", id);
     setActivities(prev => prev.filter(a => a.id !== id));
+    setDeleteTarget(null);
     toast({ title: "Activity deleted" });
   };
 
@@ -340,7 +343,7 @@ export default function ActivityBuilder() {
                 onPlay={() => setPreviewActivity(a)}
                 onEdit={() => navigate(`/activities/${a.id}`)}
                 onDuplicate={() => handleDuplicate(a)}
-                onDelete={() => handleDelete(a.id)}
+                onDelete={() => setDeleteTarget({ id: a.id, title: a.title })}
               />
             ))}
           </div>
@@ -364,7 +367,7 @@ export default function ActivityBuilder() {
                       onPlay={() => setPreviewActivity(a)}
                       onEdit={() => navigate(`/activities/${a.id}`)}
                       onDuplicate={() => handleDuplicate(a)}
-                      onDelete={() => handleDelete(a.id)}
+                      onDelete={() => setDeleteTarget({ id: a.id, title: a.title })}
                     />
                   ))}
                 </div>
@@ -583,6 +586,26 @@ export default function ActivityBuilder() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Activity</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>"{deleteTarget?.title}"</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && handleDelete(deleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Activity
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import {
   Plus, Trash2, Pencil, ChevronDown, ChevronRight, GripVertical, Copy,
   BookOpen, Sparkles, Loader2, Eye, RotateCcw, Save, X, FileDown, Library, ExternalLink, Puzzle, Download, Tag,
@@ -209,6 +210,7 @@ function UnitSection({
   const { lessons, loading, createLesson, deleteLesson, reorderLessons } = useCurriculumLessons(isExpanded ? unit.id : undefined, refreshKey);
   const [dragId, setDragId] = useState<string | null>(null);
   const [dragOverId, setDragOverId] = useState<string | null>(null);
+  const [deletingLesson, setDeletingLesson] = useState<{ id: string; title: string } | null>(null);
 
   const handleDrop = async (targetId: string) => {
     if (!dragId || dragId === targetId) return;
@@ -373,11 +375,7 @@ function UnitSection({
                       <Copy className="h-3.5 w-3.5" />
                     </button>
                     <button
-                      onClick={async () => {
-                        if (!confirm(`Delete "${lesson.title}"?`)) return;
-                        await deleteLesson(lesson.id);
-                        sonnerToast.success("Lesson deleted");
-                      }}
+                      onClick={() => setDeletingLesson({ id: lesson.id, title: lesson.title })}
                       title="Delete"
                       className="rounded-md p-1.5 text-muted-foreground hover:text-destructive"
                     >
@@ -398,6 +396,32 @@ function UnitSection({
           )}
         </div>
       )}
+
+      <AlertDialog open={!!deletingLesson} onOpenChange={(open) => !open && setDeletingLesson(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Lesson</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>"{deletingLesson?.title}"</strong>? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                if (deletingLesson) {
+                  await deleteLesson(deletingLesson.id);
+                  setDeletingLesson(null);
+                  sonnerToast.success("Lesson deleted");
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Lesson
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

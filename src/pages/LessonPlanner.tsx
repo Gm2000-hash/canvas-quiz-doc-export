@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -57,6 +58,7 @@ const LessonPlanner = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
   const [newUnit, setNewUnit] = useState({ title: "", description: "", grade_level: defaultGradeLevel, discipline: defaultDiscipline, date_start: "", date_end: "" });
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const dragNode = useRef<HTMLDivElement | null>(null);
@@ -154,6 +156,7 @@ const LessonPlanner = () => {
       toast({ title: "Error deleting unit", description: error.message, variant: "destructive" });
       return;
     }
+    setDeleteTarget(null);
     fetchUnits();
     toast({ title: "Unit deleted" });
   };
@@ -383,7 +386,7 @@ const LessonPlanner = () => {
                             <DropdownMenuItem className="gap-2" onClick={() => handleDuplicate(unit)}>
                               <Copy className="h-3.5 w-3.5" /> Duplicate Unit
                             </DropdownMenuItem>
-                            <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => handleDelete(unit.id)}>
+                            <DropdownMenuItem className="gap-2 text-destructive focus:text-destructive" onClick={() => setDeleteTarget({ id: unit.id, title: unit.title })}>
                               <Trash2 className="h-3.5 w-3.5" /> Delete Unit
                             </DropdownMenuItem>
                           </DropdownMenuContent>
@@ -417,6 +420,26 @@ const LessonPlanner = () => {
         onComplete={fetchUnits}
         defaultContentType="reading"
       />
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Unit</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>"{deleteTarget?.title}"</strong> and all its lessons? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deleteTarget && handleDelete(deleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Unit
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

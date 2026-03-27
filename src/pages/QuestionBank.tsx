@@ -118,6 +118,7 @@ const QuestionBank = () => {
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
+  const [singleDeleteTarget, setSingleDeleteTarget] = useState<{ id: string; text: string } | null>(null);
   const [generateForStandard, setGenerateForStandard] = useState<{ code: string; description: string; framework: "NGSS" | "Idaho"; subject: string } | null>(null);
   const [showPushToCanvas, setShowPushToCanvas] = useState(false);
   const [quizTitle, setQuizTitle] = useState("Custom Quiz");
@@ -184,6 +185,7 @@ const QuestionBank = () => {
       await deleteFromBank(id);
       setQuestions(q => q.filter(item => item.id !== id));
       setSelected(prev => { const next = new Set(prev); next.delete(id); return next; });
+      setSingleDeleteTarget(null);
       toast.success("Question removed");
     } catch {
       toast.error("Failed to delete question");
@@ -473,7 +475,7 @@ const QuestionBank = () => {
             <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground" onClick={e => { e.stopPropagation(); openEdit(q); }}>
               <Pencil className="h-3.5 w-3.5" />
             </Button>
-            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); handleDelete(q.id); }}>
+            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive" onClick={e => { e.stopPropagation(); setSingleDeleteTarget({ id: q.id, text: stripHtml(q.question_text).slice(0, 80) }); }}>
               <Trash2 className="h-3.5 w-3.5" />
             </Button>
           </div>
@@ -547,9 +549,9 @@ const QuestionBank = () => {
             )}
           </div>
         </div>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           <Select value={filterDok} onValueChange={setFilterDok}>
-            <SelectTrigger className="w-[180px] h-9 text-sm">
+            <SelectTrigger className="w-full sm:w-[180px] h-9 text-sm">
               <SelectValue placeholder="DOK Level" />
             </SelectTrigger>
             <SelectContent>
@@ -560,7 +562,7 @@ const QuestionBank = () => {
             </SelectContent>
           </Select>
           <Select value={filterBlooms} onValueChange={setFilterBlooms}>
-            <SelectTrigger className="w-[180px] h-9 text-sm">
+            <SelectTrigger className="w-full sm:w-[180px] h-9 text-sm">
               <SelectValue placeholder="Bloom's Level" />
             </SelectTrigger>
             <SelectContent>
@@ -571,7 +573,7 @@ const QuestionBank = () => {
             </SelectContent>
           </Select>
           <Select value={filterStandard} onValueChange={setFilterStandard}>
-            <SelectTrigger className="w-[200px] h-9 text-sm">
+            <SelectTrigger className="w-full sm:w-[200px] h-9 text-sm">
               <SelectValue placeholder="Standard" />
             </SelectTrigger>
             <SelectContent>
@@ -1735,6 +1737,29 @@ const QuestionBank = () => {
             >
               {bulkDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
               Delete {bulkDeleteTarget?.ids.length} Question{(bulkDeleteTarget?.ids.length || 0) !== 1 ? "s" : ""}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Single Delete Confirmation */}
+      <AlertDialog open={!!singleDeleteTarget} onOpenChange={(open) => !open && setSingleDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Question</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this question? This action cannot be undone.
+              <br /><br />
+              <span className="text-xs text-muted-foreground italic">"{singleDeleteTarget?.text}…"</span>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => singleDeleteTarget && handleDelete(singleDeleteTarget.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Question
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
