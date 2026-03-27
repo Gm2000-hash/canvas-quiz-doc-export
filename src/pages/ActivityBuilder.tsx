@@ -48,6 +48,7 @@ export default function ActivityBuilder() {
   const [search, setSearch] = useState("");
   const [filterType, setFilterType] = useState<string>("all");
   const [viewMode, setViewMode] = useState<"list" | "grouped">("grouped");
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
 
   // Create dialog
   const [showCreate, setShowCreate] = useState(false);
