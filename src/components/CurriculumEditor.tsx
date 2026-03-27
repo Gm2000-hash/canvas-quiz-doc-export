@@ -390,6 +390,28 @@ function UnitSection({
                     </button>
                     <button
                       onClick={async () => {
+                        await createLesson({
+                          unit_id: unit.id,
+                          title: `${lesson.title} (Copy)`,
+                          sort_order: lessons.length,
+                          objectives: lesson.objectives,
+                          intro: lesson.intro,
+                          explanation: lesson.explanation,
+                          key_terms: lesson.key_terms,
+                          reading_title: lesson.reading_title,
+                          reading_paragraphs: lesson.reading_paragraphs,
+                          interactive_activities: lesson.interactive_activities as any,
+                          image_url: lesson.image_url,
+                        });
+                        sonnerToast.success("Lesson duplicated");
+                      }}
+                      title="Duplicate"
+                      className="rounded-md p-1.5 text-muted-foreground hover:text-foreground"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={async () => {
                         if (!confirm(`Delete "${lesson.title}"?`)) return;
                         await deleteLesson(lesson.id);
                         sonnerToast.success("Lesson deleted");
