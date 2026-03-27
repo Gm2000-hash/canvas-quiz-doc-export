@@ -96,6 +96,7 @@ const App = () => (
           <Route path="/canvas-results" element={<ProtectedRoute><CanvasResults /></ProtectedRoute>} />
           <Route path="/activities" element={<ProtectedRoute><ActivityBuilder /></ProtectedRoute>} />
           <Route path="/activities/:id" element={<ProtectedRoute><ActivityEditorPage /></ProtectedRoute>} />
+          <Route path="/reading-library" element={<ProtectedRoute><ReadingLibrary /></ProtectedRoute>} />
           <Route path="/library" element={<Navigate to="/admin/library" replace />} />
           <Route path="*" element={<NotFound />} />
         </Routes>

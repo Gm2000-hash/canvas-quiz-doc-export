@@ -4,16 +4,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, FileText, BookOpen, Layers, PenLine, Settings, LogOut, Home, ShieldCheck, Library, UserCircle, Puzzle } from "lucide-react";
+import { Menu, FileText, BookOpen, Layers, Settings, LogOut, Home, ShieldCheck, Library, UserCircle, Puzzle, BookOpenCheck } from "lucide-react";
 
 const navItems = [
   { label: "Home", path: "/", icon: Home, description: "Dashboard" },
   { label: "Canvas Export", path: "/canvas", icon: FileText, description: "Export quizzes from Canvas" },
+  { label: "Curriculum", path: "/lesson-planner", icon: Layers, description: "Units, lessons & readings" },
   { label: "Question Bank", path: "/question-bank", icon: BookOpen, description: "Browse & manage questions" },
-  { label: "Create Question", path: "/create-question", icon: PenLine, description: "Build a new question" },
-  { label: "Lesson Planner", path: "/lesson-planner", icon: Layers, description: "Units, lessons & pacing" },
+  { label: "Activity Builder", path: "/activities", icon: Puzzle, description: "Create interactive activities" },
   { label: "Standards Browser", path: "/standards", icon: Library, description: "Browse Idaho & NGSS standards" },
-  { label: "Activity Builder", path: "/activities", icon: Puzzle, description: "Create interactive H5P activities" },
+  { label: "Reading Library", path: "/reading-library", icon: BookOpenCheck, description: "Shared readings & PDFs" },
 ];
 
 interface AppNavSheetProps {
