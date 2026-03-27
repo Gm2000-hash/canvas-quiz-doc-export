@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
-  Plus, Trash2, Pencil, ChevronDown, ChevronRight, GripVertical,
+  Plus, Trash2, Pencil, ChevronDown, ChevronRight, GripVertical, Copy,
   BookOpen, Sparkles, Loader2, Eye, RotateCcw, Save, X, FileDown, Library, ExternalLink, Puzzle, Download, Tag,
 } from "lucide-react";
 import { EmbedActivityPicker, type EmbeddedActivity } from "@/components/EmbedActivityPicker";
@@ -387,6 +387,28 @@ function UnitSection({
                     </button>
                     <button onClick={() => onEditLesson(lesson)} title="Edit" className="rounded-md p-1.5 text-muted-foreground hover:text-foreground">
                       <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={async () => {
+                        await createLesson({
+                          unit_id: unit.id,
+                          title: `${lesson.title} (Copy)`,
+                          sort_order: lessons.length,
+                          objectives: lesson.objectives,
+                          intro: lesson.intro,
+                          explanation: lesson.explanation,
+                          key_terms: lesson.key_terms,
+                          reading_title: lesson.reading_title,
+                          reading_paragraphs: lesson.reading_paragraphs,
+                          interactive_activities: lesson.interactive_activities as any,
+                          image_url: lesson.image_url,
+                        });
+                        sonnerToast.success("Lesson duplicated");
+                      }}
+                      title="Duplicate"
+                      className="rounded-md p-1.5 text-muted-foreground hover:text-foreground"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
                     </button>
                     <button
                       onClick={async () => {
