@@ -248,6 +248,11 @@ const LessonPlanner = () => {
                 <h2 className="text-xl font-bold text-foreground">Units</h2>
                 <p className="text-sm text-muted-foreground mt-0.5 shadow-none">Organize lesson plans into units with pacing guides</p>
               </div>
+              <div className="flex gap-2">
+                <Button variant="outline" className="gap-2 rounded-xl border-2 border-card-foreground" onClick={() => setPrepopulateOpen(true)}>
+                  <Library className="h-4 w-4" />
+                  Prepopulate from Standards
+                </Button>
               <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                 <DialogTrigger asChild>
                   <Button className="gap-2 rounded-xl border-2 border-card-foreground bg-primary-foreground text-card-foreground">
