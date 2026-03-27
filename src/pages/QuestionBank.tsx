@@ -562,7 +562,7 @@ const QuestionBank = () => {
             </SelectContent>
           </Select>
           <Select value={filterBlooms} onValueChange={setFilterBlooms}>
-            <SelectTrigger className="w-[180px] h-9 text-sm">
+            <SelectTrigger className="w-full sm:w-[180px] h-9 text-sm">
               <SelectValue placeholder="Bloom's Level" />
             </SelectTrigger>
             <SelectContent>
