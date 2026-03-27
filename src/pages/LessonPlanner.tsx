@@ -430,6 +430,12 @@ const LessonPlanner = () => {
         onComplete={fetchUnits}
         defaultContentType="reading"
       />
+      <PrepopulateStandardsDialog
+        open={prepopulateOpen}
+        onOpenChange={setPrepopulateOpen}
+        onComplete={fetchUnits}
+        teacherSubjects={profile?.subjects ?? []}
+      />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
