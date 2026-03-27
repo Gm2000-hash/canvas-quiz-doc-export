@@ -516,7 +516,7 @@ const QuestionBank = () => {
         <Breadcrumbs items={[{ label: "Question Bank" }]} />
       </header>
 
-      <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-6">
+      <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-6 bg-page-green">
         <PageBanner
           compact
           greeting="Question Bank"

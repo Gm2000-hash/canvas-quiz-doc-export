@@ -214,7 +214,7 @@ export default function ActivityEditorPage() {
         </Button>
       </header>
 
-      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full space-y-6">
+      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full space-y-6 bg-page-green">
         <div>
           <Label className="text-sm font-medium">Activity Title</Label>
           <Input value={title} onChange={e => setTitle(e.target.value)} className="mt-1.5 text-lg font-semibold" />

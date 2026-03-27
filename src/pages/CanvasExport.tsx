@@ -35,7 +35,7 @@ const CanvasExport = () => {
         </Sheet>
       )}
 
-      <main className="flex-1">
+      <main className="flex-1 bg-page-green">
         {!isConfigured ? (
           <div className="flex items-center justify-center min-h-[calc(100vh-3.5rem)]">
             <div className="max-w-sm w-full mx-auto px-4 space-y-6">

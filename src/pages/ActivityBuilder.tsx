@@ -268,7 +268,7 @@ export default function ActivityBuilder() {
         <Breadcrumbs items={[{ label: "Activity Builder" }]} />
       </header>
 
-      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full space-y-6">
+      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full space-y-6 bg-page-green">
         <PageBanner
           greeting="Activity Library"
           subtitle="Browse, create and manage interactive H5P-style activities organized by type"
