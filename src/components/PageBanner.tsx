@@ -45,7 +45,7 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
   return (
     <div
       ref={ref}
-      className={`relative overflow-hidden rounded-2xl gradient-banner border border-border bg-white ${compact ? "p-5" : "p-6 sm:p-8"}`}
+      className={`relative overflow-hidden rounded-2xl gradient-banner bg-white ${compact ? "p-5" : "p-6 sm:p-8"} border-card-foreground border-2`}
     >
       <div className="absolute inset-0 pointer-events-none overflow-hidden">
         <div className="absolute -top-12 -right-12 w-40 h-40 rounded-full bg-primary/10" />

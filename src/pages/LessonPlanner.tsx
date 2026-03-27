@@ -242,7 +242,7 @@ const LessonPlanner = () => {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-xl font-bold text-foreground">Units</h2>
-                <p className="text-sm text-muted-foreground mt-0.5">Organize lesson plans into units with pacing guides</p>
+                <p className="text-sm text-muted-foreground mt-0.5 shadow-none">Organize lesson plans into units with pacing guides</p>
               </div>
               <Dialog open={createOpen} onOpenChange={setCreateOpen}>
                 <DialogTrigger asChild>
