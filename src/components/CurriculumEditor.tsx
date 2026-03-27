@@ -144,10 +144,7 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
               onToggle={() => setExpandedUnit(expandedUnit === unit.id ? null : unit.id)}
               onEditLesson={setEditingLesson}
               onPreviewLesson={setPreviewingLesson}
-              onOpenGenerate={() => {
-                setGenDialogUnit(unit.id);
-                setGenForm({ subject_area: unit.title, objectives: "", key_terms: "", format: "textbook" });
-              }}
+              onOpenGenerate={() => setGenDialogUnit(unit.id)}
             />
           ))}
         </div>
