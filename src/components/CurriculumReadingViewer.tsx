@@ -11,8 +11,9 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save, Undo2, Redo2 } from 'lucide-react';
 import { ReadingEditToolbar, ItemToolbar, type EditorAction, type SectionKind } from '@/components/ReadingEditToolbar';
+import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { toast } from 'sonner';
 import type { CurriculumLesson } from '@/hooks/useCurriculum';
 
@@ -36,7 +37,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   const [showToc, setShowToc] = useState(false);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [editData, setEditData] = useState<Partial<CurriculumLesson> | null>(null);
+  const { state: editData, set: setEditData, undo: undoEdit, redo: redoEdit, reset: resetEditData, canUndo, canRedo } = useUndoRedo<Partial<CurriculumLesson>>(null);
   const [editFont, setEditFont] = useState('font-sans');
   const [editFontSize, setEditFontSize] = useState('text-sm');
   const [editLineSpacing, setEditLineSpacing] = useState('leading-relaxed');
@@ -144,7 +145,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   // Enter edit mode
   const startEditing = () => {
     if (!lesson) return;
-    setEditData({
+    resetEditData({
       title: lesson.title,
       objectives: [...(lesson.objectives as string[])],
       key_terms: [...(lesson.key_terms as { term: string; definition: string }[])].map(kt => ({ ...kt })),
@@ -158,7 +159,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
 
   const cancelEditing = () => {
     setEditing(false);
-    setEditData(null);
+    resetEditData(null);
   };
 
   const saveEdits = async () => {
@@ -187,7 +188,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
       updated[currentLesson] = { ...lesson, ...editData } as CurriculumLesson;
       setLessons(updated);
       setEditing(false);
-      setEditData(null);
+      resetEditData(null);
       toast.success('Reading saved');
     } catch (err: any) {
       toast.error(err?.message || 'Failed to save');
@@ -333,6 +334,12 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
           )}
           {editing && (
             <>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={undoEdit} disabled={!canUndo || saving} title="Undo">
+                <Undo2 className="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={redoEdit} disabled={!canRedo || saving} title="Redo">
+                <Redo2 className="h-4 w-4" />
+              </Button>
               <Button variant="ghost" size="sm" onClick={cancelEditing} disabled={saving}>Cancel</Button>
               <Button size="sm" className="gap-2" onClick={saveEdits} disabled={saving}>
                 {saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />}
