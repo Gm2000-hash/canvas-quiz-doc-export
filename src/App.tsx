@@ -100,6 +100,7 @@ const App = () => (
           <Route path="/activities/:id" element={<ProtectedRoute><ActivityEditorPage /></ProtectedRoute>} />
           <Route path="/reading-library" element={<ProtectedRoute><ReadingLibrary /></ProtectedRoute>} />
           <Route path="/library" element={<Navigate to="/admin/library" replace />} />
+          <Route path="/isat-exam/:id" element={<ProtectedRoute><ISATExamPlayer /></ProtectedRoute>} />
           <Route path="/shared-reading/:token" element={<SharedReading />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
