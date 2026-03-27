@@ -492,6 +492,108 @@ function LessonEditorDialog({
   const [embedPickerOpen, setEmbedPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Standards state
+  const [standards, setStandards] = useState<{ id: string; ngss_code: string; ngss_description: string; matched_terms: string[] }[]>([]);
+  const [standardsPickerOpen, setStandardsPickerOpen] = useState(false);
+  const [autoTagging, setAutoTagging] = useState(false);
+
+  // Load existing standards
+  useEffect(() => {
+    const load = async () => {
+      const { data } = await supabase
+        .from("curriculum_lesson_standards")
+        .select("*")
+        .eq("lesson_id", lesson.id);
+      if (data) setStandards(data);
+    };
+    load();
+  }, [lesson.id]);
+
+  const handleRemoveStandard = async (stdId: string) => {
+    await supabase.from("curriculum_lesson_standards").delete().eq("id", stdId);
+    setStandards(s => s.filter(x => x.id !== stdId));
+  };
+
+  const handlePickerSave = async (selected: { code: string; description: string }[]) => {
+    // Delete all existing, re-insert
+    await supabase.from("curriculum_lesson_standards").delete().eq("lesson_id", lesson.id);
+    if (selected.length > 0) {
+      const rows = selected.map(s => ({
+        lesson_id: lesson.id,
+        ngss_code: s.code,
+        ngss_description: s.description,
+        matched_terms: [],
+      }));
+      await supabase.from("curriculum_lesson_standards").insert(rows);
+    }
+    // Reload
+    const { data } = await supabase
+      .from("curriculum_lesson_standards")
+      .select("*")
+      .eq("lesson_id", lesson.id);
+    if (data) setStandards(data);
+    sonnerToast.success("Standards updated");
+  };
+
+  const handleAutoTag = async () => {
+    // Build a text blob from lesson content
+    const parts: string[] = [title];
+    objectives.forEach(o => parts.push(o));
+    keyTerms.forEach(kt => { parts.push(kt.term); parts.push(kt.definition); });
+    intro.forEach(p => parts.push(p));
+    explanation.forEach(p => parts.push(p));
+    readingParagraphs.forEach(p => parts.push(p));
+    const text = parts.filter(Boolean).join(" ").substring(0, 4000);
+    if (text.length < 20) {
+      sonnerToast.error("Not enough content to auto-tag");
+      return;
+    }
+
+    setAutoTagging(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("standards-tagger", {
+        body: {
+          questions: [{ id: 1, question_text: text }],
+          framework: "ngss",
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      const tags = data?.tags?.[0]?.standards || [];
+      if (tags.length === 0) {
+        sonnerToast.info("No standards matched this content");
+        setAutoTagging(false);
+        return;
+      }
+
+      // Merge with existing (avoid duplicates)
+      const existingCodes = new Set(standards.map(s => s.ngss_code));
+      const newTags = tags.filter((t: any) => !existingCodes.has(t.code));
+
+      if (newTags.length > 0) {
+        const rows = newTags.map((t: any) => ({
+          lesson_id: lesson.id,
+          ngss_code: t.code,
+          ngss_description: t.description,
+          matched_terms: t.matched_terms || [],
+        }));
+        await supabase.from("curriculum_lesson_standards").insert(rows);
+        // Reload
+        const { data: refreshed } = await supabase
+          .from("curriculum_lesson_standards")
+          .select("*")
+          .eq("lesson_id", lesson.id);
+        if (refreshed) setStandards(refreshed);
+      }
+      sonnerToast.success(`${newTags.length} new standard(s) tagged`);
+    } catch (err: any) {
+      sonnerToast.error(err.message || "Auto-tagging failed");
+    } finally {
+      setAutoTagging(false);
+    }
+  };
+
   const handleSave = async () => {
     setSaving(true);
     const { error } = await supabase
@@ -528,6 +630,63 @@ function LessonEditorDialog({
           <div className="space-y-2">
             <Label>Title</Label>
             <Input value={title} onChange={(e) => setTitle(e.target.value)} />
+          </div>
+
+          {/* Standards */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-1.5">
+                <Tag className="h-3.5 w-3.5 text-primary" /> Standards
+              </Label>
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 text-xs h-7"
+                  onClick={handleAutoTag}
+                  disabled={autoTagging}
+                >
+                  {autoTagging ? <Loader2 className="h-3 w-3 animate-spin" /> : <Sparkles className="h-3 w-3" />}
+                  AI Tag
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1 text-xs h-7"
+                  onClick={() => setStandardsPickerOpen(true)}
+                >
+                  <Plus className="h-3 w-3" /> Browse
+                </Button>
+              </div>
+            </div>
+            {standards.length > 0 ? (
+              <div className="flex flex-wrap gap-1.5">
+                {standards.map(s => (
+                  <Badge key={s.id} variant="secondary" className="gap-1 text-xs pr-1">
+                    <span className="font-semibold">{s.ngss_code}</span>
+                    <button
+                      onClick={() => handleRemoveStandard(s.id)}
+                      className="ml-0.5 rounded-full p-0.5 hover:bg-destructive/20 hover:text-destructive transition-colors"
+                    >
+                      <X className="h-2.5 w-2.5" />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-muted-foreground">No standards tagged yet. Use AI Tag or Browse to add.</p>
+            )}
+            {standards.some(s => s.matched_terms?.length > 0) && (
+              <div className="text-[11px] text-muted-foreground italic">
+                Matched: {standards.flatMap(s => s.matched_terms).filter(Boolean).slice(0, 8).join(", ")}
+              </div>
+            )}
+            <LessonStandardsPicker
+              open={standardsPickerOpen}
+              onOpenChange={setStandardsPickerOpen}
+              selected={standards.map(s => ({ code: s.ngss_code, description: s.ngss_description }))}
+              onSave={handlePickerSave}
+            />
           </div>
 
           {/* Objectives */}
