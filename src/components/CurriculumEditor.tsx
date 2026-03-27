@@ -168,71 +168,17 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
         />
       )}
 
-      {/* AI Generate Dialog */}
-      <Dialog open={!!genDialogUnit} onOpenChange={(open) => !open && setGenDialogUnit(null)}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Generate Curriculum Reading
-            </DialogTitle>
-          </DialogHeader>
-          <GenerateForm
-            form={genForm}
-            setForm={setGenForm}
-            generating={!!generatingFor}
-            onGenerate={async () => {
-              if (!genDialogUnit || !user) return;
-              setGeneratingFor(genDialogUnit);
-              try {
-                const { data, error } = await supabase.functions.invoke("generate-curriculum-reading", {
-                  body: {
-                    subject_area: genForm.subject_area,
-                    objectives: genForm.objectives,
-                    key_terms: genForm.key_terms || undefined,
-                    format: genForm.format,
-                  },
-                });
-                if (error) throw new Error(error.message);
-                if (data?.error) throw new Error(data.error);
-                if (!data?.lesson) throw new Error("No lesson returned");
-
-                const lesson = data.lesson;
-                const tb = genForm.format === "both" ? lesson.textbook : genForm.format === "textbook" ? lesson : null;
-                const sc = genForm.format === "both" ? lesson.scripted : genForm.format === "scripted" ? lesson : null;
-                const source = tb || sc;
-
-                // Count existing lessons for sort_order
-                const { count } = await supabase
-                  .from("curriculum_lessons")
-                  .select("id", { count: "exact", head: true })
-                  .eq("unit_id", genDialogUnit);
-
-                await supabase.from("curriculum_lessons").insert({
-                  unit_id: genDialogUnit,
-                  user_id: user.id,
-                  title: source?.title || genForm.subject_area,
-                  sort_order: (count || 0),
-                  objectives: tb?.objectives || [],
-                  intro: tb?.intro || sc?.hook || [],
-                  explanation: tb?.explanation || sc?.key_concepts?.map((kc: any) => `**${kc.heading}**\n\n${kc.content}`) || [],
-                  key_terms: tb?.key_terms || [],
-                  reading_title: lesson.reading?.reading_title || null,
-                  reading_paragraphs: lesson.reading?.reading_paragraphs || [],
-                } as any);
-
-                sonnerToast.success("Lesson generated and saved!");
-                setGenDialogUnit(null);
-                setRefreshKey(k => k + 1);
-              } catch (err: any) {
-                sonnerToast.error(err.message || "Failed to generate");
-              } finally {
-                setGeneratingFor(null);
-              }
-            }}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* AI Generate Dialog (unified) */}
+      <GenerateContentDialog
+        open={!!genDialogUnit}
+        onOpenChange={(open) => !open && setGenDialogUnit(null)}
+        onComplete={() => {
+          setGenDialogUnit(null);
+          setRefreshKey(k => k + 1);
+        }}
+        defaultContentType="reading"
+        unitId={genDialogUnit || undefined}
+      />
     </div>
   );
 };
