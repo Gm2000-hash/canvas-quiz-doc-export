@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from "react";
-import GridLayout, { Layout } from "react-grid-layout";
+import GridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { FileText, Link2, Check, Loader2 } from "lucide-react";
@@ -15,6 +15,18 @@ interface LibraryBook {
   share_token: string | null;
 }
 
+interface LayoutItem {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  minW?: number;
+  minH?: number;
+  maxW?: number;
+  maxH?: number;
+}
+
 interface ReadingDashboardGridProps {
   books: LibraryBook[];
   onOpenBook: (book: LibraryBook) => void;
@@ -28,10 +40,10 @@ const LAYOUT_STORAGE_KEY = "reading_dashboard_layout";
 const COLS = 6;
 const ROW_HEIGHT = 120;
 
-function generateDefaultLayout(books: LibraryBook[]): Layout[] {
+function generateDefaultLayout(books: LibraryBook[]): LayoutItem[] {
   return books.map((book, i) => ({
     i: book.id,
-    x: (i % COLS) * 1,
+    x: (i % COLS),
     y: Math.floor(i / COLS) * 2,
     w: 1,
     h: 2,
@@ -50,18 +62,17 @@ export function ReadingDashboardGrid({
   sharingId,
   copiedId,
 }: ReadingDashboardGridProps) {
-  const [layout, setLayout] = useState<Layout[]>(() => {
+  const [layout, setLayout] = useState<LayoutItem[]>(() => {
     try {
       const stored = localStorage.getItem(LAYOUT_STORAGE_KEY);
       if (stored) {
-        const parsed: Layout[] = JSON.parse(stored);
-        // Merge stored positions with current books
+        const parsed: LayoutItem[] = JSON.parse(stored);
         const bookIds = new Set(books.map(b => b.id));
         const existing = parsed.filter(l => bookIds.has(l.i));
         const existingIds = new Set(existing.map(l => l.i));
         const newBooks = books.filter(b => !existingIds.has(b.id));
         const maxY = existing.length > 0 ? Math.max(...existing.map(l => l.y + l.h)) : 0;
-        const newLayouts = newBooks.map((book, i) => ({
+        const newLayouts: LayoutItem[] = newBooks.map((book, i) => ({
           i: book.id,
           x: (i % COLS),
           y: maxY + Math.floor(i / COLS) * 2,
@@ -74,11 +85,11 @@ export function ReadingDashboardGrid({
         }));
         return [...existing, ...newLayouts];
       }
-    } catch {}
+    } catch { /* ignore */ }
     return generateDefaultLayout(books);
   });
 
-  const onLayoutChange = useCallback((newLayout: Layout[]) => {
+  const onLayoutChange = useCallback((newLayout: LayoutItem[]) => {
     setLayout(newLayout);
     localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(newLayout));
   }, []);
@@ -89,16 +100,13 @@ export function ReadingDashboardGrid({
     return map;
   }, [books]);
 
-  // Update layout when books change
   const currentLayout = useMemo(() => {
     const layoutIds = new Set(layout.map(l => l.i));
     const bookIds = new Set(books.map(b => b.id));
-    
     const filtered = layout.filter(l => bookIds.has(l.i));
     const newBooks = books.filter(b => !layoutIds.has(b.id));
     const maxY = filtered.length > 0 ? Math.max(...filtered.map(l => l.y + l.h)) : 0;
-    
-    const newLayouts = newBooks.map((book, i) => ({
+    const newLayouts: LayoutItem[] = newBooks.map((book, i) => ({
       i: book.id,
       x: (i % COLS),
       y: maxY + Math.floor(i / COLS) * 2,
@@ -109,27 +117,26 @@ export function ReadingDashboardGrid({
       maxW: 4,
       maxH: 4,
     }));
-
     return [...filtered, ...newLayouts];
   }, [layout, books]);
 
   return (
     <div className="relative">
       <p className="text-[10px] text-muted-foreground mb-2 italic">
-        Drag to reposition • Resize from corners
+        Drag the handle to reposition • Resize from bottom-right corner
       </p>
       <GridLayout
         className="layout"
-        layout={currentLayout}
+        layout={currentLayout as any}
         cols={COLS}
         rowHeight={ROW_HEIGHT}
         width={900}
-        onLayoutChange={onLayoutChange}
+        onLayoutChange={onLayoutChange as any}
         draggableHandle=".drag-handle"
         isResizable
         isDraggable
         compactType="vertical"
-        margin={[12, 12]}
+        margin={[12, 12] as [number, number]}
       >
         {currentLayout.map(item => {
           const book = bookMap.get(item.i);
@@ -150,7 +157,7 @@ export function ReadingDashboardGrid({
                 </div>
               </div>
 
-              {/* Content area - clickable */}
+              {/* Content area */}
               <button
                 onClick={() => onOpenBook(book)}
                 disabled={openingId === book.id}
@@ -159,11 +166,7 @@ export function ReadingDashboardGrid({
                 {openingId === book.id ? (
                   <div className="h-6 w-6 rounded-full border-2 border-primary/20 border-t-primary animate-spin" />
                 ) : book.cover_url ? (
-                  <img
-                    src={book.cover_url}
-                    alt={book.title}
-                    className="w-full flex-1 object-cover rounded-lg min-h-0"
-                  />
+                  <img src={book.cover_url} alt={book.title} className="w-full flex-1 object-cover rounded-lg min-h-0" />
                 ) : (
                   <FileText className="h-6 w-6 text-popover-foreground shrink-0" />
                 )}
@@ -171,18 +174,12 @@ export function ReadingDashboardGrid({
 
               {/* Footer */}
               <div className="flex items-center justify-between px-2 py-1 border-t border-border/40 shrink-0">
-                <p className="text-[10px] font-medium text-foreground truncate flex-1">
-                  {book.title}
-                </p>
+                <p className="text-[10px] font-medium text-foreground truncate flex-1">{book.title}</p>
                 <div className="flex items-center gap-1 shrink-0">
                   {book.source_discipline ? (
-                    <Badge className="text-[8px] px-1 py-0 text-popover-foreground" variant="secondary">
-                      {book.source_discipline}
-                    </Badge>
+                    <Badge className="text-[8px] px-1 py-0 text-popover-foreground" variant="secondary">{book.source_discipline}</Badge>
                   ) : (
-                    <Badge className="text-[8px] px-1 py-0 text-popover-foreground" variant="outline">
-                      PDF
-                    </Badge>
+                    <Badge className="text-[8px] px-1 py-0 text-popover-foreground" variant="outline">PDF</Badge>
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); onShare(book); }}
