@@ -573,7 +573,7 @@ const QuestionBank = () => {
             </SelectContent>
           </Select>
           <Select value={filterStandard} onValueChange={setFilterStandard}>
-            <SelectTrigger className="w-[200px] h-9 text-sm">
+            <SelectTrigger className="w-full sm:w-[200px] h-9 text-sm">
               <SelectValue placeholder="Standard" />
             </SelectTrigger>
             <SelectContent>
