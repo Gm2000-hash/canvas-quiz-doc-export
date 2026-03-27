@@ -127,6 +127,7 @@ const QuestionBank = () => {
   const [showISATDialog, setShowISATDialog] = useState(false);
   const [isatRefreshKey, setIsatRefreshKey] = useState(0);
   const [activeTab, setActiveTab] = useState<"questions" | "isat">("questions");
+  const [quizTitle, setQuizTitle] = useState("Custom Quiz");
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
   const [exporting, setExporting] = useState(false);
   const navigate = useNavigate();
