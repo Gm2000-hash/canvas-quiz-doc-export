@@ -16,9 +16,7 @@ import {
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
 import sketchQuestionBank from "@/assets/sketch-question-bank.png";
 import sketchLessonPlanner from "@/assets/sketch-lesson-planner.png";
-import sketchCreateQuestion from "@/assets/sketch-create-question.png";
 import sketchStandardsBrowser from "@/assets/sketch-standards-browser.png";
-import sketchProfileSettings from "@/assets/sketch-profile-settings.png";
 import sketchActivityBuilder from "@/assets/sketch-activity-builder.png";
 
 const dailyTips = [
