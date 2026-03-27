@@ -258,7 +258,7 @@ export function DashboardAnalytics({ userId }: Props) {
         <CardContent className="space-y-3">
           <div>
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-muted-foreground">Standards tagged</span>
+              <span className="text-info-foreground">Standards tagged</span>
               <span className="font-semibold text-foreground">{coverage.covered}</span>
             </div>
             <Progress value={100} className="h-2" />
