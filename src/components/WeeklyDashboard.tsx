@@ -175,7 +175,7 @@ export function WeeklyDashboard() {
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <h2 className="text-lg font-semibold text-foreground">{headerLabel}</h2>
+          <h2 className="text-lg font-semibold text-foreground border-2 border-primary-foreground">{headerLabel}</h2>
         </div>
         <div className="flex items-center gap-1">
           {/* View toggle */}
@@ -183,7 +183,7 @@ export function WeeklyDashboard() {
             <Button
               variant={viewMode === "week" ? "secondary" : "ghost"}
               size="sm"
-              className="h-7 px-2.5 rounded-md text-xs gap-1 bg-primary-foreground text-card-foreground"
+              className="h-7 px-2.5 rounded-md text-xs gap-1 bg-primary-foreground text-card-foreground border-2 border-card-foreground"
               onClick={() => setViewMode("week")}
             >
               <CalendarDays className="h-3.5 w-3.5" /> Week
@@ -217,9 +217,9 @@ export function WeeklyDashboard() {
             const today = isToday(day);
             return (
               <div key={day.toISOString()} className="space-y-1.5 border-4 border-primary-foreground">
-                <div className={`text-center text-xs font-medium py-1 rounded-lg bg-primary-foreground text-card-foreground ${today ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
-                  <div>{format(day, "EEE")}</div>
-                  <div className={`text-sm font-semibold ${today ? "" : "text-foreground"}`}>{format(day, "d")}</div>
+                <div className={`text-center text-xs font-medium py-1 rounded-lg bg-primary-foreground text-card-foreground border-2 border-card-foreground text-popover-foreground ${today ? "bg-primary text-primary-foreground" : "text-muted-foreground"}`}>
+                  <div className="text-card-foreground">{format(day, "EEE")}</div>
+                  <div className={`text-sm font-semibold text-card-foreground bg-primary-foreground border-0 ${today ? "" : "text-foreground"}`}>{format(day, "d")}</div>
                 </div>
                 {loading ? (
                   <div className="h-16 rounded-xl bg-muted/50 animate-pulse" />
@@ -251,7 +251,7 @@ export function WeeklyDashboard() {
                     })}
                     <button
                       onClick={() => openQuickAdd(day)}
-                      className="w-full h-7 rounded-lg border border-dashed border-border/60 flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary/40 transition-colors bg-primary-foreground"
+                      className="w-full h-7 rounded-lg border-dashed flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors border-card-foreground border-2"
                     >
                       <Plus className="h-3 w-3" />
                     </button>
