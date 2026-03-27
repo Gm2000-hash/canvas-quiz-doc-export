@@ -18,10 +18,12 @@ import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT } from "@/lib/idaho-stand
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { exportToQTI } from "@/lib/export-qti";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb, Upload, Hash, Landmark } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb, Upload, Hash, Landmark, ClipboardCheck } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
+import GenerateISATExamDialog from "@/components/GenerateISATExamDialog";
+import ISATExamList from "@/components/ISATExamList";
 import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import PushToCanvasDialog from "@/components/PushToCanvasDialog";
@@ -31,6 +33,7 @@ import { useNavigate } from "react-router-dom";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useProfile } from "@/hooks/useProfile";
 import { StandardsCoverageGrid } from "@/components/StandardsCoverageGrid";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function stripHtml(html: string): string {
   const div = document.createElement("div");
@@ -121,6 +124,9 @@ const QuestionBank = () => {
   const [singleDeleteTarget, setSingleDeleteTarget] = useState<{ id: string; text: string } | null>(null);
   const [generateForStandard, setGenerateForStandard] = useState<{ code: string; description: string; framework: "NGSS" | "Idaho"; subject: string } | null>(null);
   const [showPushToCanvas, setShowPushToCanvas] = useState(false);
+  const [showISATDialog, setShowISATDialog] = useState(false);
+  const [isatRefreshKey, setIsatRefreshKey] = useState(0);
+  const [activeTab, setActiveTab] = useState<"questions" | "isat">("questions");
   const [quizTitle, setQuizTitle] = useState("Custom Quiz");
   const [includeAnswerKey, setIncludeAnswerKey] = useState(true);
   const [exporting, setExporting] = useState(false);
@@ -523,6 +529,27 @@ const QuestionBank = () => {
           subtitle="Browse, search, and manage your library of assessment questions"
           stats={[{ label: "Total Questions", value: questions.length }]}
         />
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "questions" | "isat")} className="w-full">
+          <TabsList>
+            <TabsTrigger value="questions" className="gap-1.5">
+              <FileText className="h-4 w-4" />
+              Question Bank
+            </TabsTrigger>
+            <TabsTrigger value="isat" className="gap-1.5">
+              <ClipboardCheck className="h-4 w-4" />
+              ISAT Practice Exams
+            </TabsTrigger>
+          </TabsList>
+        </Tabs>
+
+        {activeTab === "isat" ? (
+          <ISATExamList
+            refreshKey={isatRefreshKey}
+            onTakeExam={(examId) => navigate(`/isat-exam/${examId}`)}
+            onGenerateNew={() => setShowISATDialog(true)}
+          />
+        ) : (
+        <>
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -1337,6 +1364,8 @@ const QuestionBank = () => {
             {filtered.map(q => questionCard(q, "flat"))}
           </div>
         )}
+        </>
+        )}
       </main>
 
       {/* Export Dialog */}
@@ -1764,6 +1793,11 @@ const QuestionBank = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <GenerateISATExamDialog
+        open={showISATDialog}
+        onOpenChange={setShowISATDialog}
+        onComplete={() => setIsatRefreshKey(k => k + 1)}
+      />
     </div>
   );
 };
