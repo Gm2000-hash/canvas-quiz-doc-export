@@ -603,10 +603,10 @@ function LessonEditorDialog({
         title,
         objectives: objectives as any,
         key_terms: keyTerms as any,
-        intro: intro as any,
-        explanation: explanation as any,
+        intro: htmlToArray(introHtml) as any,
+        explanation: htmlToArray(explanationHtml) as any,
         reading_title: readingTitle || null,
-        reading_paragraphs: readingParagraphs as any,
+        reading_paragraphs: htmlToArray(readingHtml) as any,
         interactive_activities: interactiveActivities as any,
         updated_at: new Date().toISOString(),
       } as any)
