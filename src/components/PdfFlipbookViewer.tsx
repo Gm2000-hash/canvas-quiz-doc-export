@@ -183,7 +183,6 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
                     pageNumber={i + 1}
                     width={pageWidth}
                     height={pageHeight}
-                    pdfDoc={pdfDoc}
                   />
                 ))}
               </HTMLFlipBook>
