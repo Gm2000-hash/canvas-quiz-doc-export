@@ -227,7 +227,7 @@ export function DashboardAnalytics({ userId }: Props) {
               return (
                 <div
                   key={`${item.type}-${item.id}`}
-                  className="flex items-center gap-2 rounded-lg p-2"
+                  className="flex items-center gap-2 rounded-lg p-2 text-foreground"
                 >
                   <Icon className={`h-3.5 w-3.5 shrink-0 ${typeColor[item.type]}`} />
                   <div className="min-w-0 flex-1">
