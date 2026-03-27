@@ -200,7 +200,7 @@ export function WeeklyDashboard() {
           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => navigate_(-1)}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="ghost" size="sm" className="rounded-lg text-xs font-medium px-2 h-8" onClick={goToday}>
+          <Button variant="ghost" size="sm" className="rounded-lg text-xs font-medium px-2 h-8 border-2 border-card-foreground" onClick={goToday}>
             Today
           </Button>
           <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" onClick={() => navigate_(1)}>
