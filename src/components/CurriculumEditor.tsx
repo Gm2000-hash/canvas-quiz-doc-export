@@ -804,40 +804,27 @@ function LessonEditorDialog({
             />
           </div>
 
-          {/* Intro & Explanation (collapsible sections) */}
-          <details className="space-y-2">
-            <summary className="cursor-pointer text-sm font-medium text-foreground">Introduction ({intro.length} paragraphs)</summary>
-            <div className="space-y-2 pt-2">
-              {intro.map((p, i) => (
-                <div key={i} className="flex gap-2">
-                  <Textarea value={p} onChange={(e) => { const n = [...intro]; n[i] = e.target.value; setIntro(n); }} rows={2} />
-                  <Button variant="ghost" size="icon" className="shrink-0 self-start" onClick={() => setIntro(intro.filter((_, j) => j !== i))}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              ))}
-              <Button variant="outline" size="sm" onClick={() => setIntro([...intro, ""])} className="gap-1">
-                <Plus className="h-3 w-3" /> Add
-              </Button>
-            </div>
-          </details>
+          {/* Introduction */}
+          <div className="space-y-2">
+            <Label>Introduction</Label>
+            <RichTextEditor
+              content={introHtml}
+              onChange={setIntroHtml}
+              placeholder="Write the lesson introduction..."
+              compact
+            />
+          </div>
 
-          <details className="space-y-2">
-            <summary className="cursor-pointer text-sm font-medium text-foreground">Explanation ({explanation.length} paragraphs)</summary>
-            <div className="space-y-2 pt-2">
-              {explanation.map((p, i) => (
-                <div key={i} className="flex gap-2">
-                  <Textarea value={p} onChange={(e) => { const n = [...explanation]; n[i] = e.target.value; setExplanation(n); }} rows={2} />
-                  <Button variant="ghost" size="icon" className="shrink-0 self-start" onClick={() => setExplanation(explanation.filter((_, j) => j !== i))}>
-                    <Trash2 className="h-3.5 w-3.5" />
-                  </Button>
-                </div>
-              ))}
-              <Button variant="outline" size="sm" onClick={() => setExplanation([...explanation, ""])} className="gap-1">
-                <Plus className="h-3 w-3" /> Add
-              </Button>
-            </div>
-          </details>
+          {/* Explanation */}
+          <div className="space-y-2">
+            <Label>Explanation</Label>
+            <RichTextEditor
+              content={explanationHtml}
+              onChange={setExplanationHtml}
+              placeholder="Write the lesson explanation..."
+              compact
+            />
+          </div>
 
           <Button onClick={handleSave} disabled={saving} className="w-full gap-2 rounded-xl">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
