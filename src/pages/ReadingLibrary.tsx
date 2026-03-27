@@ -184,6 +184,13 @@ export default function ReadingLibrary() {
             >
               <List className="h-4 w-4" />
             </button>
+            <button
+              onClick={() => setViewMode("dashboard")}
+              className={`p-1.5 rounded-md transition-colors ${viewMode === "dashboard" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              title="Dashboard layout (drag & resize)"
+            >
+              <LayoutDashboard className="h-4 w-4" />
+            </button>
           </div>
 
           <Button onClick={() => setGenerateOpen(true)} className="gap-2 rounded-xl border-card-foreground border-2 bg-muted-foreground" size="sm">
