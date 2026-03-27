@@ -55,6 +55,7 @@ export const CurriculumEditor = ({ units, onRefreshUnits }: CurriculumEditorProp
   const [expandedUnit, setExpandedUnit] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [editingLesson, setEditingLesson] = useState<CurriculumLesson | null>(null);
+  const [previewingLesson, setPreviewingLesson] = useState<CurriculumLesson | null>(null);
   const [generatingFor, setGeneratingFor] = useState<string | null>(null);
   const [genForm, setGenForm] = useState({ subject_area: "", objectives: "", key_terms: "", format: "textbook" as "textbook" | "scripted" | "both" });
   const [genDialogUnit, setGenDialogUnit] = useState<string | null>(null);
