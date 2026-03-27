@@ -17,6 +17,7 @@ import { ReadingEditToolbar, ItemToolbar, type EditorAction, type SectionKind } 
 import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { toast } from 'sonner';
 import type { CurriculumLesson } from '@/hooks/useCurriculum';
+import { LessonStandardsPicker } from '@/components/LessonStandardsPicker';
 
 interface CurriculumReadingViewerProps {
   discipline: string;
