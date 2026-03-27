@@ -615,7 +615,7 @@ const LessonPlanEditor = () => {
             <CardTitle className="text-sm flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> Differentiation</CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea placeholder="Accommodations, extensions, ELL support..." value={lesson.differentiation} onChange={e => setLesson({ ...lesson, differentiation: e.target.value })} rows={3} />
+            <RichTextEditor content={lesson.differentiation} onChange={v => setLesson({ ...lesson, differentiation: v })} placeholder="Accommodations, extensions, ELL support..." compact />
           </CardContent>
         </Card>
 
