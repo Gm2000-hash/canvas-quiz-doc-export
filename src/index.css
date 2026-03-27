@@ -262,7 +262,7 @@
   background: linear-gradient(135deg, hsl(150 45% 14%), hsl(150 35% 10%));
 }
 .dark .gradient-banner {
-  background: linear-gradient(135deg, hsl(220 30% 12%), hsl(165 25% 14%), hsl(220 25% 11%));
+  background: linear-gradient(135deg, hsl(150 40% 14%), hsl(80 30% 14%), hsl(45 35% 14%));
 }
 
 /* TipTap editor styles */
