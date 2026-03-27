@@ -90,6 +90,7 @@ const LessonPlanEditor = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [standardsOpen, setStandardsOpen] = useState(false);
+  const [aiTagging, setAiTagging] = useState(false);
   const [escapeRoomOpen, setEscapeRoomOpen] = useState(false);
   const [regenerateOpen, setRegenerateOpen] = useState(false);
   const [readingOpen, setReadingOpen] = useState(false);
