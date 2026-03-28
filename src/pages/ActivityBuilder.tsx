@@ -243,7 +243,7 @@ export default function ActivityBuilder() {
     }
 
     if (!newTitle.trim()) return;
-
+    const content = getDefaultContent(newType);
     const { data, error } = await supabase
       .from("h5p_activities")
       .insert({ user_id: user.id, title: newTitle.trim(), activity_type: newType, content: content as any })
