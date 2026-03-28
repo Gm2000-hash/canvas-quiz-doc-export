@@ -386,6 +386,7 @@ export default function ReadingLibrary() {
             onOpenBook={openBook}
             onShare={handleShare}
             onEditCover={setCoverPickerBook}
+            onDelete={handleDelete}
             openingId={openingId}
             sharingId={sharingId}
             copiedId={copiedId}
