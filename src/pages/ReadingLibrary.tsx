@@ -146,7 +146,13 @@ export default function ReadingLibrary() {
   const handleShare = async (book: LibraryBook) => {
     setSharingId(book.id);
     try {
-      let token = book.share_token;
+      // Fetch share_token on-demand to avoid exposing it in bulk queries
+      const { data: bookData } = await supabase
+        .from("library_books")
+        .select("share_token")
+        .eq("id", book.id)
+        .single();
+      let token = bookData?.share_token;
       if (!token) {
         token = crypto.randomUUID();
         const { error } = await supabase
@@ -154,7 +160,6 @@ export default function ReadingLibrary() {
           .update({ share_token: token } as any)
           .eq("id", book.id);
         if (error) throw error;
-        setBooks(prev => prev.map(b => b.id === book.id ? { ...b, share_token: token } : b));
       }
       const url = `${window.location.origin}/shared-reading/${token}`;
       await navigator.clipboard.writeText(url);
