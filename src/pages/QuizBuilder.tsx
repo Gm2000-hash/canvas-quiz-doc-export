@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import {
   Loader2, Search, Plus, Minus, Save, Upload, ArrowLeft, GripVertical,
   Trash2, FileText, ClipboardCheck, Eye, EyeOff, ChevronUp, ChevronDown,
-  CheckCircle2, XCircle, Circle, Download, Shuffle,
+  CheckCircle2, XCircle, Circle, Download, Shuffle, Settings, Clock, Award,
 } from "lucide-react";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
