@@ -159,6 +159,19 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
                 />
               </div>
 
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-amber-500" />
+                  <div>
+                    <Label className="text-sm font-medium">Enable Hints</Label>
+                    <p className="text-xs text-muted-foreground">
+                      {hintsEnabled ? "Students can reveal hints during the exam" : "No hints — formal assessment mode"}
+                    </p>
+                  </div>
+                </div>
+                <Switch checked={hintsEnabled} onCheckedChange={setHintsEnabled} />
+              </div>
+
               {/* Standards selection */}
               <div className="space-y-2">
                 <Label>Standards to Cover</Label>
