@@ -198,6 +198,20 @@ export async function createQuestion(data: {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Must be logged in to create a question");
 
+  // Check for duplicate by question text + type
+  const normalizedText = data.question_text.replace(/<[^>]*>/g, "").trim().toLowerCase();
+  if (normalizedText.length > 0) {
+    const { data: existing } = await supabase
+      .from("question_bank")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("question_type", data.question_type)
+      .ilike("question_text", normalizedText)
+      .maybeSingle();
+
+    if (existing) throw new Error("A question with this text already exists in your question bank");
+  }
+
   const { data: inserted, error } = await supabase.from("question_bank").insert({
     user_id: user.id,
     question_text: data.question_text,
