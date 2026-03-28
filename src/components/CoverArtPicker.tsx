@@ -40,7 +40,7 @@ function getCroppedBlob(image: HTMLImageElement, crop: PixelCrop): Promise<Blob>
   });
 }
 
-export function CoverArtPicker({ open, onOpenChange, bookId, bookTitle, onCoverUpdated }: CoverArtPickerProps) {
+export function CoverArtPicker({ open, onOpenChange, bookId, bookTitle, currentCoverUrl, onCoverUpdated, onCoverRemoved }: CoverArtPickerProps) {
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [prompt, setPrompt] = useState(`Book cover for "${bookTitle}"`);
