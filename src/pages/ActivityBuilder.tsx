@@ -429,7 +429,7 @@ export default function ActivityBuilder() {
                   <div className="flex gap-1 p-1 rounded-lg bg-muted/50 border border-border">
                     <button
                       onClick={() => setAiSourceMode("lesson")}
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                         aiSourceMode === "lesson"
                           ? "bg-primary text-primary-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
@@ -438,8 +438,18 @@ export default function ActivityBuilder() {
                       <FileText className="h-3 w-3" /> From Lesson
                     </button>
                     <button
+                      onClick={() => setAiSourceMode("reading")}
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                        aiSourceMode === "reading"
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                      }`}
+                    >
+                      <Library className="h-3 w-3" /> From Reading
+                    </button>
+                    <button
                       onClick={() => setAiSourceMode("standard")}
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      className={`flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 rounded-md text-xs font-medium transition-colors ${
                         aiSourceMode === "standard"
                           ? "bg-primary text-primary-foreground shadow-sm"
                           : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
@@ -451,10 +461,10 @@ export default function ActivityBuilder() {
 
                   {aiSourceMode === "lesson" ? (
                     <div>
-                      <Label className="text-xs text-muted-foreground">Source lesson or reading</Label>
+                      <Label className="text-xs text-muted-foreground">Source lesson plan or curriculum lesson</Label>
                       {!sourcesLoaded ? (
                         <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
-                      ) : sources.length === 0 ? (
+                      ) : sources.filter(s => s.type !== "reading_library").length === 0 ? (
                         <p className="text-xs text-muted-foreground mt-1">No lessons found. Create a lesson plan or curriculum lesson first.</p>
                       ) : (
                         <Select value={selectedSource} onValueChange={setSelectedSource}>
@@ -462,10 +472,35 @@ export default function ActivityBuilder() {
                             <SelectValue placeholder="Select a lesson..." />
                           </SelectTrigger>
                           <SelectContent>
-                            {sources.map(s => (
+                            {sources.filter(s => s.type !== "reading_library").map(s => (
                               <SelectItem key={s.id} value={s.id}>
                                 <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
-                                  {s.type === "lesson_plan" ? "Plan" : s.type === "reading_library" ? "Reading" : "Curriculum"}
+                                  {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
+                                </span>
+                                {s.title}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    </div>
+                  ) : aiSourceMode === "reading" ? (
+                    <div>
+                      <Label className="text-xs text-muted-foreground">Source reading library book</Label>
+                      {!sourcesLoaded ? (
+                        <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
+                      ) : sources.filter(s => s.type === "reading_library").length === 0 ? (
+                        <p className="text-xs text-muted-foreground mt-1">No reading library books found. Generate readings first.</p>
+                      ) : (
+                        <Select value={selectedReading} onValueChange={setSelectedReading}>
+                          <SelectTrigger className="mt-1.5">
+                            <SelectValue placeholder="Select a reading book..." />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {sources.filter(s => s.type === "reading_library").map(s => (
+                              <SelectItem key={s.id} value={s.id}>
+                                <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
+                                  Reading
                                 </span>
                                 {s.title}
                               </SelectItem>
