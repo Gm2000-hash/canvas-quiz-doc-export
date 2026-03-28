@@ -144,6 +144,8 @@ export default function ActivityBuilder() {
           standardCode: selectedStandard.code,
           standardDescription: selectedStandard.description,
         };
+      } else if (aiSourceMode === "reading" && selectedReading) {
+        invokeBody = { activityType: newType, sourceType: "reading_library", sourceId: selectedReading };
       } else if (aiSourceMode === "lesson" && selectedSource) {
         const source = sources.find(s => s.id === selectedSource);
         if (!source) return;
