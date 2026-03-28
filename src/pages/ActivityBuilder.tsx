@@ -60,6 +60,9 @@ export default function ActivityBuilder() {
   const [sourcesLoaded, setSourcesLoaded] = useState(false);
   const [selectedSource, setSelectedSource] = useState<string>("");
   const [selectedReading, setSelectedReading] = useState<string>("");
+  const [selectedBook, setSelectedBook] = useState<string>("");
+  const [bookSections, setBookSections] = useState<{ id: string; title: string }[]>([]);
+  const [loadingSections, setLoadingSections] = useState(false);
   const [selectedStandard, setSelectedStandard] = useState<{ code: string; description: string } | null>(null);
   const [standardFramework, setStandardFramework] = useState<"ngss" | "idaho">("idaho");
   const [idahoFilter, setIdahoFilter] = useState<string>("all");
@@ -129,9 +132,37 @@ export default function ActivityBuilder() {
       const lessonSources = opts.filter(s => s.type !== "reading_library");
       const readingSources = opts.filter(s => s.type === "reading_library");
       if (lessonSources.length > 0) setSelectedSource(lessonSources[0].id);
-      if (readingSources.length > 0) setSelectedReading(readingSources[0].id);
+      if (readingSources.length > 0) setSelectedBook(readingSources[0].id);
     });
   }, [useAI, user, sourcesLoaded]);
+
+  // Fetch sections (curriculum lessons) when a book is selected
+  useEffect(() => {
+    if (!selectedBook || !user) {
+      setBookSections([]);
+      setSelectedReading("");
+      return;
+    }
+    const book = sources.find(s => s.id === selectedBook);
+    if (!book) return;
+    setLoadingSections(true);
+    // Get the discipline from the book title pattern "X Readings" or fall back
+    supabase.from("library_books").select("source_discipline").eq("id", selectedBook).single().then(async ({ data: bookData }) => {
+      if (!bookData?.source_discipline) { setLoadingSections(false); return; }
+      const { data: units } = await supabase.from("units").select("id").eq("user_id", user.id).eq("discipline", bookData.source_discipline);
+      if (!units || units.length === 0) { setBookSections([]); setLoadingSections(false); return; }
+      const { data: lessons } = await supabase
+        .from("curriculum_lessons")
+        .select("id, title, reading_title")
+        .in("unit_id", units.map(u => u.id))
+        .eq("user_id", user.id)
+        .order("sort_order");
+      const sections = (lessons || []).map((l: any) => ({ id: l.id, title: l.reading_title || l.title }));
+      setBookSections(sections);
+      if (sections.length > 0) setSelectedReading(sections[0].id);
+      setLoadingSections(false);
+    });
+  }, [selectedBook, user, sources]);
 
   // Auto-fill title from selected source with sequential letter suffix
   useEffect(() => {
@@ -141,8 +172,8 @@ export default function ActivityBuilder() {
       const src = sources.find(s => s.id === selectedSource);
       if (src) baseTitle = src.title;
     } else if (aiSourceMode === "reading" && selectedReading) {
-      const src = sources.find(s => s.id === selectedReading);
-      if (src) baseTitle = src.title;
+      const section = bookSections.find(s => s.id === selectedReading);
+      if (section) baseTitle = section.title;
     } else if (aiSourceMode === "standard" && selectedStandard) {
       baseTitle = selectedStandard.code;
     }
@@ -168,7 +199,7 @@ export default function ActivityBuilder() {
       if (aiSourceMode === "standard" && selectedStandard) {
         baseBody = { sourceType: "standard", standardCode: selectedStandard.code, standardDescription: selectedStandard.description };
       } else if (aiSourceMode === "reading" && selectedReading) {
-        baseBody = { sourceType: "reading_library", sourceId: selectedReading };
+        baseBody = { sourceType: "curriculum_lesson", sourceId: selectedReading };
       } else if (aiSourceMode === "lesson" && selectedSource) {
         const source = sources.find(s => s.id === selectedSource);
         if (!source) return;
@@ -561,28 +592,48 @@ export default function ActivityBuilder() {
                       )}
                     </div>
                   ) : aiSourceMode === "reading" ? (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Source reading library book</Label>
-                      {!sourcesLoaded ? (
-                        <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
-                      ) : sources.filter(s => s.type === "reading_library").length === 0 ? (
-                        <p className="text-xs text-muted-foreground mt-1">No reading library books found. Generate readings first.</p>
-                      ) : (
-                        <Select value={selectedReading} onValueChange={setSelectedReading}>
-                          <SelectTrigger className="mt-1.5">
-                            <SelectValue placeholder="Select a reading book..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {sources.filter(s => s.type === "reading_library").map(s => (
-                              <SelectItem key={s.id} value={s.id}>
-                                <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
-                                  Reading
-                                </span>
-                                {s.title}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Book</Label>
+                        {!sourcesLoaded ? (
+                          <p className="text-xs text-muted-foreground mt-1">Loading…</p>
+                        ) : sources.filter(s => s.type === "reading_library").length === 0 ? (
+                          <p className="text-xs text-muted-foreground mt-1">No reading library books found. Generate readings first.</p>
+                        ) : (
+                          <Select value={selectedBook} onValueChange={v => { setSelectedBook(v); setSelectedReading(""); }}>
+                            <SelectTrigger className="mt-1.5">
+                              <SelectValue placeholder="Select a book..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {sources.filter(s => s.type === "reading_library").map(s => (
+                                <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                      {selectedBook && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Section</Label>
+                          {loadingSections ? (
+                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Loading sections…</p>
+                          ) : bookSections.length === 0 ? (
+                            <p className="text-xs text-muted-foreground mt-1">No sections found for this book.</p>
+                          ) : (
+                            <Select value={selectedReading} onValueChange={setSelectedReading}>
+                              <SelectTrigger className="mt-1.5">
+                                <SelectValue placeholder="Select a section..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {bookSections.map((s, i) => (
+                                  <SelectItem key={s.id} value={s.id}>
+                                    <span className="text-muted-foreground mr-1">{i + 1}.</span> {s.title}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
                       )}
                     </div>
                   ) : (
