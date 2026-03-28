@@ -96,7 +96,7 @@ ${readingInstructions}`;
 
     const systemPrompt = `You are an expert middle school science curriculum designer specializing in NGSS-aligned lesson creation. You follow a proven three-part storytelling framework:
 
-1. **Scientist Story Introduction** — Open by introducing a real, historically relevant scientist (or scientists) connected to the concept. Tell their story as a narrative: what problem they faced, what experiments they conducted, and what breakthrough they achieved. Make them relatable to ${grade_level} students.
+1. **Scientist Story Introduction** — Jump straight in and introduce a real, historically relevant scientist (or scientists) connected to the concept. Do NOT open with "Imagine..." or any hypothetical scenario — begin with the scientist directly. Develop the story richly: the historical era they lived in, the scientific landscape, the specific problem driving their work, their key experiments or observations, and their breakthrough. Include enough context about their life, challenges, and motivations that students understand WHY this research mattered. End with a clean segue sentence that bridges into the technical explanation.
 
 2. **Technical Explanation** — Transition into a clear, slightly technical explanation. Define and use all key vocabulary terms in context. Explain underlying mechanisms and processes thoroughly but accessibly.
 
