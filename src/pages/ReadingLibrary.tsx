@@ -94,7 +94,7 @@ export default function ReadingLibrary() {
 
   useEffect(() => {
     fetchBooks();
-  }, []);
+  }, [user]);
 
   const subjects = useMemo(() => {
     const set = new Set<string>();
