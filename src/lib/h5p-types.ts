@@ -88,11 +88,11 @@ export interface GameMapContent { title: string; backgroundImage?: string; stage
 // ─── New content types ─────────────────────────────────────
 
 // Column
-export interface ColumnSection { id: string; title: string; content: string; }
+export interface ColumnSection { id: string; title: string; content: string; media?: MediaEmbed; }
 export interface ColumnContent { sections: ColumnSection[]; }
 
 // Course Presentation
-export interface PresentationSlide { id: string; title: string; content: string; notes?: string; }
+export interface PresentationSlide { id: string; title: string; content: string; notes?: string; media?: MediaEmbed; }
 export interface CoursePresentationContent { slides: PresentationSlide[]; }
 
 // Documentation Tool
