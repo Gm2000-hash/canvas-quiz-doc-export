@@ -24,7 +24,19 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
-    const { activityType, sourceType, sourceId, standardCode, standardDescription } = await req.json();
+    const rawBody = await req.text();
+    if (!rawBody.trim()) {
+      return new Response(JSON.stringify({ error: "Request body is empty" }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    let parsedBody;
+    try { parsedBody = JSON.parse(rawBody); } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const { activityType, sourceType, sourceId, standardCode, standardDescription } = parsedBody;
 
     // Fetch source content
     let sourceText = "";

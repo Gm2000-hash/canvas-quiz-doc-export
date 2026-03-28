@@ -82,7 +82,19 @@ serve(async (req) => {
     const authError = await requireAuth(req);
     if (authError) return authError;
 
-    const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData, submissionId, pageData } = await req.json();
+    const rawBody = await req.text();
+    if (!rawBody.trim()) {
+      return new Response(JSON.stringify({ error: "Request body is empty" }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    let parsedBody;
+    try { parsedBody = JSON.parse(rawBody); } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+    const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData, submissionId, pageData } = parsedBody;
 
     if (!canvasUrl || !apiToken) {
       return new Response(JSON.stringify({ error: 'Canvas URL and API token are required' }), {
