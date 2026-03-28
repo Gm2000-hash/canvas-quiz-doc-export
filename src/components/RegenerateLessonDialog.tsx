@@ -265,7 +265,7 @@ Improve and fill in any missing information. Keep the same general topic but mak
         <div className="space-y-4 pt-2">
           <div className="p-3 rounded-xl text-sm bg-info text-primary-foreground">
             <p className="text-destructive-foreground">
-              AI will regenerate <span className="font-medium text-foreground">"{lesson.title}"</span> with updated content, NGSS standards, and vocabulary.
+              AI will regenerate <span className="font-medium text-primary-foreground">"{lesson.title}"</span> with updated content, NGSS standards, and vocabulary.
             </p>
           </div>
 
@@ -310,7 +310,7 @@ Improve and fill in any missing information. Keep the same general topic but mak
             </div>
           )}
 
-          <Button onClick={handleRegenerate} className="w-full rounded-xl gap-2" disabled={generating}>
+          <Button onClick={handleRegenerate} className="w-full rounded-xl gap-2 bg-info hover:bg-info/90" disabled={generating}>
             {generating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
             {generating ? "Regenerating..." : "Regenerate Lesson"}
           </Button>
