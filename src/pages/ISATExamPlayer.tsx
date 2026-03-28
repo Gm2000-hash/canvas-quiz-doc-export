@@ -159,12 +159,15 @@ export default function ISATExamPlayer() {
         // Multi-step, drag-and-drop, concept map — partial scoring is complex, skip auto-grade
       }
 
+      const hintsCount = revealedHints.size;
+
       const { error } = await supabase
         .from("isat_exams")
         .update({
           answers: studentAnswers as any,
           score: totalScore,
           total_points: totalPoints,
+          hints_used: hintsCount,
           completed_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         } as any)
@@ -172,7 +175,7 @@ export default function ISATExamPlayer() {
 
       if (error) throw error;
 
-      setExam((prev) => prev ? { ...prev, score: totalScore, total_points: totalPoints, completed_at: new Date().toISOString(), answers: studentAnswers } : prev);
+      setExam((prev) => prev ? { ...prev, score: totalScore, total_points: totalPoints, hints_used: hintsCount, completed_at: new Date().toISOString(), answers: studentAnswers } : prev);
       setSubmitted(true);
       toast.success(`Exam submitted! Auto-scored: ${totalScore}/${totalPoints} points`);
     } catch {
