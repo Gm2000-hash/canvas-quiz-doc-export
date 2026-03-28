@@ -180,6 +180,7 @@ export default function ISATExamPlayer() {
 
       setExam((prev) => prev ? { ...prev, score: totalScore, total_points: totalPoints, hints_used: hintsCount, completed_at: new Date().toISOString(), answers: studentAnswers } : prev);
       setSubmitted(true);
+      setShowSummary(true);
       toast.success(`Exam submitted! Auto-scored: ${totalScore}/${totalPoints} points`);
     } catch {
       toast.error("Failed to submit exam");
