@@ -787,9 +787,18 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                       <Input
                         value={editData.reading_title || ''}
                         onChange={e => setEditData({ ...editData, reading_title: e.target.value })}
-                        className="text-lg font-semibold border-dashed"
+                        className="text-lg font-semibold border-dashed flex-1"
                         placeholder="Reading title"
                       />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0 gap-1 text-xs"
+                        title="Reset to lesson title"
+                        onClick={() => setEditData({ ...editData, reading_title: editData.title })}
+                      >
+                        <RotateCcw className="h-3 w-3" /> Reset
+                      </Button>
                     </div>
                     {((editData.reading_paragraphs as string[]) || []).map((p, i) => (
                       <div key={i} className="flex items-start gap-1">
