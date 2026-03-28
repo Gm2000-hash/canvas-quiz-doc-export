@@ -517,6 +517,19 @@ export default function ISATExamPlayer() {
           <Progress value={progressPct} className="h-2" />
         </div>
 
+        {/* Summary panel */}
+        {submitted && showSummary && exam.score != null && (
+          <ExamSummaryPanel
+            questions={questions}
+            studentAnswers={studentAnswers}
+            score={exam.score}
+            totalPoints={totalPoints}
+            hintsUsed={exam.hints_used}
+            hintsEnabled={exam.hints_enabled}
+            revealedHints={revealedHints}
+          />
+        )}
+
         {/* Question navigation strip */}
         <div className="flex flex-wrap gap-1">
           {questions.map((q, i) => {
