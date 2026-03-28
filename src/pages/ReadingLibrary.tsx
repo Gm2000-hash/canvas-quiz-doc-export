@@ -300,20 +300,29 @@ export default function ReadingLibrary() {
                 </button>
                 <div className="flex items-center justify-between mt-2 px-0.5">
                   <p className="text-xs font-medium text-foreground truncate flex-1">{book.title}</p>
-                  <button
-                    onClick={() => handleShare(book)}
-                    disabled={sharingId === book.id}
-                    className="shrink-0 ml-1 p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
-                    title="Copy share link"
-                  >
-                    {copiedId === book.id ? (
-                      <Check className="h-3.5 w-3.5 text-green-500" />
-                    ) : sharingId === book.id ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Link2 className="h-3.5 w-3.5" />
-                    )}
-                  </button>
+                  <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setCoverPickerBook(book); }}
+                      className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      title="Change cover art"
+                    >
+                      <ImageIcon className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleShare(book)}
+                      disabled={sharingId === book.id}
+                      className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      title="Copy share link"
+                    >
+                      {copiedId === book.id ? (
+                        <Check className="h-3.5 w-3.5 text-green-500" />
+                      ) : sharingId === book.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Link2 className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
