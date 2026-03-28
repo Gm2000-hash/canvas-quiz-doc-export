@@ -59,14 +59,15 @@ export default function ReadingLibrary() {
 
   const ensureScienceBooks = async (userId: string) => {
     const disciplines = ["Life Science", "Earth & Space Science", "Physical Science"];
+    // Fetch all existing science books in one query to avoid race conditions
+    const { data: existingBooks } = await supabase
+      .from("library_books")
+      .select("id, source_discipline")
+      .eq("user_id", userId)
+      .in("source_discipline", disciplines);
+    const existingDiscs = new Set((existingBooks || []).map(b => b.source_discipline));
     for (const disc of disciplines) {
-      const { data: existing } = await supabase
-        .from("library_books")
-        .select("id")
-        .eq("source_discipline", disc)
-        .eq("user_id", userId)
-        .maybeSingle();
-      if (!existing) {
+      if (!existingDiscs.has(disc)) {
         await supabase.from("library_books").insert({
           user_id: userId,
           title: `${disc} Readings`,
