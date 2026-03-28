@@ -347,6 +347,14 @@ export default function QuizBuilder() {
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Save Quiz
             </Button>
+            {selectedIds.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => {
+                exportBankQuizToDocx(quizTitle, selectedQuestions, true);
+                toast.success("Exporting quiz to Word...");
+              }} className="gap-1.5">
+                <Download className="h-4 w-4" /> Export Word
+              </Button>
+            )}
             {canvasConnected && selectedIds.length > 0 && (
               <Button size="sm" variant="outline" onClick={() => setShowPush(true)} className="gap-1.5">
                 <Upload className="h-4 w-4" /> Push to Canvas
