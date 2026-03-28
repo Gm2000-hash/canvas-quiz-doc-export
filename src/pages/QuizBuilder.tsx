@@ -620,6 +620,14 @@ export default function QuizBuilder() {
                         </div>
                         <Button
                           variant="ghost" size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 text-muted-foreground"
+                          onClick={e => { e.stopPropagation(); handleDuplicateQuiz(q); }}
+                          title="Duplicate quiz"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost" size="icon"
                           className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive"
                           onClick={e => { e.stopPropagation(); handleDeleteQuiz(q.id); }}
                         >
