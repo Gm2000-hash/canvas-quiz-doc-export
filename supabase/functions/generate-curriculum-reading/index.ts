@@ -21,7 +21,7 @@ async function requireAuth(req: Request) {
   return user;
 }
 
-serve(withLogging("generate-curriculum-reading", async (req) => {)
+serve(withLogging("generate-curriculum-reading", async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {

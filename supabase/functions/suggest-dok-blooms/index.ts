@@ -42,7 +42,7 @@ async function requireAuth(req: Request) {
   return { userId: data.claims.sub as string, error: null };
 }
 
-serve(withLogging("suggest-dok-blooms", async (req) => {)
+serve(withLogging("suggest-dok-blooms", async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

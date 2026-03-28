@@ -61,7 +61,7 @@ const GRADE_STANDARDS: Record<string, { prefix: string; label: string; coreIdeas
   },
 };
 
-serve(withLogging("generate-isat-exam", async (req) => {)
+serve(withLogging("generate-isat-exam", async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }

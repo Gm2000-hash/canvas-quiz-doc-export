@@ -41,7 +41,7 @@ async function requireAuth(req: Request) {
   return { userId: data.claims.sub as string, error: null };
 }
 
-serve(withLogging("generate-key-terms", async (req) => {)
+serve(withLogging("generate-key-terms", async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

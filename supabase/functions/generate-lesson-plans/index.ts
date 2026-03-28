@@ -41,7 +41,7 @@ async function requireAuth(req: Request) {
   return { userId: data.claims.sub as string, error: null };
 }
 
-serve(withLogging("generate-lesson-plans", async (req) => {)
+serve(withLogging("generate-lesson-plans", async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const { userId, error: authError } = await requireAuth(req);

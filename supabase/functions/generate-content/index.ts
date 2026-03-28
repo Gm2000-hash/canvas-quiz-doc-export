@@ -182,7 +182,7 @@ function buildReadingPrompt(opts: any) {
   return { systemPrompt, userPrompt, schema, toolName: "return_readings" };
 }
 
-serve(withLogging("generate-content", async (req) => {)
+serve(withLogging("generate-content", async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {

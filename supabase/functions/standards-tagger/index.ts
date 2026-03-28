@@ -45,7 +45,7 @@ async function requireAuth(req: Request) {
  * Unified standards tagger – handles both NGSS (Science) and Idaho (ELA, Math, Social Studies).
  * Accepts { questions, framework, subject?, grade?, keyTermsMap?, standardsList? }
  */
-serve(withLogging("standards-tagger", async (req) => {)
+serve(withLogging("standards-tagger", async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }

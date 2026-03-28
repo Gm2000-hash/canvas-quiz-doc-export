@@ -74,7 +74,7 @@ async function requireAuth(req: Request) {
   return null;
 }
 
-serve(withLogging("canvas-proxy", async (req) => {)
+serve(withLogging("canvas-proxy", async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
