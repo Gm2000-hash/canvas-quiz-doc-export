@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import {
   Sparkles, Search, FileText, BookOpenCheck, Share2, Copy, Check, Link2, Loader2,
-  LayoutGrid, List, LayoutDashboard, Upload, ImageIcon,
+  LayoutGrid, List, LayoutDashboard, Upload, ImageIcon, Trash2,
 } from "lucide-react";
 import { generatePdfThumbnail } from "@/lib/pdf-thumbnail";
 import { ReadingDashboardGrid } from "@/components/ReadingDashboardGrid";
@@ -165,6 +165,26 @@ export default function ReadingLibrary() {
       toast.error("Failed to create share link");
     } finally {
       setSharingId(null);
+    }
+  };
+
+  const handleDelete = async (book: LibraryBook) => {
+    if (!confirm(`Delete "${book.title}" from the library?`)) return;
+    try {
+      if (!book.source_discipline) {
+        await supabase.storage.from("library-pdfs").remove([book.file_path]);
+      }
+      if (book.cover_url) {
+        const coverPath = book.cover_url.split("/book-covers/")[1];
+        if (coverPath) await supabase.storage.from("book-covers").remove([coverPath]);
+      }
+      const { error } = await supabase.from("library_books").delete().eq("id", book.id);
+      if (error) throw error;
+      setBooks(prev => prev.filter(b => b.id !== book.id));
+      toast.success(`"${book.title}" deleted`);
+    } catch (err: any) {
+      console.error("Delete failed:", err);
+      toast.error("Failed to delete book");
     }
   };
 
@@ -348,6 +368,13 @@ export default function ReadingLibrary() {
                         <Link2 className="h-3.5 w-3.5" />
                       )}
                     </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDelete(book); }}
+                      className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      title="Delete book"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </div>
               </div>
@@ -359,6 +386,7 @@ export default function ReadingLibrary() {
             onOpenBook={openBook}
             onShare={handleShare}
             onEditCover={setCoverPickerBook}
+            onDelete={handleDelete}
             openingId={openingId}
             sharingId={sharingId}
             copiedId={copiedId}
@@ -430,6 +458,14 @@ export default function ReadingLibrary() {
                     <><Share2 className="h-3.5 w-3.5" /> Share</>
                   )}
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                  onClick={() => handleDelete(book)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Delete
+                </Button>
               </div>
             ))}
           </div>
@@ -465,8 +501,13 @@ export default function ReadingLibrary() {
           onOpenChange={(open) => { if (!open) setCoverPickerBook(null); }}
           bookId={coverPickerBook.id}
           bookTitle={coverPickerBook.title}
+          currentCoverUrl={coverPickerBook.cover_url}
           onCoverUpdated={(url) => {
             setBooks(prev => prev.map(b => b.id === coverPickerBook.id ? { ...b, cover_url: url } : b));
+            setCoverPickerBook(null);
+          }}
+          onCoverRemoved={() => {
+            setBooks(prev => prev.map(b => b.id === coverPickerBook.id ? { ...b, cover_url: null } : b));
             setCoverPickerBook(null);
           }}
         />

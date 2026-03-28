@@ -3,7 +3,7 @@ import { GridLayout, verticalCompactor } from "react-grid-layout";
 import type { LayoutItem } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { FileText, Link2, Check, Loader2, RotateCcw, ImageIcon } from "lucide-react";
+import { FileText, Link2, Check, Loader2, RotateCcw, ImageIcon, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -22,6 +22,7 @@ interface ReadingDashboardGridProps {
   onOpenBook: (book: LibraryBook) => void;
   onShare: (book: LibraryBook) => void;
   onEditCover?: (book: LibraryBook) => void;
+  onDelete?: (book: LibraryBook) => void;
   openingId: string | null;
   sharingId: string | null;
   copiedId: string | null;
@@ -58,6 +59,7 @@ export function ReadingDashboardGrid({
   onOpenBook,
   onShare,
   onEditCover,
+  onDelete,
   openingId,
   sharingId,
   copiedId,
@@ -171,6 +173,15 @@ export function ReadingDashboardGrid({
                       <Link2 className="h-3 w-3" />
                     )}
                   </button>
+                  {onDelete && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onDelete(book); }}
+                      className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                      title="Delete book"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
