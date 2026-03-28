@@ -154,73 +154,96 @@ export default function ActivityBuilder() {
     setNewTitle(existing.length === 0 ? baseTitle : `${baseTitle} ${letter}`);
   }, [selectedSource, selectedReading, selectedStandard, aiSourceMode, useAI, sources, activities]);
 
+  const toggleType = (type: ActivityType) => {
+    setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
+  };
+
   const handleCreate = async () => {
-    if (!user || !newTitle.trim()) return;
+    if (!user) return;
 
     if (useAI) {
-      let invokeBody: any;
+      const typesToGenerate = selectedTypes.length > 0 ? selectedTypes : [newType];
 
+      let baseBody: any;
       if (aiSourceMode === "standard" && selectedStandard) {
-        invokeBody = {
-          activityType: newType,
-          sourceType: "standard",
-          standardCode: selectedStandard.code,
-          standardDescription: selectedStandard.description,
-        };
+        baseBody = { sourceType: "standard", standardCode: selectedStandard.code, standardDescription: selectedStandard.description };
       } else if (aiSourceMode === "reading" && selectedReading) {
-        invokeBody = { activityType: newType, sourceType: "reading_library", sourceId: selectedReading };
+        baseBody = { sourceType: "reading_library", sourceId: selectedReading };
       } else if (aiSourceMode === "lesson" && selectedSource) {
         const source = sources.find(s => s.id === selectedSource);
         if (!source) return;
-        invokeBody = { activityType: newType, sourceType: source.type, sourceId: source.id };
+        baseBody = { sourceType: source.type, sourceId: source.id };
       } else {
         return;
       }
 
+      const baseTitle = newTitle.trim() || "Activity";
+
       setGenerating(true);
-      try {
-        const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
-          body: invokeBody,
-        });
-        if (fnData?.error) throw new Error(fnData.error);
-        if (fnError) throw fnError;
-        if (!fnData?.content) throw new Error("No content generated");
-        const content = fnData.content;
-        const { data, error } = await supabase
-          .from("h5p_activities")
-          .insert({ user_id: user.id, title: newTitle.trim(), activity_type: newType, content: content as any })
-          .select()
-          .single();
-        if (error) throw error;
-        const actId = (data as any).id;
+      setBulkProgress({ current: 0, total: typesToGenerate.length, currentLabel: "" });
+      const createdIds: string[] = [];
+      let failCount = 0;
 
-        // If generated from a standard, auto-link that standard
-        if (aiSourceMode === "standard" && selectedStandard) {
-          await supabase.from("h5p_activity_standards").insert({
-            activity_id: actId,
-            ngss_code: selectedStandard.code,
-            ngss_description: selectedStandard.description,
+      for (let i = 0; i < typesToGenerate.length; i++) {
+        const actType = typesToGenerate[i];
+        const typeLabel = ACTIVITY_TYPES.find(t => t.type === actType)?.label || actType;
+        setBulkProgress({ current: i + 1, total: typesToGenerate.length, currentLabel: typeLabel });
+
+        try {
+          const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
+            body: { ...baseBody, activityType: actType },
           });
+          if (fnData?.error) throw new Error(fnData.error);
+          if (fnError) throw fnError;
+          if (!fnData?.content) throw new Error("No content generated");
+
+          const actTitle = typesToGenerate.length > 1
+            ? `${baseTitle} ${String.fromCharCode(65 + i)}`
+            : baseTitle;
+
+          const { data, error } = await supabase
+            .from("h5p_activities")
+            .insert({ user_id: user.id, title: actTitle, activity_type: actType, content: fnData.content as any })
+            .select()
+            .single();
+          if (error) throw error;
+          const actId = (data as any).id;
+          createdIds.push(actId);
+
+          if (aiSourceMode === "standard" && selectedStandard) {
+            await supabase.from("h5p_activity_standards").insert({
+              activity_id: actId, ngss_code: selectedStandard.code, ngss_description: selectedStandard.description,
+            });
+          }
+          tagActivity(actId, actType, fnData.content, actTitle);
+        } catch (err: any) {
+          failCount++;
+          console.error(`Failed to generate ${typeLabel}:`, err);
         }
+      }
 
-        setShowCreate(false);
-        setNewTitle("");
-        setUseAI(false);
-        toast({ title: "Activity generated with AI!" });
+      setGenerating(false);
+      setBulkProgress(null);
+      setShowCreate(false);
+      setNewTitle("");
+      setSelectedTypes([]);
+      setUseAI(false);
 
-        // Auto-tag with NGSS standards (non-blocking)
-        tagActivity(actId, newType, content, newTitle.trim());
-
-        navigate(`/activities/${actId}`);
-      } catch (err: any) {
-        toast({ title: "Generation failed", description: err.message, variant: "destructive" });
-      } finally {
-        setGenerating(false);
+      if (createdIds.length > 0) {
+        toast({
+          title: `${createdIds.length} activit${createdIds.length === 1 ? "y" : "ies"} generated!`,
+          description: failCount > 0 ? `${failCount} failed — check console.` : undefined,
+        });
+        await fetchActivities();
+        if (createdIds.length === 1) navigate(`/activities/${createdIds[0]}`);
+      } else {
+        toast({ title: "Generation failed", description: "No activities were created.", variant: "destructive" });
       }
       return;
     }
 
-    const content = getDefaultContent(newType);
+    if (!newTitle.trim()) return;
+
     const { data, error } = await supabase
       .from("h5p_activities")
       .insert({ user_id: user.id, title: newTitle.trim(), activity_type: newType, content: content as any })
