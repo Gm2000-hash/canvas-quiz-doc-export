@@ -16,7 +16,9 @@ interface CoverArtPickerProps {
   onOpenChange: (open: boolean) => void;
   bookId: string;
   bookTitle: string;
+  currentCoverUrl?: string | null;
   onCoverUpdated: (coverUrl: string) => void;
+  onCoverRemoved?: () => void;
 }
 
 function getCroppedBlob(image: HTMLImageElement, crop: PixelCrop): Promise<Blob> {
