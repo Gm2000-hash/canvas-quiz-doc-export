@@ -57,7 +57,32 @@ export default function ReadingLibrary() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [coverPickerBook, setCoverPickerBook] = useState<LibraryBook | null>(null);
 
+  const ensureScienceBooks = async (userId: string) => {
+    const disciplines = ["Life Science", "Earth & Space Science", "Physical Science"];
+    for (const disc of disciplines) {
+      const { data: existing } = await supabase
+        .from("library_books")
+        .select("id")
+        .eq("source_discipline", disc)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!existing) {
+        await supabase.from("library_books").insert({
+          user_id: userId,
+          title: `${disc} Readings`,
+          file_path: `curriculum/${disc.toLowerCase().replace(/\s+/g, "-")}`,
+          file_size: 0,
+          is_published: true,
+          source_discipline: disc,
+        });
+      }
+    }
+  };
+
   const fetchBooks = async () => {
+    if (user) {
+      await ensureScienceBooks(user.id);
+    }
     const { data, error } = await supabase
       .from("library_books")
       .select("id, title, file_path, file_size, source_discipline, cover_url, share_token")
