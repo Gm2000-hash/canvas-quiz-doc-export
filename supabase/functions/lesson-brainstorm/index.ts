@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withLogging } from "../_shared/logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -40,7 +41,7 @@ async function requireAuth(req: Request) {
   return { userId: data.claims.sub as string, error: null };
 }
 
-serve(async (req) => {
+serve(withLogging("lesson-brainstorm", async (req) => {)
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   const { userId, error: authError } = await requireAuth(req);
@@ -122,4 +123,4 @@ Keep responses practical, specific, and teacher-ready. Use bullet points and cle
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));

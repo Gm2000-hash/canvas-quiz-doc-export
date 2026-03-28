@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withLogging } from "../_shared/logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -20,7 +21,7 @@ async function requireAuth(req: Request) {
   return user;
 }
 
-serve(async (req) => {
+serve(withLogging("generate-curriculum-reading", async (req) => {)
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
