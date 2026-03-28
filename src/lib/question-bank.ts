@@ -2,6 +2,11 @@ import { supabase } from "@/integrations/supabase/client";
 import type { QuizQuestion } from "./canvas-api";
 import type { NGSSStandard } from "./ngss-api";
 
+/** Strip HTML tags and normalize whitespace for comparison */
+function normalizeQuestionText(text: string): string {
+  return text.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim().toLowerCase();
+}
+
 export interface QuestionBankItem {
   id: string;
   canvas_question_id: number;
