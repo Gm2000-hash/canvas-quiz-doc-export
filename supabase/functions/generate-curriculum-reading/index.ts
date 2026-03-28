@@ -74,7 +74,7 @@ serve(withLogging("generate-curriculum-reading", async (req) => {
     const readingInstructions = `
 IMPORTANT — Connected Reading:
 Also generate a "reading" object with:
-- reading_title: A compelling title for a standalone reading passage about how this concept affects the student's daily life
+- reading_title: A compelling title for a standalone reading passage about how this concept affects the student's daily life.${ngss_standard ? ` IMPORTANT: The reading_title MUST begin with the standard code "${ngss_standard}" followed by a colon and space, then the title. Example: "${ngss_standard}: How Plate Tectonics Shape Our World"` : ""}
 - reading_paragraphs: Array of 8-12 detailed paragraphs with concrete, relatable examples of how this concept directly impacts students — through everyday phenomena, health, technology, environmental impacts, or decisions they might make.`;
 
     const formatInstructions = format === "textbook"
