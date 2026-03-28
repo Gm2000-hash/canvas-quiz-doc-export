@@ -485,6 +485,17 @@ export default function ISATExamPlayer() {
           </div>
           <div className="flex gap-2">
             {submitted && (
+              <Button
+                variant={showSummary ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowSummary(s => !s)}
+                className="gap-1.5"
+              >
+                <BarChart3 className="h-4 w-4" />
+                {showSummary ? "Hide Summary" : "Summary"}
+              </Button>
+            )}
+            {submitted && (
               <Button variant="outline" size="sm" onClick={handleRetake} className="gap-1.5">
                 <RotateCcw className="h-4 w-4" />
                 Retake
