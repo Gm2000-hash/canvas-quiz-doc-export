@@ -299,7 +299,7 @@ Make this exam realistic and challenging — it should prepare students for the 
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
-});
+}));
 
 function processQuestions(raw: any[]): any[] {
   return raw.map((q: any, idx: number) => {
