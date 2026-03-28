@@ -132,9 +132,37 @@ export default function ActivityBuilder() {
       const lessonSources = opts.filter(s => s.type !== "reading_library");
       const readingSources = opts.filter(s => s.type === "reading_library");
       if (lessonSources.length > 0) setSelectedSource(lessonSources[0].id);
-      if (readingSources.length > 0) setSelectedReading(readingSources[0].id);
+      if (readingSources.length > 0) setSelectedBook(readingSources[0].id);
     });
   }, [useAI, user, sourcesLoaded]);
+
+  // Fetch sections (curriculum lessons) when a book is selected
+  useEffect(() => {
+    if (!selectedBook || !user) {
+      setBookSections([]);
+      setSelectedReading("");
+      return;
+    }
+    const book = sources.find(s => s.id === selectedBook);
+    if (!book) return;
+    setLoadingSections(true);
+    // Get the discipline from the book title pattern "X Readings" or fall back
+    supabase.from("library_books").select("source_discipline").eq("id", selectedBook).single().then(async ({ data: bookData }) => {
+      if (!bookData?.source_discipline) { setLoadingSections(false); return; }
+      const { data: units } = await supabase.from("units").select("id").eq("user_id", user.id).eq("discipline", bookData.source_discipline);
+      if (!units || units.length === 0) { setBookSections([]); setLoadingSections(false); return; }
+      const { data: lessons } = await supabase
+        .from("curriculum_lessons")
+        .select("id, title, reading_title")
+        .in("unit_id", units.map(u => u.id))
+        .eq("user_id", user.id)
+        .order("sort_order");
+      const sections = (lessons || []).map((l: any) => ({ id: l.id, title: l.reading_title || l.title }));
+      setBookSections(sections);
+      if (sections.length > 0) setSelectedReading(sections[0].id);
+      setLoadingSections(false);
+    });
+  }, [selectedBook, user, sources]);
 
   // Auto-fill title from selected source with sequential letter suffix
   useEffect(() => {
