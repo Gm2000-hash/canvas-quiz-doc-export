@@ -112,7 +112,7 @@ export interface VideoInteraction { id: string; timestamp: number; type: "label"
 export interface InteractiveVideoContent { videoUrl: string; interactions: VideoInteraction[]; }
 
 // Virtual Tour
-export interface TourScene { id: string; title: string; description: string; imageUrl?: string; }
+export interface TourScene { id: string; title: string; description: string; imageUrl?: string; media?: MediaEmbed; }
 export interface VirtualTourContent { title: string; scenes: TourScene[]; }
 
 // Crossword
