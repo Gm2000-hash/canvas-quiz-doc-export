@@ -68,15 +68,28 @@ export async function saveQuestionsToBank(
   const filtered = questions.filter(q => q.question_type !== "text_only_question");
 
   for (const q of filtered) {
-    // Check if already saved (by canvas_question_id + user)
-    const { data: existing } = await supabase
+    // Check if already saved (by canvas_question_id OR identical question text)
+    const { data: existingById } = await supabase
       .from("question_bank")
       .select("id")
       .eq("user_id", user.id)
       .eq("canvas_question_id", q.id)
       .maybeSingle();
 
-    if (existing) continue; // skip duplicates
+    if (existingById) continue;
+
+    const normalizedText = q.question_text.replace(/<[^>]*>/g, "").trim().toLowerCase();
+    if (normalizedText.length > 0) {
+      const { data: existingByText } = await supabase
+        .from("question_bank")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("question_type", q.question_type)
+        .ilike("question_text", normalizedText)
+        .maybeSingle();
+
+      if (existingByText) continue;
+    }
 
     const { dok, blooms } = suggestDokAndBlooms(q.question_type, q.question_text);
 
@@ -184,6 +197,20 @@ export async function createQuestion(data: {
 }) {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error("Must be logged in to create a question");
+
+  // Check for duplicate by question text + type
+  const normalizedText = data.question_text.replace(/<[^>]*>/g, "").trim().toLowerCase();
+  if (normalizedText.length > 0) {
+    const { data: existing } = await supabase
+      .from("question_bank")
+      .select("id")
+      .eq("user_id", user.id)
+      .eq("question_type", data.question_type)
+      .ilike("question_text", normalizedText)
+      .maybeSingle();
+
+    if (existing) throw new Error("A question with this text already exists in your question bank");
+  }
 
   const { data: inserted, error } = await supabase.from("question_bank").insert({
     user_id: user.id,
