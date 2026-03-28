@@ -133,6 +133,7 @@ export function ImageHotspotsEditor({ content, onChange }: Props) {
             media={h.media}
             onChange={media => onChange({ ...content, hotspots: content.hotspots.map(x => x.id === h.id ? { ...x, media } : x) })}
           />
+        </div>
       ))}
       <Button variant="outline" size="sm" className="w-full" onClick={() => { const id = crypto.randomUUID(); onChange({ ...content, hotspots: [...content.hotspots, { id, x: 50, y: 50, title: "", content: "" }] }); setSelectedHotspot(id); }}>
         <Plus className="h-4 w-4 mr-1.5" /> Add Hotspot
