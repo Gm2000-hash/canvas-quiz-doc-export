@@ -220,7 +220,7 @@ export default function QuizBuilder() {
         title: quizTitle.trim(),
         description: quizDescription.trim(),
         question_ids: selectedIds,
-        settings,
+        settings: settings as any,
         updated_at: new Date().toISOString(),
       };
 
