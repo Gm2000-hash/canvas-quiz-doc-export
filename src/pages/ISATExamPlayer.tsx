@@ -12,9 +12,10 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, FileText, Clock, Send, RotateCcw, Lightbulb } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, FileText, Clock, Send, RotateCcw, Lightbulb, BarChart3 } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { ExamSummaryPanel } from "@/components/ExamSummaryPanel";
 
 interface ExamQuestion {
   question_number: number;
@@ -79,6 +80,7 @@ export default function ISATExamPlayer() {
   const [submitting, setSubmitting] = useState(false);
   const [showNav, setShowNav] = useState(false);
   const [revealedHints, setRevealedHints] = useState<Set<number>>(new Set());
+  const [showSummary, setShowSummary] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -99,6 +101,7 @@ export default function ISATExamPlayer() {
       if (data.completed_at && data.answers) {
         setStudentAnswers(data.answers);
         setSubmitted(true);
+        setShowSummary(true);
       }
       setLoading(false);
     })();
@@ -178,6 +181,7 @@ export default function ISATExamPlayer() {
 
       setExam((prev) => prev ? { ...prev, score: totalScore, total_points: totalPoints, hints_used: hintsCount, completed_at: new Date().toISOString(), answers: studentAnswers } : prev);
       setSubmitted(true);
+      setShowSummary(true);
       toast.success(`Exam submitted! Auto-scored: ${totalScore}/${totalPoints} points`);
     } catch {
       toast.error("Failed to submit exam");
@@ -202,8 +206,10 @@ export default function ISATExamPlayer() {
 
       setStudentAnswers({});
       setSubmitted(false);
+      setShowSummary(false);
       setCurrentQ(0);
-      setExam((prev) => prev ? { ...prev, score: null, total_points: null, completed_at: null, answers: null } : prev);
+      setRevealedHints(new Set());
+      setExam((prev) => prev ? { ...prev, score: null, total_points: null, completed_at: null, answers: null, hints_used: 0 } : prev);
       toast.success("Exam reset — you can retake it now");
     } catch {
       toast.error("Failed to reset exam");
@@ -482,6 +488,17 @@ export default function ISATExamPlayer() {
           </div>
           <div className="flex gap-2">
             {submitted && (
+              <Button
+                variant={showSummary ? "default" : "outline"}
+                size="sm"
+                onClick={() => setShowSummary(s => !s)}
+                className="gap-1.5"
+              >
+                <BarChart3 className="h-4 w-4" />
+                {showSummary ? "Hide Summary" : "Summary"}
+              </Button>
+            )}
+            {submitted && (
               <Button variant="outline" size="sm" onClick={handleRetake} className="gap-1.5">
                 <RotateCcw className="h-4 w-4" />
                 Retake
@@ -502,6 +519,19 @@ export default function ISATExamPlayer() {
           </div>
           <Progress value={progressPct} className="h-2" />
         </div>
+
+        {/* Summary panel */}
+        {submitted && showSummary && exam.score != null && (
+          <ExamSummaryPanel
+            questions={questions}
+            studentAnswers={studentAnswers}
+            score={exam.score}
+            totalPoints={totalPoints}
+            hintsUsed={exam.hints_used}
+            hintsEnabled={exam.hints_enabled}
+            revealedHints={revealedHints}
+          />
+        )}
 
         {/* Question navigation strip */}
         <div className="flex flex-wrap gap-1">
