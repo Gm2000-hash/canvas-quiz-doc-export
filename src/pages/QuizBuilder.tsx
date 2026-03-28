@@ -261,6 +261,26 @@ export default function QuizBuilder() {
     }
   };
 
+  const handleDuplicateQuiz = async (quiz: SavedQuiz) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { data, error } = await (supabase.from("custom_quizzes").insert({
+        title: `${quiz.title} (Copy)`,
+        description: quiz.description || "",
+        question_ids: quiz.question_ids || [],
+        settings: quiz.settings || {},
+        user_id: user.id,
+      }).select("*").single() as any);
+      if (error) throw error;
+      setSavedQuizzes(prev => [data, ...prev]);
+      loadQuiz(data);
+      toast.success("Quiz duplicated!");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to duplicate quiz");
+    }
+  };
+
   const loadQuiz = (quiz: SavedQuiz) => {
     setQuizTitle(quiz.title);
     setQuizDescription(quiz.description || "");
