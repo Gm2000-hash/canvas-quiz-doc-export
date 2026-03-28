@@ -431,7 +431,7 @@ const LessonPlanEditor = () => {
           </CardHeader>
           <CardContent className="space-y-2">
             {lesson.vocabulary.map((v, idx) => (
-              <div key={idx} className="flex gap-2 items-start p-2.5 rounded-xl bg-accent/50">
+              <div key={idx} className="flex gap-2 items-start p-2.5 rounded-xl bg-[#f8bf5d]">
                 <div className="flex-1 space-y-1.5">
                   <Input placeholder="Term" value={v.term} onChange={e => updateVocabulary(idx, "term", e.target.value)} className="text-sm h-8 font-medium" />
                   <RichTextEditor content={v.definition} onChange={val => updateVocabulary(idx, "definition", val)} placeholder="Definition..." minimal />
