@@ -1008,7 +1008,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
             >
               Next <ChevronRight className="h-4 w-4" />
             </Button>
-            </div>
           </div>
         </div>
       ) : null}
