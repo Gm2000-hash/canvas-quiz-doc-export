@@ -84,7 +84,7 @@ export function GenerateLessonDialog({ open, onOpenChange, unitId, unitTitle, di
         if (insertError) throw insertError;
 
         if (inserted) {
-          insertedLessons.push({ id: inserted.id, title: lesson.title, objectives: lesson.objectives || "" });
+          insertedLessons.push({ id: inserted.id, title: lesson.title, objectives: lesson.objectives || "", standardCode: lesson.standards?.[0]?.code || lesson.standards?.[0]?.ngss_code || "" });
 
           // Insert AI-provided standards if any
           if (lesson.standards && Array.isArray(lesson.standards)) {
