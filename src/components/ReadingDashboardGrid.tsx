@@ -173,6 +173,15 @@ export function ReadingDashboardGrid({
                       <Link2 className="h-3 w-3" />
                     )}
                   </button>
+                  {onDelete && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onDelete(book); }}
+                      className="p-0.5 rounded text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                      title="Delete book"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
