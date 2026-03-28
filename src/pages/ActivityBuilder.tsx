@@ -55,7 +55,7 @@ export default function ActivityBuilder() {
   const [newTitle, setNewTitle] = useState("");
   const [newType, setNewType] = useState<ActivityType>("fill_in_blanks");
   const [useAI, setUseAI] = useState(false);
-  const [aiSourceMode, setAiSourceMode] = useState<"lesson" | "standard">("lesson");
+  const [aiSourceMode, setAiSourceMode] = useState<"lesson" | "reading" | "standard">("lesson");
   const [sources, setSources] = useState<SourceOption[]>([]);
   const [sourcesLoaded, setSourcesLoaded] = useState(false);
   const [selectedSource, setSelectedSource] = useState<string>("");
