@@ -674,15 +674,30 @@ export default function ActivityBuilder() {
               )}
             </div>
 
+            {bulkProgress && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Generating: {bulkProgress.currentLabel}</span>
+                  <span>{bulkProgress.current} / {bulkProgress.total}</span>
+                </div>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all duration-500"
+                    style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             <Button
               onClick={handleCreate}
-              disabled={!newTitle.trim() || generating || (useAI && aiSourceMode === "lesson" && !selectedSource) || (useAI && aiSourceMode === "reading" && !selectedReading) || (useAI && aiSourceMode === "standard" && !selectedStandard)}
+              disabled={generating || (!useAI && !newTitle.trim()) || (useAI && selectedTypes.length === 0) || (useAI && aiSourceMode === "lesson" && !selectedSource) || (useAI && aiSourceMode === "reading" && !selectedReading) || (useAI && aiSourceMode === "standard" && !selectedStandard)}
               className="w-full gap-2"
             >
               {generating ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
+                <><Loader2 className="h-4 w-4 animate-spin" /> Generating {bulkProgress ? `${bulkProgress.current}/${bulkProgress.total}` : "…"}</>
               ) : useAI ? (
-                <><Sparkles className="h-4 w-4" /> Generate Activity</>
+                <><Sparkles className="h-4 w-4" /> Generate {selectedTypes.length > 1 ? `${selectedTypes.length} Activities` : "Activity"}</>
               ) : (
                 "Create Activity"
               )}
