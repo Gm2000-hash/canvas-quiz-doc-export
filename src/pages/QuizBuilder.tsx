@@ -391,7 +391,7 @@ export default function QuizBuilder() {
                     <SelectTrigger className="h-8 text-xs w-[120px]"><SelectValue placeholder="Bloom's" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All Bloom's</SelectItem>
-                      {BLOOMS_LEVELS.map(b => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                      {BLOOMS_LEVELS.map(b => <SelectItem key={b.value} value={b.value}>{b.label}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <Select value={filterType} onValueChange={setFilterType}>
