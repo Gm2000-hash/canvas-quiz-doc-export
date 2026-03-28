@@ -55,7 +55,7 @@ import { useActivityStandards, type ActivityStandard } from "@/hooks/useActivity
 import { Badge } from "@/components/ui/badge";
 import { ActivityStandardsPicker } from "@/components/ActivityStandardsPicker";
 
-interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
+interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson" | "reading_library"; }
 
 export default function ActivityEditorPage() {
   const { id } = useParams<{ id: string }>();
