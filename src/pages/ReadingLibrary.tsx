@@ -368,6 +368,13 @@ export default function ReadingLibrary() {
                         <Link2 className="h-3.5 w-3.5" />
                       )}
                     </button>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDelete(book); }}
+                      className="p-1 rounded-md text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+                      title="Delete book"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
                   </div>
                 </div>
               </div>
