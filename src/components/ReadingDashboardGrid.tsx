@@ -142,7 +142,7 @@ export function ReadingDashboardGrid({
 
               {/* Footer */}
               <div className="flex items-center justify-between px-2 py-1 border-t border-border/40 shrink-0">
-                <p className="text-[10px] font-medium text-foreground truncate flex-1">{book.title}</p>
+                <p className="text-base font-medium text-foreground truncate flex-1">{book.title}</p>
                 <div className="flex items-center gap-1 shrink-0">
                   {book.source_discipline ? (
                     <Badge className="text-[8px] px-1 py-0 text-popover-foreground" variant="secondary">{book.source_discipline}</Badge>
