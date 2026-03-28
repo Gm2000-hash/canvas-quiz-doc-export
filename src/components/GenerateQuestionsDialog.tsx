@@ -320,7 +320,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                     <SelectTrigger className="h-8 text-xs flex-1">
                       <SelectValue placeholder="All subjects" />
                     </SelectTrigger>
-                     <SelectContent className="z-[200]">
+                     <SelectContent>
                       <SelectItem value="all">All Subjects & Grades</SelectItem>
                       {ALL_IDAHO_STANDARDS.map(gs => (
                         <SelectItem key={`${gs.subject}|${gs.grade}`} value={`${gs.subject}|${gs.grade}`}>
