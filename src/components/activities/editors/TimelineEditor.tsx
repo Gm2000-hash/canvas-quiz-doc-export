@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
 import { ReorderControls, moveItem } from "./ReorderControls";
+import { MediaInsert } from "./MediaInsert";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import type { TimelineContent, TimelineEvent } from "@/lib/h5p-types";
 
 interface Props {
@@ -41,11 +42,15 @@ export function TimelineEditor({ content, onChange }: Props) {
             <Input placeholder="Date (e.g. 1776)" value={evt.date} onChange={e => updateEvent(evt.id, { date: e.target.value })} />
             <Input placeholder="Title" value={evt.title} onChange={e => updateEvent(evt.id, { title: e.target.value })} />
           </div>
-          <Textarea
+          <RichTextEditor
+            content={evt.description}
+            onChange={html => updateEvent(evt.id, { description: html })}
             placeholder="Description..."
-            className="min-h-[60px] text-sm"
-            value={evt.description}
-            onChange={e => updateEvent(evt.id, { description: e.target.value })}
+            compact
+          />
+          <MediaInsert
+            media={evt.media}
+            onChange={media => updateEvent(evt.id, { media })}
           />
         </div>
       ))}

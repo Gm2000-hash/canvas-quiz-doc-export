@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
 import { ReorderControls, moveItem } from "./ReorderControls";
+import { MediaInsert } from "./MediaInsert";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import type { ColumnContent } from "@/lib/h5p-types";
 
 interface Props { content: ColumnContent; onChange: (c: ColumnContent) => void; }
@@ -22,7 +23,16 @@ export function ColumnEditor({ content, onChange }: Props) {
             </Button>
           </div>
           <Input placeholder="Section title" value={s.title} onChange={e => onChange({ sections: content.sections.map(x => x.id === s.id ? { ...x, title: e.target.value } : x) })} />
-          <Textarea placeholder="Content..." className="min-h-[80px] text-sm" value={s.content} onChange={e => onChange({ sections: content.sections.map(x => x.id === s.id ? { ...x, content: e.target.value } : x) })} />
+          <RichTextEditor
+            content={s.content}
+            onChange={html => onChange({ sections: content.sections.map(x => x.id === s.id ? { ...x, content: html } : x) })}
+            placeholder="Content..."
+            compact
+          />
+          <MediaInsert
+            media={s.media}
+            onChange={media => onChange({ sections: content.sections.map(x => x.id === s.id ? { ...x, media } : x) })}
+          />
         </div>
       ))}
       <Button variant="outline" size="sm" className="w-full" onClick={() => onChange({ sections: [...content.sections, { id: crypto.randomUUID(), title: "", content: "" }] })}>

@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
 import { ReorderControls, moveItem } from "./ReorderControls";
+import { MediaInsert } from "./MediaInsert";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import type { AccordionContent, AccordionPanel } from "@/lib/h5p-types";
 
 interface Props {
@@ -33,11 +34,15 @@ export function AccordionEditor({ content, onChange }: Props) {
             value={panel.title}
             onChange={e => updatePanel(panel.id, { title: e.target.value })}
           />
-          <Textarea
+          <RichTextEditor
+            content={panel.content}
+            onChange={html => updatePanel(panel.id, { content: html })}
             placeholder="Panel content..."
-            className="min-h-[80px] text-sm"
-            value={panel.content}
-            onChange={e => updatePanel(panel.id, { content: e.target.value })}
+            compact
+          />
+          <MediaInsert
+            media={panel.media}
+            onChange={media => updatePanel(panel.id, { media })}
           />
         </div>
       ))}
