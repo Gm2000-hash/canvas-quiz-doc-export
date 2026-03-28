@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
 import { ReorderControls, moveItem } from "./ReorderControls";
+import { MediaInsert } from "./MediaInsert";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import type { VirtualTourContent } from "@/lib/h5p-types";
 
 interface Props { content: VirtualTourContent; onChange: (c: VirtualTourContent) => void; }
@@ -26,8 +27,17 @@ export function VirtualTourEditor({ content, onChange }: Props) {
             </Button>
           </div>
           <Input placeholder="Scene title" value={s.title} onChange={e => onChange({ ...content, scenes: content.scenes.map(x => x.id === s.id ? { ...x, title: e.target.value } : x) })} />
-          <Textarea placeholder="Description..." className="min-h-[60px] text-sm" value={s.description} onChange={e => onChange({ ...content, scenes: content.scenes.map(x => x.id === s.id ? { ...x, description: e.target.value } : x) })} />
+          <RichTextEditor
+            content={s.description}
+            onChange={html => onChange({ ...content, scenes: content.scenes.map(x => x.id === s.id ? { ...x, description: html } : x) })}
+            placeholder="Description..."
+            compact
+          />
           <Input placeholder="360° image URL (optional)" value={s.imageUrl ?? ""} onChange={e => onChange({ ...content, scenes: content.scenes.map(x => x.id === s.id ? { ...x, imageUrl: e.target.value } : x) })} />
+          <MediaInsert
+            media={s.media}
+            onChange={media => onChange({ ...content, scenes: content.scenes.map(x => x.id === s.id ? { ...x, media } : x) })}
+          />
         </div>
       ))}
       <Button variant="outline" size="sm" className="w-full" onClick={() => onChange({ ...content, scenes: [...content.scenes, { id: crypto.randomUUID(), title: "", description: "" }] })}>

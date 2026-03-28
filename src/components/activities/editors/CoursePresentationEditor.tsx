@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
 import { ReorderControls, moveItem } from "./ReorderControls";
+import { MediaInsert } from "./MediaInsert";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import type { CoursePresentationContent } from "@/lib/h5p-types";
 
 interface Props { content: CoursePresentationContent; onChange: (c: CoursePresentationContent) => void; }
@@ -22,7 +23,15 @@ export function CoursePresentationEditor({ content, onChange }: Props) {
             </Button>
           </div>
           <Input placeholder="Slide title" value={s.title} onChange={e => onChange({ slides: content.slides.map(x => x.id === s.id ? { ...x, title: e.target.value } : x) })} />
-          <Textarea placeholder="Slide content..." className="min-h-[100px] text-sm" value={s.content} onChange={e => onChange({ slides: content.slides.map(x => x.id === s.id ? { ...x, content: e.target.value } : x) })} />
+          <RichTextEditor
+            content={s.content}
+            onChange={html => onChange({ slides: content.slides.map(x => x.id === s.id ? { ...x, content: html } : x) })}
+            placeholder="Slide content..."
+          />
+          <MediaInsert
+            media={s.media}
+            onChange={media => onChange({ slides: content.slides.map(x => x.id === s.id ? { ...x, media } : x) })}
+          />
           <Input placeholder="Speaker notes (optional)" value={s.notes ?? ""} onChange={e => onChange({ slides: content.slides.map(x => x.id === s.id ? { ...x, notes: e.target.value } : x) })} />
         </div>
       ))}

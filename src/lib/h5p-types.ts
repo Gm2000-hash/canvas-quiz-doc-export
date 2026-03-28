@@ -51,9 +51,10 @@ export const ACTIVITY_TYPES: ActivityTypeInfo[] = [
 
 export interface FillInBlanksContent { text: string; acceptAlternatives: boolean; }
 export interface DragTheWordsContent { text: string; showInstantFeedback: boolean; }
-export interface AccordionPanel { id: string; title: string; content: string; }
+export interface MediaEmbed { url: string; type: 'audio' | 'video' | 'image'; }
+export interface AccordionPanel { id: string; title: string; content: string; media?: MediaEmbed; }
 export interface AccordionContent { panels: AccordionPanel[]; }
-export interface TimelineEvent { id: string; date: string; title: string; description: string; imageUrl?: string; }
+export interface TimelineEvent { id: string; date: string; title: string; description: string; imageUrl?: string; media?: MediaEmbed; }
 export interface TimelineContent { headline: string; events: TimelineEvent[]; }
 export interface MCOption { id: string; text: string; correct: boolean; }
 export interface MultipleChoiceContent { question: string; options: MCOption[]; multiAnswer: boolean; }
@@ -65,9 +66,9 @@ export interface EssayKeyword { text: string; caseSensitive: boolean; }
 export interface EssayContent { question: string; keywords: EssayKeyword[]; maxWords?: number; }
 export interface SummaryGroup { id: string; statements: string[]; correctIndex: number; }
 export interface SummaryContent { intro: string; groups: SummaryGroup[]; }
-export interface DialogCard { id: string; front: string; back: string; }
+export interface DialogCard { id: string; front: string; back: string; media?: MediaEmbed; }
 export interface DialogCardsContent { cards: DialogCard[]; }
-export interface Flashcard { id: string; term: string; definition: string; imageUrl?: string; }
+export interface Flashcard { id: string; term: string; definition: string; imageUrl?: string; media?: MediaEmbed; }
 export interface FlashcardsContent { cards: Flashcard[]; }
 export interface MemoryPair { id: string; cardA: string; cardB: string; }
 export interface MemoryGameContent { pairs: MemoryPair[]; }
@@ -87,11 +88,11 @@ export interface GameMapContent { title: string; backgroundImage?: string; stage
 // ─── New content types ─────────────────────────────────────
 
 // Column
-export interface ColumnSection { id: string; title: string; content: string; }
+export interface ColumnSection { id: string; title: string; content: string; media?: MediaEmbed; }
 export interface ColumnContent { sections: ColumnSection[]; }
 
 // Course Presentation
-export interface PresentationSlide { id: string; title: string; content: string; notes?: string; }
+export interface PresentationSlide { id: string; title: string; content: string; notes?: string; media?: MediaEmbed; }
 export interface CoursePresentationContent { slides: PresentationSlide[]; }
 
 // Documentation Tool
@@ -99,11 +100,11 @@ export interface DocField { id: string; label: string; type: "text" | "textarea"
 export interface DocumentationToolContent { title: string; fields: DocField[]; }
 
 // Image Hotspots
-export interface Hotspot { id: string; x: number; y: number; title: string; content: string; }
+export interface Hotspot { id: string; x: number; y: number; title: string; content: string; media?: MediaEmbed; }
 export interface ImageHotspotsContent { imageUrl: string; hotspots: Hotspot[]; }
 
 // Interactive Book
-export interface BookChapter { id: string; title: string; content: string; }
+export interface BookChapter { id: string; title: string; content: string; media?: MediaEmbed; }
 export interface InteractiveBookContent { title: string; chapters: BookChapter[]; }
 
 // Interactive Video
@@ -111,7 +112,7 @@ export interface VideoInteraction { id: string; timestamp: number; type: "label"
 export interface InteractiveVideoContent { videoUrl: string; interactions: VideoInteraction[]; }
 
 // Virtual Tour
-export interface TourScene { id: string; title: string; description: string; imageUrl?: string; }
+export interface TourScene { id: string; title: string; description: string; imageUrl?: string; media?: MediaEmbed; }
 export interface VirtualTourContent { title: string; scenes: TourScene[]; }
 
 // Crossword

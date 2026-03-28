@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2 } from "lucide-react";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import type { EssayContent, EssayKeyword } from "@/lib/h5p-types";
 
 interface Props { content: EssayContent; onChange: (c: EssayContent) => void; }
@@ -16,7 +16,13 @@ export function EssayEditor({ content, onChange }: Props) {
     <div className="space-y-4">
       <div>
         <Label>Question / Prompt</Label>
-        <Textarea className="mt-1.5 min-h-[100px]" value={content.question} onChange={e => onChange({ ...content, question: e.target.value })} />
+        <div className="mt-1.5">
+          <RichTextEditor
+            content={content.question}
+            onChange={html => onChange({ ...content, question: html })}
+            placeholder="Enter your essay prompt..."
+          />
+        </div>
       </div>
       <div>
         <Label>Max Words</Label>

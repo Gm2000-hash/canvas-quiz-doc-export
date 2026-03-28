@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
 import { ReorderControls, moveItem } from "./ReorderControls";
+import { MediaInsert } from "./MediaInsert";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import type { InteractiveBookContent } from "@/lib/h5p-types";
 
 interface Props { content: InteractiveBookContent; onChange: (c: InteractiveBookContent) => void; }
@@ -26,7 +27,15 @@ export function InteractiveBookEditor({ content, onChange }: Props) {
             </Button>
           </div>
           <Input placeholder="Chapter title" value={ch.title} onChange={e => onChange({ ...content, chapters: content.chapters.map(x => x.id === ch.id ? { ...x, title: e.target.value } : x) })} />
-          <Textarea placeholder="Chapter content..." className="min-h-[100px] text-sm" value={ch.content} onChange={e => onChange({ ...content, chapters: content.chapters.map(x => x.id === ch.id ? { ...x, content: e.target.value } : x) })} />
+          <RichTextEditor
+            content={ch.content}
+            onChange={html => onChange({ ...content, chapters: content.chapters.map(x => x.id === ch.id ? { ...x, content: html } : x) })}
+            placeholder="Chapter content..."
+          />
+          <MediaInsert
+            media={ch.media}
+            onChange={media => onChange({ ...content, chapters: content.chapters.map(x => x.id === ch.id ? { ...x, media } : x) })}
+          />
         </div>
       ))}
       <Button variant="outline" size="sm" className="w-full" onClick={() => onChange({ ...content, chapters: [...content.chapters, { id: crypto.randomUUID(), title: "", content: "" }] })}>

@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
 import { ReorderControls, moveItem } from "./ReorderControls";
+import { MediaInsert } from "./MediaInsert";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import type { DialogCardsContent } from "@/lib/h5p-types";
 
 interface Props { content: DialogCardsContent; onChange: (c: DialogCardsContent) => void; }
@@ -22,7 +23,16 @@ export function DialogCardsEditor({ content, onChange }: Props) {
             </Button>
           </div>
           <Input placeholder="Front (question/term)" value={card.front} onChange={e => onChange({ cards: content.cards.map(c => c.id === card.id ? { ...c, front: e.target.value } : c) })} />
-          <Textarea placeholder="Back (answer/definition)" className="min-h-[60px] text-sm" value={card.back} onChange={e => onChange({ cards: content.cards.map(c => c.id === card.id ? { ...c, back: e.target.value } : c) })} />
+          <RichTextEditor
+            content={card.back}
+            onChange={html => onChange({ cards: content.cards.map(c => c.id === card.id ? { ...c, back: html } : c) })}
+            placeholder="Back (answer/definition)"
+            compact
+          />
+          <MediaInsert
+            media={card.media}
+            onChange={media => onChange({ cards: content.cards.map(c => c.id === card.id ? { ...c, media } : c) })}
+          />
         </div>
       ))}
       <Button variant="outline" size="sm" className="w-full" onClick={() => onChange({ cards: [...content.cards, { id: crypto.randomUUID(), front: "", back: "" }] })}>

@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2 } from "lucide-react";
 import { ReorderControls, moveItem } from "./ReorderControls";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import type { MultipleChoiceContent, MCOption } from "@/lib/h5p-types";
 
 interface Props { content: MultipleChoiceContent; onChange: (c: MultipleChoiceContent) => void; }
@@ -18,7 +18,14 @@ export function MultipleChoiceEditor({ content, onChange }: Props) {
     <div className="space-y-4">
       <div>
         <Label>Question</Label>
-        <Textarea className="mt-1.5" value={content.question} onChange={e => onChange({ ...content, question: e.target.value })} />
+        <div className="mt-1.5">
+          <RichTextEditor
+            content={content.question}
+            onChange={html => onChange({ ...content, question: html })}
+            placeholder="Enter your question..."
+            compact
+          />
+        </div>
       </div>
       <div className="flex items-center gap-3">
         <Switch checked={content.multiAnswer} onCheckedChange={v => onChange({ ...content, multiAnswer: v })} />

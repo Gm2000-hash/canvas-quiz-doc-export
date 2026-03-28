@@ -1,10 +1,11 @@
 import { useState, useRef, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2, MousePointerClick } from "lucide-react";
 import { ReorderControls, moveItem } from "./ReorderControls";
+import { MediaInsert } from "./MediaInsert";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import type { ImageHotspotsContent } from "@/lib/h5p-types";
 
 interface Props { content: ImageHotspotsContent; onChange: (c: ImageHotspotsContent) => void; }
@@ -122,7 +123,16 @@ export function ImageHotspotsEditor({ content, onChange }: Props) {
             <Input type="number" placeholder="X %" value={h.x} onChange={e => onChange({ ...content, hotspots: content.hotspots.map(x => x.id === h.id ? { ...x, x: parseFloat(e.target.value) || 0 } : x) })} />
             <Input type="number" placeholder="Y %" value={h.y} onChange={e => onChange({ ...content, hotspots: content.hotspots.map(x => x.id === h.id ? { ...x, y: parseFloat(e.target.value) || 0 } : x) })} />
           </div>
-          <Textarea placeholder="Hotspot content..." className="min-h-[60px] text-sm" value={h.content} onChange={e => onChange({ ...content, hotspots: content.hotspots.map(x => x.id === h.id ? { ...x, content: e.target.value } : x) })} />
+          <RichTextEditor
+            content={h.content}
+            onChange={html => onChange({ ...content, hotspots: content.hotspots.map(x => x.id === h.id ? { ...x, content: html } : x) })}
+            placeholder="Hotspot content..."
+            compact
+          />
+          <MediaInsert
+            media={h.media}
+            onChange={media => onChange({ ...content, hotspots: content.hotspots.map(x => x.id === h.id ? { ...x, media } : x) })}
+          />
         </div>
       ))}
       <Button variant="outline" size="sm" className="w-full" onClick={() => { const id = crypto.randomUUID(); onChange({ ...content, hotspots: [...content.hotspots, { id, x: 50, y: 50, title: "", content: "" }] }); setSelectedHotspot(id); }}>
