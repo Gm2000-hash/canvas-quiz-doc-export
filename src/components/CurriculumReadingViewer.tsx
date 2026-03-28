@@ -604,35 +604,6 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                             </div>
                             <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
                           </button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-7 w-7 opacity-0 group-hover/item:opacity-100 text-destructive hover:text-destructive shrink-0"
-                                disabled={deletingId === l.id}
-                              >
-                                {deletingId === l.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="z-[200]">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Reading</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete "{l.title}"? This will permanently remove the reading, its key terms, and associated standards. This action cannot be undone.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteReading(l.id)}
-                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                >
-                                  Delete
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
                         </div>
                       ))}
                     </div>
