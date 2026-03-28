@@ -75,6 +75,7 @@ export default function QuizBuilder() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [existingId, setExistingId] = useState<string | null>(quizId || null);
+  const [settings, setSettings] = useState<QuizSettings>({ ...DEFAULT_SETTINGS });
 
   // Filters
   const [search, setSearch] = useState("");
