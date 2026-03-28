@@ -204,6 +204,10 @@ export function GenerateLessonDialog({ open, onOpenChange, unitId, unitTitle, di
 
           setProgress(80 + ((i + 1) / insertedLessons.length) * 18);
         }
+
+
+        // Sync to reading library
+        await syncDisciplineToLibrary(user.id, discipline);
       }
 
       setProgress(100);

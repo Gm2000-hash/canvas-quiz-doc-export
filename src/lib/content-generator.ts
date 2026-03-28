@@ -264,7 +264,7 @@ function getDisciplineFromCode(code: string): string | null {
 }
 
 /** Ensure a library_books entry exists for the given discipline */
-async function syncDisciplineToLibrary(userId: string, discipline: string) {
+export async function syncDisciplineToLibrary(userId: string, discipline: string) {
   try {
     const { data: existing } = await supabase
       .from("library_books")
