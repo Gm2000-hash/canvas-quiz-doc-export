@@ -152,6 +152,7 @@ export default function ActivityBuilder() {
     setNewTitle(existing.length === 0 ? baseTitle : `${baseTitle} ${letter}`);
   }, [selectedSource, selectedReading, selectedStandard, aiSourceMode, useAI, sources, activities]);
 
+  const handleCreate = async () => {
     if (!user || !newTitle.trim()) return;
 
     if (useAI) {
