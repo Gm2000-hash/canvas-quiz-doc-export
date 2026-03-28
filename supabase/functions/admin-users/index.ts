@@ -49,7 +49,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { action, userId, email, password } = await req.json();
+    const rawBody = await req.text();
+    if (!rawBody.trim()) {
+      return new Response(JSON.stringify({ error: "Request body is empty" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    let parsedBody;
+    try { parsedBody = JSON.parse(rawBody); } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { action, userId, email, password } = parsedBody;
 
     if (action === "delete_user") {
       const { error } = await adminClient.auth.admin.deleteUser(userId);

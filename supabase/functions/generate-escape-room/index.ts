@@ -48,7 +48,19 @@ serve(async (req) => {
 
   try {
     console.log("Authenticated generate-escape-room request from", userId);
-    const { title, topic, gradeLevel, discipline, objectives, vocabulary, numPuzzles, difficulty, additionalContext } = await req.json();
+    const rawBody = await req.text();
+    if (!rawBody.trim()) {
+      return new Response(JSON.stringify({ error: "Request body is empty" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    let parsedBody;
+    try { parsedBody = JSON.parse(rawBody); } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { title, topic, gradeLevel, discipline, objectives, vocabulary, numPuzzles, difficulty, additionalContext } = parsedBody;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 

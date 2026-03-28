@@ -51,7 +51,19 @@ serve(async (req) => {
 
   try {
     console.log("Authenticated suggest-dok-blooms request from", userId);
-    const { question_text, question_type, current_dok, current_blooms } = await req.json();
+    const rawBody = await req.text();
+    if (!rawBody.trim()) {
+      return new Response(JSON.stringify({ error: "Request body is empty" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    let parsedBody;
+    try { parsedBody = JSON.parse(rawBody); } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { question_text, question_type, current_dok, current_blooms } = parsedBody;
 
     if (!question_text?.trim()) {
       return new Response(JSON.stringify({ error: "question_text is required" }), {
