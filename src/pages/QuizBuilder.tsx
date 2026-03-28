@@ -338,6 +338,21 @@ export default function QuizBuilder() {
             <Button variant="outline" size="sm" onClick={() => navigate("/question-bank")} className="gap-1.5">
               <ArrowLeft className="h-4 w-4" /> Back
             </Button>
+            {selectedIds.length > 1 && (
+              <Button variant="outline" size="sm" onClick={() => {
+                setSelectedIds(prev => {
+                  const shuffled = [...prev];
+                  for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                  }
+                  return shuffled;
+                });
+                toast.success("Questions shuffled!");
+              }} className="gap-1.5">
+                <Shuffle className="h-4 w-4" /> Shuffle
+              </Button>
+            )}
             {selectedIds.length > 0 && (
               <Button variant="outline" size="sm" onClick={() => setPreviewMode(true)} className="gap-1.5">
                 <Eye className="h-4 w-4" /> Preview
