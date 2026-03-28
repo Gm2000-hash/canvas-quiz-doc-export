@@ -285,7 +285,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
                 </div>
               </div>
 
-              <ScrollArea className="flex-1 border rounded-lg p-2 min-h-0" style={{ maxHeight: "300px" }}>
+              <ScrollArea className="flex-1 border rounded-lg p-3 min-h-0" style={{ maxHeight: "50vh" }}>
                 <div className="space-y-2">
                   {DISCIPLINES.map(disc => {
                     const Icon = disc.icon;
