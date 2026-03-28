@@ -211,7 +211,7 @@ Return ONLY valid JSON (no markdown).`;
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));
 
 async function handleRegeneration(opts: {
   regenerate_section: string;

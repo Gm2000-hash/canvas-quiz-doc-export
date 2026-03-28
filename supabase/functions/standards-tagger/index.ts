@@ -204,7 +204,7 @@ serve(withLogging("standards-tagger", async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-});
+}));
 
 function buildNGSSPrompt(keyTermsSection: string): string {
   return `You are an expert in Next Generation Science Standards (NGSS) for Middle School. Given quiz questions, identify the most relevant NGSS standard(s) for each question.
