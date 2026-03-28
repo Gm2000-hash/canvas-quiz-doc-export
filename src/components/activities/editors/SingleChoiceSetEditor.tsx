@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Plus, Trash2 } from "lucide-react";
+import { ReorderControls, moveItem } from "./ReorderControls";
 import type { SingleChoiceSetContent, SCQuestion } from "@/lib/h5p-types";
 
 interface Props { content: SingleChoiceSetContent; onChange: (c: SingleChoiceSetContent) => void; }
@@ -22,7 +23,7 @@ export function SingleChoiceSetEditor({ content, onChange }: Props) {
       {content.questions.map((q, qi) => (
         <div key={q.id} className="border border-border/60 rounded-xl p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground">Q{qi + 1}</span>
+            <ReorderControls index={qi} total={content.questions.length} label={`Q${qi + 1}`} onMove={(offset) => onChange({ questions: moveItem(content.questions, qi, offset) })} />
             <div className="flex-1" />
             <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => onChange({ questions: content.questions.filter(x => x.id !== q.id) })}>
               <Trash2 className="h-3.5 w-3.5" />

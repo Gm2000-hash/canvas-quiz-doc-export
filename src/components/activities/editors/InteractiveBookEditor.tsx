@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
+import { ReorderControls, moveItem } from "./ReorderControls";
 import type { InteractiveBookContent } from "@/lib/h5p-types";
 
 interface Props { content: InteractiveBookContent; onChange: (c: InteractiveBookContent) => void; }
@@ -18,7 +19,7 @@ export function InteractiveBookEditor({ content, onChange }: Props) {
       {content.chapters.map((ch, i) => (
         <div key={ch.id} className="border border-border/60 rounded-xl p-4 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">Ch. {i + 1}</span>
+            <ReorderControls index={i} total={content.chapters.length} label={`Ch. ${i + 1}`} onMove={(offset) => onChange({ ...content, chapters: moveItem(content.chapters, i, offset) })} />
             <div className="flex-1" />
             <Button size="icon" variant="ghost" className="h-7 w-7 text-destructive" onClick={() => onChange({ ...content, chapters: content.chapters.filter(x => x.id !== ch.id) })}>
               <Trash2 className="h-3.5 w-3.5" />
