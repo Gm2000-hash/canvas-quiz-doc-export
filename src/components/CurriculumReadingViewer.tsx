@@ -448,6 +448,31 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
               <Button variant="outline" size="sm" className="gap-2" onClick={startEditing}>
                 <Pencil className="h-3.5 w-3.5" /> Edit
               </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive" disabled={deletingId === lesson?.id}>
+                    {deletingId === lesson?.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                    Delete
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent className="z-[200]">
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Reading</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{lesson?.title}"? This will permanently remove the reading, its key terms, and associated standards. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      onClick={() => lesson && handleDeleteReading(lesson.id)}
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </>
           )}
           {editing && (
