@@ -65,6 +65,8 @@ export default function ActivityBuilder() {
   const [idahoFilter, setIdahoFilter] = useState<string>("all");
   const [standardSearch, setStandardSearch] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [selectedTypes, setSelectedTypes] = useState<ActivityType[]>([]);
+  const [bulkProgress, setBulkProgress] = useState<{ current: number; total: number; currentLabel: string } | null>(null);
   const { defaultFramework } = useProfileDefaults();
 
   const filteredStandards = useMemo(() => {
@@ -152,72 +154,95 @@ export default function ActivityBuilder() {
     setNewTitle(existing.length === 0 ? baseTitle : `${baseTitle} ${letter}`);
   }, [selectedSource, selectedReading, selectedStandard, aiSourceMode, useAI, sources, activities]);
 
+  const toggleType = (type: ActivityType) => {
+    setSelectedTypes(prev => prev.includes(type) ? prev.filter(t => t !== type) : [...prev, type]);
+  };
+
   const handleCreate = async () => {
-    if (!user || !newTitle.trim()) return;
+    if (!user) return;
 
     if (useAI) {
-      let invokeBody: any;
+      const typesToGenerate = selectedTypes.length > 0 ? selectedTypes : [newType];
 
+      let baseBody: any;
       if (aiSourceMode === "standard" && selectedStandard) {
-        invokeBody = {
-          activityType: newType,
-          sourceType: "standard",
-          standardCode: selectedStandard.code,
-          standardDescription: selectedStandard.description,
-        };
+        baseBody = { sourceType: "standard", standardCode: selectedStandard.code, standardDescription: selectedStandard.description };
       } else if (aiSourceMode === "reading" && selectedReading) {
-        invokeBody = { activityType: newType, sourceType: "reading_library", sourceId: selectedReading };
+        baseBody = { sourceType: "reading_library", sourceId: selectedReading };
       } else if (aiSourceMode === "lesson" && selectedSource) {
         const source = sources.find(s => s.id === selectedSource);
         if (!source) return;
-        invokeBody = { activityType: newType, sourceType: source.type, sourceId: source.id };
+        baseBody = { sourceType: source.type, sourceId: source.id };
       } else {
         return;
       }
 
+      const baseTitle = newTitle.trim() || "Activity";
+
       setGenerating(true);
-      try {
-        const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
-          body: invokeBody,
-        });
-        if (fnData?.error) throw new Error(fnData.error);
-        if (fnError) throw fnError;
-        if (!fnData?.content) throw new Error("No content generated");
-        const content = fnData.content;
-        const { data, error } = await supabase
-          .from("h5p_activities")
-          .insert({ user_id: user.id, title: newTitle.trim(), activity_type: newType, content: content as any })
-          .select()
-          .single();
-        if (error) throw error;
-        const actId = (data as any).id;
+      setBulkProgress({ current: 0, total: typesToGenerate.length, currentLabel: "" });
+      const createdIds: string[] = [];
+      let failCount = 0;
 
-        // If generated from a standard, auto-link that standard
-        if (aiSourceMode === "standard" && selectedStandard) {
-          await supabase.from("h5p_activity_standards").insert({
-            activity_id: actId,
-            ngss_code: selectedStandard.code,
-            ngss_description: selectedStandard.description,
+      for (let i = 0; i < typesToGenerate.length; i++) {
+        const actType = typesToGenerate[i];
+        const typeLabel = ACTIVITY_TYPES.find(t => t.type === actType)?.label || actType;
+        setBulkProgress({ current: i + 1, total: typesToGenerate.length, currentLabel: typeLabel });
+
+        try {
+          const { data: fnData, error: fnError } = await supabase.functions.invoke("generate-h5p-activity", {
+            body: { ...baseBody, activityType: actType },
           });
+          if (fnData?.error) throw new Error(fnData.error);
+          if (fnError) throw fnError;
+          if (!fnData?.content) throw new Error("No content generated");
+
+          const actTitle = typesToGenerate.length > 1
+            ? `${baseTitle} ${String.fromCharCode(65 + i)}`
+            : baseTitle;
+
+          const { data, error } = await supabase
+            .from("h5p_activities")
+            .insert({ user_id: user.id, title: actTitle, activity_type: actType, content: fnData.content as any })
+            .select()
+            .single();
+          if (error) throw error;
+          const actId = (data as any).id;
+          createdIds.push(actId);
+
+          if (aiSourceMode === "standard" && selectedStandard) {
+            await supabase.from("h5p_activity_standards").insert({
+              activity_id: actId, ngss_code: selectedStandard.code, ngss_description: selectedStandard.description,
+            });
+          }
+          tagActivity(actId, actType, fnData.content, actTitle);
+        } catch (err: any) {
+          failCount++;
+          console.error(`Failed to generate ${typeLabel}:`, err);
         }
+      }
 
-        setShowCreate(false);
-        setNewTitle("");
-        setUseAI(false);
-        toast({ title: "Activity generated with AI!" });
+      setGenerating(false);
+      setBulkProgress(null);
+      setShowCreate(false);
+      setNewTitle("");
+      setSelectedTypes([]);
+      setUseAI(false);
 
-        // Auto-tag with NGSS standards (non-blocking)
-        tagActivity(actId, newType, content, newTitle.trim());
-
-        navigate(`/activities/${actId}`);
-      } catch (err: any) {
-        toast({ title: "Generation failed", description: err.message, variant: "destructive" });
-      } finally {
-        setGenerating(false);
+      if (createdIds.length > 0) {
+        toast({
+          title: `${createdIds.length} activit${createdIds.length === 1 ? "y" : "ies"} generated!`,
+          description: failCount > 0 ? `${failCount} failed — check console.` : undefined,
+        });
+        await fetchActivities();
+        if (createdIds.length === 1) navigate(`/activities/${createdIds[0]}`);
+      } else {
+        toast({ title: "Generation failed", description: "No activities were created.", variant: "destructive" });
       }
       return;
     }
 
+    if (!newTitle.trim()) return;
     const content = getDefaultContent(newType);
     const { data, error } = await supabase
       .from("h5p_activities")
@@ -417,24 +442,54 @@ export default function ActivityBuilder() {
               <Label>Title</Label>
               <Input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="My Activity" className="mt-1.5" />
             </div>
-            <div>
-              <Label>Activity Type</Label>
-              <Select value={newType} onValueChange={v => setNewType(v as ActivityType)}>
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent position="popper" sideOffset={4} className="z-[200] max-h-[300px] overflow-y-auto">
-                  {ACTIVITY_TYPES.map(t => (
-                    <SelectItem key={t.type} value={t.type}>
-                      <div>
-                        <div className="font-medium">{t.label}</div>
-                        <div className="text-xs text-muted-foreground">{t.description}</div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {useAI ? (
+              <div>
+                <Label>Activity Types <span className="text-xs text-muted-foreground font-normal">(select one or more)</span></Label>
+                <div className="grid grid-cols-2 gap-1.5 mt-1.5 max-h-[200px] overflow-y-auto pr-1">
+                  {ACTIVITY_TYPES.map(t => {
+                    const isSelected = selectedTypes.includes(t.type);
+                    return (
+                      <button
+                        key={t.type}
+                        type="button"
+                        onClick={() => toggleType(t.type)}
+                        className={`text-left px-3 py-2 rounded-lg border text-xs transition-colors ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-foreground"
+                            : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:bg-accent/30"
+                        }`}
+                      >
+                        <span className="font-medium">{t.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedTypes.length > 0 && (
+                  <p className="text-[11px] text-muted-foreground mt-1.5">
+                    {selectedTypes.length} type{selectedTypes.length !== 1 ? "s" : ""} selected — will generate {selectedTypes.length} activit{selectedTypes.length !== 1 ? "ies" : "y"}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div>
+                <Label>Activity Type</Label>
+                <Select value={newType} onValueChange={v => setNewType(v as ActivityType)}>
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper" sideOffset={4} className="z-[200] max-h-[300px] overflow-y-auto">
+                    {ACTIVITY_TYPES.map(t => (
+                      <SelectItem key={t.type} value={t.type}>
+                        <div>
+                          <div className="font-medium">{t.label}</div>
+                          <div className="text-xs text-muted-foreground">{t.description}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* AI Generation Toggle */}
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
@@ -619,15 +674,30 @@ export default function ActivityBuilder() {
               )}
             </div>
 
+            {bulkProgress && (
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <span>Generating: {bulkProgress.currentLabel}</span>
+                  <span>{bulkProgress.current} / {bulkProgress.total}</span>
+                </div>
+                <div className="h-2 rounded-full bg-muted overflow-hidden">
+                  <div
+                    className="h-full bg-primary rounded-full transition-all duration-500"
+                    style={{ width: `${(bulkProgress.current / bulkProgress.total) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             <Button
               onClick={handleCreate}
-              disabled={!newTitle.trim() || generating || (useAI && aiSourceMode === "lesson" && !selectedSource) || (useAI && aiSourceMode === "reading" && !selectedReading) || (useAI && aiSourceMode === "standard" && !selectedStandard)}
+              disabled={generating || (!useAI && !newTitle.trim()) || (useAI && selectedTypes.length === 0) || (useAI && aiSourceMode === "lesson" && !selectedSource) || (useAI && aiSourceMode === "reading" && !selectedReading) || (useAI && aiSourceMode === "standard" && !selectedStandard)}
               className="w-full gap-2"
             >
               {generating ? (
-                <><Loader2 className="h-4 w-4 animate-spin" /> Generating…</>
+                <><Loader2 className="h-4 w-4 animate-spin" /> Generating {bulkProgress ? `${bulkProgress.current}/${bulkProgress.total}` : "…"}</>
               ) : useAI ? (
-                <><Sparkles className="h-4 w-4" /> Generate Activity</>
+                <><Sparkles className="h-4 w-4" /> Generate {selectedTypes.length > 1 ? `${selectedTypes.length} Activities` : "Activity"}</>
               ) : (
                 "Create Activity"
               )}
