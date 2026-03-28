@@ -431,9 +431,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
         </div>
         <div className="flex items-center gap-2">
           {lessons.length > 1 && currentLesson !== null && (
-            <Button variant="ghost" size="icon" onClick={() => setShowToc(true)} title="Table of Contents">
-              <List className="h-4 w-4" />
-            </Button>
+            <span /> /* TOC button moved to bottom nav */
           )}
           {/* Edit / Save toggle */}
           {lesson && !editing && (
@@ -961,22 +959,33 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
 
           {/* Navigation */}
           <div className="flex items-center justify-between px-6 py-3 border-t border-border bg-card/80">
-            <Button
-              variant="outline"
-              size="sm"
-              disabled={editing}
-              onClick={() => {
-                if (currentLesson === 0 || currentLesson === null) {
-                  setCurrentLesson(null);
-                } else {
-                  setCurrentLesson(c => (c ?? 1) - 1);
-                }
-                if (editing) cancelEditing();
-              }}
-              className="gap-2"
-            >
-              <ChevronLeft className="h-4 w-4" /> {currentLesson === 0 ? 'Contents' : 'Previous'}
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="h-8 w-8"
+                onClick={() => setShowToc(true)}
+                title="Table of Contents"
+              >
+                <List className="h-4 w-4" />
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={editing}
+                onClick={() => {
+                  if (currentLesson === 0 || currentLesson === null) {
+                    setCurrentLesson(null);
+                  } else {
+                    setCurrentLesson(c => (c ?? 1) - 1);
+                  }
+                  if (editing) cancelEditing();
+                }}
+                className="gap-2"
+              >
+                <ChevronLeft className="h-4 w-4" /> {currentLesson === 0 ? 'Contents' : 'Previous'}
             </Button>
+            </div>
             <button
               onClick={() => { setCurrentLesson(null); if (editing) cancelEditing(); }}
               className="text-xs text-muted-foreground hover:text-primary transition-colors"
