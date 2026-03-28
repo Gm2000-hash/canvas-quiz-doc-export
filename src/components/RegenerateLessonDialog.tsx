@@ -174,7 +174,7 @@ Improve and fill in any missing information. Keep the same general topic but mak
               subject_area: newLesson.title || lesson.title,
               objectives: newLesson.objectives || lesson.objectives,
               format: "textbook",
-              ngss_standard: tagData?.results?.[0]?.standards?.[0]?.code || undefined,
+              ngss_standard: detectedStandardCode || undefined,
             },
           });
 
