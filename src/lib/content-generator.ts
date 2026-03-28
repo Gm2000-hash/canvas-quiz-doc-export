@@ -170,6 +170,11 @@ async function saveReadings(
   const readings = data?.readings || [];
   let saved = 0;
 
+  // Determine discipline for library sync
+  const discipline = options.subject === "Science" || !options.subject
+    ? getDisciplineFromCode(code)
+    : options.subject;
+
   let sortOrder = 0;
   if (options.unitId) {
     const { count } = await supabase
@@ -196,12 +201,12 @@ async function saveReadings(
 
       // unit_id is required for curriculum_lessons
       if (!options.unitId) {
-        // Create a default unit for unassigned readings
+        const unitTitle = discipline ? `AI Generated - ${discipline}` : "AI Generated Readings";
         const { data: unitData } = await supabase
           .from("units")
           .select("id")
           .eq("user_id", userId)
-          .eq("title", "AI Generated Readings")
+          .eq("title", unitTitle)
           .maybeSingle();
 
         if (unitData) {
@@ -209,7 +214,12 @@ async function saveReadings(
         } else {
           const { data: newUnit } = await supabase
             .from("units")
-            .insert({ user_id: userId, title: "AI Generated Readings", description: "Auto-generated curriculum readings" })
+            .insert({
+              user_id: userId,
+              title: unitTitle,
+              description: `Auto-generated curriculum readings${discipline ? ` for ${discipline}` : ""}`,
+              discipline: discipline || null,
+            })
             .select("id")
             .single();
           if (newUnit) insertData.unit_id = newUnit.id;
@@ -236,7 +246,53 @@ async function saveReadings(
       console.error("Error saving reading:", e);
     }
   }
+
+  // Auto-populate reading library if any readings were saved
+  if (saved > 0 && discipline) {
+    await syncDisciplineToLibrary(userId, discipline);
+  }
+
   return { saved };
+}
+
+/** Map standard codes to science disciplines */
+function getDisciplineFromCode(code: string): string | null {
+  if (code.startsWith("MS-LS")) return "Life Science";
+  if (code.startsWith("MS-PS")) return "Physical Science";
+  if (code.startsWith("MS-ESS")) return "Earth & Space Science";
+  return "Science";
+}
+
+/** Ensure a library_books entry exists for the given discipline */
+async function syncDisciplineToLibrary(userId: string, discipline: string) {
+  try {
+    const { data: existing } = await supabase
+      .from("library_books")
+      .select("id")
+      .eq("source_discipline", discipline)
+      .eq("user_id", userId)
+      .maybeSingle();
+
+    if (existing) {
+      await supabase
+        .from("library_books")
+        .update({ updated_at: new Date().toISOString(), is_published: true } as any)
+        .eq("id", existing.id);
+    } else {
+      await supabase
+        .from("library_books")
+        .insert({
+          user_id: userId,
+          title: `${discipline} Readings`,
+          file_path: `curriculum/${discipline.toLowerCase().replace(/\s+/g, "-")}`,
+          file_size: 0,
+          is_published: true,
+          source_discipline: discipline,
+        } as any);
+    }
+  } catch (e) {
+    console.error("Failed to sync to reading library:", e);
+  }
 }
 
 /**
