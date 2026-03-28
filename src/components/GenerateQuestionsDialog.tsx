@@ -216,7 +216,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                   <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
-                   <SelectContent className="z-[200]">
+                   <SelectContent>
                     {[3, 5, 10, 15, 20].map(n => (
                       <SelectItem key={n} value={String(n)}>{n} questions</SelectItem>
                     ))}
@@ -229,7 +229,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                   <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
-                   <SelectContent className="z-[200]">
+                   <SelectContent>
                     <SelectItem value="any">Mix (DOK 1-3)</SelectItem>
                     <SelectItem value="1">DOK 1 – Recall</SelectItem>
                     <SelectItem value="2">DOK 2 – Skills & Concepts</SelectItem>
@@ -320,7 +320,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                     <SelectTrigger className="h-8 text-xs flex-1">
                       <SelectValue placeholder="All subjects" />
                     </SelectTrigger>
-                     <SelectContent className="z-[200]">
+                     <SelectContent>
                       <SelectItem value="all">All Subjects & Grades</SelectItem>
                       {ALL_IDAHO_STANDARDS.map(gs => (
                         <SelectItem key={`${gs.subject}|${gs.grade}`} value={`${gs.subject}|${gs.grade}`}>
@@ -333,7 +333,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                     <SelectTrigger className="h-8 text-xs w-[130px]">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="z-[200]">
+                    <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
                       {Object.entries(IDAHO_CATEGORY_LABELS).map(([key, label]) => (
                         <SelectItem key={key} value={key}>{label}</SelectItem>
