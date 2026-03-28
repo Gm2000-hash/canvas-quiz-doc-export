@@ -199,7 +199,7 @@ export default function ActivityBuilder() {
       if (aiSourceMode === "standard" && selectedStandard) {
         baseBody = { sourceType: "standard", standardCode: selectedStandard.code, standardDescription: selectedStandard.description };
       } else if (aiSourceMode === "reading" && selectedReading) {
-        baseBody = { sourceType: "reading_library", sourceId: selectedReading };
+        baseBody = { sourceType: "curriculum_lesson", sourceId: selectedReading };
       } else if (aiSourceMode === "lesson" && selectedSource) {
         const source = sources.find(s => s.id === selectedSource);
         if (!source) return;
