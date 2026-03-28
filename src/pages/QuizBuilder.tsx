@@ -21,7 +21,7 @@ import { toast } from "sonner";
 import {
   Loader2, Search, Plus, Minus, Save, Upload, ArrowLeft, GripVertical,
   Trash2, FileText, ClipboardCheck, Eye, EyeOff, ChevronUp, ChevronDown,
-  CheckCircle2, XCircle, Circle, Download, Shuffle, Settings, Clock, Award,
+  CheckCircle2, XCircle, Circle, Download, Shuffle, Settings, Clock, Award, Copy,
 } from "lucide-react";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
@@ -258,6 +258,26 @@ export default function QuizBuilder() {
       toast.success("Quiz deleted");
     } catch {
       toast.error("Failed to delete quiz");
+    }
+  };
+
+  const handleDuplicateQuiz = async (quiz: SavedQuiz) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
+      const { data, error } = await (supabase.from("custom_quizzes").insert({
+        title: `${quiz.title} (Copy)`,
+        description: quiz.description || "",
+        question_ids: quiz.question_ids || [],
+        settings: quiz.settings || {},
+        user_id: user.id,
+      }).select("*").single() as any);
+      if (error) throw error;
+      setSavedQuizzes(prev => [data, ...prev]);
+      loadQuiz(data);
+      toast.success("Quiz duplicated!");
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to duplicate quiz");
     }
   };
 
@@ -598,6 +618,14 @@ export default function QuizBuilder() {
                           <p className="text-xs font-medium truncate">{q.title}</p>
                           <p className="text-[10px] text-muted-foreground">{q.question_ids?.length || 0} questions</p>
                         </div>
+                        <Button
+                          variant="ghost" size="icon"
+                          className="h-6 w-6 opacity-0 group-hover:opacity-100 text-muted-foreground"
+                          onClick={e => { e.stopPropagation(); handleDuplicateQuiz(q); }}
+                          title="Duplicate quiz"
+                        >
+                          <Copy className="h-3 w-3" />
+                        </Button>
                         <Button
                           variant="ghost" size="icon"
                           className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive"
