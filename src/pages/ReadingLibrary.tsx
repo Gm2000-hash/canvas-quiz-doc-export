@@ -168,6 +168,26 @@ export default function ReadingLibrary() {
     }
   };
 
+  const handleDelete = async (book: LibraryBook) => {
+    if (!confirm(`Delete "${book.title}" from the library?`)) return;
+    try {
+      if (!book.source_discipline) {
+        await supabase.storage.from("library-pdfs").remove([book.file_path]);
+      }
+      if (book.cover_url) {
+        const coverPath = book.cover_url.split("/book-covers/")[1];
+        if (coverPath) await supabase.storage.from("book-covers").remove([coverPath]);
+      }
+      const { error } = await supabase.from("library_books").delete().eq("id", book.id);
+      if (error) throw error;
+      setBooks(prev => prev.filter(b => b.id !== book.id));
+      toast.success(`"${book.title}" deleted`);
+    } catch (err: any) {
+      console.error("Delete failed:", err);
+      toast.error("Failed to delete book");
+    }
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
