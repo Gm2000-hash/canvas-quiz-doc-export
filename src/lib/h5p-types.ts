@@ -100,11 +100,11 @@ export interface DocField { id: string; label: string; type: "text" | "textarea"
 export interface DocumentationToolContent { title: string; fields: DocField[]; }
 
 // Image Hotspots
-export interface Hotspot { id: string; x: number; y: number; title: string; content: string; }
+export interface Hotspot { id: string; x: number; y: number; title: string; content: string; media?: MediaEmbed; }
 export interface ImageHotspotsContent { imageUrl: string; hotspots: Hotspot[]; }
 
 // Interactive Book
-export interface BookChapter { id: string; title: string; content: string; }
+export interface BookChapter { id: string; title: string; content: string; media?: MediaEmbed; }
 export interface InteractiveBookContent { title: string; chapters: BookChapter[]; }
 
 // Interactive Video
