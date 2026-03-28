@@ -65,6 +65,8 @@ export default function ActivityBuilder() {
   const [idahoFilter, setIdahoFilter] = useState<string>("all");
   const [standardSearch, setStandardSearch] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [selectedTypes, setSelectedTypes] = useState<ActivityType[]>([]);
+  const [bulkProgress, setBulkProgress] = useState<{ current: number; total: number; currentLabel: string } | null>(null);
   const { defaultFramework } = useProfileDefaults();
 
   const filteredStandards = useMemo(() => {
