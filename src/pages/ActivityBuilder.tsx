@@ -592,28 +592,48 @@ export default function ActivityBuilder() {
                       )}
                     </div>
                   ) : aiSourceMode === "reading" ? (
-                    <div>
-                      <Label className="text-xs text-muted-foreground">Source reading library book</Label>
-                      {!sourcesLoaded ? (
-                        <p className="text-xs text-muted-foreground mt-1">Loading sources…</p>
-                      ) : sources.filter(s => s.type === "reading_library").length === 0 ? (
-                        <p className="text-xs text-muted-foreground mt-1">No reading library books found. Generate readings first.</p>
-                      ) : (
-                        <Select value={selectedReading} onValueChange={setSelectedReading}>
-                          <SelectTrigger className="mt-1.5">
-                            <SelectValue placeholder="Select a reading book..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {sources.filter(s => s.type === "reading_library").map(s => (
-                              <SelectItem key={s.id} value={s.id}>
-                                <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
-                                  Reading
-                                </span>
-                                {s.title}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                    <div className="space-y-3">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Book</Label>
+                        {!sourcesLoaded ? (
+                          <p className="text-xs text-muted-foreground mt-1">Loading…</p>
+                        ) : sources.filter(s => s.type === "reading_library").length === 0 ? (
+                          <p className="text-xs text-muted-foreground mt-1">No reading library books found. Generate readings first.</p>
+                        ) : (
+                          <Select value={selectedBook} onValueChange={v => { setSelectedBook(v); setSelectedReading(""); }}>
+                            <SelectTrigger className="mt-1.5">
+                              <SelectValue placeholder="Select a book..." />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {sources.filter(s => s.type === "reading_library").map(s => (
+                                <SelectItem key={s.id} value={s.id}>{s.title}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
+                      </div>
+                      {selectedBook && (
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Section</Label>
+                          {loadingSections ? (
+                            <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1"><Loader2 className="h-3 w-3 animate-spin" /> Loading sections…</p>
+                          ) : bookSections.length === 0 ? (
+                            <p className="text-xs text-muted-foreground mt-1">No sections found for this book.</p>
+                          ) : (
+                            <Select value={selectedReading} onValueChange={setSelectedReading}>
+                              <SelectTrigger className="mt-1.5">
+                                <SelectValue placeholder="Select a section..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {bookSections.map((s, i) => (
+                                  <SelectItem key={s.id} value={s.id}>
+                                    <span className="text-muted-foreground mr-1">{i + 1}.</span> {s.title}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          )}
+                        </div>
                       )}
                     </div>
                   ) : (
