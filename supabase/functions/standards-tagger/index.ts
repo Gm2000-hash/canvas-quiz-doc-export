@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withLogging } from "../_shared/logger.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -44,7 +45,7 @@ async function requireAuth(req: Request) {
  * Unified standards tagger – handles both NGSS (Science) and Idaho (ELA, Math, Social Studies).
  * Accepts { questions, framework, subject?, grade?, keyTermsMap?, standardsList? }
  */
-serve(async (req) => {
+serve(withLogging("standards-tagger", async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -203,7 +204,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-});
+}));
 
 function buildNGSSPrompt(keyTermsSection: string): string {
   return `You are an expert in Next Generation Science Standards (NGSS) for Middle School. Given quiz questions, identify the most relevant NGSS standard(s) for each question.

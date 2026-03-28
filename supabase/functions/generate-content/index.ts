@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withLogging } from "../_shared/logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -181,7 +182,7 @@ function buildReadingPrompt(opts: any) {
   return { systemPrompt, userPrompt, schema, toolName: "return_readings" };
 }
 
-serve(async (req) => {
+serve(withLogging("generate-content", async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -307,4 +308,4 @@ serve(async (req) => {
       status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
-});
+}));

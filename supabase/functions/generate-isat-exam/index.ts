@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { withLogging } from "../_shared/logger.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -60,7 +61,7 @@ const GRADE_STANDARDS: Record<string, { prefix: string; label: string; coreIdeas
   },
 };
 
-serve(async (req) => {
+serve(withLogging("generate-isat-exam", async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
@@ -298,7 +299,7 @@ Make this exam realistic and challenging — it should prepare students for the 
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
-});
+}));
 
 function processQuestions(raw: any[]): any[] {
   return raw.map((q: any, idx: number) => {
