@@ -170,7 +170,7 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
-              {canvasConnected && exam.completed_at && (
+              {canvasConnected && (
                 <Button
                   variant="outline"
                   size="sm"
