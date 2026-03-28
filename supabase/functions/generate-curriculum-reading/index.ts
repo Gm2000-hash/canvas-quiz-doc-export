@@ -74,29 +74,43 @@ serve(withLogging("generate-curriculum-reading", async (req) => {
     const readingInstructions = `
 IMPORTANT — Connected Reading:
 Also generate a "reading" object with:
-- reading_title: A compelling title for a standalone reading passage connected to the lesson topic
-- reading_paragraphs: Array of 8-12 detailed, engaging paragraphs that form a cohesive reading passage. Write at a middle-school reading level with rich vocabulary.`;
+- reading_title: A compelling title for a standalone reading passage about how this concept affects the student's daily life
+- reading_paragraphs: Array of 8-12 detailed paragraphs with concrete, relatable examples of how this concept directly impacts students — through everyday phenomena, health, technology, environmental impacts, or decisions they might make.`;
 
     const formatInstructions = format === "textbook"
-      ? `Output the lesson:
-- title, objectives (3-5), key_terms (8-12 {term, definition}), intro (6-8 paragraphs), explanation (8-12 paragraphs)
+      ? `Output the lesson following this three-part storytelling structure:
+- title
+- objectives (3-5 measurable learning objectives)
+- key_terms (8-12 {term, definition})
+- intro (6-8 paragraphs): Tell the story of a real scientist (or scientists) who contributed to understanding this concept. Include their historical context, the problem they were trying to solve, their key experiments or observations, and their breakthrough. Write it as an engaging narrative that naturally leads into the concept.
+- explanation (8-12 paragraphs): Provide a detailed, slightly technical explanation of the concept. Use and define ALL key terms naturally within the text. Explain mechanisms, principles, and processes thoroughly.
 ${readingInstructions}`
       : format === "scripted"
       ? `Output as scripted lesson plan:
-- title, hook (3-5 paragraphs), key_concepts (6-8 {heading, content}), assignment ({title, description, instructions})
+- title, hook (3-5 paragraphs — open with a scientist's story), key_concepts (6-8 {heading, content}), assignment ({title, description, instructions})
 ${readingInstructions}`
       : `Output in BOTH formats under "textbook" and "scripted" keys. Include "reading" at the top level.
-FORMAT 1 "textbook": title, objectives, key_terms, intro, explanation
-FORMAT 2 "scripted": title, hook, key_concepts, assignment
+FORMAT 1 "textbook": title, objectives, key_terms, intro (scientist story narrative), explanation (technical with key terms)
+FORMAT 2 "scripted": title, hook (scientist story), key_concepts, assignment
 ${readingInstructions}`;
 
-    const systemPrompt = `You are an expert middle school science curriculum designer specializing in NGSS-aligned lesson creation. You write engaging, narrative-driven lessons appropriate for ${grade_level} students.`;
+    const systemPrompt = `You are an expert middle school science curriculum designer specializing in NGSS-aligned lesson creation. You follow a proven three-part storytelling framework:
+
+1. **Scientist Story Introduction** — Open by introducing a real, historically relevant scientist (or scientists) connected to the concept. Tell their story as a narrative: what problem they faced, what experiments they conducted, and what breakthrough they achieved. Make them relatable to ${grade_level} students.
+
+2. **Technical Explanation** — Transition into a clear, slightly technical explanation. Define and use all key vocabulary terms in context. Explain underlying mechanisms and processes thoroughly but accessibly.
+
+3. **Student Connection** — Conclude with concrete examples of how the concept directly affects students' daily lives.
+
+Write engaging, narrative-driven lessons appropriate for ${grade_level} students. Each reading should be substantial in length — detailed paragraphs, not summaries.`;
 
     const userPrompt = `Create a ${grade_level} science lesson about "${subject_area}".
 
 Learning Objectives: ${objectives}
 ${key_terms ? `Key Terms to include: ${key_terms}` : ""}
 ${ngss_standard ? `NGSS Standard: ${ngss_standard}` : ""}
+
+IMPORTANT: The introduction MUST tell the story of a real scientist connected to this topic. The explanation MUST use key terms in context. The connected reading MUST show how this concept affects students personally.
 
 ${formatInstructions}
 
@@ -226,7 +240,7 @@ async function handleRegeneration(opts: {
 
   const sectionConfigs: Record<string, { prompt: string; schema: any }> = {
     reading: {
-      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Create a compelling non-fiction reading with 8-12 paragraphs.`,
+      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Write 8-12 paragraphs focused on how this concept directly affects and connects to the student's daily life — through everyday phenomena, health, technology, environmental impacts, or personal decisions.`,
       schema: { type: "object", properties: { reading_title: { type: "string" }, reading_paragraphs: { type: "array", items: { type: "string" } } }, required: ["reading_title", "reading_paragraphs"] },
     },
     objectives: {
@@ -238,11 +252,11 @@ async function handleRegeneration(opts: {
       schema: { type: "object", properties: { key_terms: { type: "array", items: { type: "object", properties: { term: { type: "string" }, definition: { type: "string" } }, required: ["term", "definition"] } } }, required: ["key_terms"] },
     },
     intro: {
-      prompt: `Regenerate ONLY the introduction. Write 4-6 narrative paragraphs.`,
+      prompt: `Regenerate ONLY the introduction for a lesson about "${subject_area}". Tell the story of a real, historically relevant scientist (or scientists) who contributed to understanding this concept. Include their historical context, the problem they were trying to solve, their key experiments or observations, and their breakthrough. Write 4-6 narrative paragraphs that naturally lead into the concept.`,
       schema: { type: "object", properties: { intro: { type: "array", items: { type: "string" } } }, required: ["intro"] },
     },
     explanation: {
-      prompt: `Regenerate ONLY the explanation section. Write 6-8 detailed concept paragraphs.`,
+      prompt: `Regenerate ONLY the explanation section for a lesson about "${subject_area}". Write 6-8 detailed paragraphs providing a slightly technical explanation of the concept. Define and use all key terms naturally within the text. Explain mechanisms, principles, and processes thoroughly but accessibly.`,
       schema: { type: "object", properties: { explanation: { type: "array", items: { type: "string" } } }, required: ["explanation"] },
     },
     quiz: {

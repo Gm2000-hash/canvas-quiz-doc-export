@@ -144,9 +144,30 @@ function buildReadingPrompt(opts: any) {
   const { standard_code, standard_description, count, subject } = opts;
   const gradeRange = "middle school, grades 6-8";
 
-  const systemPrompt = `You are an expert ${gradeRange} ${subject || "science"} curriculum designer who writes engaging, narrative-driven textbook content. Create rich, detailed instructional readings appropriate for ${gradeRange} students.`;
+  const systemPrompt = `You are an expert ${gradeRange} ${subject || "science"} curriculum designer who writes engaging, narrative-driven textbook content. You follow a proven three-part storytelling framework for every reading:
 
-  const userPrompt = `Generate ${count} textbook-style reading(s) for this standard:\n\nStandard: ${standard_code}\nDescription: ${standard_description}\n\nEach reading should include a title, 3-5 learning objectives, 8-12 key vocabulary terms with definitions, an engaging introduction (4-6 paragraphs), a detailed explanation section (6-10 paragraphs), and a connected reading passage (8-12 paragraphs).`;
+1. **Scientist Story Introduction** — Open by introducing a real, historically relevant scientist (or scientists) connected to the concept. Tell their story as a narrative: what problem they faced, what observations or experiments they conducted, and what breakthrough they achieved. This should read like a compelling mini-biography that naturally leads into the concept. Use vivid, age-appropriate language that makes the scientist relatable to ${gradeRange} students.
+
+2. **Technical Explanation** — After the story, transition into a clear, slightly technical explanation of the concept. Define and use all key vocabulary terms in context (bold or emphasize them). Explain the underlying mechanisms, principles, or processes. This section should be thorough but accessible — think "textbook meets storytelling."
+
+3. **Student Connection** — Conclude with concrete, relatable examples of how this concept directly affects the student's daily life. Help them see why this matters to them personally — through everyday phenomena, health, technology, environmental impacts, or decisions they might make.
+
+Create rich, detailed instructional readings appropriate for ${gradeRange} students. Each reading should be substantial in length (similar to "The Dance of Matter and Energy" — detailed paragraphs, not summaries).`;
+
+  const userPrompt = `Generate ${count} textbook-style reading(s) for this standard:
+
+Standard: ${standard_code}
+Description: ${standard_description}
+
+Each reading MUST follow this three-part structure:
+
+**Introduction (intro field, 4-6 paragraphs):** Tell the story of a real scientist (or scientists) who contributed to understanding this concept. Include their historical context, the problem they were trying to solve, their key experiments or observations, and their breakthrough. Write it as an engaging narrative.
+
+**Explanation (explanation field, 6-10 paragraphs):** Provide a detailed, slightly technical explanation of the concept. Use and define ALL key terms naturally within the text. Explain mechanisms, principles, and processes thoroughly.
+
+**Connected Reading (reading_paragraphs field, 8-12 paragraphs):** Give real-world examples of how this concept directly impacts the student's life. Connect it to everyday experiences, health, technology, the environment, or decisions students face. Make it personal and relevant.
+
+Also include: a compelling title, 3-5 learning objectives, 8-12 key vocabulary terms with definitions, and a reading_title for the connected reading passage.`;
 
   const schema = {
     type: "object",
