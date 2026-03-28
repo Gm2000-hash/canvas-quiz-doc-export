@@ -49,6 +49,7 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const flipBookRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
