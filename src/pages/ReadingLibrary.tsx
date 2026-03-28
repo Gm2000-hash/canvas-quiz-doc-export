@@ -501,8 +501,13 @@ export default function ReadingLibrary() {
           onOpenChange={(open) => { if (!open) setCoverPickerBook(null); }}
           bookId={coverPickerBook.id}
           bookTitle={coverPickerBook.title}
+          currentCoverUrl={coverPickerBook.cover_url}
           onCoverUpdated={(url) => {
             setBooks(prev => prev.map(b => b.id === coverPickerBook.id ? { ...b, cover_url: url } : b));
+            setCoverPickerBook(null);
+          }}
+          onCoverRemoved={() => {
+            setBooks(prev => prev.map(b => b.id === coverPickerBook.id ? { ...b, cover_url: null } : b));
             setCoverPickerBook(null);
           }}
         />
