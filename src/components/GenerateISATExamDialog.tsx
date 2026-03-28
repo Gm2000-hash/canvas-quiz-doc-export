@@ -178,7 +178,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
                 {selectedStandards.size > 0 && (
                   <div className="flex flex-wrap gap-1">
                     {selectedDisciplineLabels.map(label => (
-                      <Badge key={label} variant="outline" className="text-xs">{label}</Badge>
+                      <Badge key={label} variant="outline" className="text-base">{label}</Badge>
                     ))}
                   </div>
                 )}

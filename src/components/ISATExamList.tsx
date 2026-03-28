@@ -119,7 +119,7 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
                 )}
               </div>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="outline" className="text-xs">
+                <Badge variant="outline" className="text-base">
                   {exam.grade_level} Grade — {GRADE_LABELS[exam.grade_level] || exam.grade_level}
                 </Badge>
                 <Badge variant="secondary" className="text-xs">
