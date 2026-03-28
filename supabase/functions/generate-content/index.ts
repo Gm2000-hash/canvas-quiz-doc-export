@@ -152,12 +152,16 @@ function buildReadingPrompt(opts: any) {
 
 3. **Student Connection** — Conclude with concrete, relatable examples of how this concept directly affects the student's daily life. Help them see why this matters to them personally — through everyday phenomena, health, technology, environmental impacts, or decisions they might make.
 
-Create rich, detailed instructional readings appropriate for ${gradeRange} students. Each reading should be substantial in length (similar to "The Dance of Matter and Energy" — detailed paragraphs, not summaries).`;
+Create rich, detailed instructional readings appropriate for ${gradeRange} students. Each reading should be substantial in length (similar to "The Dance of Matter and Energy" — detailed paragraphs, not summaries).
+
+CRITICAL TITLE FORMAT: The reading title MUST be prefixed with the standard code, followed by a colon and a descriptive curriculum-style title. For example: "MS-LS1-1: Investigating Cell Theory" or "MS-PS1-3: Understanding Chemical Reactions". Do NOT use creative/literary titles like "The Invisible Architects of Life" — use clear, curriculum-aligned titles that match what a lesson plan would be called.`;
 
   const userPrompt = `Generate ${count} textbook-style reading(s) for this standard:
 
 Standard: ${standard_code}
 Description: ${standard_description}
+
+IMPORTANT — Title format: Every reading title MUST start with "${standard_code}: " followed by a clear, curriculum-style descriptive title (e.g., "${standard_code}: Investigating [Topic]"). Do NOT use creative literary titles.
 
 Each reading MUST follow this three-part structure:
 
@@ -167,7 +171,7 @@ Each reading MUST follow this three-part structure:
 
 **Connected Reading (reading_paragraphs field, 8-12 paragraphs):** Give real-world examples of how this concept directly impacts the student's life. Connect it to everyday experiences, health, technology, the environment, or decisions students face. Make it personal and relevant.
 
-Also include: a compelling title, 3-5 learning objectives, 8-12 key vocabulary terms with definitions, and a reading_title for the connected reading passage.`;
+Also include: 3-5 learning objectives, 8-12 key vocabulary terms with definitions, and a reading_title for the connected reading passage.`;
 
   const schema = {
     type: "object",

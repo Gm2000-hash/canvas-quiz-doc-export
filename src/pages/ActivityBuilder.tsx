@@ -26,7 +26,7 @@ import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
 import { Plus, Puzzle, Search, Sparkles, Loader2, LayoutGrid, List, FileText, BookOpen } from "lucide-react";
 
-interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
+interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson" | "reading_library"; }
 
 interface Activity {
   id: string;
@@ -114,8 +114,10 @@ export default function ActivityBuilder() {
     Promise.all([
       supabase.from("lesson_plans").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
       supabase.from("curriculum_lessons").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
-    ]).then(([lp, cl]) => {
+      supabase.from("library_books").select("id, title, source_discipline").eq("user_id", user.id).not("source_discipline", "is", null).order("updated_at", { ascending: false }),
+    ]).then(([lp, cl, lb]) => {
       const opts: SourceOption[] = [
+        ...((lb.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "reading_library" as const })),
         ...((lp.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "lesson_plan" as const })),
         ...((cl.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "curriculum_lesson" as const })),
       ];
@@ -457,7 +459,7 @@ export default function ActivityBuilder() {
                             {sources.map(s => (
                               <SelectItem key={s.id} value={s.id}>
                                 <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
-                                  {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
+                                  {s.type === "lesson_plan" ? "Plan" : s.type === "reading_library" ? "Reading" : "Curriculum"}
                                 </span>
                                 {s.title}
                               </SelectItem>

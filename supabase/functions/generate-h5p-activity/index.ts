@@ -44,12 +44,47 @@ serve(withLogging("generate-h5p-activity", async (req) => {
     let sourceTitle = "";
 
     if (sourceType === "standard") {
-      // Generate from a standards code/description directly
       if (!standardCode || !standardDescription) {
         return new Response(JSON.stringify({ error: 'standardCode and standardDescription are required for standard source type' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
       sourceTitle = standardCode;
       sourceText = `Standard: ${standardCode}\nDescription: ${standardDescription}\n\nCreate an activity that helps students demonstrate mastery of this standard. The content should directly assess or teach the concepts described in the standard.`;
+    } else if (sourceType === "reading_library") {
+      // Fetch all curriculum_lessons for a given library book's discipline
+      if (!sourceId) {
+        return new Response(JSON.stringify({ error: 'sourceId is required for reading_library source type' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+      }
+      // sourceId is a library_books id — get the discipline, then fetch associated curriculum_lessons
+      const { data: book } = await supabase.from("library_books").select("title, source_discipline").eq("id", sourceId).single();
+      if (book) {
+        sourceTitle = book.title;
+        // Get units for this discipline
+        const { data: units } = await supabase.from("units").select("id").eq("user_id", user.id).eq("discipline", book.source_discipline);
+        if (units && units.length > 0) {
+          const unitIds = units.map((u: any) => u.id);
+          const { data: lessons } = await supabase
+            .from("curriculum_lessons")
+            .select("title, objectives, intro, explanation, key_terms, reading_paragraphs, reading_title")
+            .in("unit_id", unitIds)
+            .eq("user_id", user.id)
+            .order("sort_order")
+            .limit(5);
+          if (lessons && lessons.length > 0) {
+            const parts = [`Reading Library: ${book.title} (${book.source_discipline})`];
+            for (const lesson of lessons) {
+              parts.push(`\n--- Reading: ${lesson.title} ---`);
+              if (Array.isArray(lesson.objectives)) parts.push("Objectives:\n" + lesson.objectives.map((o: any) => `- ${typeof o === 'string' ? o : o.text}`).join("\n"));
+              if (Array.isArray(lesson.key_terms)) parts.push("Key Terms:\n" + (lesson.key_terms as any[]).map((t: any) => `- ${t.term}: ${t.definition}`).join("\n"));
+              if (Array.isArray(lesson.intro)) parts.push("Introduction:\n" + lesson.intro.map((p: any) => typeof p === 'string' ? p : p.text).join("\n"));
+              if (Array.isArray(lesson.explanation)) parts.push("Explanation:\n" + lesson.explanation.map((p: any) => typeof p === 'string' ? p : p.text).join("\n"));
+            }
+            sourceText = parts.join("\n\n");
+          }
+        }
+        if (!sourceText) {
+          sourceText = `Reading Library: ${book.title}. Generate an activity about ${book.source_discipline} topics.`;
+        }
+      }
     } else if (sourceType === "lesson_plan") {
       const { data } = await supabase.from("lesson_plans").select("title, objectives, activities, vocabulary, materials, notes").eq("id", sourceId).single();
       if (data) {

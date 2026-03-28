@@ -55,7 +55,7 @@ import { useActivityStandards, type ActivityStandard } from "@/hooks/useActivity
 import { Badge } from "@/components/ui/badge";
 import { ActivityStandardsPicker } from "@/components/ActivityStandardsPicker";
 
-interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson"; }
+interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson" | "reading_library"; }
 
 export default function ActivityEditorPage() {
   const { id } = useParams<{ id: string }>();
@@ -104,11 +104,13 @@ export default function ActivityEditorPage() {
 
   const openAIDialog = async () => {
     if (sources.length === 0 && user) {
-      const [lp, cl] = await Promise.all([
+      const [lp, cl, lb] = await Promise.all([
         supabase.from("lesson_plans").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
         supabase.from("curriculum_lessons").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
+        supabase.from("library_books").select("id, title, source_discipline").eq("user_id", user.id).not("source_discipline", "is", null).order("updated_at", { ascending: false }),
       ]);
       const opts: SourceOption[] = [
+        ...((lb.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "reading_library" as const })),
         ...((lp.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "lesson_plan" as const })),
         ...((cl.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "curriculum_lesson" as const })),
       ];
@@ -285,7 +287,7 @@ export default function ActivityEditorPage() {
                     {sources.map(s => (
                       <SelectItem key={s.id} value={s.id}>
                         <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
-                          {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
+                          {s.type === "lesson_plan" ? "Plan" : s.type === "reading_library" ? "Reading" : "Curriculum"}
                         </span>
                         {s.title}
                       </SelectItem>
