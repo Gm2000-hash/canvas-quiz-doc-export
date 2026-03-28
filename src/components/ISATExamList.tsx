@@ -218,6 +218,15 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {canvasConnected && canvasConfig && pushTarget && (
+        <PushISATToCanvasDialog
+          open={!!pushTarget}
+          onOpenChange={(v) => !v && setPushTarget(null)}
+          examTitle={pushTarget.title}
+          questions={pushQuestions}
+          config={canvasConfig}
+        />
+      )}
     </div>
   );
 }
