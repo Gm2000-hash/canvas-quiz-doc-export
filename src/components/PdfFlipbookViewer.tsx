@@ -7,7 +7,7 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 // Configure PDF.js worker
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
 
 interface PdfFlipbookViewerProps {
   fileUrl: string;
@@ -49,6 +49,7 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [scale, setScale] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const flipBookRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -71,6 +72,13 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
 
   const onDocumentLoadSuccess = useCallback(({ numPages: total }: { numPages: number }) => {
     setNumPages(total);
+    setLoadError(null);
+    setLoading(false);
+  }, []);
+
+  const onDocumentLoadError = useCallback((error: Error) => {
+    console.error('PDF load error:', error);
+    setLoadError(error?.message || 'Failed to load PDF');
     setLoading(false);
   }, []);
 
@@ -132,13 +140,25 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
 
       {/* Book area */}
       <div className="flex-1 flex items-center justify-center overflow-hidden relative">
-        {loading && (
+        {loading && !loadError && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="animate-pulse text-muted-foreground text-sm">Loading PDF...</div>
           </div>
         )}
 
-        <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} loading="" externalLinkTarget="_blank">
+        {loadError && (
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center space-y-3 max-w-sm px-4">
+              <p className="text-sm text-destructive font-medium">Failed to load PDF</p>
+              <p className="text-xs text-muted-foreground">{loadError}</p>
+              <Button variant="outline" size="sm" onClick={() => { setLoadError(null); setLoading(true); setNumPages(0); }}>
+                Retry
+              </Button>
+            </div>
+          </div>
+        )}
+
+        <Document file={fileUrl} onLoadSuccess={onDocumentLoadSuccess} onLoadError={onDocumentLoadError} loading="" externalLinkTarget="_blank">
           {numPages > 0 && (
             <div className="flipbook-container" style={{ perspective: '2000px' }}>
               {/* @ts-ignore - react-pageflip typing issues */}
