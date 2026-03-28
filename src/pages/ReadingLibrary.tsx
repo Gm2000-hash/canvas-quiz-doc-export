@@ -458,6 +458,14 @@ export default function ReadingLibrary() {
                     <><Share2 className="h-3.5 w-3.5" /> Share</>
                   )}
                 </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive"
+                  onClick={() => handleDelete(book)}
+                >
+                  <Trash2 className="h-3.5 w-3.5" /> Delete
+                </Button>
               </div>
             ))}
           </div>
