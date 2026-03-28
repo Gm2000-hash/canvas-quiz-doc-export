@@ -431,7 +431,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
         </div>
         <div className="flex items-center gap-2">
           {lessons.length > 1 && currentLesson !== null && (
-            <Button variant="ghost" size="icon" onClick={() => setCurrentLesson(null)} title="Table of Contents">
+            <Button variant="ghost" size="icon" onClick={() => setShowToc(true)} title="Table of Contents">
               <List className="h-4 w-4" />
             </Button>
           )}
@@ -501,41 +501,85 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
         </div>
       </div>
 
-      {/* Search & TOC panel */}
-      {!loading && lessons.length > 0 && showToc && (
-        <div className="border-b border-border bg-card/60 px-4 py-2 space-y-2">
-          <div className="relative max-w-sm">
+      {/* Slide-out TOC sidebar */}
+      <div
+        className={`fixed left-0 top-0 bottom-0 z-[110] w-72 bg-card border-r border-border shadow-xl flex flex-col transition-transform duration-300 ease-in-out ${
+          showToc ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <List className="h-4 w-4 text-primary" /> Table of Contents
+          </h3>
+          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setShowToc(false)}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+        <div className="px-3 py-2">
+          <div className="relative">
             <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
             <Input
-              placeholder="Search lessons, terms, readings..."
+              placeholder="Search lessons..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="pl-8 h-8 text-sm"
             />
           </div>
-          <ScrollArea className="max-h-48">
-            <div className="space-y-0.5">
-              {filteredIndices.length === 0 ? (
-                <p className="text-xs text-muted-foreground py-2">No lessons match "{searchQuery}"</p>
-              ) : (
-                filteredIndices.map(idx => (
-                  <button
-                    key={idx}
-                    onClick={() => { setCurrentLesson(idx); setShowToc(false); if (editing) cancelEditing(); }}
-                    className={`w-full text-left px-3 py-1.5 rounded-md text-sm transition-colors ${
-                      idx === currentLesson
-                        ? 'bg-primary/10 text-primary font-medium'
-                        : 'hover:bg-muted text-foreground'
-                    }`}
-                  >
-                    <span className="text-xs text-muted-foreground mr-2">{idx + 1}.</span>
-                    {lessons[idx].title}
-                  </button>
-                ))
-              )}
-            </div>
-          </ScrollArea>
         </div>
+        <ScrollArea className="flex-1">
+          <div className="px-2 pb-4 space-y-1">
+            {(() => {
+              const unitOrder = Object.keys(unitMap);
+              const grouped: { unitId: string; unitTitle: string; items: { index: number; lesson: CurriculumLesson }[] }[] = [];
+              const groupMap = new Map<string, typeof grouped[0]>();
+
+              filteredIndices.forEach(idx => {
+                const l = lessons[idx];
+                if (!groupMap.has(l.unit_id)) {
+                  const group = { unitId: l.unit_id, unitTitle: unitMap[l.unit_id] || 'Unknown Unit', items: [] as { index: number; lesson: CurriculumLesson }[] };
+                  groupMap.set(l.unit_id, group);
+                  grouped.push(group);
+                }
+                groupMap.get(l.unit_id)!.items.push({ index: idx, lesson: l });
+              });
+
+              grouped.sort((a, b) => unitOrder.indexOf(a.unitId) - unitOrder.indexOf(b.unitId));
+
+              if (filteredIndices.length === 0) {
+                return <p className="text-xs text-muted-foreground py-4 text-center">No lessons match "{searchQuery}"</p>;
+              }
+
+              return grouped.map((group, gi) => (
+                <div key={group.unitId} className="space-y-0.5">
+                  <p className="text-[10px] font-semibold text-primary uppercase tracking-wider px-2 pt-3 pb-1">
+                    {group.unitTitle}
+                  </p>
+                  {group.items.map(({ index, lesson: l }) => (
+                    <button
+                      key={l.id}
+                      onClick={() => { setCurrentLesson(index); setShowToc(false); if (editing) cancelEditing(); }}
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-colors ${
+                        index === currentLesson
+                          ? 'bg-primary/10 text-primary font-medium'
+                          : 'hover:bg-muted text-foreground'
+                      }`}
+                    >
+                      <span className="text-xs text-muted-foreground mr-1.5">{index + 1}.</span>
+                      {l.title}
+                    </button>
+                  ))}
+                </div>
+              ));
+            })()}
+          </div>
+        </ScrollArea>
+        <div className="border-t border-border px-4 py-2">
+          <p className="text-[10px] text-muted-foreground text-center">{lessons.length} lessons · {Object.keys(unitMap).length} units</p>
+        </div>
+      </div>
+      {/* TOC overlay backdrop */}
+      {showToc && (
+        <div className="fixed inset-0 z-[105] bg-black/20" onClick={() => setShowToc(false)} />
       )}
 
       {/* Content */}
