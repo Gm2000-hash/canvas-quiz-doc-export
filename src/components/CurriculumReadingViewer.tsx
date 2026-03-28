@@ -985,6 +985,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
               >
                 <ChevronLeft className="h-4 w-4" /> {currentLesson === 0 ? 'Contents' : 'Previous'}
             </Button>
+            </div>
             <button
               onClick={() => { setCurrentLesson(null); if (editing) cancelEditing(); }}
               className="text-xs text-muted-foreground hover:text-primary transition-colors"
