@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { RichContent } from "./RichContent";
+import { MediaPlayer } from "./MediaPlayer";
 import type { CoursePresentationContent } from "@/lib/h5p-types";
 
 interface Props { content: CoursePresentationContent; }
@@ -14,7 +16,10 @@ export function CoursePresentationPlayer({ content }: Props) {
     <div className="space-y-4">
       <div className="rounded-2xl border-2 border-border bg-card min-h-[250px] p-8 flex flex-col items-center justify-center text-center">
         <h2 className="text-xl font-bold text-foreground mb-4">{slide.title}</h2>
-        <p className="text-sm text-muted-foreground whitespace-pre-wrap max-w-lg leading-relaxed">{slide.content}</p>
+        <div className="max-w-lg w-full">
+          <RichContent html={slide.content} />
+          <MediaPlayer media={slide.media} className="mt-4" />
+        </div>
       </div>
       <div className="flex items-center justify-between">
         <Button size="sm" variant="outline" disabled={idx === 0} onClick={() => setIdx(i => i - 1)}>

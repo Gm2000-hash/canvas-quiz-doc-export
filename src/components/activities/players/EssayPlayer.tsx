@@ -1,8 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { RichContent } from "./RichContent";
 import type { EssayContent } from "@/lib/h5p-types";
 
 interface Props { content: EssayContent; }
@@ -12,20 +13,19 @@ export function EssayPlayer({ content }: Props) {
   const [checked, setChecked] = useState(false);
 
   const wordCount = text.trim().split(/\s+/).filter(Boolean).length;
-  const results = useMemo(() => {
-    if (!checked) return null;
-    return content.keywords.map(kw => {
-      const t = kw.caseSensitive ? text : text.toLowerCase();
-      const k = kw.caseSensitive ? kw.text : kw.text.toLowerCase();
-      return { keyword: kw.text, found: t.includes(k) };
-    });
-  }, [checked, text, content.keywords]);
+  const results = checked
+    ? content.keywords.map(kw => {
+        const t = kw.caseSensitive ? text : text.toLowerCase();
+        const k = kw.caseSensitive ? kw.text : kw.text.toLowerCase();
+        return { keyword: kw.text, found: t.includes(k) };
+      })
+    : null;
 
   const found = results ? results.filter(r => r.found).length : 0;
 
   return (
     <div className="space-y-4">
-      <p className="text-sm font-medium">{content.question}</p>
+      <RichContent html={content.question} className="font-medium" />
       <Textarea
         value={text}
         onChange={e => { setText(e.target.value); setChecked(false); }}
