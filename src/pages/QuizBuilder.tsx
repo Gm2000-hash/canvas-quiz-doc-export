@@ -275,6 +275,7 @@ export default function QuizBuilder() {
     setQuizTitle("Custom Quiz");
     setQuizDescription("");
     setSelectedIds([]);
+    setSettings({ ...DEFAULT_SETTINGS });
     setPreviewMode(false);
   };
 
