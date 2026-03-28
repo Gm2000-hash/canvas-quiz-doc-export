@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save, Undo2, Redo2, Sparkles, Target, Trash2 } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save, Undo2, Redo2, Sparkles, Target, Trash2, RotateCcw } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ReadingEditToolbar, ItemToolbar, type EditorAction, type SectionKind } from '@/components/ReadingEditToolbar';
@@ -787,9 +787,18 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                       <Input
                         value={editData.reading_title || ''}
                         onChange={e => setEditData({ ...editData, reading_title: e.target.value })}
-                        className="text-lg font-semibold border-dashed"
+                        className="text-lg font-semibold border-dashed flex-1"
                         placeholder="Reading title"
                       />
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="shrink-0 gap-1 text-xs"
+                        title="Reset to lesson title"
+                        onClick={() => setEditData({ ...editData, reading_title: editData.title })}
+                      >
+                        <RotateCcw className="h-3 w-3" /> Reset
+                      </Button>
                     </div>
                     {((editData.reading_paragraphs as string[]) || []).map((p, i) => (
                       <div key={i} className="flex items-start gap-1">

@@ -24,7 +24,7 @@ import { ACTIVITY_TYPES, getDefaultContent } from "@/lib/h5p-types";
 import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
-import { Plus, Puzzle, Search, Sparkles, Loader2, LayoutGrid, List, FileText, BookOpen, Library } from "lucide-react";
+import { Plus, Puzzle, Search, Sparkles, Loader2, LayoutGrid, List, FileText, BookOpen, Library, RotateCcw } from "lucide-react";
 
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson" | "reading_library"; }
 
@@ -130,6 +130,27 @@ export default function ActivityBuilder() {
       if (readingSources.length > 0) setSelectedReading(readingSources[0].id);
     });
   }, [useAI, user, sourcesLoaded]);
+
+  // Auto-fill title from selected source with sequential letter suffix
+  useEffect(() => {
+    if (!useAI) return;
+    let baseTitle = "";
+    if (aiSourceMode === "lesson" && selectedSource) {
+      const src = sources.find(s => s.id === selectedSource);
+      if (src) baseTitle = src.title;
+    } else if (aiSourceMode === "reading" && selectedReading) {
+      const src = sources.find(s => s.id === selectedReading);
+      if (src) baseTitle = src.title;
+    } else if (aiSourceMode === "standard" && selectedStandard) {
+      baseTitle = selectedStandard.code;
+    }
+    if (!baseTitle) return;
+
+    // Count existing activities that start with this base title
+    const existing = activities.filter(a => a.title === baseTitle || /^.+ [A-Z]$/.test(a.title) && a.title.slice(0, -2) === baseTitle);
+    const letter = String.fromCharCode(65 + existing.length); // A, B, C...
+    setNewTitle(existing.length === 0 ? baseTitle : `${baseTitle} ${letter}`);
+  }, [selectedSource, selectedReading, selectedStandard, aiSourceMode, useAI, sources, activities]);
 
   const handleCreate = async () => {
     if (!user || !newTitle.trim()) return;
