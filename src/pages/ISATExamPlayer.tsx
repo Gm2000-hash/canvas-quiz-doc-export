@@ -386,7 +386,7 @@ export default function ISATExamPlayer() {
           <div className="flex flex-wrap gap-2">
             <p className="text-xs text-muted-foreground w-full">Categories:</p>
             {categories.map((c: any, i: number) => (
-              <Badge key={i} variant="outline" className="text-xs">{c.label}</Badge>
+              <Badge key={i} variant="outline" className="text-base">{c.label}</Badge>
             ))}
           </div>
           <div className="space-y-2">
