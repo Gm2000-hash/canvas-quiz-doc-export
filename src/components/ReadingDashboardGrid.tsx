@@ -57,6 +57,7 @@ export function ReadingDashboardGrid({
   books,
   onOpenBook,
   onShare,
+  onEditCover,
   openingId,
   sharingId,
   copiedId,

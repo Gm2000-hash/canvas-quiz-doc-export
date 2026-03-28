@@ -432,6 +432,19 @@ export default function ReadingLibrary() {
           onClose={() => setViewingCurriculum(null)}
         />
       )}
+
+      {coverPickerBook && (
+        <CoverArtPicker
+          open={!!coverPickerBook}
+          onOpenChange={(open) => { if (!open) setCoverPickerBook(null); }}
+          bookId={coverPickerBook.id}
+          bookTitle={coverPickerBook.title}
+          onCoverUpdated={(url) => {
+            setBooks(prev => prev.map(b => b.id === coverPickerBook.id ? { ...b, cover_url: url } : b));
+            setCoverPickerBook(null);
+          }}
+        />
+      )}
     </div>
   );
 }
