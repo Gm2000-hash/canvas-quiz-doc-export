@@ -590,7 +590,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                                 {deletingId === l.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
                               </Button>
                             </AlertDialogTrigger>
-                            <AlertDialogContent>
+                            <AlertDialogContent className="z-[200]">
                               <AlertDialogHeader>
                                 <AlertDialogTitle>Delete Reading</AlertDialogTitle>
                                 <AlertDialogDescription>
