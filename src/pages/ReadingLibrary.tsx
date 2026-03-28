@@ -385,6 +385,14 @@ export default function ReadingLibrary() {
                   variant="ghost"
                   size="sm"
                   className="h-8 gap-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => setCoverPickerBook(book)}
+                >
+                  <ImageIcon className="h-3.5 w-3.5" /> Cover
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => handleShare(book)}
                   disabled={sharingId === book.id}
                 >
