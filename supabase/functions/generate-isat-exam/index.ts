@@ -170,7 +170,8 @@ ${standardsContext}
 - Use realistic scientific scenarios and data
 - Distractors should reflect common student misconceptions
 - Multi-step questions should build logically
-- Constructed responses should have clear rubric criteria in the scoring_rubric field`;
+- Constructed responses should have clear rubric criteria in the scoring_rubric field
+- Every question MUST include a "hint" — a short (1-2 sentence) clue that nudges the student toward the correct concept without giving the answer away`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -224,6 +225,7 @@ Make this exam realistic and challenging — it should prepare students for the 
                         points_possible: { type: "number", description: "Point value (1-3)" },
                         dok_level: { type: "number", description: "DOK level 1-4" },
                         blooms_level: { type: "string", enum: ["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"] },
+                        hint: { type: "string", description: "A short 1-2 sentence clue about the concept being tested, without giving the answer away" },
                         answers_json: {
                           type: "string",
                           description: `JSON string of answer data based on type:
@@ -236,7 +238,7 @@ Make this exam realistic and challenging — it should prepare students for the 
 - Investigation design: [{"text":"...","weight":100},{"text":"...","weight":0}] or {"prompt":"...","scoring_rubric":"...","sample_response":"..."}`,
                         },
                       },
-                      required: ["question_number", "question_type", "question_text", "standard_code", "points_possible", "dok_level", "blooms_level", "answers_json"],
+                      required: ["question_number", "question_type", "question_text", "standard_code", "points_possible", "dok_level", "blooms_level", "hint", "answers_json"],
                     },
                   },
                 },
@@ -335,6 +337,7 @@ function processQuestions(raw: any[]): any[] {
       points_possible: q.points_possible || 1,
       dok_level: q.dok_level || 2,
       blooms_level: q.blooms_level || "Understand",
+      hint: q.hint || "",
       answers,
     };
   });
