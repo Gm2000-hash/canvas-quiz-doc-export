@@ -565,20 +565,50 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     </h2>
                     <div className="ml-8 space-y-0.5">
                       {group.lessons.map(({ index, lesson: l }) => (
-                        <button
-                          key={l.id}
-                          onClick={() => setCurrentLesson(index)}
-                          className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-primary/5 transition-colors group flex items-center gap-3"
-                        >
-                          <span className="text-xs text-muted-foreground/60 w-6 shrink-0 text-right">{index + 1}.</span>
-                          <div className="min-w-0 flex-1">
-                            <span className="text-foreground group-hover:text-primary transition-colors">{l.title}</span>
-                            {l.reading_title && (
-                              <span className="block text-[11px] text-muted-foreground mt-0.5">📖 {l.reading_title}</span>
-                            )}
-                          </div>
-                          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
-                        </button>
+                        <div key={l.id} className="flex items-center gap-1 group/item">
+                          <button
+                            onClick={() => setCurrentLesson(index)}
+                            className="flex-1 text-left px-3 py-2 rounded-lg text-sm hover:bg-primary/5 transition-colors group flex items-center gap-3 min-w-0"
+                          >
+                            <span className="text-xs text-muted-foreground/60 w-6 shrink-0 text-right">{index + 1}.</span>
+                            <div className="min-w-0 flex-1">
+                              <span className="text-foreground group-hover:text-primary transition-colors">{l.title}</span>
+                              {l.reading_title && (
+                                <span className="block text-[11px] text-muted-foreground mt-0.5">📖 {l.reading_title}</span>
+                              )}
+                            </div>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
+                          </button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 opacity-0 group-hover/item:opacity-100 text-destructive hover:text-destructive shrink-0"
+                                disabled={deletingId === l.id}
+                              >
+                                {deletingId === l.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Reading</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{l.title}"? This will permanently remove the reading, its key terms, and associated standards. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteReading(l.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       ))}
                     </div>
                   </div>
