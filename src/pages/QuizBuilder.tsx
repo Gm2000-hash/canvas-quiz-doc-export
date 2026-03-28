@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -19,7 +19,8 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { toast } from "sonner";
 import {
   Loader2, Search, Plus, Minus, Save, Upload, ArrowLeft, GripVertical,
-  Trash2, FileText, ClipboardCheck,
+  Trash2, FileText, ClipboardCheck, Eye, EyeOff, ChevronUp, ChevronDown,
+  CheckCircle2, XCircle, Circle,
 } from "lucide-react";
 import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS_FLAT } from "@/lib/idaho-standards-data";
@@ -71,6 +72,13 @@ export default function QuizBuilder() {
   const [savedQuizzes, setSavedQuizzes] = useState<SavedQuiz[]>([]);
   const [loadingSaved, setLoadingSaved] = useState(true);
 
+  // Preview mode
+  const [previewMode, setPreviewMode] = useState(false);
+
+  // Drag state
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
   useEffect(() => {
     loadData();
   }, []);
@@ -86,7 +94,6 @@ export default function QuizBuilder() {
       setAllQuestions(questions);
       if (savedRes.data) setSavedQuizzes(savedRes.data);
 
-      // Load existing quiz if editing
       if (quizId && savedRes.data) {
         const quiz = savedRes.data.find((q: SavedQuiz) => q.id === quizId);
         if (quiz) {
@@ -104,14 +111,12 @@ export default function QuizBuilder() {
     }
   };
 
-  // All unique standards from questions
   const allStandards = useMemo(() => {
     const set = new Set<string>();
     allQuestions.forEach(q => q.standards.forEach(s => set.add(s.ngss_code)));
     return Array.from(set).sort();
   }, [allQuestions]);
 
-  // Filtered questions
   const filtered = useMemo(() => {
     return allQuestions.filter(q => {
       if (search) {
@@ -126,7 +131,6 @@ export default function QuizBuilder() {
     });
   }, [allQuestions, search, filterStandard, filterDok, filterBlooms, filterType]);
 
-  // Selected questions in order
   const selectedQuestions = useMemo(() => {
     const map = new Map(allQuestions.map(q => [q.id, q]));
     return selectedIds.map(id => map.get(id)).filter(Boolean) as QuestionBankItem[];
@@ -140,6 +144,47 @@ export default function QuizBuilder() {
 
   const removeQuestion = (id: string) => {
     setSelectedIds(prev => prev.filter(x => x !== id));
+  };
+
+  // Drag-and-drop handlers
+  const handleDragStart = (idx: number) => {
+    setDragIdx(idx);
+  };
+
+  const handleDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    setDragOverIdx(idx);
+  };
+
+  const handleDrop = (idx: number) => {
+    if (dragIdx === null || dragIdx === idx) {
+      setDragIdx(null);
+      setDragOverIdx(null);
+      return;
+    }
+    setSelectedIds(prev => {
+      const next = [...prev];
+      const [moved] = next.splice(dragIdx, 1);
+      next.splice(idx, 0, moved);
+      return next;
+    });
+    setDragIdx(null);
+    setDragOverIdx(null);
+  };
+
+  const handleDragEnd = () => {
+    setDragIdx(null);
+    setDragOverIdx(null);
+  };
+
+  const moveQuestion = (idx: number, direction: "up" | "down") => {
+    const newIdx = direction === "up" ? idx - 1 : idx + 1;
+    if (newIdx < 0 || newIdx >= selectedIds.length) return;
+    setSelectedIds(prev => {
+      const next = [...prev];
+      [next[idx], next[newIdx]] = [next[newIdx], next[idx]];
+      return next;
+    });
   };
 
   const handleSave = async () => {
@@ -170,7 +215,6 @@ export default function QuizBuilder() {
         toast.success("Quiz created!");
       }
 
-      // Refresh saved list
       const { data: updated } = await supabase.from("custom_quizzes").select("*").order("updated_at", { ascending: false }) as any;
       if (updated) setSavedQuizzes(updated);
     } catch (err: any) {
@@ -202,6 +246,7 @@ export default function QuizBuilder() {
     setQuizDescription(quiz.description || "");
     setSelectedIds(quiz.question_ids || []);
     setExistingId(quiz.id);
+    setPreviewMode(false);
   };
 
   const startNew = () => {
@@ -209,6 +254,7 @@ export default function QuizBuilder() {
     setQuizTitle("Custom Quiz");
     setQuizDescription("");
     setSelectedIds([]);
+    setPreviewMode(false);
   };
 
   const totalPoints = selectedQuestions.reduce((sum, q) => sum + (q.points_possible || 1), 0);
@@ -231,6 +277,53 @@ export default function QuizBuilder() {
     );
   }
 
+  // Preview mode render
+  if (previewMode) {
+    return (
+      <div className="min-h-screen bg-background">
+        <div className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-30">
+          <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
+            <AppNavSheet />
+            <Breadcrumbs items={[
+              { label: "Question Bank", path: "/question-bank" },
+              { label: quizTitle, path: existingId ? `/quiz-builder/${existingId}` : "/quiz-builder" },
+              { label: "Preview" },
+            ]} />
+            <div className="ml-auto flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={() => setPreviewMode(false)} className="gap-1.5">
+                <EyeOff className="h-4 w-4" /> Exit Preview
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl font-bold">{quizTitle}</h1>
+            {quizDescription && <p className="text-muted-foreground mt-1">{quizDescription}</p>}
+            <div className="flex items-center justify-center gap-3 mt-3">
+              <Badge variant="secondary">{selectedQuestions.length} questions</Badge>
+              <Badge variant="outline">{totalPoints} points</Badge>
+            </div>
+          </div>
+
+          <div className="space-y-6">
+            {selectedQuestions.map((q, idx) => (
+              <PreviewQuestion key={q.id} question={q} index={idx} questionTypes={QUESTION_TYPES} />
+            ))}
+          </div>
+
+          {selectedQuestions.length === 0 && (
+            <div className="text-center py-16">
+              <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
+              <p className="text-muted-foreground">No questions to preview. Go back and add some questions.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <div className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-30">
@@ -244,6 +337,11 @@ export default function QuizBuilder() {
             <Button variant="outline" size="sm" onClick={() => navigate("/question-bank")} className="gap-1.5">
               <ArrowLeft className="h-4 w-4" /> Back
             </Button>
+            {selectedIds.length > 0 && (
+              <Button variant="outline" size="sm" onClick={() => setPreviewMode(true)} className="gap-1.5">
+                <Eye className="h-4 w-4" /> Preview
+              </Button>
+            )}
             <Button size="sm" onClick={handleSave} disabled={saving} className="gap-1.5">
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
               Save Quiz
@@ -278,10 +376,11 @@ export default function QuizBuilder() {
               </CardContent>
             </Card>
 
-            {/* Selected questions */}
+            {/* Selected questions with drag-and-drop */}
             <Card>
               <CardContent className="p-4">
                 <p className="text-sm font-semibold mb-2">Selected Questions</p>
+                <p className="text-[10px] text-muted-foreground mb-2">Drag to reorder or use arrows</p>
                 {selectedIds.length === 0 ? (
                   <p className="text-xs text-muted-foreground py-4 text-center">
                     No questions selected. Browse and add from the right panel.
@@ -290,8 +389,19 @@ export default function QuizBuilder() {
                   <ScrollArea className="max-h-[400px]">
                     <div className="space-y-1">
                       {selectedQuestions.map((q, idx) => (
-                        <div key={q.id} className="flex items-start gap-2 p-2 rounded hover:bg-muted/50 group">
-                          <span className="text-xs text-muted-foreground mt-0.5 w-5 shrink-0">{idx + 1}.</span>
+                        <div
+                          key={q.id}
+                          draggable
+                          onDragStart={() => handleDragStart(idx)}
+                          onDragOver={(e) => handleDragOver(e, idx)}
+                          onDrop={() => handleDrop(idx)}
+                          onDragEnd={handleDragEnd}
+                          className={`flex items-start gap-1.5 p-2 rounded group transition-colors ${
+                            dragIdx === idx ? "opacity-40" : ""
+                          } ${dragOverIdx === idx && dragIdx !== idx ? "bg-primary/10 border border-primary/30" : "hover:bg-muted/50"}`}
+                        >
+                          <GripVertical className="h-4 w-4 text-muted-foreground/50 cursor-grab mt-0.5 shrink-0" />
+                          <span className="text-xs text-muted-foreground mt-0.5 w-4 shrink-0">{idx + 1}.</span>
                           <div className="flex-1 min-w-0">
                             <p className="text-xs line-clamp-2">{stripHtml(q.question_text)}</p>
                             <div className="flex items-center gap-1 mt-0.5">
@@ -301,9 +411,27 @@ export default function QuizBuilder() {
                               <span className="text-[10px] text-muted-foreground">{q.points_possible || 1}pt</span>
                             </div>
                           </div>
+                          <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 shrink-0">
+                            <Button
+                              variant="ghost" size="icon"
+                              className="h-5 w-5"
+                              onClick={() => moveQuestion(idx, "up")}
+                              disabled={idx === 0}
+                            >
+                              <ChevronUp className="h-3 w-3" />
+                            </Button>
+                            <Button
+                              variant="ghost" size="icon"
+                              className="h-5 w-5"
+                              onClick={() => moveQuestion(idx, "down")}
+                              disabled={idx === selectedIds.length - 1}
+                            >
+                              <ChevronDown className="h-3 w-3" />
+                            </Button>
+                          </div>
                           <Button
                             variant="ghost" size="icon"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive"
+                            className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive shrink-0"
                             onClick={() => removeQuestion(q.id)}
                           >
                             <Minus className="h-3 w-3" />
@@ -466,5 +594,121 @@ export default function QuizBuilder() {
         />
       )}
     </div>
+  );
+}
+
+/* ─── Preview Question Component ─── */
+
+function PreviewQuestion({
+  question,
+  index,
+  questionTypes,
+}: {
+  question: QuestionBankItem;
+  index: number;
+  questionTypes: Record<string, string>;
+}) {
+  const answers = (question.answers || []) as any[];
+
+  return (
+    <Card className="overflow-hidden">
+      <CardContent className="p-6">
+        <div className="flex items-start gap-3 mb-4">
+          <span className="bg-primary text-primary-foreground rounded-full h-7 w-7 flex items-center justify-center text-sm font-bold shrink-0">
+            {index + 1}
+          </span>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2 flex-wrap">
+              <Badge variant="secondary" className="text-xs">
+                {questionTypes[question.question_type] || question.question_type}
+              </Badge>
+              <Badge variant="outline" className="text-xs">
+                {question.points_possible || 1} {(question.points_possible || 1) === 1 ? "point" : "points"}
+              </Badge>
+              {question.dok_level && (
+                <Badge variant="outline" className="text-xs">DOK {question.dok_level}</Badge>
+              )}
+              {question.standards.map(s => (
+                <Badge key={s.ngss_code} variant="outline" className="text-xs">{s.ngss_code}</Badge>
+              ))}
+            </div>
+            <div
+              className="text-sm leading-relaxed prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: question.question_text }}
+            />
+          </div>
+        </div>
+
+        {/* Answer choices */}
+        {(question.question_type === "multiple_choice_question" ||
+          question.question_type === "multiple_answers_question" ||
+          question.question_type === "true_false_question") && answers.length > 0 && (
+          <div className="ml-10 space-y-2">
+            {answers.map((a: any, i: number) => {
+              const isCorrect = a.weight > 0;
+              return (
+                <div
+                  key={i}
+                  className={`flex items-start gap-2.5 p-2.5 rounded-lg border transition-colors ${
+                    isCorrect
+                      ? "bg-green-50 border-green-200 dark:bg-green-950/30 dark:border-green-800"
+                      : "bg-muted/30 border-border"
+                  }`}
+                >
+                  {isCorrect ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 shrink-0" />
+                  ) : (
+                    <Circle className="h-4 w-4 text-muted-foreground mt-0.5 shrink-0" />
+                  )}
+                  <span className="text-sm" dangerouslySetInnerHTML={{ __html: a.html || a.text || "" }} />
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {question.question_type === "short_answer_question" && answers.length > 0 && (
+          <div className="ml-10 mt-2">
+            <p className="text-xs text-muted-foreground mb-1">Accepted answers:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {answers.map((a: any, i: number) => (
+                <Badge key={i} variant="secondary" className="text-xs">{a.text}</Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {question.question_type === "essay_question" && (
+          <div className="ml-10 mt-2 border rounded-lg p-4 bg-muted/20">
+            <p className="text-xs text-muted-foreground italic">Open-ended response — graded manually</p>
+          </div>
+        )}
+
+        {question.question_type === "matching_question" && answers.length > 0 && (
+          <div className="ml-10 mt-2 space-y-1.5">
+            {answers.map((a: any, i: number) => (
+              <div key={i} className="flex items-center gap-2 text-sm">
+                <span className="font-medium">{a.left}</span>
+                <span className="text-muted-foreground">→</span>
+                <Badge variant="secondary">{a.right}</Badge>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {question.question_type === "fill_in_multiple_blanks_question" && answers.length > 0 && (
+          <div className="ml-10 mt-2">
+            <p className="text-xs text-muted-foreground mb-1">Accepted fill-ins:</p>
+            <div className="flex flex-wrap gap-1.5">
+              {answers.map((a: any, i: number) => (
+                <Badge key={i} variant="secondary" className="text-xs">
+                  {a.blank_id}: {a.text}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
