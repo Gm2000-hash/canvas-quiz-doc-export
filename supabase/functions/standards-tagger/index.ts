@@ -70,13 +70,11 @@ serve(withLogging("standards-tagger", async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const { questions, framework, subject, grade, keyTermsMap, standardsList } = body;
+    const { questions, subject, grade, keyTermsMap, standardsList } = body;
+    const framework = String(body.framework ?? '').trim().toLowerCase() === 'idaho' ? 'idaho' : 'ngss';
 
     if (!questions || !Array.isArray(questions)) {
       throw new Error('questions array is required');
-    }
-    if (!framework || !['ngss', 'idaho'].includes(framework)) {
-      throw new Error('framework must be "ngss" or "idaho"');
     }
 
     console.log(`Tagging ${questions.length} questions with ${framework} (${subject || 'all'} ${grade || 'all'})`);
