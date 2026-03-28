@@ -149,6 +149,15 @@ export function ReadingDashboardGrid({
                   ) : (
                     <Badge className="text-[8px] px-1 py-0 text-popover-foreground" variant="outline">PDF</Badge>
                   )}
+                  {onEditCover && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onEditCover(book); }}
+                      className="p-0.5 rounded text-muted-foreground hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                      title="Change cover art"
+                    >
+                      <ImageIcon className="h-3 w-3" />
+                    </button>
+                  )}
                   <button
                     onClick={(e) => { e.stopPropagation(); onShare(book); }}
                     disabled={sharingId === book.id}
