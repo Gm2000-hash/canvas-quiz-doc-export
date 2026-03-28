@@ -683,7 +683,18 @@ function LessonEditorDialog({
           {/* Reading */}
           <div className="space-y-2">
             <Label>Reading Title</Label>
-            <Input value={readingTitle} onChange={(e) => setReadingTitle(e.target.value)} placeholder="Reading passage title" />
+            <div className="flex gap-2">
+              <Input value={readingTitle} onChange={(e) => setReadingTitle(e.target.value)} placeholder="Reading passage title" className="flex-1" />
+              <Button
+                variant="outline"
+                size="sm"
+                className="shrink-0 gap-1 text-xs"
+                title="Reset to lesson title"
+                onClick={() => setReadingTitle(title)}
+              >
+                <RotateCcw className="h-3 w-3" /> Reset
+              </Button>
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Reading Content</Label>
