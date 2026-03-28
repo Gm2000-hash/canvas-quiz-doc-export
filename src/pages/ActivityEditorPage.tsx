@@ -104,11 +104,13 @@ export default function ActivityEditorPage() {
 
   const openAIDialog = async () => {
     if (sources.length === 0 && user) {
-      const [lp, cl] = await Promise.all([
+      const [lp, cl, lb] = await Promise.all([
         supabase.from("lesson_plans").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
         supabase.from("curriculum_lessons").select("id, title").eq("user_id", user.id).order("updated_at", { ascending: false }),
+        supabase.from("library_books").select("id, title, source_discipline").eq("user_id", user.id).not("source_discipline", "is", null).order("updated_at", { ascending: false }),
       ]);
       const opts: SourceOption[] = [
+        ...((lb.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "reading_library" as const })),
         ...((lp.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "lesson_plan" as const })),
         ...((cl.data || []) as any[]).map(d => ({ id: d.id, title: d.title, type: "curriculum_lesson" as const })),
       ];
