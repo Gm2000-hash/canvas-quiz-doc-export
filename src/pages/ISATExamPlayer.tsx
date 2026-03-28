@@ -101,6 +101,7 @@ export default function ISATExamPlayer() {
       if (data.completed_at && data.answers) {
         setStudentAnswers(data.answers);
         setSubmitted(true);
+        setShowSummary(true);
       }
       setLoading(false);
     })();
