@@ -229,7 +229,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                   <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
-                   <SelectContent className="z-[200]">
+                   <SelectContent>
                     <SelectItem value="any">Mix (DOK 1-3)</SelectItem>
                     <SelectItem value="1">DOK 1 – Recall</SelectItem>
                     <SelectItem value="2">DOK 2 – Skills & Concepts</SelectItem>
