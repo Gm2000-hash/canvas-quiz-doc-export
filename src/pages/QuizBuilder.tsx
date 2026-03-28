@@ -421,6 +421,75 @@ export default function QuizBuilder() {
               </CardContent>
             </Card>
 
+            {/* Quiz Settings */}
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-sm font-semibold">Quiz Settings</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> Time Limit (min)
+                    </Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="No limit"
+                      value={settings.timeLimitMinutes ?? ""}
+                      onChange={e => setSettings(s => ({
+                        ...s,
+                        timeLimitMinutes: e.target.value ? Number(e.target.value) : null,
+                      }))}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs flex items-center gap-1">
+                      <Award className="h-3 w-3" /> Points Each
+                    </Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.5}
+                      placeholder="Use original"
+                      value={settings.pointsPerQuestion ?? ""}
+                      onChange={e => setSettings(s => ({
+                        ...s,
+                        pointsPerQuestion: e.target.value ? Number(e.target.value) : null,
+                      }))}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Instructions for Students</Label>
+                  <Textarea
+                    placeholder="e.g. Read each question carefully. Show your work where applicable."
+                    value={settings.instructions}
+                    onChange={e => setSettings(s => ({ ...s, instructions: e.target.value }))}
+                    rows={2}
+                    className="text-xs"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Shuffle on export</Label>
+                  <Switch
+                    checked={settings.shuffleOnExport}
+                    onCheckedChange={v => setSettings(s => ({ ...s, shuffleOnExport: v }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Show one question at a time</Label>
+                  <Switch
+                    checked={settings.showOneAtATime}
+                    onCheckedChange={v => setSettings(s => ({ ...s, showOneAtATime: v }))}
+                  />
+                </div>
+              </CardContent>
+            </Card>
+
             {/* Selected questions with drag-and-drop */}
             <Card>
               <CardContent className="p-4">
