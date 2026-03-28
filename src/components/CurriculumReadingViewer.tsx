@@ -12,7 +12,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save, Undo2, Redo2, Sparkles, Target } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save, Undo2, Redo2, Sparkles, Target, Trash2 } from 'lucide-react';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ReadingEditToolbar, ItemToolbar, type EditorAction, type SectionKind } from '@/components/ReadingEditToolbar';
 import { useUndoRedo } from '@/hooks/useUndoRedo';
@@ -49,6 +50,34 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   const [lessonStandards, setLessonStandards] = useState<{ id: string; ngss_code: string; ngss_description: string; matched_terms: string[] }[]>([]);
   const [aiTagging, setAiTagging] = useState(false);
   const [standardsPickerOpen, setStandardsPickerOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDeleteReading = async (lessonId: string) => {
+    setDeletingId(lessonId);
+    try {
+      // Delete associated standards first
+      await (supabase.from('curriculum_lesson_standards' as any) as any).delete().eq('lesson_id', lessonId);
+      // Delete the lesson
+      const { error } = await supabase.from('curriculum_lessons').delete().eq('id', lessonId);
+      if (error) throw error;
+      // Update local state
+      const deletedIdx = lessons.findIndex(l => l.id === lessonId);
+      const newLessons = lessons.filter(l => l.id !== lessonId);
+      setLessons(newLessons);
+      if (currentLesson !== null) {
+        if (deletedIdx === currentLesson) {
+          setCurrentLesson(null);
+        } else if (deletedIdx < currentLesson) {
+          setCurrentLesson(currentLesson - 1);
+        }
+      }
+      toast.success('Reading deleted');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to delete reading');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const filteredIndices = lessons.reduce<number[]>((acc, lesson, i) => {
     if (!searchQuery.trim()) { acc.push(i); return acc; }
@@ -536,20 +565,50 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
                     </h2>
                     <div className="ml-8 space-y-0.5">
                       {group.lessons.map(({ index, lesson: l }) => (
-                        <button
-                          key={l.id}
-                          onClick={() => setCurrentLesson(index)}
-                          className="w-full text-left px-3 py-2 rounded-lg text-sm hover:bg-primary/5 transition-colors group flex items-center gap-3"
-                        >
-                          <span className="text-xs text-muted-foreground/60 w-6 shrink-0 text-right">{index + 1}.</span>
-                          <div className="min-w-0 flex-1">
-                            <span className="text-foreground group-hover:text-primary transition-colors">{l.title}</span>
-                            {l.reading_title && (
-                              <span className="block text-[11px] text-muted-foreground mt-0.5">📖 {l.reading_title}</span>
-                            )}
-                          </div>
-                          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
-                        </button>
+                        <div key={l.id} className="flex items-center gap-1 group/item">
+                          <button
+                            onClick={() => setCurrentLesson(index)}
+                            className="flex-1 text-left px-3 py-2 rounded-lg text-sm hover:bg-primary/5 transition-colors group flex items-center gap-3 min-w-0"
+                          >
+                            <span className="text-xs text-muted-foreground/60 w-6 shrink-0 text-right">{index + 1}.</span>
+                            <div className="min-w-0 flex-1">
+                              <span className="text-foreground group-hover:text-primary transition-colors">{l.title}</span>
+                              {l.reading_title && (
+                                <span className="block text-[11px] text-muted-foreground mt-0.5">📖 {l.reading_title}</span>
+                              )}
+                            </div>
+                            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
+                          </button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 opacity-0 group-hover/item:opacity-100 text-destructive hover:text-destructive shrink-0"
+                                disabled={deletingId === l.id}
+                              >
+                                {deletingId === l.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Delete Reading</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Are you sure you want to delete "{l.title}"? This will permanently remove the reading, its key terms, and associated standards. This action cannot be undone.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteReading(l.id)}
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                >
+                                  Delete
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
                       ))}
                     </div>
                   </div>
