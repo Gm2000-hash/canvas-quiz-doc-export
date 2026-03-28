@@ -40,6 +40,7 @@ interface ExamData {
   total_points: number | null;
   completed_at: string | null;
   hints_used: number;
+  hints_enabled: boolean;
 }
 
 const QUESTION_TYPE_LABELS: Record<string, string> = {
