@@ -648,6 +648,21 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_published_books: {
+        Args: never
+        Returns: {
+          cover_url: string
+          created_at: string
+          file_path: string
+          file_size: number
+          id: string
+          is_published: boolean
+          page_count: number
+          source_discipline: string
+          title: string
+          updated_at: string
+        }[]
+      }
       get_shared_book: {
         Args: { _share_token: string }
         Returns: {
