@@ -66,9 +66,9 @@ export interface EssayKeyword { text: string; caseSensitive: boolean; }
 export interface EssayContent { question: string; keywords: EssayKeyword[]; maxWords?: number; }
 export interface SummaryGroup { id: string; statements: string[]; correctIndex: number; }
 export interface SummaryContent { intro: string; groups: SummaryGroup[]; }
-export interface DialogCard { id: string; front: string; back: string; }
+export interface DialogCard { id: string; front: string; back: string; media?: MediaEmbed; }
 export interface DialogCardsContent { cards: DialogCard[]; }
-export interface Flashcard { id: string; term: string; definition: string; imageUrl?: string; }
+export interface Flashcard { id: string; term: string; definition: string; imageUrl?: string; media?: MediaEmbed; }
 export interface FlashcardsContent { cards: Flashcard[]; }
 export interface MemoryPair { id: string; cardA: string; cardB: string; }
 export interface MemoryGameContent { pairs: MemoryPair[]; }
