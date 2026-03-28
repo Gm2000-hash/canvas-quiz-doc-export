@@ -221,6 +221,11 @@ Improve and fill in any missing information. Keep the same general topic but mak
         }
       }
 
+      // Sync to reading library after generating/regenerating readings
+      if (regenerateReading && discipline) {
+        await syncDisciplineToLibrary(user.id, discipline);
+      }
+
       setProgress(100);
       setStatusText("Done!");
       toast({ title: "Lesson regenerated successfully!" });
