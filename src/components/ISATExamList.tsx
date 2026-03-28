@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb } from "lucide-react";
+import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload } from "lucide-react";
 import { format } from "date-fns";
+import { useCanvasConfig } from "@/hooks/useCanvasConfig";
+import PushISATToCanvasDialog from "@/components/PushISATToCanvasDialog";
 
 interface ISATExam {
   id: string;
@@ -37,6 +39,9 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
   const [exams, setExams] = useState<ISATExam[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<ISATExam | null>(null);
+  const [pushTarget, setPushTarget] = useState<ISATExam | null>(null);
+  const [pushQuestions, setPushQuestions] = useState<any[]>([]);
+  const { config: canvasConfig, isConfigured: canvasConnected } = useCanvasConfig();
 
   const loadExams = async () => {
     setLoading(true);
@@ -56,6 +61,21 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
   };
 
   useEffect(() => { loadExams(); }, [refreshKey]);
+
+  const handlePushToCanvas = async (exam: ISATExam) => {
+    try {
+      const { data, error } = await supabase
+        .from("isat_exams")
+        .select("questions")
+        .eq("id", exam.id)
+        .single() as any;
+      if (error) throw error;
+      setPushQuestions(data.questions || []);
+      setPushTarget(exam);
+    } catch {
+      toast.error("Failed to load exam questions");
+    }
+  };
 
   const handleDelete = async () => {
     if (!deleteTarget) return;
@@ -150,6 +170,17 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
+              {canvasConnected && exam.completed_at && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePushToCanvas(exam)}
+                  className="gap-1.5"
+                >
+                  <Upload className="h-4 w-4" />
+                  Push to Canvas
+                </Button>
+              )}
               <Button
                 size="sm"
                 onClick={() => onTakeExam(exam.id)}
@@ -187,6 +218,15 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {canvasConnected && canvasConfig && pushTarget && (
+        <PushISATToCanvasDialog
+          open={!!pushTarget}
+          onOpenChange={(v) => !v && setPushTarget(null)}
+          examTitle={pushTarget.title}
+          questions={pushQuestions}
+          config={canvasConfig}
+        />
+      )}
     </div>
   );
 }
