@@ -80,6 +80,7 @@ export default function ISATExamPlayer() {
   const [submitting, setSubmitting] = useState(false);
   const [showNav, setShowNav] = useState(false);
   const [revealedHints, setRevealedHints] = useState<Set<number>>(new Set());
+  const [showSummary, setShowSummary] = useState(false);
 
   useEffect(() => {
     if (!id) return;
