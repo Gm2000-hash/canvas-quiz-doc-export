@@ -86,7 +86,7 @@ export default function ReadingLibrary() {
     }
     const { data, error } = await supabase
       .from("library_books")
-      .select("id, title, file_path, file_size, source_discipline, cover_url, share_token")
+      .select("id, title, file_path, file_size, source_discipline, cover_url")
       .order("created_at", { ascending: false });
 
     if (data) setBooks(data as LibraryBook[]);

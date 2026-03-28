@@ -14,7 +14,7 @@ interface LibraryBook {
   file_size: number;
   source_discipline: string | null;
   cover_url: string | null;
-  share_token: string | null;
+  share_token?: string | null;
 }
 
 interface ReadingDashboardGridProps {
