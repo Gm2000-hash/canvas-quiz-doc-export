@@ -3,7 +3,7 @@ import { GridLayout, verticalCompactor } from "react-grid-layout";
 import type { LayoutItem } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { FileText, Link2, Check, Loader2, RotateCcw } from "lucide-react";
+import { FileText, Link2, Check, Loader2, RotateCcw, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -21,6 +21,7 @@ interface ReadingDashboardGridProps {
   books: LibraryBook[];
   onOpenBook: (book: LibraryBook) => void;
   onShare: (book: LibraryBook) => void;
+  onEditCover?: (book: LibraryBook) => void;
   openingId: string | null;
   sharingId: string | null;
   copiedId: string | null;
@@ -56,6 +57,7 @@ export function ReadingDashboardGrid({
   books,
   onOpenBook,
   onShare,
+  onEditCover,
   openingId,
   sharingId,
   copiedId,
@@ -146,6 +148,15 @@ export function ReadingDashboardGrid({
                     <Badge className="text-[8px] px-1 py-0 text-popover-foreground" variant="secondary">{book.source_discipline}</Badge>
                   ) : (
                     <Badge className="text-[8px] px-1 py-0 text-popover-foreground" variant="outline">PDF</Badge>
+                  )}
+                  {onEditCover && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onEditCover(book); }}
+                      className="p-0.5 rounded text-muted-foreground hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                      title="Change cover art"
+                    >
+                      <ImageIcon className="h-3 w-3" />
+                    </button>
                   )}
                   <button
                     onClick={(e) => { e.stopPropagation(); onShare(book); }}

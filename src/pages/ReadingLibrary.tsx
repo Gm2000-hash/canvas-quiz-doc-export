@@ -5,6 +5,7 @@ import { PageBanner } from "@/components/PageBanner";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PdfFlipbookViewer } from "@/components/PdfFlipbookViewer";
 import { CurriculumReadingViewer } from "@/components/CurriculumReadingViewer";
+import { CoverArtPicker } from "@/components/CoverArtPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import {
   Sparkles, Search, FileText, BookOpenCheck, Share2, Copy, Check, Link2, Loader2,
-  LayoutGrid, List, LayoutDashboard, Upload,
+  LayoutGrid, List, LayoutDashboard, Upload, ImageIcon,
 } from "lucide-react";
 import { generatePdfThumbnail } from "@/lib/pdf-thumbnail";
 import { ReadingDashboardGrid } from "@/components/ReadingDashboardGrid";
@@ -54,8 +55,34 @@ export default function ReadingLibrary() {
   // Share states
   const [sharingId, setSharingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [coverPickerBook, setCoverPickerBook] = useState<LibraryBook | null>(null);
+
+  const ensureScienceBooks = async (userId: string) => {
+    const disciplines = ["Life Science", "Earth & Space Science", "Physical Science"];
+    for (const disc of disciplines) {
+      const { data: existing } = await supabase
+        .from("library_books")
+        .select("id")
+        .eq("source_discipline", disc)
+        .eq("user_id", userId)
+        .maybeSingle();
+      if (!existing) {
+        await supabase.from("library_books").insert({
+          user_id: userId,
+          title: `${disc} Readings`,
+          file_path: `curriculum/${disc.toLowerCase().replace(/\s+/g, "-")}`,
+          file_size: 0,
+          is_published: true,
+          source_discipline: disc,
+        });
+      }
+    }
+  };
 
   const fetchBooks = async () => {
+    if (user) {
+      await ensureScienceBooks(user.id);
+    }
     const { data, error } = await supabase
       .from("library_books")
       .select("id, title, file_path, file_size, source_discipline, cover_url, share_token")
@@ -67,7 +94,7 @@ export default function ReadingLibrary() {
 
   useEffect(() => {
     fetchBooks();
-  }, []);
+  }, [user]);
 
   const subjects = useMemo(() => {
     const set = new Set<string>();
@@ -298,20 +325,29 @@ export default function ReadingLibrary() {
                 </button>
                 <div className="flex items-center justify-between mt-2 px-0.5">
                   <p className="text-xs font-medium text-foreground truncate flex-1">{book.title}</p>
-                  <button
-                    onClick={() => handleShare(book)}
-                    disabled={sharingId === book.id}
-                    className="shrink-0 ml-1 p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors opacity-0 group-hover:opacity-100"
-                    title="Copy share link"
-                  >
-                    {copiedId === book.id ? (
-                      <Check className="h-3.5 w-3.5 text-green-500" />
-                    ) : sharingId === book.id ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                    ) : (
-                      <Link2 className="h-3.5 w-3.5" />
-                    )}
-                  </button>
+                  <div className="flex items-center gap-0.5 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setCoverPickerBook(book); }}
+                      className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      title="Change cover art"
+                    >
+                      <ImageIcon className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleShare(book)}
+                      disabled={sharingId === book.id}
+                      className="p-1 rounded-md text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors"
+                      title="Copy share link"
+                    >
+                      {copiedId === book.id ? (
+                        <Check className="h-3.5 w-3.5 text-green-500" />
+                      ) : sharingId === book.id ? (
+                        <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <Link2 className="h-3.5 w-3.5" />
+                      )}
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
@@ -321,6 +357,7 @@ export default function ReadingLibrary() {
             books={filtered}
             onOpenBook={openBook}
             onShare={handleShare}
+            onEditCover={setCoverPickerBook}
             openingId={openingId}
             sharingId={sharingId}
             copiedId={copiedId}
@@ -373,6 +410,14 @@ export default function ReadingLibrary() {
                   variant="ghost"
                   size="sm"
                   className="h-8 gap-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => setCoverPickerBook(book)}
+                >
+                  <ImageIcon className="h-3.5 w-3.5" /> Cover
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 gap-1.5 text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                   onClick={() => handleShare(book)}
                   disabled={sharingId === book.id}
                 >
@@ -410,6 +455,19 @@ export default function ReadingLibrary() {
           discipline={viewingCurriculum.discipline}
           title={viewingCurriculum.title}
           onClose={() => setViewingCurriculum(null)}
+        />
+      )}
+
+      {coverPickerBook && (
+        <CoverArtPicker
+          open={!!coverPickerBook}
+          onOpenChange={(open) => { if (!open) setCoverPickerBook(null); }}
+          bookId={coverPickerBook.id}
+          bookTitle={coverPickerBook.title}
+          onCoverUpdated={(url) => {
+            setBooks(prev => prev.map(b => b.id === coverPickerBook.id ? { ...b, cover_url: url } : b));
+            setCoverPickerBook(null);
+          }}
         />
       )}
     </div>
