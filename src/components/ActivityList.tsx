@@ -65,7 +65,7 @@ export function ActivityList({ activities, onReorder, onUpdate, onRemove, onAdd 
           className={`flex gap-2 items-start p-3 rounded-xl transition-all duration-150 ${
             overIdx === idx && dragIdx !== null && dragIdx !== idx
               ? "bg-primary/10 border-2 border-dashed border-primary/40"
-              : "bg-accent/50"
+              : "bg-[#f59f0a]/[0.66]"
           } ${dragIdx === idx ? "opacity-40" : ""}`}
         >
           <div
