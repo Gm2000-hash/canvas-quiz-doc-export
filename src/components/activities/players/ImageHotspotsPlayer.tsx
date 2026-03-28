@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { RichContent } from "./RichContent";
+import { MediaPlayer } from "./MediaPlayer";
 import type { ImageHotspotsContent } from "@/lib/h5p-types";
 
 interface Props { content: ImageHotspotsContent; }
@@ -31,7 +33,10 @@ export function ImageHotspotsPlayer({ content }: Props) {
       <Dialog open={!!activeHotspot} onOpenChange={() => setActiveHotspot(null)}>
         <DialogContent>
           <DialogHeader><DialogTitle>{active?.title}</DialogTitle></DialogHeader>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap">{active?.content}</p>
+          <div className="space-y-3">
+            <RichContent html={active?.content || ""} />
+            <MediaPlayer media={active?.media} />
+          </div>
         </DialogContent>
       </Dialog>
     </div>

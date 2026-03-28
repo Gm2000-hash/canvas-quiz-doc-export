@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { RotateCw, ChevronLeft, ChevronRight } from "lucide-react";
+import { RichContent } from "./RichContent";
+import { MediaPlayer } from "./MediaPlayer";
 import type { DialogCardsContent } from "@/lib/h5p-types";
 
 interface Props { content: DialogCardsContent; }
@@ -10,6 +12,8 @@ export function DialogCardsPlayer({ content }: Props) {
   const [flipped, setFlipped] = useState(false);
   const card = content.cards[idx];
   if (!card) return null;
+
+  const displayText = flipped ? card.back : card.front;
 
   return (
     <div className="space-y-4">
@@ -21,9 +25,10 @@ export function DialogCardsPlayer({ content }: Props) {
         className="cursor-pointer min-h-[180px] rounded-2xl border-2 border-border flex items-center justify-center p-6 transition-all hover:shadow-md"
         style={{ perspective: "600px" }}
       >
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-2 w-full">
           <p className="text-xs font-semibold uppercase text-muted-foreground">{flipped ? "Back" : "Front"}</p>
-          <p className="text-base font-medium">{flipped ? card.back : card.front}</p>
+          <RichContent html={displayText} className="text-base" />
+          <MediaPlayer media={card.media} className="mt-3" />
           <p className="text-xs text-muted-foreground">Click to flip</p>
         </div>
       </div>

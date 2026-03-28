@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
+import { RichContent } from "./RichContent";
+import { MediaPlayer } from "./MediaPlayer";
 import type { InteractiveBookContent } from "@/lib/h5p-types";
 
 interface Props { content: InteractiveBookContent; }
@@ -15,7 +17,6 @@ export function InteractiveBookPlayer({ content }: Props) {
         <BookOpen className="h-4 w-4 text-primary" />
         <h3 className="font-semibold">{content.title}</h3>
       </div>
-      {/* Table of contents */}
       <div className="flex flex-wrap gap-1.5">
         {content.chapters.map((c, i) => (
           <Button key={c.id} variant={i === chIdx ? "default" : "outline"} size="sm" className="text-xs" onClick={() => setChIdx(i)}>
@@ -26,7 +27,8 @@ export function InteractiveBookPlayer({ content }: Props) {
       {ch && (
         <div className="rounded-xl border border-border p-6 min-h-[200px]">
           <h4 className="text-lg font-semibold mb-3">{ch.title}</h4>
-          <p className="text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed">{ch.content}</p>
+          <RichContent html={ch.content} />
+          <MediaPlayer media={ch.media} className="mt-4" />
         </div>
       )}
       <div className="flex justify-between">

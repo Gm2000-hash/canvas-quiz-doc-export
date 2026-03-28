@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Video, Music, Image as ImageIcon, X, Plus } from "lucide-react";
+import { Video, Music, Image as ImageIcon, X, Plus, Upload, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import type { MediaEmbed } from "@/lib/h5p-types";
 
 interface MediaInsertProps {
@@ -13,8 +15,17 @@ interface MediaInsertProps {
 
 const TYPE_ICONS = { audio: Music, video: Video, image: ImageIcon } as const;
 
+const ACCEPT_MAP: Record<string, string> = {
+  video: "video/mp4,video/webm,video/ogg",
+  audio: "audio/mpeg,audio/wav,audio/ogg,audio/mp4",
+  image: "image/png,image/jpeg,image/webp,image/gif",
+};
+
 export function MediaInsert({ media, onChange }: MediaInsertProps) {
   const [adding, setAdding] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
 
   if (!media && !adding) {
     return (
@@ -32,6 +43,40 @@ export function MediaInsert({ media, onChange }: MediaInsertProps) {
   const currentType = media?.type || "video";
   const currentUrl = media?.url || "";
   const Icon = TYPE_ICONS[currentType];
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    setUploading(true);
+    try {
+      const ext = file.name.split(".").pop() || "bin";
+      const path = `${user.id}/${Date.now()}.${ext}`;
+
+      const { error } = await supabase.storage
+        .from("activity-media")
+        .upload(path, file, { upsert: true });
+
+      if (error) throw error;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from("activity-media")
+        .getPublicUrl(path);
+
+      // Auto-detect type from file
+      let type: MediaEmbed["type"] = currentType as MediaEmbed["type"];
+      if (file.type.startsWith("video/")) type = "video";
+      else if (file.type.startsWith("audio/")) type = "audio";
+      else if (file.type.startsWith("image/")) type = "image";
+
+      onChange({ url: publicUrl, type });
+    } catch (err: any) {
+      console.error("Upload failed:", err);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
 
   return (
     <div className="border border-dashed border-border/60 rounded-lg p-3 space-y-2 bg-muted/20">
@@ -69,6 +114,32 @@ export function MediaInsert({ media, onChange }: MediaInsertProps) {
           onChange={(e) => onChange({ url: e.target.value, type: currentType as MediaEmbed["type"] })}
         />
       </div>
+
+      {/* File upload */}
+      <div className="flex items-center gap-2">
+        <input
+          ref={fileRef}
+          type="file"
+          accept={ACCEPT_MAP[currentType] || "*/*"}
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+        <Button
+          variant="outline"
+          size="sm"
+          className="text-xs h-7 gap-1.5"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}
+        >
+          {uploading ? (
+            <><Loader2 className="h-3 w-3 animate-spin" /> Uploading…</>
+          ) : (
+            <><Upload className="h-3 w-3" /> Upload file</>
+          )}
+        </Button>
+        <span className="text-[10px] text-muted-foreground">or paste a URL above</span>
+      </div>
+
       {/* Preview */}
       {currentUrl && (
         <MediaPreview url={currentUrl} type={currentType as MediaEmbed["type"]} />
@@ -78,7 +149,6 @@ export function MediaInsert({ media, onChange }: MediaInsertProps) {
 }
 
 function MediaPreview({ url, type }: { url: string; type: MediaEmbed["type"] }) {
-  // Detect YouTube/Vimeo for embed
   const youtubeId = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([\w-]+)/)?.[1];
   const vimeoId = url.match(/vimeo\.com\/(\d+)/)?.[1];
 

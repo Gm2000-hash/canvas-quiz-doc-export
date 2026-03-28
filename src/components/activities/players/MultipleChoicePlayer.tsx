@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, XCircle } from "lucide-react";
+import { RichContent } from "./RichContent";
 import type { MultipleChoiceContent } from "@/lib/h5p-types";
 
 interface Props { content: MultipleChoiceContent; }
@@ -27,7 +28,7 @@ export function MultipleChoicePlayer({ content }: Props) {
 
   return (
     <div className="space-y-4">
-      <p className="text-sm font-medium">{content.question}</p>
+      <RichContent html={content.question} className="font-medium" />
       <div className="space-y-2">
         {content.options.map(opt => {
           const isSel = selected.has(opt.id);

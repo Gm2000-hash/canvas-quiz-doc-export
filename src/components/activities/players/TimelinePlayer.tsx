@@ -1,4 +1,6 @@
 import type { TimelineContent } from "@/lib/h5p-types";
+import { RichContent } from "./RichContent";
+import { MediaPlayer } from "./MediaPlayer";
 
 interface Props {
   content: TimelineContent;
@@ -19,10 +21,11 @@ export function TimelinePlayer({ content }: Props) {
                 <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">{evt.date}</span>
                 <h4 className="text-sm font-semibold text-foreground">{evt.title}</h4>
               </div>
-              <p className="text-sm text-muted-foreground leading-relaxed">{evt.description}</p>
+              <RichContent html={evt.description} />
               {evt.imageUrl && (
                 <img src={evt.imageUrl} alt={evt.title} className="rounded-lg max-h-40 mt-2" />
               )}
+              <MediaPlayer media={evt.media} className="mt-2" />
             </div>
           </div>
         ))}

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { CheckCircle2, XCircle, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronRight } from "lucide-react";
+import { MediaPlayer } from "./MediaPlayer";
 import type { FlashcardsContent } from "@/lib/h5p-types";
 
 interface Props { content: FlashcardsContent; }
@@ -35,8 +36,10 @@ export function FlashcardsPlayer({ content }: Props) {
         <span className="text-xs text-muted-foreground">{idx + 1} / {content.cards.length}</span>
         {scores.length > 0 && <span className="text-xs text-muted-foreground">{totalCorrect} correct</span>}
       </div>
-      <div className="rounded-2xl border-2 border-border p-6 text-center">
+      <div className="rounded-2xl border-2 border-border p-6 text-center space-y-3">
         <p className="text-lg font-semibold">{card.term}</p>
+        {card.imageUrl && <img src={card.imageUrl} alt={card.term} className="mx-auto max-h-40 rounded-lg" />}
+        <MediaPlayer media={card.media} />
       </div>
       {!revealed ? (
         <div className="flex gap-2">

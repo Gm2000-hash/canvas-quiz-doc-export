@@ -4,6 +4,8 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { RichContent } from "./RichContent";
+import { MediaPlayer } from "./MediaPlayer";
 import type { AccordionContent as AccordionData } from "@/lib/h5p-types";
 
 interface Props {
@@ -16,8 +18,9 @@ export function AccordionPlayer({ content }: Props) {
       {content.panels.map((panel) => (
         <AccordionItem key={panel.id} value={panel.id}>
           <AccordionTrigger className="text-sm font-medium">{panel.title}</AccordionTrigger>
-          <AccordionContent className="text-sm text-muted-foreground whitespace-pre-wrap">
-            {panel.content}
+          <AccordionContent className="space-y-3">
+            <RichContent html={panel.content} />
+            <MediaPlayer media={panel.media} />
           </AccordionContent>
         </AccordionItem>
       ))}

@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, MapPin } from "lucide-react";
+import { RichContent } from "./RichContent";
+import { MediaPlayer } from "./MediaPlayer";
 import type { VirtualTourContent } from "@/lib/h5p-types";
 
 interface Props { content: VirtualTourContent; }
@@ -25,9 +27,10 @@ export function VirtualTourPlayer({ content }: Props) {
               <p className="text-sm text-muted-foreground">No 360° image</p>
             </div>
           )}
-          <div className="p-4">
+          <div className="p-4 space-y-3">
             <h4 className="font-semibold text-sm">{scene.title}</h4>
-            <p className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{scene.description}</p>
+            <RichContent html={scene.description} />
+            <MediaPlayer media={scene.media} />
           </div>
         </div>
       )}
