@@ -237,7 +237,7 @@ export default function QuizBuilder() {
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
           <AppNavSheet />
           <Breadcrumbs items={[
-            { label: "Question Bank", href: "/question-bank" },
+            { label: "Question Bank", path: "/question-bank" },
             { label: existingId ? quizTitle : "New Quiz" },
           ]} />
           <div className="ml-auto flex items-center gap-2">
