@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -20,7 +21,7 @@ import { toast } from "sonner";
 import {
   Loader2, Search, Plus, Minus, Save, Upload, ArrowLeft, GripVertical,
   Trash2, FileText, ClipboardCheck, Eye, EyeOff, ChevronUp, ChevronDown,
-  CheckCircle2, XCircle, Circle, Download, Shuffle,
+  CheckCircle2, XCircle, Circle, Download, Shuffle, Settings, Clock, Award,
 } from "lucide-react";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
@@ -31,6 +32,22 @@ function stripHtml(html: string): string {
   div.innerHTML = html;
   return div.textContent || div.innerText || "";
 }
+
+interface QuizSettings {
+  timeLimitMinutes: number | null;
+  pointsPerQuestion: number | null;
+  instructions: string;
+  shuffleOnExport: boolean;
+  showOneAtATime: boolean;
+}
+
+const DEFAULT_SETTINGS: QuizSettings = {
+  timeLimitMinutes: null,
+  pointsPerQuestion: null,
+  instructions: "",
+  shuffleOnExport: false,
+  showOneAtATime: false,
+};
 
 interface SavedQuiz {
   id: string;
@@ -58,6 +75,7 @@ export default function QuizBuilder() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [existingId, setExistingId] = useState<string | null>(quizId || null);
+  const [settings, setSettings] = useState<QuizSettings>({ ...DEFAULT_SETTINGS });
 
   // Filters
   const [search, setSearch] = useState("");
@@ -102,6 +120,7 @@ export default function QuizBuilder() {
           setQuizDescription(quiz.description || "");
           setSelectedIds(quiz.question_ids || []);
           setExistingId(quiz.id);
+          setSettings({ ...DEFAULT_SETTINGS, ...(quiz.settings || {}) });
         }
       }
     } catch {
@@ -201,7 +220,7 @@ export default function QuizBuilder() {
         title: quizTitle.trim(),
         description: quizDescription.trim(),
         question_ids: selectedIds,
-        settings: {},
+        settings: settings as any,
         updated_at: new Date().toISOString(),
       };
 
@@ -247,6 +266,7 @@ export default function QuizBuilder() {
     setQuizDescription(quiz.description || "");
     setSelectedIds(quiz.question_ids || []);
     setExistingId(quiz.id);
+    setSettings({ ...DEFAULT_SETTINGS, ...(quiz.settings || {}) });
     setPreviewMode(false);
   };
 
@@ -255,10 +275,11 @@ export default function QuizBuilder() {
     setQuizTitle("Custom Quiz");
     setQuizDescription("");
     setSelectedIds([]);
+    setSettings({ ...DEFAULT_SETTINGS });
     setPreviewMode(false);
   };
 
-  const totalPoints = selectedQuestions.reduce((sum, q) => sum + (q.points_possible || 1), 0);
+  const totalPoints = selectedQuestions.reduce((sum, q) => sum + (settings.pointsPerQuestion ?? q.points_possible ?? 1), 0);
 
   const QUESTION_TYPES: Record<string, string> = {
     multiple_choice_question: "Multiple Choice",
@@ -305,8 +326,22 @@ export default function QuizBuilder() {
             <div className="flex items-center justify-center gap-3 mt-3">
               <Badge variant="secondary">{selectedQuestions.length} questions</Badge>
               <Badge variant="outline">{totalPoints} points</Badge>
+              {settings.timeLimitMinutes && (
+                <Badge variant="outline" className="gap-1">
+                  <Clock className="h-3 w-3" /> {settings.timeLimitMinutes} min
+                </Badge>
+              )}
             </div>
           </div>
+
+          {settings.instructions && (
+            <Card className="mb-6">
+              <CardContent className="p-4">
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Instructions</p>
+                <p className="text-sm whitespace-pre-wrap">{settings.instructions}</p>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="space-y-6">
             {selectedQuestions.map((q, idx) => (
@@ -396,6 +431,75 @@ export default function QuizBuilder() {
                 <div className="flex items-center gap-3 text-sm text-muted-foreground">
                   <Badge variant="secondary">{selectedIds.length} questions</Badge>
                   <Badge variant="outline">{totalPoints} points</Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quiz Settings */}
+            <Card>
+              <CardContent className="p-4 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  <p className="text-sm font-semibold">Quiz Settings</p>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1">
+                    <Label className="text-xs flex items-center gap-1">
+                      <Clock className="h-3 w-3" /> Time Limit (min)
+                    </Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="No limit"
+                      value={settings.timeLimitMinutes ?? ""}
+                      onChange={e => setSettings(s => ({
+                        ...s,
+                        timeLimitMinutes: e.target.value ? Number(e.target.value) : null,
+                      }))}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label className="text-xs flex items-center gap-1">
+                      <Award className="h-3 w-3" /> Points Each
+                    </Label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step={0.5}
+                      placeholder="Use original"
+                      value={settings.pointsPerQuestion ?? ""}
+                      onChange={e => setSettings(s => ({
+                        ...s,
+                        pointsPerQuestion: e.target.value ? Number(e.target.value) : null,
+                      }))}
+                      className="h-8 text-xs"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs">Instructions for Students</Label>
+                  <Textarea
+                    placeholder="e.g. Read each question carefully. Show your work where applicable."
+                    value={settings.instructions}
+                    onChange={e => setSettings(s => ({ ...s, instructions: e.target.value }))}
+                    rows={2}
+                    className="text-xs"
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Shuffle on export</Label>
+                  <Switch
+                    checked={settings.shuffleOnExport}
+                    onCheckedChange={v => setSettings(s => ({ ...s, shuffleOnExport: v }))}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs">Show one question at a time</Label>
+                  <Switch
+                    checked={settings.showOneAtATime}
+                    onCheckedChange={v => setSettings(s => ({ ...s, showOneAtATime: v }))}
+                  />
                 </div>
               </CardContent>
             </Card>
