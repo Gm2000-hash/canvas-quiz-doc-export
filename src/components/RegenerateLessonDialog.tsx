@@ -265,7 +265,7 @@ Improve and fill in any missing information. Keep the same general topic but mak
         <div className="space-y-4 pt-2">
           <div className="p-3 rounded-xl text-sm bg-info text-primary-foreground">
             <p className="text-destructive-foreground">
-              AI will regenerate <span className="font-medium text-foreground">"{lesson.title}"</span> with updated content, NGSS standards, and vocabulary.
+              AI will regenerate <span className="font-medium text-primary-foreground">"{lesson.title}"</span> with updated content, NGSS standards, and vocabulary.
             </p>
           </div>
 
