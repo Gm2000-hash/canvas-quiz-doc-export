@@ -1,0 +1,1 @@
+ALTER TABLE public.isat_exams ADD COLUMN hints_used integer NOT NULL DEFAULT 0;
