@@ -170,7 +170,8 @@ ${standardsContext}
 - Use realistic scientific scenarios and data
 - Distractors should reflect common student misconceptions
 - Multi-step questions should build logically
-- Constructed responses should have clear rubric criteria in the scoring_rubric field`;
+- Constructed responses should have clear rubric criteria in the scoring_rubric field
+- Every question MUST include a "hint" — a short (1-2 sentence) clue that nudges the student toward the correct concept without giving the answer away`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
