@@ -525,6 +525,39 @@ export default function ISATExamPlayer() {
 
               <div className="text-sm leading-relaxed whitespace-pre-wrap">{question.question_text}</div>
 
+              {/* Hint section */}
+              {question.hint && !submitted && (
+                <div>
+                  {revealedHints.has(question.question_number) ? (
+                    <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                      <Lightbulb className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                      <p className="text-sm text-amber-800">{question.hint}</p>
+                    </div>
+                  ) : (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="gap-1.5 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                      onClick={() => setRevealedHints(prev => new Set(prev).add(question.question_number))}
+                    >
+                      <Lightbulb className="h-4 w-4" />
+                      Show Hint
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {/* Show hint automatically in review mode */}
+              {question.hint && submitted && (
+                <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                  <Lightbulb className="h-4 w-4 text-amber-600 shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-xs font-semibold text-amber-700">Hint:</p>
+                    <p className="text-sm text-amber-800">{question.hint}</p>
+                  </div>
+                </div>
+              )}
+
               {renderQuestion(question)}
             </CardContent>
           </Card>
