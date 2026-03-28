@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus, Trash2 } from "lucide-react";
+import { ReorderControls, moveItem } from "./ReorderControls";
 import type { CrosswordContent, CrosswordWord } from "@/lib/h5p-types";
 
 interface Props { content: CrosswordContent; onChange: (c: CrosswordContent) => void; }
@@ -20,7 +21,7 @@ export function CrosswordEditor({ content, onChange }: Props) {
       <Label className="text-sm font-medium">Words & Clues</Label>
       {content.words.map((w, i) => (
         <div key={w.id} className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground w-6">{i + 1}.</span>
+          <ReorderControls index={i} total={content.words.length} label={`${i + 1}.`} onMove={(offset) => onChange({ ...content, words: moveItem(content.words, i, offset) })} />
           <Input className="w-32 uppercase font-mono" placeholder="WORD" value={w.word} onChange={e => updateWord(w.id, { word: e.target.value.toUpperCase() })} />
           <Input className="flex-1" placeholder="Clue" value={w.clue} onChange={e => updateWord(w.id, { clue: e.target.value })} />
           <Select value={w.direction} onValueChange={v => updateWord(w.id, { direction: v as "across" | "down" })}>

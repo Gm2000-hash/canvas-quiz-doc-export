@@ -5,6 +5,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Trash2 } from "lucide-react";
+import { ReorderControls, moveItem } from "./ReorderControls";
 import type { MultipleChoiceContent, MCOption } from "@/lib/h5p-types";
 
 interface Props { content: MultipleChoiceContent; onChange: (c: MultipleChoiceContent) => void; }
@@ -26,6 +27,7 @@ export function MultipleChoiceEditor({ content, onChange }: Props) {
       <Label>Answer Options</Label>
       {content.options.map((opt, i) => (
         <div key={opt.id} className="flex items-center gap-2">
+          <ReorderControls index={i} total={content.options.length} label="" onMove={(offset) => onChange({ ...content, options: moveItem(content.options, i, offset) })} />
           <Checkbox checked={opt.correct} onCheckedChange={v => updateOption(opt.id, { correct: !!v })} />
           <Input className="flex-1" value={opt.text} onChange={e => updateOption(opt.id, { text: e.target.value })} placeholder={`Option ${i + 1}`} />
           <Button size="icon" variant="ghost" className="h-8 w-8 text-destructive" onClick={() => onChange({ ...content, options: content.options.filter(o => o.id !== opt.id) })}>

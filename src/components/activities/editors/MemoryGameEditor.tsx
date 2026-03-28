@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Plus, Trash2 } from "lucide-react";
+import { ReorderControls, moveItem } from "./ReorderControls";
 import type { MemoryGameContent } from "@/lib/h5p-types";
 
 interface Props { content: MemoryGameContent; onChange: (c: MemoryGameContent) => void; }
@@ -13,7 +14,7 @@ export function MemoryGameEditor({ content, onChange }: Props) {
       <p className="text-xs text-muted-foreground">Each pair has two matching cards. Students flip cards to find matches.</p>
       {content.pairs.map((pair, i) => (
         <div key={pair.id} className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground w-6">{i + 1}.</span>
+          <ReorderControls index={i} total={content.pairs.length} label={`${i + 1}.`} onMove={(offset) => onChange({ pairs: moveItem(content.pairs, i, offset) })} />
           <Input className="flex-1" placeholder="Card A" value={pair.cardA} onChange={e => onChange({ pairs: content.pairs.map(p => p.id === pair.id ? { ...p, cardA: e.target.value } : p) })} />
           <span className="text-xs text-muted-foreground">↔</span>
           <Input className="flex-1" placeholder="Card B (match)" value={pair.cardB} onChange={e => onChange({ pairs: content.pairs.map(p => p.id === pair.id ? { ...p, cardB: e.target.value } : p) })} />
