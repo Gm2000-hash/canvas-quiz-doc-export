@@ -12,9 +12,10 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, FileText, Clock, Send, RotateCcw, Lightbulb } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, FileText, Clock, Send, RotateCcw, Lightbulb, BarChart3 } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { ExamSummaryPanel } from "@/components/ExamSummaryPanel";
 
 interface ExamQuestion {
   question_number: number;
