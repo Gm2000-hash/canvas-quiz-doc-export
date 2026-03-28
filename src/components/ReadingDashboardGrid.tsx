@@ -35,7 +35,7 @@ const COLS = 6;
 const ROW_HEIGHT = 120;
 
 function makeItem(id: string, x: number, y: number, w = 1, h = 2): LayoutItem {
-  return { i: id, x, y, w, h, minW: 1, minH: 1, maxW: 4, maxH: 4 };
+  return { i: id, x, y, w, h, minW: 1, minH: 1, maxW: 6, maxH: 6 };
 }
 
 function generateDefaultLayout(books: LibraryBook[]): LayoutItem[] {

@@ -1,4 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
+import ReactCrop, { type Crop, type PixelCrop } from "react-image-crop";
+import "react-image-crop/dist/ReactCrop.css";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -6,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Upload, Sparkles, ImageIcon } from "lucide-react";
+import { Loader2, Upload, Sparkles, ImageIcon, Crop as CropIcon } from "lucide-react";
 import { toast } from "sonner";
 
 interface CoverArtPickerProps {
@@ -17,28 +19,56 @@ interface CoverArtPickerProps {
   onCoverUpdated: (coverUrl: string) => void;
 }
 
+function getCroppedBlob(image: HTMLImageElement, crop: PixelCrop): Promise<Blob> {
+  const canvas = document.createElement("canvas");
+  const scaleX = image.naturalWidth / image.width;
+  const scaleY = image.naturalHeight / image.height;
+  canvas.width = crop.width * scaleX;
+  canvas.height = crop.height * scaleY;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(
+    image,
+    crop.x * scaleX, crop.y * scaleY,
+    crop.width * scaleX, crop.height * scaleY,
+    0, 0,
+    canvas.width, canvas.height,
+  );
+  return new Promise((resolve, reject) => {
+    canvas.toBlob(blob => blob ? resolve(blob) : reject(new Error("Canvas toBlob failed")), "image/png");
+  });
+}
+
 export function CoverArtPicker({ open, onOpenChange, bookId, bookTitle, onCoverUpdated }: CoverArtPickerProps) {
   const [uploading, setUploading] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [prompt, setPrompt] = useState(`Book cover for "${bookTitle}"`);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  // Crop state
+  const [cropSrc, setCropSrc] = useState<string | null>(null);
+  const [crop, setCrop] = useState<Crop>();
+  const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
+  const cropImgRef = useRef<HTMLImageElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [pendingFile, setPendingFile] = useState<{ ext: string } | null>(null);
+
+  const resetCrop = () => {
+    setCropSrc(null);
+    setCrop(undefined);
+    setCompletedCrop(undefined);
+    setPendingFile(null);
+  };
 
   const uploadToStorage = async (file: File | Blob, ext: string): Promise<string> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
-
     const filePath = `${user.id}/${bookId}-cover.${ext}`;
-
-    // Delete existing if any
     await supabase.storage.from("book-covers").remove([filePath]);
-
     const { error } = await supabase.storage.from("book-covers").upload(filePath, file, {
       contentType: ext === "png" ? "image/png" : "image/jpeg",
       upsert: true,
     });
     if (error) throw error;
-
     const { data: publicUrl } = supabase.storage.from("book-covers").getPublicUrl(filePath);
     return publicUrl.publicUrl + `?t=${Date.now()}`;
   };
@@ -54,25 +84,40 @@ export function CoverArtPicker({ open, onOpenChange, bookId, bookTitle, onCoverU
     toast.success("Cover art updated!");
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     e.target.value = "";
+    if (!file.type.startsWith("image/")) { toast.error("Please select an image file"); return; }
+    if (file.size > 10 * 1024 * 1024) { toast.error("Image must be under 10 MB"); return; }
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Please select an image file");
-      return;
-    }
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("Image must be under 10 MB");
-      return;
-    }
+    const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
+    setPendingFile({ ext: ext === "png" ? "png" : "jpg" });
 
+    const reader = new FileReader();
+    reader.onload = () => {
+      setCropSrc(reader.result as string);
+      setCrop(undefined);
+      setCompletedCrop(undefined);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCropSave = async () => {
+    if (!cropImgRef.current || !pendingFile) return;
     setUploading(true);
     try {
-      const ext = file.name.split(".").pop()?.toLowerCase() || "jpg";
-      const url = await uploadToStorage(file, ext === "png" ? "png" : "jpg");
+      let blob: Blob;
+      if (completedCrop && completedCrop.width > 0 && completedCrop.height > 0) {
+        blob = await getCroppedBlob(cropImgRef.current, completedCrop);
+      } else {
+        // No crop selected — use original
+        const res = await fetch(cropSrc!);
+        blob = await res.blob();
+      }
+      const url = await uploadToStorage(blob, "png");
       await saveCoverUrl(url);
+      resetCrop();
     } catch (err: any) {
       console.error("Upload failed:", err);
       toast.error(err.message || "Failed to upload cover image");
@@ -82,26 +127,18 @@ export function CoverArtPicker({ open, onOpenChange, bookId, bookTitle, onCoverU
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) {
-      toast.error("Please enter a description for the cover art");
-      return;
-    }
-
+    if (!prompt.trim()) { toast.error("Please enter a description for the cover art"); return; }
     setGenerating(true);
     setPreviewUrl(null);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) throw new Error("Not authenticated");
-
       const response = await supabase.functions.invoke("generate-cover-art", {
         body: { prompt: prompt.trim(), book_title: bookTitle },
       });
-
       if (response.error) throw new Error(response.error.message);
       const imageBase64 = response.data?.image;
       if (!imageBase64) throw new Error("No image generated");
-
-      // Show preview
       const dataUrl = imageBase64.startsWith("data:") ? imageBase64 : `data:image/png;base64,${imageBase64}`;
       setPreviewUrl(dataUrl);
     } catch (err: any) {
@@ -116,7 +153,6 @@ export function CoverArtPicker({ open, onOpenChange, bookId, bookTitle, onCoverU
     if (!previewUrl) return;
     setUploading(true);
     try {
-      // Convert base64 to blob
       const res = await fetch(previewUrl);
       const blob = await res.blob();
       const url = await uploadToStorage(blob, "png");
@@ -128,6 +164,39 @@ export function CoverArtPicker({ open, onOpenChange, bookId, bookTitle, onCoverU
       setUploading(false);
     }
   };
+
+  // If we're in cropping mode, show the crop UI
+  if (cropSrc) {
+    return (
+      <Dialog open={open} onOpenChange={(o) => { if (!o) resetCrop(); onOpenChange(o); }}>
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <CropIcon className="h-4 w-4" /> Crop Cover Image
+            </DialogTitle>
+            <DialogDescription>Drag to select the area you want to use, or save as-is.</DialogDescription>
+          </DialogHeader>
+          <div className="flex justify-center max-h-[60vh] overflow-auto rounded-lg border border-border bg-muted/30">
+            <ReactCrop crop={crop} onChange={c => setCrop(c)} onComplete={c => setCompletedCrop(c)}>
+              <img
+                ref={cropImgRef}
+                src={cropSrc}
+                alt="Crop preview"
+                style={{ maxHeight: "55vh", maxWidth: "100%" }}
+              />
+            </ReactCrop>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={resetCrop}>Back</Button>
+            <Button onClick={handleCropSave} disabled={uploading} className="gap-1.5">
+              {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {completedCrop && completedCrop.width > 0 ? "Crop & Save" : "Save Original"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -169,7 +238,7 @@ export function CoverArtPicker({ open, onOpenChange, bookId, bookTitle, onCoverU
               type="file"
               accept="image/*"
               className="hidden"
-              onChange={handleFileUpload}
+              onChange={handleFileSelect}
             />
           </TabsContent>
 
@@ -181,11 +250,7 @@ export function CoverArtPicker({ open, onOpenChange, bookId, bookTitle, onCoverU
                 onChange={e => setPrompt(e.target.value)}
                 disabled={generating}
               />
-              <Button
-                onClick={handleGenerate}
-                disabled={generating || !prompt.trim()}
-                className="w-full gap-2"
-              >
+              <Button onClick={handleGenerate} disabled={generating || !prompt.trim()} className="w-full gap-2">
                 {generating ? (
                   <><Loader2 className="h-4 w-4 animate-spin" /> Generating...</>
                 ) : (
