@@ -18,6 +18,7 @@ interface ISATExam {
   completed_at: string | null;
   created_at: string;
   hints_used: number;
+  hints_enabled: boolean;
 }
 
 interface Props {
