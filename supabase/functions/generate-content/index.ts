@@ -161,7 +161,7 @@ Description: ${standard_description}
 
 Each reading MUST follow this three-part structure:
 
-**Introduction (intro field, 4-6 paragraphs):** Tell the story of a real scientist (or scientists) who contributed to understanding this concept. Include their historical context, the problem they were trying to solve, their key experiments or observations, and their breakthrough. Write it as an engaging narrative.
+**Introduction (intro field, 4-6 paragraphs):** Jump straight in and introduce a real scientist — do NOT start with "Imagine..." or hypothetical scenarios. Develop their story richly: the era they lived in, the scientific landscape, the problem driving their work, their key experiments, and their breakthrough. Include enough life context and motivation that students understand why this research mattered. End with a clean segue sentence that bridges naturally into the technical explanation.
 
 **Explanation (explanation field, 6-10 paragraphs):** Provide a detailed, slightly technical explanation of the concept. Use and define ALL key terms naturally within the text. Explain mechanisms, principles, and processes thoroughly.
 

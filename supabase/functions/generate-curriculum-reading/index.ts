@@ -252,7 +252,7 @@ async function handleRegeneration(opts: {
       schema: { type: "object", properties: { key_terms: { type: "array", items: { type: "object", properties: { term: { type: "string" }, definition: { type: "string" } }, required: ["term", "definition"] } } }, required: ["key_terms"] },
     },
     intro: {
-      prompt: `Regenerate ONLY the introduction for a lesson about "${subject_area}". Tell the story of a real, historically relevant scientist (or scientists) who contributed to understanding this concept. Include their historical context, the problem they were trying to solve, their key experiments or observations, and their breakthrough. Write 4-6 narrative paragraphs that naturally lead into the concept.`,
+      prompt: `Regenerate ONLY the introduction for a lesson about "${subject_area}". Jump straight in and introduce a real, historically relevant scientist — do NOT start with "Imagine..." or hypothetical scenarios. Develop their story richly: describe the historical era they lived in, the scientific landscape of the time, the specific problem driving their work, their key experiments or observations, and their breakthrough. Include enough context about their life, challenges, and motivations that students understand WHY this research mattered. Write 5-7 narrative paragraphs and end with a clean segue sentence that bridges naturally into the technical explanation.`,
       schema: { type: "object", properties: { intro: { type: "array", items: { type: "string" } } }, required: ["intro"] },
     },
     explanation: {
