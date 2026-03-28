@@ -333,7 +333,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                     <SelectTrigger className="h-8 text-xs w-[130px]">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="z-[200]">
+                    <SelectContent>
                       <SelectItem value="all">All Categories</SelectItem>
                       {Object.entries(IDAHO_CATEGORY_LABELS).map(([key, label]) => (
                         <SelectItem key={key} value={key}>{label}</SelectItem>
