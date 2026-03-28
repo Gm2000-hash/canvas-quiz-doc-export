@@ -467,10 +467,15 @@ export default function ISATExamPlayer() {
                   Score: {exam.score}/{totalPoints} ({Math.round(((exam.score || 0) / totalPoints) * 100)}%)
                 </Badge>
               )}
-              {submitted && (
+              {submitted && exam.hints_enabled && (
                 <Badge variant="outline" className="gap-1 border-amber-300 text-amber-700 bg-amber-50">
                   <Lightbulb className="h-3 w-3" />
                   {exam.hints_used}/{questions.filter(q => q.hint).length} hints used
+                </Badge>
+              )}
+              {!exam.hints_enabled && (
+                <Badge variant="outline" className="gap-1 text-muted-foreground">
+                  Formal Assessment — No Hints
                 </Badge>
               )}
             </div>

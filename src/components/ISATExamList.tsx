@@ -43,7 +43,7 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
     try {
       const { data, error } = await supabase
         .from("isat_exams")
-        .select("id, title, grade_level, question_count, score, total_points, completed_at, created_at, hints_used")
+        .select("id, title, grade_level, question_count, score, total_points, completed_at, created_at, hints_used, hints_enabled")
         .order("created_at", { ascending: false }) as any;
 
       if (error) throw error;
