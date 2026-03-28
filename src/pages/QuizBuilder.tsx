@@ -33,6 +33,22 @@ function stripHtml(html: string): string {
   return div.textContent || div.innerText || "";
 }
 
+interface QuizSettings {
+  timeLimitMinutes: number | null;
+  pointsPerQuestion: number | null;
+  instructions: string;
+  shuffleOnExport: boolean;
+  showOneAtATime: boolean;
+}
+
+const DEFAULT_SETTINGS: QuizSettings = {
+  timeLimitMinutes: null,
+  pointsPerQuestion: null,
+  instructions: "",
+  shuffleOnExport: false,
+  showOneAtATime: false,
+};
+
 interface SavedQuiz {
   id: string;
   title: string;
