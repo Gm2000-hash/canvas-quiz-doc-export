@@ -39,6 +39,7 @@ interface ExamData {
   score: number | null;
   total_points: number | null;
   completed_at: string | null;
+  hints_used: number;
 }
 
 const QUESTION_TYPE_LABELS: Record<string, string> = {
@@ -158,12 +159,15 @@ export default function ISATExamPlayer() {
         // Multi-step, drag-and-drop, concept map — partial scoring is complex, skip auto-grade
       }
 
+      const hintsCount = revealedHints.size;
+
       const { error } = await supabase
         .from("isat_exams")
         .update({
           answers: studentAnswers as any,
           score: totalScore,
           total_points: totalPoints,
+          hints_used: hintsCount,
           completed_at: new Date().toISOString(),
           updated_at: new Date().toISOString(),
         } as any)
@@ -171,7 +175,7 @@ export default function ISATExamPlayer() {
 
       if (error) throw error;
 
-      setExam((prev) => prev ? { ...prev, score: totalScore, total_points: totalPoints, completed_at: new Date().toISOString(), answers: studentAnswers } : prev);
+      setExam((prev) => prev ? { ...prev, score: totalScore, total_points: totalPoints, hints_used: hintsCount, completed_at: new Date().toISOString(), answers: studentAnswers } : prev);
       setSubmitted(true);
       toast.success(`Exam submitted! Auto-scored: ${totalScore}/${totalPoints} points`);
     } catch {
@@ -460,6 +464,12 @@ export default function ISATExamPlayer() {
               {submitted && exam.score != null && (
                 <Badge variant="default" className="bg-primary">
                   Score: {exam.score}/{totalPoints} ({Math.round(((exam.score || 0) / totalPoints) * 100)}%)
+                </Badge>
+              )}
+              {submitted && (
+                <Badge variant="outline" className="gap-1 border-amber-300 text-amber-700 bg-amber-50">
+                  <Lightbulb className="h-3 w-3" />
+                  {exam.hints_used}/{questions.filter(q => q.hint).length} hints used
                 </Badge>
               )}
             </div>

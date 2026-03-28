@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles } from "lucide-react";
+import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb } from "lucide-react";
 import { format } from "date-fns";
 
 interface ISATExam {
@@ -17,6 +17,7 @@ interface ISATExam {
   total_points: number | null;
   completed_at: string | null;
   created_at: string;
+  hints_used: number;
 }
 
 interface Props {
@@ -41,7 +42,7 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
     try {
       const { data, error } = await supabase
         .from("isat_exams")
-        .select("id, title, grade_level, question_count, score, total_points, completed_at, created_at")
+        .select("id, title, grade_level, question_count, score, total_points, completed_at, created_at, hints_used")
         .order("created_at", { ascending: false }) as any;
 
       if (error) throw error;
@@ -128,6 +129,12 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
                 {exam.completed_at && exam.score != null && exam.total_points != null && (
                   <Badge variant="default" className="text-xs">
                     Score: {exam.score}/{exam.total_points} ({Math.round((exam.score / exam.total_points) * 100)}%)
+                  </Badge>
+                )}
+                {exam.completed_at && exam.hints_used > 0 && (
+                  <Badge variant="outline" className="text-xs gap-1 border-amber-300 text-amber-700 bg-amber-50">
+                    <Lightbulb className="h-3 w-3" />
+                    {exam.hints_used} hint{exam.hints_used !== 1 ? "s" : ""} used
                   </Badge>
                 )}
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
