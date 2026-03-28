@@ -25,6 +25,7 @@ import ReadingLibrary from "./pages/ReadingLibrary";
 import SharedReading from "./pages/SharedReading";
 import ISATExamPlayer from "./pages/ISATExamPlayer";
 import QuizBuilder from "./pages/QuizBuilder";
+import QuizAnalytics from "./pages/QuizAnalytics";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
