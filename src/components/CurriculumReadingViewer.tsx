@@ -50,6 +50,34 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   const [lessonStandards, setLessonStandards] = useState<{ id: string; ngss_code: string; ngss_description: string; matched_terms: string[] }[]>([]);
   const [aiTagging, setAiTagging] = useState(false);
   const [standardsPickerOpen, setStandardsPickerOpen] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const handleDeleteReading = async (lessonId: string) => {
+    setDeletingId(lessonId);
+    try {
+      // Delete associated standards first
+      await (supabase.from('curriculum_lesson_standards' as any) as any).delete().eq('lesson_id', lessonId);
+      // Delete the lesson
+      const { error } = await supabase.from('curriculum_lessons').delete().eq('id', lessonId);
+      if (error) throw error;
+      // Update local state
+      const deletedIdx = lessons.findIndex(l => l.id === lessonId);
+      const newLessons = lessons.filter(l => l.id !== lessonId);
+      setLessons(newLessons);
+      if (currentLesson !== null) {
+        if (deletedIdx === currentLesson) {
+          setCurrentLesson(null);
+        } else if (deletedIdx < currentLesson) {
+          setCurrentLesson(currentLesson - 1);
+        }
+      }
+      toast.success('Reading deleted');
+    } catch (err: any) {
+      toast.error(err?.message || 'Failed to delete reading');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const filteredIndices = lessons.reduce<number[]>((acc, lesson, i) => {
     if (!searchQuery.trim()) { acc.push(i); return acc; }
