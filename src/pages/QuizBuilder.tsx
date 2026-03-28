@@ -20,7 +20,7 @@ import { toast } from "sonner";
 import {
   Loader2, Search, Plus, Minus, Save, Upload, ArrowLeft, GripVertical,
   Trash2, FileText, ClipboardCheck, Eye, EyeOff, ChevronUp, ChevronDown,
-  CheckCircle2, XCircle, Circle, Download,
+  CheckCircle2, XCircle, Circle, Download, Shuffle,
 } from "lucide-react";
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { DOK_LEVELS, BLOOMS_LEVELS, ALL_SUBSTANDARDS } from "@/lib/ngss-data";
@@ -338,6 +338,21 @@ export default function QuizBuilder() {
             <Button variant="outline" size="sm" onClick={() => navigate("/question-bank")} className="gap-1.5">
               <ArrowLeft className="h-4 w-4" /> Back
             </Button>
+            {selectedIds.length > 1 && (
+              <Button variant="outline" size="sm" onClick={() => {
+                setSelectedIds(prev => {
+                  const shuffled = [...prev];
+                  for (let i = shuffled.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                  }
+                  return shuffled;
+                });
+                toast.success("Questions shuffled!");
+              }} className="gap-1.5">
+                <Shuffle className="h-4 w-4" /> Shuffle
+              </Button>
+            )}
             {selectedIds.length > 0 && (
               <Button variant="outline" size="sm" onClick={() => setPreviewMode(true)} className="gap-1.5">
                 <Eye className="h-4 w-4" /> Preview
