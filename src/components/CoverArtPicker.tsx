@@ -279,6 +279,31 @@ export function CoverArtPicker({ open, onOpenChange, bookId, bookTitle, currentC
             )}
           </TabsContent>
         </Tabs>
+
+        {currentCoverUrl && onCoverRemoved && (
+          <div className="border-t border-border pt-3 mt-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full text-destructive hover:text-destructive gap-2"
+              onClick={async () => {
+                try {
+                  const coverPath = currentCoverUrl.split("/book-covers/")[1];
+                  if (coverPath) await supabase.storage.from("book-covers").remove([coverPath]);
+                  await supabase.from("library_books").update({ cover_url: null }).eq("id", bookId);
+                  onCoverRemoved();
+                  onOpenChange(false);
+                  toast.success("Cover removed");
+                } catch {
+                  toast.error("Failed to remove cover");
+                }
+              }}
+            >
+              <Trash2 className="h-4 w-4" />
+              Remove Current Cover
+            </Button>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
