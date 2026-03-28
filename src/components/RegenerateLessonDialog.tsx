@@ -124,6 +124,7 @@ Improve and fill in any missing information. Keep the same general topic but mak
 
       // Also run the standards tagger for extra accuracy
       setStatusText("Verifying standards alignment...");
+      let detectedStandardCode = "";
       try {
         const allStandards = Object.values(ALL_SUBSTANDARDS).flat().map(s => ({
           code: s.code,
@@ -139,6 +140,7 @@ Improve and fill in any missing information. Keep the same general topic but mak
         });
 
         if (tagData?.results?.[0]?.standards?.length > 0) {
+          detectedStandardCode = tagData.results[0].standards[0].code || "";
           const { data: existing } = await supabase
             .from("lesson_plan_standards")
             .select("ngss_code")
@@ -172,6 +174,7 @@ Improve and fill in any missing information. Keep the same general topic but mak
               subject_area: newLesson.title || lesson.title,
               objectives: newLesson.objectives || lesson.objectives,
               format: "textbook",
+              ngss_standard: detectedStandardCode || undefined,
             },
           });
 
