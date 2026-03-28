@@ -58,7 +58,7 @@ export function GenerateLessonDialog({ open, onOpenChange, unitId, unitTitle, di
       if (error) throw error;
       if (!data?.lessons || !Array.isArray(data.lessons)) throw new Error("Invalid response from AI");
 
-      const insertedLessons: { id: string; title: string; objectives: string }[] = [];
+      const insertedLessons: { id: string; title: string; objectives: string; standardCode: string }[] = [];
 
       // Insert lessons into database
       setStatusText("Saving lesson plans...");
