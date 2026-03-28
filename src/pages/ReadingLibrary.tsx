@@ -55,6 +55,7 @@ export default function ReadingLibrary() {
   // Share states
   const [sharingId, setSharingId] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [coverPickerBook, setCoverPickerBook] = useState<LibraryBook | null>(null);
 
   const fetchBooks = async () => {
     const { data, error } = await supabase
