@@ -170,6 +170,17 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
+              {canvasConnected && exam.completed_at && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handlePushToCanvas(exam)}
+                  className="gap-1.5"
+                >
+                  <Upload className="h-4 w-4" />
+                  Push to Canvas
+                </Button>
+              )}
               <Button
                 size="sm"
                 onClick={() => onTakeExam(exam.id)}
