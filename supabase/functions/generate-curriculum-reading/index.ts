@@ -82,7 +82,7 @@ Also generate a "reading" object with:
 - title
 - objectives (3-5 measurable learning objectives)
 - key_terms (8-12 {term, definition})
-- intro (6-8 paragraphs): Tell the story of a real scientist (or scientists) who contributed to understanding this concept. Include their historical context, the problem they were trying to solve, their key experiments or observations, and their breakthrough. Write it as an engaging narrative that naturally leads into the concept.
+- intro (6-8 paragraphs): Jump straight in and introduce a real scientist — do NOT start with "Imagine..." or hypothetical scenarios. Develop their story richly: the historical era, the scientific landscape, the specific problem driving their work, their key experiments, and their breakthrough. Include enough context about their life, challenges, and motivations that students understand WHY this research mattered. End with a clean segue sentence bridging into the explanation.
 - explanation (8-12 paragraphs): Provide a detailed, slightly technical explanation of the concept. Use and define ALL key terms naturally within the text. Explain mechanisms, principles, and processes thoroughly.
 ${readingInstructions}`
       : format === "scripted"
