@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
+import { syncDisciplineToLibrary } from "@/lib/content-generator";
 
 interface Props {
   open: boolean;
