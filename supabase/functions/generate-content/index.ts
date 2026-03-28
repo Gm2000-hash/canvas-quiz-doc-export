@@ -285,21 +285,41 @@ serve(withLogging("generate-content", async (req) => {
     }
 
     const data = await response.json();
+    
+    // Try to extract JSON from multiple possible response shapes
+    let result: any = null;
+    
+    // Shape 1: tool_calls (expected)
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) {
-      // Fallback: try parsing content
-      const content = data.choices?.[0]?.message?.content || "";
+    if (toolCall?.function?.arguments) {
       try {
-        const parsed = JSON.parse(content.replace(/```json\n?|```/g, "").trim());
-        return new Response(JSON.stringify(parsed), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      } catch {
-        throw new Error("Failed to parse AI response");
+        const raw = toolCall.function.arguments;
+        result = JSON.parse(typeof raw === "string" ? raw : JSON.stringify(raw));
+      } catch (e) {
+        console.error("Failed to parse tool_call arguments:", (e as Error).message, String(toolCall.function.arguments).substring(0, 500));
       }
     }
-
-    const result = JSON.parse(toolCall.function.arguments);
+    
+    // Shape 2: plain message content (fallback)
+    if (!result) {
+      const raw = data.choices?.[0]?.message?.content || "";
+      if (raw) {
+        try {
+          const cleaned = raw.replace(/```json\n?|```/g, "").trim();
+          const matched = cleaned.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+          if (matched) {
+            result = JSON.parse(matched[0]);
+          }
+        } catch (e) {
+          console.error("Failed to parse content fallback:", (e as Error).message, raw.substring(0, 500));
+        }
+      }
+    }
+    
+    if (!result) {
+      console.error("Could not extract JSON from AI response:", JSON.stringify(data).substring(0, 1000));
+      throw new Error("Failed to parse AI response");
+    }
 
     // Normalize question answers
     if (content_type === "questions" && result.questions) {
