@@ -59,6 +59,7 @@ export default function ActivityBuilder() {
   const [sources, setSources] = useState<SourceOption[]>([]);
   const [sourcesLoaded, setSourcesLoaded] = useState(false);
   const [selectedSource, setSelectedSource] = useState<string>("");
+  const [selectedReading, setSelectedReading] = useState<string>("");
   const [selectedStandard, setSelectedStandard] = useState<{ code: string; description: string } | null>(null);
   const [standardFramework, setStandardFramework] = useState<"ngss" | "idaho">("idaho");
   const [idahoFilter, setIdahoFilter] = useState<string>("all");
