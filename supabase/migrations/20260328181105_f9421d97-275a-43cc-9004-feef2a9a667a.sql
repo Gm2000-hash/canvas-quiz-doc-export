@@ -1,0 +1,1 @@
+ALTER TABLE public.isat_exams ADD COLUMN hints_enabled boolean NOT NULL DEFAULT true;

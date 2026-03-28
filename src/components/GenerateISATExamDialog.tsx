@@ -5,7 +5,8 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Loader2, Sparkles, CheckCircle2, FileText, BookOpen } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Loader2, Sparkles, CheckCircle2, FileText, BookOpen, Lightbulb } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
@@ -26,6 +27,7 @@ const DISCIPLINES = [
 export default function GenerateISATExamDialog({ open, onOpenChange, onComplete }: Props) {
   const [questionCount, setQuestionCount] = useState(35);
   const [title, setTitle] = useState("");
+  const [hintsEnabled, setHintsEnabled] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
   const [examId, setExamId] = useState<string | null>(null);
@@ -94,6 +96,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
           question_count: questions.length,
           questions: questions as any,
           total_points: totalPoints,
+          hints_enabled: hintsEnabled,
         } as any)
         .select("id")
         .single();
@@ -116,6 +119,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
     setDone(false);
     setExamId(null);
     setTitle("");
+    setHintsEnabled(true);
   };
 
   return (
@@ -153,6 +157,19 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
                   onChange={(e) => setQuestionCount(Math.min(50, Math.max(1, Number(e.target.value) || 1)))}
                   className="w-32"
                 />
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-lg border border-border">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="h-4 w-4 text-amber-500" />
+                  <div>
+                    <Label className="text-sm font-medium">Enable Hints</Label>
+                    <p className="text-xs text-muted-foreground">
+                      {hintsEnabled ? "Students can reveal hints during the exam" : "No hints — formal assessment mode"}
+                    </p>
+                  </div>
+                </div>
+                <Switch checked={hintsEnabled} onCheckedChange={setHintsEnabled} />
               </div>
 
               {/* Standards selection */}

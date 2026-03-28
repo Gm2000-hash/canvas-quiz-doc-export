@@ -40,6 +40,7 @@ interface ExamData {
   total_points: number | null;
   completed_at: string | null;
   hints_used: number;
+  hints_enabled: boolean;
 }
 
 const QUESTION_TYPE_LABELS: Record<string, string> = {
@@ -466,10 +467,15 @@ export default function ISATExamPlayer() {
                   Score: {exam.score}/{totalPoints} ({Math.round(((exam.score || 0) / totalPoints) * 100)}%)
                 </Badge>
               )}
-              {submitted && (
+              {submitted && exam.hints_enabled && (
                 <Badge variant="outline" className="gap-1 border-amber-300 text-amber-700 bg-amber-50">
                   <Lightbulb className="h-3 w-3" />
                   {exam.hints_used}/{questions.filter(q => q.hint).length} hints used
+                </Badge>
+              )}
+              {!exam.hints_enabled && (
+                <Badge variant="outline" className="gap-1 text-muted-foreground">
+                  Formal Assessment — No Hints
                 </Badge>
               )}
             </div>
@@ -535,8 +541,8 @@ export default function ISATExamPlayer() {
 
               <div className="text-sm leading-relaxed whitespace-pre-wrap">{question.question_text}</div>
 
-              {/* Hint section */}
-              {question.hint && !submitted && (
+              {/* Hint section — only when hints are enabled */}
+              {exam.hints_enabled && question.hint && !submitted && (
                 <div>
                   {revealedHints.has(question.question_number) ? (
                     <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">

@@ -18,6 +18,7 @@ interface ISATExam {
   completed_at: string | null;
   created_at: string;
   hints_used: number;
+  hints_enabled: boolean;
 }
 
 interface Props {
@@ -42,7 +43,7 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
     try {
       const { data, error } = await supabase
         .from("isat_exams")
-        .select("id, title, grade_level, question_count, score, total_points, completed_at, created_at, hints_used")
+        .select("id, title, grade_level, question_count, score, total_points, completed_at, created_at, hints_used, hints_enabled")
         .order("created_at", { ascending: false }) as any;
 
       if (error) throw error;
@@ -131,10 +132,15 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
                     Score: {exam.score}/{exam.total_points} ({Math.round((exam.score / exam.total_points) * 100)}%)
                   </Badge>
                 )}
-                {exam.completed_at && exam.hints_used > 0 && (
+                {exam.completed_at && exam.hints_enabled && exam.hints_used > 0 && (
                   <Badge variant="outline" className="text-xs gap-1 border-amber-300 text-amber-700 bg-amber-50">
                     <Lightbulb className="h-3 w-3" />
                     {exam.hints_used} hint{exam.hints_used !== 1 ? "s" : ""} used
+                  </Badge>
+                )}
+                {!exam.hints_enabled && (
+                  <Badge variant="outline" className="text-xs text-muted-foreground">
+                    Formal
                   </Badge>
                 )}
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
