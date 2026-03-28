@@ -442,24 +442,54 @@ export default function ActivityBuilder() {
               <Label>Title</Label>
               <Input value={newTitle} onChange={e => setNewTitle(e.target.value)} placeholder="My Activity" className="mt-1.5" />
             </div>
-            <div>
-              <Label>Activity Type</Label>
-              <Select value={newType} onValueChange={v => setNewType(v as ActivityType)}>
-                <SelectTrigger className="mt-1.5">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent position="popper" sideOffset={4} className="z-[200] max-h-[300px] overflow-y-auto">
-                  {ACTIVITY_TYPES.map(t => (
-                    <SelectItem key={t.type} value={t.type}>
-                      <div>
-                        <div className="font-medium">{t.label}</div>
-                        <div className="text-xs text-muted-foreground">{t.description}</div>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {useAI ? (
+              <div>
+                <Label>Activity Types <span className="text-xs text-muted-foreground font-normal">(select one or more)</span></Label>
+                <div className="grid grid-cols-2 gap-1.5 mt-1.5 max-h-[200px] overflow-y-auto pr-1">
+                  {ACTIVITY_TYPES.map(t => {
+                    const isSelected = selectedTypes.includes(t.type);
+                    return (
+                      <button
+                        key={t.type}
+                        type="button"
+                        onClick={() => toggleType(t.type)}
+                        className={`text-left px-3 py-2 rounded-lg border text-xs transition-colors ${
+                          isSelected
+                            ? "border-primary bg-primary/10 text-foreground"
+                            : "border-border bg-card text-muted-foreground hover:border-primary/40 hover:bg-accent/30"
+                        }`}
+                      >
+                        <span className="font-medium">{t.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedTypes.length > 0 && (
+                  <p className="text-[11px] text-muted-foreground mt-1.5">
+                    {selectedTypes.length} type{selectedTypes.length !== 1 ? "s" : ""} selected — will generate {selectedTypes.length} activit{selectedTypes.length !== 1 ? "ies" : "y"}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div>
+                <Label>Activity Type</Label>
+                <Select value={newType} onValueChange={v => setNewType(v as ActivityType)}>
+                  <SelectTrigger className="mt-1.5">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper" sideOffset={4} className="z-[200] max-h-[300px] overflow-y-auto">
+                    {ACTIVITY_TYPES.map(t => (
+                      <SelectItem key={t.type} value={t.type}>
+                        <div>
+                          <div className="font-medium">{t.label}</div>
+                          <div className="text-xs text-muted-foreground">{t.description}</div>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
             {/* AI Generation Toggle */}
             <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
