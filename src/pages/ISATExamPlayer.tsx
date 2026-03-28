@@ -536,8 +536,8 @@ export default function ISATExamPlayer() {
 
               <div className="text-sm leading-relaxed whitespace-pre-wrap">{question.question_text}</div>
 
-              {/* Hint section */}
-              {question.hint && !submitted && (
+              {/* Hint section — only when hints are enabled */}
+              {exam.hints_enabled && question.hint && !submitted && (
                 <div>
                   {revealedHints.has(question.question_number) ? (
                     <div className="flex items-start gap-2 p-3 rounded-lg bg-amber-50 border border-amber-200">
