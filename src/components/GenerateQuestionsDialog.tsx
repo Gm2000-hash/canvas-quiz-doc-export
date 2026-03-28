@@ -216,7 +216,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                   <SelectTrigger className="h-9">
                     <SelectValue />
                   </SelectTrigger>
-                   <SelectContent className="z-[200]">
+                   <SelectContent>
                     {[3, 5, 10, 15, 20].map(n => (
                       <SelectItem key={n} value={String(n)}>{n} questions</SelectItem>
                     ))}
