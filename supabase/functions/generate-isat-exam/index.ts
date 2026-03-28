@@ -225,6 +225,7 @@ Make this exam realistic and challenging — it should prepare students for the 
                         points_possible: { type: "number", description: "Point value (1-3)" },
                         dok_level: { type: "number", description: "DOK level 1-4" },
                         blooms_level: { type: "string", enum: ["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"] },
+                        hint: { type: "string", description: "A short 1-2 sentence clue about the concept being tested, without giving the answer away" },
                         answers_json: {
                           type: "string",
                           description: `JSON string of answer data based on type:
@@ -237,7 +238,7 @@ Make this exam realistic and challenging — it should prepare students for the 
 - Investigation design: [{"text":"...","weight":100},{"text":"...","weight":0}] or {"prompt":"...","scoring_rubric":"...","sample_response":"..."}`,
                         },
                       },
-                      required: ["question_number", "question_type", "question_text", "standard_code", "points_possible", "dok_level", "blooms_level", "answers_json"],
+                      required: ["question_number", "question_type", "question_text", "standard_code", "points_possible", "dok_level", "blooms_level", "hint", "answers_json"],
                     },
                   },
                 },
