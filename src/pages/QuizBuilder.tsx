@@ -279,7 +279,7 @@ export default function QuizBuilder() {
     setPreviewMode(false);
   };
 
-  const totalPoints = selectedQuestions.reduce((sum, q) => sum + (q.points_possible || 1), 0);
+  const totalPoints = selectedQuestions.reduce((sum, q) => sum + (settings.pointsPerQuestion ?? q.points_possible ?? 1), 0);
 
   const QUESTION_TYPES: Record<string, string> = {
     multiple_choice_question: "Multiple Choice",
