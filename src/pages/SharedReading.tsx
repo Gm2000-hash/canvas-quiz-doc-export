@@ -28,10 +28,7 @@ export default function SharedReading() {
 
     const loadBook = async () => {
       const { data, error: fetchError } = await supabase
-        .from("library_books")
-        .select("id, title, file_path, source_discipline")
-        .eq("share_token", token)
-        .eq("is_published", true)
+        .rpc("get_shared_book", { _share_token: token })
         .maybeSingle();
 
       if (fetchError || !data) {
