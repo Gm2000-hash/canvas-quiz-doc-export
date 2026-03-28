@@ -66,6 +66,7 @@ serve(withLogging("generate-curriculum-reading", async (req) => {
         objectives,
         key_terms,
         grade_level,
+        ngss_standard,
         LOVABLE_API_KEY,
       });
     }
