@@ -42,23 +42,11 @@ async function requireAuth(req: Request) {
   return { userId: data.claims.sub as string, error: null };
 }
 
-// Standards organized by grade level
+// Legacy grade-level standards mapping (fallback)
 const GRADE_STANDARDS: Record<string, { prefix: string; label: string; coreIdeas: string[] }> = {
-  "6th": {
-    prefix: "PS",
-    label: "Physical Science",
-    coreIdeas: ["MS-PS1", "MS-PS2", "MS-PS3", "MS-PS4"],
-  },
-  "7th": {
-    prefix: "LS",
-    label: "Life Science",
-    coreIdeas: ["MS-LS1", "MS-LS2", "MS-LS3", "MS-LS4"],
-  },
-  "8th": {
-    prefix: "ESS",
-    label: "Earth & Space Science",
-    coreIdeas: ["MS-ESS1", "MS-ESS2", "MS-ESS3"],
-  },
+  "6th": { prefix: "PS", label: "Physical Science", coreIdeas: ["MS-PS1", "MS-PS2", "MS-PS3", "MS-PS4"] },
+  "7th": { prefix: "LS", label: "Life Science", coreIdeas: ["MS-LS1", "MS-LS2", "MS-LS3", "MS-LS4"] },
+  "8th": { prefix: "ESS", label: "Earth & Space Science", coreIdeas: ["MS-ESS1", "MS-ESS2", "MS-ESS3"] },
 };
 
 serve(withLogging("generate-isat-exam", async (req) => {
@@ -86,25 +74,49 @@ serve(withLogging("generate-isat-exam", async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const { grade_level, question_count = 35, title } = parsedBody;
 
-    if (!grade_level || !GRADE_STANDARDS[grade_level]) {
+    const { grade_level, question_count = 35, title, selected_standards } = parsedBody;
+    const clampedCount = Math.min(Math.max(question_count, 15), 60);
+
+    // Build standards context from either selected_standards or legacy grade_level
+    let standardsContext: string;
+    let disciplineLabel: string;
+
+    if (selected_standards && Array.isArray(selected_standards) && selected_standards.length > 0) {
+      // New flow: specific standards selected
+      const standardsList = selected_standards
+        .map((s: any) => `- ${s.code}: ${s.description}`)
+        .join("\n");
+
+      // Determine which disciplines are covered
+      const disciplines: string[] = [];
+      if (selected_standards.some((s: any) => s.code.startsWith("MS-PS"))) disciplines.push("Physical Science");
+      if (selected_standards.some((s: any) => s.code.startsWith("MS-LS"))) disciplines.push("Life Science");
+      if (selected_standards.some((s: any) => s.code.startsWith("MS-ESS"))) disciplines.push("Earth & Space Science");
+      disciplineLabel = disciplines.join(", ");
+
+      standardsContext = `The exam must cover EXACTLY these ${selected_standards.length} NGSS standards:\n${standardsList}\n\nDistribute questions across all listed standards as evenly as possible.`;
+
+      console.log(`Generating ${clampedCount}-question ISAT exam for ${selected_standards.length} specific standards (${disciplineLabel})`);
+    } else if (grade_level && GRADE_STANDARDS[grade_level]) {
+      // Legacy flow: grade level
+      const gradeConfig = GRADE_STANDARDS[grade_level];
+      disciplineLabel = gradeConfig.label;
+      standardsContext = `The exam must cover ALL ${gradeConfig.label} NGSS standards (core ideas: ${gradeConfig.coreIdeas.join(", ")}) with questions distributed across them.`;
+
+      console.log(`Generating ${clampedCount}-question ISAT exam for ${grade_level} grade (${gradeConfig.label})`);
+    } else {
       return new Response(
-        JSON.stringify({ error: "Invalid grade_level. Must be 6th, 7th, or 8th." }),
+        JSON.stringify({ error: "Must provide either selected_standards or a valid grade_level." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
-    const gradeConfig = GRADE_STANDARDS[grade_level];
-    const clampedCount = Math.min(Math.max(question_count, 15), 60);
-
-    console.log(`Generating ${clampedCount}-question ISAT exam for ${grade_level} grade (${gradeConfig.label})`);
-
     const systemPrompt = `You are an expert middle school science assessment writer creating a practice ISAT (Idaho Standards Achievement Test) End-of-Course Assessment (ECA).
 
-You are creating a COMPLETE practice exam for ${grade_level} grade ${gradeConfig.label}. This exam must be realistic in difficulty, format, and question distribution.
+You are creating a COMPLETE practice exam covering: ${disciplineLabel}.
 
-The exam must cover ALL ${gradeConfig.label} NGSS standards (core ideas: ${gradeConfig.coreIdeas.join(", ")}) with questions distributed across them.
+${standardsContext}
 
 ## QUESTION TYPES TO INCLUDE (distribute across the exam):
 
@@ -143,7 +155,6 @@ The exam must cover ALL ${gradeConfig.label} NGSS standards (core ideas: ${grade
    - E.g., energy flow, ecosystem interactions, force relationships
 
 ## DISTRIBUTION RULES:
-- Include ALL ${gradeConfig.coreIdeas.length} core ideas with roughly equal coverage
 - Mix DOK levels: ~25% DOK 1, ~40% DOK 2, ~25% DOK 3, ~10% DOK 4
 - Mix Bloom's levels appropriately
 - At least 3 constructed response questions
@@ -173,9 +184,7 @@ The exam must cover ALL ${gradeConfig.label} NGSS standards (core ideas: ${grade
           { role: "system", content: systemPrompt },
           {
             role: "user",
-            content: `Generate a complete ${clampedCount}-question ISAT practice exam for ${grade_level} grade ${gradeConfig.label}. 
-
-Cover these core ideas: ${gradeConfig.coreIdeas.join(", ")}
+            content: `Generate a complete ${clampedCount}-question ISAT practice exam covering ${disciplineLabel}.
 
 Make this exam realistic and challenging — it should prepare students for the actual ISAT ECA. Include a variety of question types as specified.`,
           },
@@ -243,14 +252,12 @@ Make this exam realistic and challenging — it should prepare students for the 
     if (!response.ok) {
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
-          status: 429,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       if (response.status === 402) {
         return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits in Settings." }), {
-          status: 402,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
       const text = await response.text();
@@ -262,7 +269,6 @@ Make this exam realistic and challenging — it should prepare students for the 
     const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
 
     if (!toolCall?.function?.arguments) {
-      // Retry: try parsing from message content
       const content = data.choices?.[0]?.message?.content || "";
       const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
       if (jsonMatch) {
@@ -270,7 +276,7 @@ Make this exam realistic and challenging — it should prepare students for the 
           const parsed = JSON.parse(jsonMatch[1]);
           if (parsed.questions) {
             const questions = processQuestions(parsed.questions);
-            return respondWithQuestions(questions, grade_level, clampedCount);
+            return respondWithQuestions(questions, clampedCount);
           }
         } catch { /* fall through */ }
       }
@@ -281,7 +287,6 @@ Make this exam realistic and challenging — it should prepare students for the 
     try {
       parsed = JSON.parse(toolCall.function.arguments);
     } catch {
-      // Try cleaning the JSON
       const cleaned = toolCall.function.arguments
         .replace(/,\s*}/g, "}")
         .replace(/,\s*]/g, "]");
@@ -289,9 +294,9 @@ Make this exam realistic and challenging — it should prepare students for the 
     }
 
     const questions = processQuestions(parsed.questions || []);
-    console.log(`Generated ${questions.length}-question ISAT exam for ${grade_level} grade`);
+    console.log(`Generated ${questions.length}-question ISAT exam covering ${disciplineLabel}`);
 
-    return respondWithQuestions(questions, grade_level, clampedCount);
+    return respondWithQuestions(questions, clampedCount);
   } catch (e) {
     console.error("generate-isat-exam error:", e);
     return new Response(
@@ -313,7 +318,6 @@ function processQuestions(raw: any[]): any[] {
       }
     }
 
-    // Normalize MC/multi-answer arrays
     if (Array.isArray(answers)) {
       answers = answers.map((a: any, i: number) => ({
         id: i + 1,
@@ -336,9 +340,9 @@ function processQuestions(raw: any[]): any[] {
   });
 }
 
-function respondWithQuestions(questions: any[], grade_level: string, requested: number) {
+function respondWithQuestions(questions: any[], requested: number) {
   return new Response(
-    JSON.stringify({ questions, grade_level, question_count: questions.length }),
+    JSON.stringify({ questions, question_count: questions.length }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } },
   );
 }
