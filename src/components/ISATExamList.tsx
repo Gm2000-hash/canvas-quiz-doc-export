@@ -131,6 +131,12 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
                     Score: {exam.score}/{exam.total_points} ({Math.round((exam.score / exam.total_points) * 100)}%)
                   </Badge>
                 )}
+                {exam.completed_at && exam.hints_used > 0 && (
+                  <Badge variant="outline" className="text-xs gap-1 border-amber-300 text-amber-700 bg-amber-50">
+                    <Lightbulb className="h-3 w-3" />
+                    {exam.hints_used} hint{exam.hints_used !== 1 ? "s" : ""} used
+                  </Badge>
+                )}
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   {format(new Date(exam.created_at), "MMM d, yyyy")}
