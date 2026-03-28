@@ -51,9 +51,10 @@ export const ACTIVITY_TYPES: ActivityTypeInfo[] = [
 
 export interface FillInBlanksContent { text: string; acceptAlternatives: boolean; }
 export interface DragTheWordsContent { text: string; showInstantFeedback: boolean; }
-export interface AccordionPanel { id: string; title: string; content: string; }
+export interface MediaEmbed { url: string; type: 'audio' | 'video' | 'image'; }
+export interface AccordionPanel { id: string; title: string; content: string; media?: MediaEmbed; }
 export interface AccordionContent { panels: AccordionPanel[]; }
-export interface TimelineEvent { id: string; date: string; title: string; description: string; imageUrl?: string; }
+export interface TimelineEvent { id: string; date: string; title: string; description: string; imageUrl?: string; media?: MediaEmbed; }
 export interface TimelineContent { headline: string; events: TimelineEvent[]; }
 export interface MCOption { id: string; text: string; correct: boolean; }
 export interface MultipleChoiceContent { question: string; options: MCOption[]; multiAnswer: boolean; }
