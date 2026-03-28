@@ -240,7 +240,7 @@ async function handleRegeneration(opts: {
 
   const sectionConfigs: Record<string, { prompt: string; schema: any }> = {
     reading: {
-      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Create a compelling non-fiction reading with 8-12 paragraphs.`,
+      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Write 8-12 paragraphs focused on how this concept directly affects and connects to the student's daily life — through everyday phenomena, health, technology, environmental impacts, or personal decisions.`,
       schema: { type: "object", properties: { reading_title: { type: "string" }, reading_paragraphs: { type: "array", items: { type: "string" } } }, required: ["reading_title", "reading_paragraphs"] },
     },
     objectives: {
@@ -252,11 +252,11 @@ async function handleRegeneration(opts: {
       schema: { type: "object", properties: { key_terms: { type: "array", items: { type: "object", properties: { term: { type: "string" }, definition: { type: "string" } }, required: ["term", "definition"] } } }, required: ["key_terms"] },
     },
     intro: {
-      prompt: `Regenerate ONLY the introduction. Write 4-6 narrative paragraphs.`,
+      prompt: `Regenerate ONLY the introduction for a lesson about "${subject_area}". Tell the story of a real, historically relevant scientist (or scientists) who contributed to understanding this concept. Include their historical context, the problem they were trying to solve, their key experiments or observations, and their breakthrough. Write 4-6 narrative paragraphs that naturally lead into the concept.`,
       schema: { type: "object", properties: { intro: { type: "array", items: { type: "string" } } }, required: ["intro"] },
     },
     explanation: {
-      prompt: `Regenerate ONLY the explanation section. Write 6-8 detailed concept paragraphs.`,
+      prompt: `Regenerate ONLY the explanation section for a lesson about "${subject_area}". Write 6-8 detailed paragraphs providing a slightly technical explanation of the concept. Define and use all key terms naturally within the text. Explain mechanisms, principles, and processes thoroughly but accessibly.`,
       schema: { type: "object", properties: { explanation: { type: "array", items: { type: "string" } } }, required: ["explanation"] },
     },
     quiz: {
