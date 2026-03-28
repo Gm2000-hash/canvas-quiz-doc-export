@@ -25,7 +25,30 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
-    const { prompt, book_title } = await req.json();
+    const rawBody = await req.text();
+    if (!rawBody.trim()) {
+      return new Response(JSON.stringify({ error: "Request body is empty" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    let parsedBody;
+    try { parsedBody = JSON.parse(rawBody); } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { prompt, book_title } = parsedBody;
+
+    if (!book_title || typeof book_title !== "string" || book_title.length > 500) {
+      return new Response(JSON.stringify({ error: "book_title is required and must be under 500 characters" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (prompt && (typeof prompt !== "string" || prompt.length > 2000)) {
+      return new Response(JSON.stringify({ error: "prompt must be under 2000 characters" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const fullPrompt = `Create a beautiful, professional textbook cover illustration for a middle school science book titled "${book_title}". ${prompt}. The image should be vibrant, educational, and visually appealing for students. No text on the image — just the illustration. Style: clean, modern, slightly stylized educational illustration with rich colors.`;
 
