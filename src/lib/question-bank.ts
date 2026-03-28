@@ -72,29 +72,25 @@ export async function saveQuestionsToBank(
 
   const filtered = questions.filter(q => q.question_type !== "text_only_question");
 
+  // Pre-fetch existing questions to check duplicates efficiently
+  const { data: existingQuestions } = await supabase
+    .from("question_bank")
+    .select("id, canvas_question_id, question_text, question_type")
+    .eq("user_id", user.id);
+
+  const existingCanvasIds = new Set((existingQuestions || []).filter(q => q.canvas_question_id != null).map(q => q.canvas_question_id));
+  const existingTextKeys = new Set(
+    (existingQuestions || []).map(q => `${q.question_type}::${normalizeQuestionText(q.question_text)}`)
+  );
+
   for (const q of filtered) {
-    // Check if already saved (by canvas_question_id OR identical question text)
-    const { data: existingById } = await supabase
-      .from("question_bank")
-      .select("id")
-      .eq("user_id", user.id)
-      .eq("canvas_question_id", q.id)
-      .maybeSingle();
+    // Skip if canvas_question_id already exists
+    if (existingCanvasIds.has(q.id)) continue;
 
-    if (existingById) continue;
-
-    const normalizedText = q.question_text.replace(/<[^>]*>/g, "").trim().toLowerCase();
-    if (normalizedText.length > 0) {
-      const { data: existingByText } = await supabase
-        .from("question_bank")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("question_type", q.question_type)
-        .ilike("question_text", normalizedText)
-        .maybeSingle();
-
-      if (existingByText) continue;
-    }
+    // Skip if identical normalized text + type already exists
+    const normalized = normalizeQuestionText(q.question_text);
+    const textKey = `${q.question_type}::${normalized}`;
+    if (normalized.length > 0 && existingTextKeys.has(textKey)) continue;
 
     const { dok, blooms } = suggestDokAndBlooms(q.question_type, q.question_text);
 
