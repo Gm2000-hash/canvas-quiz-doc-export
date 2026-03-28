@@ -96,6 +96,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
           question_count: questions.length,
           questions: questions as any,
           total_points: totalPoints,
+          hints_enabled: hintsEnabled,
         } as any)
         .select("id")
         .single();
