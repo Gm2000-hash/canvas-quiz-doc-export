@@ -791,7 +791,7 @@ function PreviewQuestion({
             </div>
             <div
               className="text-sm leading-relaxed prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: question.question_text }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.question_text) }}
             />
           </div>
         </div>
