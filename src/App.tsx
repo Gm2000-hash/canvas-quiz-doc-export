@@ -102,6 +102,8 @@ const App = () => (
           <Route path="/reading-library" element={<ProtectedRoute><ReadingLibrary /></ProtectedRoute>} />
           <Route path="/library" element={<Navigate to="/admin/library" replace />} />
           <Route path="/isat-exam/:id" element={<ProtectedRoute><ISATExamPlayer /></ProtectedRoute>} />
+          <Route path="/quiz-builder" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
+          <Route path="/quiz-builder/:id" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/shared-reading/:token" element={<SharedReading />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
