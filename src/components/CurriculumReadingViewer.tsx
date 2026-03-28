@@ -431,7 +431,7 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
         </div>
         <div className="flex items-center gap-2">
           {lessons.length > 1 && currentLesson !== null && (
-            <Button variant="ghost" size="icon" onClick={() => setCurrentLesson(null)} title="Table of Contents">
+            <Button variant="ghost" size="icon" onClick={() => setShowToc(true)} title="Table of Contents">
               <List className="h-4 w-4" />
             </Button>
           )}
