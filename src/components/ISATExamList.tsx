@@ -17,6 +17,7 @@ interface ISATExam {
   total_points: number | null;
   completed_at: string | null;
   created_at: string;
+  hints_used: number;
 }
 
 interface Props {
