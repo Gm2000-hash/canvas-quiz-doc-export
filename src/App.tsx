@@ -105,6 +105,7 @@ const App = () => (
           <Route path="/isat-exam/:id" element={<ProtectedRoute><ISATExamPlayer /></ProtectedRoute>} />
           <Route path="/quiz-builder" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-builder/:id" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
+          <Route path="/quiz-analytics" element={<ProtectedRoute><QuizAnalytics /></ProtectedRoute>} />
           <Route path="/shared-reading/:token" element={<SharedReading />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
