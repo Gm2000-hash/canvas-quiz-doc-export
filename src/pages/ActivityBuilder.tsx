@@ -124,7 +124,10 @@ export default function ActivityBuilder() {
       ];
       setSources(opts);
       setSourcesLoaded(true);
-      if (opts.length > 0) setSelectedSource(opts[0].id);
+      const lessonSources = opts.filter(s => s.type !== "reading_library");
+      const readingSources = opts.filter(s => s.type === "reading_library");
+      if (lessonSources.length > 0) setSelectedSource(lessonSources[0].id);
+      if (readingSources.length > 0) setSelectedReading(readingSources[0].id);
     });
   }, [useAI, user, sourcesLoaded]);
 
