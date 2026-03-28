@@ -172,8 +172,8 @@ export default function ActivityBuilder() {
       const src = sources.find(s => s.id === selectedSource);
       if (src) baseTitle = src.title;
     } else if (aiSourceMode === "reading" && selectedReading) {
-      const src = sources.find(s => s.id === selectedReading);
-      if (src) baseTitle = src.title;
+      const section = bookSections.find(s => s.id === selectedReading);
+      if (section) baseTitle = section.title;
     } else if (aiSourceMode === "standard" && selectedStandard) {
       baseTitle = selectedStandard.code;
     }
