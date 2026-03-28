@@ -459,7 +459,7 @@ export default function ActivityBuilder() {
                             {sources.map(s => (
                               <SelectItem key={s.id} value={s.id}>
                                 <span className="mr-1.5 text-[10px] px-1 py-0.5 rounded bg-muted text-muted-foreground">
-                                  {s.type === "lesson_plan" ? "Plan" : "Curriculum"}
+                                  {s.type === "lesson_plan" ? "Plan" : s.type === "reading_library" ? "Reading" : "Curriculum"}
                                 </span>
                                 {s.title}
                               </SelectItem>
