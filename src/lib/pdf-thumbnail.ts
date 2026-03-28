@@ -1,10 +1,8 @@
 import { pdfjs } from 'react-pdf';
 import { supabase } from '@/integrations/supabase/client';
+import { ensurePdfWorker } from '@/lib/pdf-worker';
 
-// Ensure worker is set (react-pdf usually sets this, but just in case)
-if (!pdfjs.GlobalWorkerOptions.workerSrc) {
-  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
-}
+ensurePdfWorker();
 
 /**
  * Generates a thumbnail from the first page of a PDF file,
