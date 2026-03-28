@@ -5,8 +5,10 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb } from "lucide-react";
+import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload } from "lucide-react";
 import { format } from "date-fns";
+import { useCanvasConfig } from "@/hooks/useCanvasConfig";
+import PushISATToCanvasDialog from "@/components/PushISATToCanvasDialog";
 
 interface ISATExam {
   id: string;
