@@ -600,7 +600,7 @@ export default function ActivityBuilder() {
 
             <Button
               onClick={handleCreate}
-              disabled={!newTitle.trim() || generating || (useAI && aiSourceMode === "lesson" && !selectedSource) || (useAI && aiSourceMode === "standard" && !selectedStandard)}
+              disabled={!newTitle.trim() || generating || (useAI && aiSourceMode === "lesson" && !selectedSource) || (useAI && aiSourceMode === "reading" && !selectedReading) || (useAI && aiSourceMode === "standard" && !selectedStandard)}
               className="w-full gap-2"
             >
               {generating ? (
