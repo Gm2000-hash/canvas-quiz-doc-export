@@ -62,6 +62,21 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
 
   useEffect(() => { loadExams(); }, [refreshKey]);
 
+  const handlePushToCanvas = async (exam: ISATExam) => {
+    try {
+      const { data, error } = await supabase
+        .from("isat_exams")
+        .select("questions")
+        .eq("id", exam.id)
+        .single() as any;
+      if (error) throw error;
+      setPushQuestions(data.questions || []);
+      setPushTarget(exam);
+    } catch {
+      toast.error("Failed to load exam questions");
+    }
+  };
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
