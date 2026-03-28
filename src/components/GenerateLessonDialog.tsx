@@ -178,6 +178,7 @@ export function GenerateLessonDialog({ open, onOpenChange, unitId, unitTitle, di
                 subject_area: lesson.title,
                 objectives: lesson.objectives,
                 format: "textbook",
+                ngss_standard: lesson.standardCode || undefined,
               },
             });
 
