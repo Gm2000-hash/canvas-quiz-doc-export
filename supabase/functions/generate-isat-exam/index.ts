@@ -337,6 +337,7 @@ function processQuestions(raw: any[]): any[] {
       points_possible: q.points_possible || 1,
       dok_level: q.dok_level || 2,
       blooms_level: q.blooms_level || "Understand",
+      hint: q.hint || "",
       answers,
     };
   });
