@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import DOMPurify from "dompurify";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate, useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -790,7 +791,7 @@ function PreviewQuestion({
             </div>
             <div
               className="text-sm leading-relaxed prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: question.question_text }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(question.question_text) }}
             />
           </div>
         </div>
