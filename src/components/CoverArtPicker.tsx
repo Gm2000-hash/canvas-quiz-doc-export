@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Upload, Sparkles, ImageIcon, Crop as CropIcon } from "lucide-react";
+import { Loader2, Upload, Sparkles, ImageIcon, Crop as CropIcon, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface CoverArtPickerProps {
