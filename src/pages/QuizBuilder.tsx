@@ -326,8 +326,22 @@ export default function QuizBuilder() {
             <div className="flex items-center justify-center gap-3 mt-3">
               <Badge variant="secondary">{selectedQuestions.length} questions</Badge>
               <Badge variant="outline">{totalPoints} points</Badge>
+              {settings.timeLimitMinutes && (
+                <Badge variant="outline" className="gap-1">
+                  <Clock className="h-3 w-3" /> {settings.timeLimitMinutes} min
+                </Badge>
+              )}
             </div>
           </div>
+
+          {settings.instructions && (
+            <Card className="mb-6">
+              <CardContent className="p-4">
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Instructions</p>
+                <p className="text-sm whitespace-pre-wrap">{settings.instructions}</p>
+              </CardContent>
+            </Card>
+          )}
 
           <div className="space-y-6">
             {selectedQuestions.map((q, idx) => (
