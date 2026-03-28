@@ -72,6 +72,13 @@ export function PdfFlipbookViewer({ fileUrl, title, onClose }: PdfFlipbookViewer
 
   const onDocumentLoadSuccess = useCallback(({ numPages: total }: { numPages: number }) => {
     setNumPages(total);
+    setLoadError(null);
+    setLoading(false);
+  }, []);
+
+  const onDocumentLoadError = useCallback((error: Error) => {
+    console.error('PDF load error:', error);
+    setLoadError(error?.message || 'Failed to load PDF');
     setLoading(false);
   }, []);
 
