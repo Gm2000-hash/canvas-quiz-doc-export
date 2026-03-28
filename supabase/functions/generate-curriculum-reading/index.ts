@@ -110,7 +110,7 @@ Learning Objectives: ${objectives}
 ${key_terms ? `Key Terms to include: ${key_terms}` : ""}
 ${ngss_standard ? `NGSS Standard: ${ngss_standard}` : ""}
 
-IMPORTANT: The introduction MUST tell the story of a real scientist connected to this topic. The explanation MUST use key terms in context. The connected reading MUST show how this concept affects students personally.
+IMPORTANT: The introduction MUST jump straight into a real scientist's story — do NOT start with "Imagine..." or hypothetical scenarios. Develop the scientist's context, era, motivations, and breakthrough richly. End the intro with a clean segue into the explanation. The explanation MUST use key terms in context. The connected reading MUST show how this concept affects students personally.
 
 ${formatInstructions}
 
