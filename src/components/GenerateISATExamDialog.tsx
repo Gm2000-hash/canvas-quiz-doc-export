@@ -119,6 +119,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
     setDone(false);
     setExamId(null);
     setTitle("");
+    setHintsEnabled(true);
   };
 
   return (
