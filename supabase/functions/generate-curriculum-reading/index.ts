@@ -235,13 +235,18 @@ async function handleRegeneration(opts: {
   objectives: string;
   key_terms?: string;
   grade_level: string;
+  ngss_standard?: string;
   LOVABLE_API_KEY: string;
 }) {
-  const { regenerate_section, existing_lesson, subject_area, objectives, key_terms, grade_level, LOVABLE_API_KEY } = opts;
+  const { regenerate_section, existing_lesson, subject_area, objectives, key_terms, grade_level, ngss_standard, LOVABLE_API_KEY } = opts;
+
+  const standardTitleInstruction = ngss_standard
+    ? ` IMPORTANT: The reading_title MUST begin with the standard code "${ngss_standard}" followed by a colon and space, then the title.`
+    : "";
 
   const sectionConfigs: Record<string, { prompt: string; schema: any }> = {
     reading: {
-      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Write 8-12 paragraphs focused on how this concept directly affects and connects to the student's daily life — through everyday phenomena, health, technology, environmental impacts, or personal decisions.`,
+      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Write 8-12 paragraphs focused on how this concept directly affects and connects to the student's daily life — through everyday phenomena, health, technology, environmental impacts, or personal decisions.${standardTitleInstruction}`,
       schema: { type: "object", properties: { reading_title: { type: "string" }, reading_paragraphs: { type: "array", items: { type: "string" } } }, required: ["reading_title", "reading_paragraphs"] },
     },
     objectives: {
