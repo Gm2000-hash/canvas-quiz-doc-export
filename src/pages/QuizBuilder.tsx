@@ -266,6 +266,7 @@ export default function QuizBuilder() {
     setQuizDescription(quiz.description || "");
     setSelectedIds(quiz.question_ids || []);
     setExistingId(quiz.id);
+    setSettings({ ...DEFAULT_SETTINGS, ...(quiz.settings || {}) });
     setPreviewMode(false);
   };
 
