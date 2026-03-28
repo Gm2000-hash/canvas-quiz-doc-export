@@ -206,8 +206,10 @@ export default function ISATExamPlayer() {
 
       setStudentAnswers({});
       setSubmitted(false);
+      setShowSummary(false);
       setCurrentQ(0);
-      setExam((prev) => prev ? { ...prev, score: null, total_points: null, completed_at: null, answers: null } : prev);
+      setRevealedHints(new Set());
+      setExam((prev) => prev ? { ...prev, score: null, total_points: null, completed_at: null, answers: null, hints_used: 0 } : prev);
       toast.success("Exam reset — you can retake it now");
     } catch {
       toast.error("Failed to reset exam");
