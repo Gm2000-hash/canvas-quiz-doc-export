@@ -27,6 +27,7 @@ const DISCIPLINES = [
 export default function GenerateISATExamDialog({ open, onOpenChange, onComplete }: Props) {
   const [questionCount, setQuestionCount] = useState(35);
   const [title, setTitle] = useState("");
+  const [hintsEnabled, setHintsEnabled] = useState(true);
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
   const [examId, setExamId] = useState<string | null>(null);
