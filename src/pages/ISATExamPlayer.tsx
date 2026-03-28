@@ -25,6 +25,7 @@ interface ExamQuestion {
   points_possible: number;
   dok_level: number;
   blooms_level: string;
+  hint?: string;
   answers: any;
 }
 
