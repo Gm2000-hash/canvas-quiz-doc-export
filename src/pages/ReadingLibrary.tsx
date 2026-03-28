@@ -5,6 +5,7 @@ import { PageBanner } from "@/components/PageBanner";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PdfFlipbookViewer } from "@/components/PdfFlipbookViewer";
 import { CurriculumReadingViewer } from "@/components/CurriculumReadingViewer";
+import { CoverArtPicker } from "@/components/CoverArtPicker";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
