@@ -230,7 +230,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
 
   return (
     <Dialog open={open} onOpenChange={(v) => { if (!generating) { onOpenChange(v); reset(); } }}>
-      <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden flex flex-col">
+      <DialogContent className="max-w-4xl max-h-[85vh] overflow-hidden flex flex-col">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <FileText className="h-5 w-5 text-primary" />
@@ -285,7 +285,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
                 </div>
               </div>
 
-              <ScrollArea className="flex-1 border rounded-lg p-2 min-h-0" style={{ maxHeight: "300px" }}>
+              <ScrollArea className="flex-1 border rounded-lg p-3 min-h-0" style={{ maxHeight: "50vh" }}>
                 <div className="space-y-2">
                   {DISCIPLINES.map(disc => {
                     const Icon = disc.icon;
