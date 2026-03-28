@@ -82,7 +82,7 @@ Also generate a "reading" object with:
 - title
 - objectives (3-5 measurable learning objectives)
 - key_terms (8-12 {term, definition})
-- intro (6-8 paragraphs): Tell the story of a real scientist (or scientists) who contributed to understanding this concept. Include their historical context, the problem they were trying to solve, their key experiments or observations, and their breakthrough. Write it as an engaging narrative that naturally leads into the concept.
+- intro (6-8 paragraphs): Jump straight in and introduce a real scientist — do NOT start with "Imagine..." or hypothetical scenarios. Develop their story richly: the historical era, the scientific landscape, the specific problem driving their work, their key experiments, and their breakthrough. Include enough context about their life, challenges, and motivations that students understand WHY this research mattered. End with a clean segue sentence bridging into the explanation.
 - explanation (8-12 paragraphs): Provide a detailed, slightly technical explanation of the concept. Use and define ALL key terms naturally within the text. Explain mechanisms, principles, and processes thoroughly.
 ${readingInstructions}`
       : format === "scripted"
@@ -96,7 +96,7 @@ ${readingInstructions}`;
 
     const systemPrompt = `You are an expert middle school science curriculum designer specializing in NGSS-aligned lesson creation. You follow a proven three-part storytelling framework:
 
-1. **Scientist Story Introduction** — Open by introducing a real, historically relevant scientist (or scientists) connected to the concept. Tell their story as a narrative: what problem they faced, what experiments they conducted, and what breakthrough they achieved. Make them relatable to ${grade_level} students.
+1. **Scientist Story Introduction** — Jump straight in and introduce a real, historically relevant scientist (or scientists) connected to the concept. Do NOT open with "Imagine..." or any hypothetical scenario — begin with the scientist directly. Develop the story richly: the historical era they lived in, the scientific landscape, the specific problem driving their work, their key experiments or observations, and their breakthrough. Include enough context about their life, challenges, and motivations that students understand WHY this research mattered. End with a clean segue sentence that bridges into the technical explanation.
 
 2. **Technical Explanation** — Transition into a clear, slightly technical explanation. Define and use all key vocabulary terms in context. Explain underlying mechanisms and processes thoroughly but accessibly.
 
@@ -110,7 +110,7 @@ Learning Objectives: ${objectives}
 ${key_terms ? `Key Terms to include: ${key_terms}` : ""}
 ${ngss_standard ? `NGSS Standard: ${ngss_standard}` : ""}
 
-IMPORTANT: The introduction MUST tell the story of a real scientist connected to this topic. The explanation MUST use key terms in context. The connected reading MUST show how this concept affects students personally.
+IMPORTANT: The introduction MUST jump straight into a real scientist's story — do NOT start with "Imagine..." or hypothetical scenarios. Develop the scientist's context, era, motivations, and breakthrough richly. End the intro with a clean segue into the explanation. The explanation MUST use key terms in context. The connected reading MUST show how this concept affects students personally.
 
 ${formatInstructions}
 
@@ -252,7 +252,7 @@ async function handleRegeneration(opts: {
       schema: { type: "object", properties: { key_terms: { type: "array", items: { type: "object", properties: { term: { type: "string" }, definition: { type: "string" } }, required: ["term", "definition"] } } }, required: ["key_terms"] },
     },
     intro: {
-      prompt: `Regenerate ONLY the introduction for a lesson about "${subject_area}". Tell the story of a real, historically relevant scientist (or scientists) who contributed to understanding this concept. Include their historical context, the problem they were trying to solve, their key experiments or observations, and their breakthrough. Write 4-6 narrative paragraphs that naturally lead into the concept.`,
+      prompt: `Regenerate ONLY the introduction for a lesson about "${subject_area}". Jump straight in and introduce a real, historically relevant scientist — do NOT start with "Imagine..." or hypothetical scenarios. Develop their story richly: describe the historical era they lived in, the scientific landscape of the time, the specific problem driving their work, their key experiments or observations, and their breakthrough. Include enough context about their life, challenges, and motivations that students understand WHY this research mattered. Write 5-7 narrative paragraphs and end with a clean segue sentence that bridges naturally into the technical explanation.`,
       schema: { type: "object", properties: { intro: { type: "array", items: { type: "string" } } }, required: ["intro"] },
     },
     explanation: {

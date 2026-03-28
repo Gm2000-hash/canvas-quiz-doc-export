@@ -146,7 +146,7 @@ function buildReadingPrompt(opts: any) {
 
   const systemPrompt = `You are an expert ${gradeRange} ${subject || "science"} curriculum designer who writes engaging, narrative-driven textbook content. You follow a proven three-part storytelling framework for every reading:
 
-1. **Scientist Story Introduction** — Open by introducing a real, historically relevant scientist (or scientists) connected to the concept. Tell their story as a narrative: what problem they faced, what observations or experiments they conducted, and what breakthrough they achieved. This should read like a compelling mini-biography that naturally leads into the concept. Use vivid, age-appropriate language that makes the scientist relatable to ${gradeRange} students.
+1. **Scientist Story Introduction** — Jump straight in and introduce a real, historically relevant scientist (or scientists) connected to the concept. Do NOT open with "Imagine..." or any hypothetical scenario — begin with the scientist directly. Develop the story richly: describe the historical era they lived in, the scientific landscape of the time, the specific problem or question that drove their work, the key experiments or observations they conducted, and the breakthrough they achieved. Include enough context about their life, challenges, and motivations that students understand WHY this research mattered. End this section with a clean, deliberate segue sentence that bridges the scientist's discovery into the technical explanation that follows.
 
 2. **Technical Explanation** — After the story, transition into a clear, slightly technical explanation of the concept. Define and use all key vocabulary terms in context (bold or emphasize them). Explain the underlying mechanisms, principles, or processes. This section should be thorough but accessible — think "textbook meets storytelling."
 
@@ -161,7 +161,7 @@ Description: ${standard_description}
 
 Each reading MUST follow this three-part structure:
 
-**Introduction (intro field, 4-6 paragraphs):** Tell the story of a real scientist (or scientists) who contributed to understanding this concept. Include their historical context, the problem they were trying to solve, their key experiments or observations, and their breakthrough. Write it as an engaging narrative.
+**Introduction (intro field, 4-6 paragraphs):** Jump straight in and introduce a real scientist — do NOT start with "Imagine..." or hypothetical scenarios. Develop their story richly: the era they lived in, the scientific landscape, the problem driving their work, their key experiments, and their breakthrough. Include enough life context and motivation that students understand why this research mattered. End with a clean segue sentence that bridges naturally into the technical explanation.
 
 **Explanation (explanation field, 6-10 paragraphs):** Provide a detailed, slightly technical explanation of the concept. Use and define ALL key terms naturally within the text. Explain mechanisms, principles, and processes thoroughly.
 
