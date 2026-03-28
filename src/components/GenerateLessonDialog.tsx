@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
+import { syncDisciplineToLibrary } from "@/lib/content-generator";
 
 interface Props {
   open: boolean;
@@ -203,6 +204,10 @@ export function GenerateLessonDialog({ open, onOpenChange, unitId, unitTitle, di
 
           setProgress(80 + ((i + 1) / insertedLessons.length) * 18);
         }
+
+
+        // Sync to reading library
+        await syncDisciplineToLibrary(user.id, discipline);
       }
 
       setProgress(100);

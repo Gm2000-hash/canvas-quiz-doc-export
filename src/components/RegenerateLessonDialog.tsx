@@ -10,6 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
+import { syncDisciplineToLibrary } from "@/lib/content-generator";
 
 interface LessonData {
   id: string;
@@ -218,6 +219,11 @@ Improve and fill in any missing information. Keep the same general topic but mak
         } catch (readErr) {
           console.warn("Reading regeneration failed (non-fatal):", readErr);
         }
+      }
+
+      // Sync to reading library after generating/regenerating readings
+      if (regenerateReading && discipline) {
+        await syncDisciplineToLibrary(user.id, discipline);
       }
 
       setProgress(100);
