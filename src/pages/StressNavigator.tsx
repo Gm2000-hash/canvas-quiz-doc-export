@@ -4,6 +4,8 @@ import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useCanvasConfig } from "@/hooks/useCanvasConfig";
+import PushStressNavToCanvasDialog from "@/components/PushStressNavToCanvasDialog";
 import {
   Zap, Brain, Heart, ArrowRight, RotateCcw, CheckCircle2,
   AlertCircle, BookOpen, Smartphone, Trophy, Clock,
@@ -361,6 +363,9 @@ export default function StressNavigator() {
   const [selectedChoice, setSelectedChoice] = useState<Choice | null>(null);
   const [score, setScore] = useState(0);
   const [responses, setResponses] = useState<ResponseRecord[]>([]);
+  const [showCanvasPush, setShowCanvasPush] = useState(false);
+
+  const { config: canvasConfig } = useCanvasConfig();
 
   const { toast } = useToast();
 
@@ -480,6 +485,11 @@ export default function StressNavigator() {
                     <Link className="w-4 h-4" /> Copy Link
                   </Button>
                 </div>
+                {canvasConfig && (
+                  <Button variant="outline" onClick={() => setShowCanvasPush(true)} className="w-full gap-2 text-sm">
+                    <ArrowRight className="w-4 h-4" /> Push to Canvas as Quiz
+                  </Button>
+                )}
               </div>
             )}
 
@@ -661,6 +671,15 @@ export default function StressNavigator() {
           </div>
         </div>
       </main>
+
+      {canvasConfig && (
+        <PushStressNavToCanvasDialog
+          open={showCanvasPush}
+          onOpenChange={setShowCanvasPush}
+          scenarios={scenarios.map(s => ({ title: s.title, description: s.description, choices: s.choices }))}
+          config={canvasConfig}
+        />
+      )}
     </div>
   );
 }
