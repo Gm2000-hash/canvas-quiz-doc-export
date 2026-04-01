@@ -445,7 +445,7 @@ export default function ActivityBuilder() {
         ) : viewMode === "list" ? (
           <div className="space-y-3">
             {filtered.map(a => (
-              <ActivityCard
+               <ActivityCard
                 key={a.id}
                 id={a.id}
                 title={a.title}
@@ -456,6 +456,7 @@ export default function ActivityBuilder() {
                 onEdit={() => navigate(`/activities/${a.id}`)}
                 onDuplicate={() => handleDuplicate(a)}
                 onDelete={() => setDeleteTarget({ id: a.id, title: a.title })}
+                onCopyEmbed={() => copyActivityEmbed(a.id)}
               />
             ))}
           </div>
