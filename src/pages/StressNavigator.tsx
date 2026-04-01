@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
+import { useLtiSession } from "@/hooks/useLtiSession";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -414,6 +415,15 @@ export default function StressNavigator() {
       setStep("summary");
     }
   };
+
+  // LTI grade passback
+  const { isLtiLaunch, postScore, scorePosted } = useLtiSession();
+
+  useEffect(() => {
+    if (step === "summary" && isLtiLaunch && !scorePosted) {
+      postScore(score, maxScore, "stress-navigator");
+    }
+  }, [step, isLtiLaunch, scorePosted, score, maxScore, postScore]);
 
   const scorePercent = Math.round((score / maxScore) * 100);
   const perfectCount = responses.filter(r => r.points === 10).length;

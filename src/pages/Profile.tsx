@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { AvatarPicker, PRESET_AVATARS } from "@/components/AvatarPicker";
+import LtiSettings from "@/components/LtiSettings";
 
 const GRADE_OPTIONS = [
   { value: "6", label: "Grade 6" },
@@ -394,6 +395,9 @@ export default function Profile() {
             )}
           </CardContent>
         </Card>
+
+        {/* LTI 1.3 Integration */}
+        <LtiSettings />
 
         {/* Save button at bottom for mobile */}
         <div className="pb-6">
