@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -14,7 +14,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText, Copy, GripVertical, Sparkles, Library } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Plus, BookOpen, Calendar, Layers, Trash2, LogOut, FileText, Copy, GripVertical, Sparkles, Library, ChevronDown, ChevronRight, Beaker, Globe, Zap, Wrench, Briefcase } from "lucide-react";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import PrepopulateStandardsDialog from "@/components/PrepopulateStandardsDialog";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
