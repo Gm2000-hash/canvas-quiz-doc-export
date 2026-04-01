@@ -13,7 +13,7 @@ import {
   AlertCircle, BookOpen, Smartphone, Trophy, Clock,
   Users, MessageCircle, Wind, Droplets,
   Activity, ShieldAlert, Sparkles,
-  Ear, Smile, Star, GraduationCap, Flame,
+  Ear, Smile, GraduationCap, Flame,
   HandHeart, Frown, Eye, Coffee,
   Palette, Theater, Bomb, Gauge, Copy, Link
 } from "lucide-react";
