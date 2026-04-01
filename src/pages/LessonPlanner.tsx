@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Layers, Sparkles, Library, Download } from "lucide-react";
+import { Plus, Layers, Sparkles, Library, Download, Upload } from "lucide-react";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import PrepopulateStandardsDialog from "@/components/PrepopulateStandardsDialog";
 import { CurriculumEditor } from "@/components/CurriculumEditor";
@@ -25,6 +25,7 @@ import { PageBanner } from "@/components/PageBanner";
 import { useToast } from "@/hooks/use-toast";
 import { DisciplineGroupedUnits } from "@/components/DisciplineGroupedUnits";
 import { ImportNextStepsDialog } from "@/components/ImportNextStepsDialog";
+import { UniversalImportDialog } from "@/components/UniversalImportDialog";
 
 interface Unit {
   id: string;
@@ -61,6 +62,7 @@ const LessonPlanner = () => {
   const [generateOpen, setGenerateOpen] = useState(false);
   const [prepopulateOpen, setPrepopulateOpen] = useState(false);
   const [importNextStepsOpen, setImportNextStepsOpen] = useState(false);
+  const [universalImportOpen, setUniversalImportOpen] = useState(false);
   const { profile } = useProfile();
   const [newUnit, setNewUnit] = useState({ title: "", description: "", grade_level: defaultGradeLevel, discipline: defaultDiscipline, date_start: "", date_end: "" });
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
@@ -250,6 +252,10 @@ const LessonPlanner = () => {
                 <p className="text-sm text-muted-foreground mt-0.5 shadow-none">Organize lesson plans into units with pacing guides</p>
               </div>
               <div className="flex gap-2">
+                <Button variant="outline" className="gap-2 rounded-xl border-2 border-card-foreground" onClick={() => setUniversalImportOpen(true)}>
+                  <Upload className="h-4 w-4" />
+                  Import File
+                </Button>
                 <Button variant="outline" className="gap-2 rounded-xl border-2 border-card-foreground" onClick={() => setImportNextStepsOpen(true)}>
                   <Download className="h-4 w-4" />
                   Import NextSteps
@@ -377,6 +383,12 @@ const LessonPlanner = () => {
       <ImportNextStepsDialog
         open={importNextStepsOpen}
         onOpenChange={setImportNextStepsOpen}
+        units={units}
+        onImported={fetchUnits}
+      />
+      <UniversalImportDialog
+        open={universalImportOpen}
+        onOpenChange={setUniversalImportOpen}
         units={units}
         onImported={fetchUnits}
       />
