@@ -366,6 +366,9 @@ export default function StressNavigator() {
   const [responses, setResponses] = useState<ResponseRecord[]>([]);
   const [showCanvasPush, setShowCanvasPush] = useState(false);
 
+  // Only show teacher controls when logged in (not for LTI/embed students)
+  const { user } = useAuth();
+  const isTeacher = !!user;
   const { config: canvasConfig } = useCanvasConfig();
 
   const { toast } = useToast();
