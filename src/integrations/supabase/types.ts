@@ -14,6 +14,41 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_completions: {
+        Row: {
+          activity_id: string
+          completed_at: string
+          id: string
+          max_score: number
+          score: number
+          session_id: string
+        }
+        Insert: {
+          activity_id: string
+          completed_at?: string
+          id?: string
+          max_score?: number
+          score: number
+          session_id: string
+        }
+        Update: {
+          activity_id?: string
+          completed_at?: string
+          id?: string
+          max_score?: number
+          score?: number
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activity_completions_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "lti_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       curriculum_lesson_standards: {
         Row: {
           id: string
@@ -436,6 +471,101 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      lti_platforms: {
+        Row: {
+          auth_login_url: string
+          auth_token_url: string
+          client_id: string
+          created_at: string
+          deployment_id: string | null
+          id: string
+          issuer: string
+          jwks_url: string
+          name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auth_login_url: string
+          auth_token_url: string
+          client_id: string
+          created_at?: string
+          deployment_id?: string | null
+          id?: string
+          issuer: string
+          jwks_url: string
+          name?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auth_login_url?: string
+          auth_token_url?: string
+          client_id?: string
+          created_at?: string
+          deployment_id?: string | null
+          id?: string
+          issuer?: string
+          jwks_url?: string
+          name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      lti_sessions: {
+        Row: {
+          access_token_url: string | null
+          activity_id: string
+          canvas_user_id: string
+          canvas_user_name: string | null
+          client_id: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          lineitem_url: string | null
+          nonce: string | null
+          platform_id: string | null
+          score_posted: boolean
+        }
+        Insert: {
+          access_token_url?: string | null
+          activity_id: string
+          canvas_user_id: string
+          canvas_user_name?: string | null
+          client_id?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          lineitem_url?: string | null
+          nonce?: string | null
+          platform_id?: string | null
+          score_posted?: boolean
+        }
+        Update: {
+          access_token_url?: string | null
+          activity_id?: string
+          canvas_user_id?: string
+          canvas_user_name?: string | null
+          client_id?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          lineitem_url?: string | null
+          nonce?: string | null
+          platform_id?: string | null
+          score_posted?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lti_sessions_platform_id_fkey"
+            columns: ["platform_id"]
+            isOneToOne: false
+            referencedRelation: "lti_platforms"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
