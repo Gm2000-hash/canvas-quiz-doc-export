@@ -25,6 +25,8 @@ import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
 import { Plus, Puzzle, Search, Sparkles, Loader2, LayoutGrid, List, FileText, BookOpen, Library, RotateCcw, Brain, ArrowRight } from "lucide-react";
+import { useCanvasConfig } from "@/hooks/useCanvasConfig";
+import PushActivityToCanvasDialog from "@/components/PushActivityToCanvasDialog";
 
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson" | "reading_library"; }
 
