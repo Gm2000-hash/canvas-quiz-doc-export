@@ -463,6 +463,7 @@ export default function ActivityBuilder() {
                 onDuplicate={() => handleDuplicate(a)}
                 onDelete={() => setDeleteTarget({ id: a.id, title: a.title })}
                 onCopyEmbed={() => copyActivityEmbed(a.id)}
+                onPushToCanvas={canvasConfig ? () => setPushTarget(a) : undefined}
               />
             ))}
           </div>
