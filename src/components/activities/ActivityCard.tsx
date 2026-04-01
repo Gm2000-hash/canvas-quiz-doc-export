@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ACTIVITY_TYPES } from "@/lib/h5p-types";
-import { Play, Pencil, Trash2, Copy, Link } from "lucide-react";
+import { Play, Pencil, Trash2, Copy, Link, Upload } from "lucide-react";
 import type { ActivityStandard } from "@/hooks/useActivityStandards";
 
 interface ActivityCardProps {
@@ -16,9 +16,10 @@ interface ActivityCardProps {
   onDuplicate: () => void;
   onDelete: () => void;
   onCopyEmbed?: () => void;
+  onPushToCanvas?: () => void;
 }
 
-export function ActivityCard({ title, activityType, updatedAt, standards, onPlay, onEdit, onDuplicate, onDelete, onCopyEmbed }: ActivityCardProps) {
+export function ActivityCard({ title, activityType, updatedAt, standards, onPlay, onEdit, onDuplicate, onDelete, onCopyEmbed, onPushToCanvas }: ActivityCardProps) {
   const typeInfo = ACTIVITY_TYPES.find(t => t.type === activityType);
 
   return (
@@ -51,6 +52,11 @@ export function ActivityCard({ title, activityType, updatedAt, standards, onPlay
         {onCopyEmbed && (
           <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onCopyEmbed} title="Copy Embed Link">
             <Link className="h-4 w-4" />
+          </Button>
+        )}
+        {onPushToCanvas && (
+          <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onPushToCanvas} title="Push to Canvas">
+            <Upload className="h-4 w-4" />
           </Button>
         )}
         <Button size="icon" variant="ghost" className="h-8 w-8" onClick={onDuplicate} title="Duplicate">
