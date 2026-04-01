@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Layers, Sparkles, Library } from "lucide-react";
+import { Plus, Layers, Sparkles, Library, Download } from "lucide-react";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import PrepopulateStandardsDialog from "@/components/PrepopulateStandardsDialog";
 import { CurriculumEditor } from "@/components/CurriculumEditor";
@@ -24,6 +24,7 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageBanner } from "@/components/PageBanner";
 import { useToast } from "@/hooks/use-toast";
 import { DisciplineGroupedUnits } from "@/components/DisciplineGroupedUnits";
+import { ImportNextStepsDialog } from "@/components/ImportNextStepsDialog";
 
 interface Unit {
   id: string;
@@ -59,6 +60,7 @@ const LessonPlanner = () => {
   const [createOpen, setCreateOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
   const [prepopulateOpen, setPrepopulateOpen] = useState(false);
+  const [importNextStepsOpen, setImportNextStepsOpen] = useState(false);
   const { profile } = useProfile();
   const [newUnit, setNewUnit] = useState({ title: "", description: "", grade_level: defaultGradeLevel, discipline: defaultDiscipline, date_start: "", date_end: "" });
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
@@ -248,6 +250,10 @@ const LessonPlanner = () => {
                 <p className="text-sm text-muted-foreground mt-0.5 shadow-none">Organize lesson plans into units with pacing guides</p>
               </div>
               <div className="flex gap-2">
+                <Button variant="outline" className="gap-2 rounded-xl border-2 border-card-foreground" onClick={() => setImportNextStepsOpen(true)}>
+                  <Download className="h-4 w-4" />
+                  Import NextSteps
+                </Button>
                 <Button variant="outline" className="gap-2 rounded-xl border-2 border-card-foreground" onClick={() => setPrepopulateOpen(true)}>
                   <Library className="h-4 w-4" />
                   Prepopulate from Standards
@@ -367,6 +373,12 @@ const LessonPlanner = () => {
         onOpenChange={setPrepopulateOpen}
         onComplete={fetchUnits}
         teacherSubjects={profile?.subjects ?? []}
+      />
+      <ImportNextStepsDialog
+        open={importNextStepsOpen}
+        onOpenChange={setImportNextStepsOpen}
+        units={units}
+        onImported={fetchUnits}
       />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
