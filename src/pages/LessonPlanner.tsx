@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Layers, Sparkles, Library, Download } from "lucide-react";
+import { Plus, Layers, Sparkles, Library, Download, Upload } from "lucide-react";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import PrepopulateStandardsDialog from "@/components/PrepopulateStandardsDialog";
 import { CurriculumEditor } from "@/components/CurriculumEditor";
