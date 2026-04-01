@@ -355,7 +355,7 @@ interface ResponseRecord {
   scenarioTitle: string;
   choiceText: string;
   choiceType: string;
-  points: number;
+  quality: "excellent" | "partial" | "ineffective";
 }
 
 export default function StressNavigator() {
