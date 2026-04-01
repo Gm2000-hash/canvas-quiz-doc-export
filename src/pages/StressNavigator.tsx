@@ -416,19 +416,18 @@ export default function StressNavigator() {
     }
   };
 
-  // LTI grade passback
+  // LTI grade passback (completion-only, no score)
   const { isLtiLaunch, postScore, scorePosted } = useLtiSession();
 
   useEffect(() => {
     if (step === "summary" && isLtiLaunch && !scorePosted) {
-      postScore(score, maxScore, "stress-navigator");
+      postScore(100, 100, "stress-navigator");
     }
-  }, [step, isLtiLaunch, scorePosted, score, maxScore, postScore]);
+  }, [step, isLtiLaunch, scorePosted, postScore]);
 
-  const scorePercent = Math.round((score / maxScore) * 100);
-  const perfectCount = responses.filter(r => r.points === 10).length;
-  const partialCount = responses.filter(r => r.points === 5).length;
-  const missedCount = responses.filter(r => r.points === 0).length;
+  const excellentCount = responses.filter(r => r.quality === "excellent").length;
+  const partialCount = responses.filter(r => r.quality === "partial").length;
+  const ineffectiveCount = responses.filter(r => r.quality === "ineffective").length;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
