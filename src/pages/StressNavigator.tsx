@@ -3,6 +3,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   Zap, Brain, Heart, ArrowRight, RotateCcw, CheckCircle2,
   AlertCircle, BookOpen, Smartphone, Trophy, Clock,
@@ -10,7 +11,7 @@ import {
   Activity, ShieldAlert, Sparkles,
   Ear, Smile, Star, GraduationCap, Flame,
   HandHeart, Frown, Eye, Coffee,
-  Palette, Theater, Bomb, Gauge
+  Palette, Theater, Bomb, Gauge, Copy, Link
 } from "lucide-react";
 
 interface Choice {
@@ -361,8 +362,23 @@ export default function StressNavigator() {
   const [score, setScore] = useState(0);
   const [responses, setResponses] = useState<ResponseRecord[]>([]);
 
+  const { toast } = useToast();
+
   const current = scenarios[scenarioIndex];
   const maxScore = scenarios.length * 10;
+
+  const publishedUrl = "https://canvas-quiz-doc-export.lovable.app/stress-navigator";
+  const embedCode = `<iframe src="${publishedUrl}" width="100%" height="800" style="border:none;border-radius:12px;" allowfullscreen></iframe>`;
+
+  const copyEmbedLink = () => {
+    navigator.clipboard.writeText(embedCode);
+    toast({ title: "Embed code copied!", description: "Paste this into a Canvas assignment using the HTML editor." });
+  };
+
+  const copyDirectLink = () => {
+    navigator.clipboard.writeText(publishedUrl);
+    toast({ title: "Link copied!", description: "Share this URL directly with students." });
+  };
 
   const startAdventure = () => {
     setStep("scenario");
@@ -456,6 +472,14 @@ export default function StressNavigator() {
                 <Button onClick={startAdventure} className="w-full py-6 text-lg gap-3 rounded-xl">
                   Start Training <ArrowRight className="w-5 h-5" />
                 </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" onClick={copyEmbedLink} className="flex-1 gap-2 text-sm">
+                    <Copy className="w-4 h-4" /> Copy Embed Code
+                  </Button>
+                  <Button variant="outline" onClick={copyDirectLink} className="flex-1 gap-2 text-sm">
+                    <Link className="w-4 h-4" /> Copy Link
+                  </Button>
+                </div>
               </div>
             )}
 
