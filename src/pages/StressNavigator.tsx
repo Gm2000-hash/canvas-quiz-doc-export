@@ -355,7 +355,7 @@ interface ResponseRecord {
   scenarioTitle: string;
   choiceText: string;
   choiceType: string;
-  points: number;
+  quality: "excellent" | "partial" | "ineffective";
 }
 
 export default function StressNavigator() {
@@ -363,7 +363,6 @@ export default function StressNavigator() {
   const [step, setStep] = useState<"intro" | "scenario" | "feedback" | "insight" | "summary">("intro");
   const [scenarioIndex, setScenarioIndex] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState<Choice | null>(null);
-  const [score, setScore] = useState(0);
   const [responses, setResponses] = useState<ResponseRecord[]>([]);
   const [showCanvasPush, setShowCanvasPush] = useState(false);
 
@@ -375,7 +374,6 @@ export default function StressNavigator() {
   const { toast } = useToast();
 
   const current = scenarios[scenarioIndex];
-  const maxScore = scenarios.length * 10;
 
   const publishedUrl = "https://canvas-quiz-doc-export.lovable.app/stress-navigator";
   const embedCode = `<iframe src="${publishedUrl}" width="100%" height="800" style="border:none;border-radius:12px;" allowfullscreen></iframe>`;
@@ -393,19 +391,17 @@ export default function StressNavigator() {
   const startAdventure = () => {
     setStep("scenario");
     setScenarioIndex(0);
-    setScore(0);
     setSelectedChoice(null);
     setResponses([]);
   };
 
   const handleChoice = (choice: Choice) => {
     setSelectedChoice(choice);
-    setScore(prev => prev + choice.points);
     setResponses(prev => [...prev, {
       scenarioTitle: current.title,
       choiceText: choice.text,
       choiceType: choice.type,
-      points: choice.points,
+      quality: choice.points === 10 ? "excellent" : choice.points === 5 ? "partial" : "ineffective",
     }]);
     setStep("feedback");
   };
@@ -420,19 +416,15 @@ export default function StressNavigator() {
     }
   };
 
-  // LTI grade passback
+  // LTI grade passback (completion-only, no score)
   const { isLtiLaunch, postScore, scorePosted } = useLtiSession();
 
   useEffect(() => {
     if (step === "summary" && isLtiLaunch && !scorePosted) {
-      postScore(score, maxScore, "stress-navigator");
+      postScore(100, 100, "stress-navigator");
     }
-  }, [step, isLtiLaunch, scorePosted, score, maxScore, postScore]);
+  }, [step, isLtiLaunch, scorePosted, postScore]);
 
-  const scorePercent = Math.round((score / maxScore) * 100);
-  const perfectCount = responses.filter(r => r.points === 10).length;
-  const partialCount = responses.filter(r => r.points === 5).length;
-  const missedCount = responses.filter(r => r.points === 0).length;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -606,67 +598,35 @@ export default function StressNavigator() {
                 <div className="text-center space-y-4">
                   <div className="text-5xl animate-bounce">🎉</div>
                   <h2 className="text-3xl font-bold text-foreground">Training Complete!</h2>
-                  <p className="text-muted-foreground">You navigated all {scenarios.length} challenges. Here's how you did:</p>
-                </div>
-
-                {/* Score card */}
-                <div className="p-6 bg-primary rounded-2xl text-primary-foreground shadow-lg text-center">
-                  <div className="flex items-center justify-center gap-2 mb-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <Star key={i} className={`w-6 h-6 ${i < Math.ceil(scorePercent / 20) ? "fill-current" : "opacity-30"}`} />
-                    ))}
-                  </div>
-                  <p className="text-3xl font-bold">{score} / {maxScore}</p>
-                  <p className="text-primary-foreground/70 text-sm mt-1">{scorePercent}% — {
-                    scorePercent >= 90 ? "Outstanding! You're a coping expert!" :
-                    scorePercent >= 70 ? "Great job! You have strong coping instincts!" :
-                    scorePercent >= 50 ? "Good effort! Keep practicing these skills!" :
-                    "Nice try! Review the lessons and try again!"
-                  }</p>
-                </div>
-
-                {/* Stats row */}
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-xl text-center">
-                    <p className="text-2xl font-bold text-green-700">{perfectCount}</p>
-                    <p className="text-xs text-green-600 font-medium">Excellent</p>
-                  </div>
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-xl text-center">
-                    <p className="text-2xl font-bold text-blue-700">{partialCount}</p>
-                    <p className="text-xs text-blue-600 font-medium">Partial</p>
-                  </div>
-                  <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-center">
-                    <p className="text-2xl font-bold text-amber-700">{missedCount}</p>
-                    <p className="text-xs text-amber-600 font-medium">Missed</p>
-                  </div>
+                  <p className="text-muted-foreground">You navigated all {scenarios.length} challenges. Here's your response breakdown:</p>
                 </div>
 
                 {/* Response breakdown */}
                 <div className="space-y-2">
                   <h3 className="text-sm font-bold text-foreground uppercase tracking-wide">Your Responses</h3>
-                  <div className="max-h-[260px] overflow-y-auto space-y-1.5 pr-1">
+                  <div className="max-h-[320px] overflow-y-auto space-y-1.5 pr-1">
                     {responses.map((r, i) => (
                       <div key={i} className={`flex items-start gap-3 p-3 rounded-lg border text-xs ${
-                        r.points === 10 ? "bg-green-50/50 border-green-200" :
-                        r.points === 5 ? "bg-blue-50/50 border-blue-200" :
+                        r.quality === "excellent" ? "bg-green-50/50 border-green-200" :
+                        r.quality === "partial" ? "bg-blue-50/50 border-blue-200" :
                         "bg-amber-50/50 border-amber-200"
                       }`}>
                         <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 mt-0.5 ${
-                          r.points === 10 ? "bg-green-200 text-green-700" :
-                          r.points === 5 ? "bg-blue-200 text-blue-700" :
+                          r.quality === "excellent" ? "bg-green-200 text-green-700" :
+                          r.quality === "partial" ? "bg-blue-200 text-blue-700" :
                           "bg-amber-200 text-amber-700"
                         }`}>
-                          {r.points === 10 ? "✓" : r.points === 5 ? "~" : "✗"}
+                          {r.quality === "excellent" ? "✓" : r.quality === "partial" ? "~" : "✗"}
                         </div>
                         <div className="min-w-0 flex-1">
                           <p className="font-semibold text-foreground">{i + 1}. {r.scenarioTitle}</p>
                           <p className="text-muted-foreground truncate">{r.choiceText}</p>
                         </div>
                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
-                          r.points === 10 ? "bg-green-200 text-green-800" :
-                          r.points === 5 ? "bg-blue-200 text-blue-800" :
+                          r.quality === "excellent" ? "bg-green-200 text-green-800" :
+                          r.quality === "partial" ? "bg-blue-200 text-blue-800" :
                           "bg-amber-200 text-amber-800"
-                        }`}>{r.points}pt</span>
+                        }`}>{r.quality === "excellent" ? "Excellent" : r.quality === "partial" ? "Partial" : "Missed"}</span>
                       </div>
                     ))}
                   </div>
@@ -680,11 +640,11 @@ export default function StressNavigator() {
                   </p>
                 </div>
 
-                {/* LTI score confirmation */}
+                {/* LTI completion confirmation */}
                 {isLtiLaunch && scorePosted && (
                   <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl text-center flex items-center gap-3 justify-center">
                     <CheckCircle2 className="h-5 w-5 text-primary" />
-                    <p className="text-sm font-medium text-foreground">Score submitted to Canvas!</p>
+                    <p className="text-sm font-medium text-foreground">Completed! Submitted to Canvas.</p>
                   </div>
                 )}
 
