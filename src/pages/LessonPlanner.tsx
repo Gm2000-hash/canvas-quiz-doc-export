@@ -25,6 +25,7 @@ import { PageBanner } from "@/components/PageBanner";
 import { useToast } from "@/hooks/use-toast";
 import { DisciplineGroupedUnits } from "@/components/DisciplineGroupedUnits";
 import { ImportNextStepsDialog } from "@/components/ImportNextStepsDialog";
+import { UniversalImportDialog } from "@/components/UniversalImportDialog";
 
 interface Unit {
   id: string;
