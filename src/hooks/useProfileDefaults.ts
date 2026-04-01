@@ -12,11 +12,11 @@ export function useProfileDefaults() {
 
   // Determine default framework: if user teaches Science, default to NGSS; otherwise Idaho
   const hasScience = subjects.includes("Science");
-  const hasIdahoSubjects = subjects.some(s => s !== "Science");
+  const hasIdahoSubjects = subjects.some(s => s !== "Science" && s !== "Careers");
   const defaultFramework: "ngss" | "idaho" = hasIdahoSubjects ? "idaho" : hasScience ? "ngss" : "idaho";
 
   // Compute the best default Idaho grade filter (e.g. "ELA|6")
-  const idahoSubjects = subjects.filter(s => s !== "Science");
+  const idahoSubjects = subjects.filter(s => s !== "Science" && s !== "Careers");
   let defaultIdahoFilter = "all";
   if (idahoSubjects.length > 0 && grades.length > 0) {
     // Pick first matching subject+grade combo that exists in our data
@@ -49,6 +49,7 @@ export function useProfileDefaults() {
   // Map subjects to discipline for lesson planner
   const subjectToDiscipline: Record<string, string> = {
     "Science": "Life Science",
+    "Careers": "Careers",
   };
   const defaultDiscipline = subjects.length > 0 ? (subjectToDiscipline[subjects[0]] || "") : "";
 

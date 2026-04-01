@@ -39,7 +39,7 @@ interface Unit {
 }
 
 const DISCIPLINES = [
-  "Life Science", "Physical Science", "Earth & Space Science", "Engineering"
+  "Life Science", "Physical Science", "Earth & Space Science", "Engineering", "Careers"
 ];
 
 const GRADE_LEVELS = [
