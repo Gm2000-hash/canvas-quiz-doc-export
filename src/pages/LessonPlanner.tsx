@@ -62,6 +62,7 @@ const LessonPlanner = () => {
   const [generateOpen, setGenerateOpen] = useState(false);
   const [prepopulateOpen, setPrepopulateOpen] = useState(false);
   const [importNextStepsOpen, setImportNextStepsOpen] = useState(false);
+  const [universalImportOpen, setUniversalImportOpen] = useState(false);
   const { profile } = useProfile();
   const [newUnit, setNewUnit] = useState({ title: "", description: "", grade_level: defaultGradeLevel, discipline: defaultDiscipline, date_start: "", date_end: "" });
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; title: string } | null>(null);
