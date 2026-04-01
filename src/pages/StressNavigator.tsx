@@ -391,7 +391,6 @@ export default function StressNavigator() {
   const startAdventure = () => {
     setStep("scenario");
     setScenarioIndex(0);
-    setScore(0);
     setSelectedChoice(null);
     setResponses([]);
   };
