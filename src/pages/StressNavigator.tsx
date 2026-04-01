@@ -4,6 +4,8 @@ import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useCanvasConfig } from "@/hooks/useCanvasConfig";
+import PushStressNavToCanvasDialog from "@/components/PushStressNavToCanvasDialog";
 import {
   Zap, Brain, Heart, ArrowRight, RotateCcw, CheckCircle2,
   AlertCircle, BookOpen, Smartphone, Trophy, Clock,
