@@ -49,6 +49,7 @@ export function useProfileDefaults() {
   // Map subjects to discipline for lesson planner
   const subjectToDiscipline: Record<string, string> = {
     "Science": "Life Science",
+    "Careers": "Careers",
   };
   const defaultDiscipline = subjects.length > 0 ? (subjectToDiscipline[subjects[0]] || "") : "";
 
