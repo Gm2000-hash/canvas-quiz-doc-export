@@ -350,18 +350,18 @@ export default function StressNavigator() {
                   </p>
                 </div>
 
-                <div className="bg-green-50 p-6 rounded-2xl border-2 border-green-200 text-left space-y-3">
-                  <div className="flex items-center gap-3 text-green-800 font-bold text-lg">
-                    <BookOpen className="text-green-500" /> Final Step: Reading Check
+                <div className="bg-accent p-6 rounded-2xl border-2 border-border text-left space-y-3">
+                  <div className="flex items-center gap-3 text-foreground font-bold text-lg">
+                    <BookOpen className="text-primary" /> Final Step: Reading Check
                   </div>
-                  <p className="text-green-900 text-sm">
+                  <p className="text-muted-foreground text-sm">
                     Excellent work practicing your skills! Now it's time to test what you've learned in the official assessment.
                   </p>
                   <a
                     href="https://docs.google.com/forms/d/e/1FAIpQLScljnOvIPOQvQzKxExkzGzM3kCqNLQc2Tpekx24NIz8vE0g6g/viewform?usp=header"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="w-full py-4 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-center flex items-center justify-center gap-3 transition-all shadow-lg"
+                    className="w-full py-4 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold text-center flex items-center justify-center gap-3 transition-all shadow-lg"
                   >
                     Start Reading Check <ExternalLink className="w-5 h-5" />
                   </a>

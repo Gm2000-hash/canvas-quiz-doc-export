@@ -108,6 +108,7 @@ const App = () => (
           <Route path="/quiz-builder/:id" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-analytics" element={<ProtectedRoute><QuizAnalytics /></ProtectedRoute>} />
           <Route path="/shared-reading/:token" element={<SharedReading />} />
+          <Route path="/stress-navigator" element={<ProtectedRoute><StressNavigator /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
