@@ -16,7 +16,7 @@ export function useProfileDefaults() {
   const defaultFramework: "ngss" | "idaho" = hasIdahoSubjects ? "idaho" : hasScience ? "ngss" : "idaho";
 
   // Compute the best default Idaho grade filter (e.g. "ELA|6")
-  const idahoSubjects = subjects.filter(s => s !== "Science" && s !== "Careers");
+  const idahoSubjects = subjects.filter(s => s !== "Science");
   let defaultIdahoFilter = "all";
   if (idahoSubjects.length > 0 && grades.length > 0) {
     // Pick first matching subject+grade combo that exists in our data
