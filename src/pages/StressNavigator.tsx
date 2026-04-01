@@ -193,7 +193,7 @@ export default function StressNavigator() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-background glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
-        <Breadcrumbs items={[{ label: "Activities", href: "/activities" }, { label: "Stress Navigator" }]} />
+        <Breadcrumbs items={[{ label: "Activities", path: "/activities" }, { label: "Stress Navigator" }]} />
       </header>
 
       <main className="flex-1 flex items-center justify-center p-4">
