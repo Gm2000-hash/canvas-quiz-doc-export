@@ -485,6 +485,11 @@ export default function StressNavigator() {
                     <Link className="w-4 h-4" /> Copy Link
                   </Button>
                 </div>
+                {canvasConfig && (
+                  <Button variant="outline" onClick={() => setShowCanvasPush(true)} className="w-full gap-2 text-sm">
+                    <ArrowRight className="w-4 h-4" /> Push to Canvas as Quiz
+                  </Button>
+                )}
               </div>
             )}
 
