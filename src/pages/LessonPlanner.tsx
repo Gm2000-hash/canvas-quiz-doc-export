@@ -252,6 +252,10 @@ const LessonPlanner = () => {
                 <p className="text-sm text-muted-foreground mt-0.5 shadow-none">Organize lesson plans into units with pacing guides</p>
               </div>
               <div className="flex gap-2">
+                <Button variant="outline" className="gap-2 rounded-xl border-2 border-card-foreground" onClick={() => setUniversalImportOpen(true)}>
+                  <Upload className="h-4 w-4" />
+                  Import File
+                </Button>
                 <Button variant="outline" className="gap-2 rounded-xl border-2 border-card-foreground" onClick={() => setImportNextStepsOpen(true)}>
                   <Download className="h-4 w-4" />
                   Import NextSteps
