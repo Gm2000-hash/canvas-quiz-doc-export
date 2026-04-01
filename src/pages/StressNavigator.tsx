@@ -491,18 +491,22 @@ export default function StressNavigator() {
                 <Button onClick={startAdventure} className="w-full py-6 text-lg gap-3 rounded-xl">
                   Start Training <ArrowRight className="w-5 h-5" />
                 </Button>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={copyEmbedLink} className="flex-1 gap-2 text-sm">
-                    <Copy className="w-4 h-4" /> Copy Embed Code
-                  </Button>
-                  <Button variant="outline" onClick={copyDirectLink} className="flex-1 gap-2 text-sm">
-                    <Link className="w-4 h-4" /> Copy Link
-                  </Button>
-                </div>
-                {canvasConfig && (
-                  <Button variant="outline" onClick={() => setShowCanvasPush(true)} className="w-full gap-2 text-sm">
-                    <ArrowRight className="w-4 h-4" /> Push to Canvas as Quiz
-                  </Button>
+                {isTeacher && (
+                  <>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={copyEmbedLink} className="flex-1 gap-2 text-sm">
+                        <Copy className="w-4 h-4" /> Copy Embed Code
+                      </Button>
+                      <Button variant="outline" onClick={copyDirectLink} className="flex-1 gap-2 text-sm">
+                        <Link className="w-4 h-4" /> Copy Link
+                      </Button>
+                    </div>
+                    {canvasConfig && (
+                      <Button variant="outline" onClick={() => setShowCanvasPush(true)} className="w-full gap-2 text-sm">
+                        <ArrowRight className="w-4 h-4" /> Push to Canvas as Quiz
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
             )}
