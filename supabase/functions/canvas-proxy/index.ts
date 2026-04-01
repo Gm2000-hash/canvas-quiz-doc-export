@@ -95,7 +95,7 @@ serve(withLogging("canvas-proxy", async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData, submissionId, pageData } = parsedBody;
+    const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData, submissionId, pageData, assignmentData } = parsedBody;
 
     if (!canvasUrl || !apiToken) {
       return new Response(JSON.stringify({ error: 'Canvas URL and API token are required' }), {

@@ -150,3 +150,25 @@ export async function getQuizReport(config: CanvasConfig, courseId: number, quiz
 export async function getQuizStatistics(config: CanvasConfig, courseId: number, quizId: number): Promise<any> {
   return canvasRequest(config, 'get_quiz_statistics', { courseId, quizId });
 }
+
+// ── Assignments ──
+
+export interface CreateAssignmentParams {
+  name: string;
+  description?: string;
+  submission_types?: string[];
+  external_tool_tag_attributes?: {
+    url: string;
+    new_tab?: boolean;
+  };
+  points_possible?: number;
+  published?: boolean;
+}
+
+export async function createCanvasAssignment(
+  config: CanvasConfig,
+  courseId: number,
+  assignmentData: CreateAssignmentParams
+): Promise<any> {
+  return canvasRequest(config, 'create_assignment', { courseId, assignmentData });
+}
