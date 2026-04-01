@@ -39,9 +39,15 @@ interface Unit {
   lesson_count?: number;
 }
 
-const DISCIPLINES = [
-  "Life Science", "Physical Science", "Earth & Space Science", "Engineering", "Careers"
-];
+const DISCIPLINE_GROUPS = [
+  { key: "Life Science", label: "Life Science", icon: Beaker },
+  { key: "Physical Science", label: "Physical Science", icon: Zap },
+  { key: "Earth & Space Science", label: "Earth & Space Science", icon: Globe },
+  { key: "Engineering", label: "Engineering", icon: Wrench },
+  { key: "Careers", label: "Careers", icon: Briefcase },
+] as const;
+
+const DISCIPLINES = DISCIPLINE_GROUPS.map(d => d.key);
 
 const GRADE_LEVELS = [
   "6th Grade", "7th Grade", "8th Grade", "6th-8th Grade"
