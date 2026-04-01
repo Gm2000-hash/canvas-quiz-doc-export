@@ -27,6 +27,7 @@ import ISATExamPlayer from "./pages/ISATExamPlayer";
 import QuizBuilder from "./pages/QuizBuilder";
 import QuizAnalytics from "./pages/QuizAnalytics";
 import StressNavigator from "./pages/StressNavigator";
+import PublicActivityPlayer from "./pages/PublicActivityPlayer";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
