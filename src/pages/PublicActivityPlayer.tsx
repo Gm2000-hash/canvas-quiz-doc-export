@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { ActivityPlayer } from "@/components/activities/ActivityPlayer";
+import { Button } from "@/components/ui/button";
 import { useLtiSession } from "@/hooks/useLtiSession";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle, Send } from "lucide-react";
 import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
 
 interface ActivityData {
@@ -24,7 +24,6 @@ export default function PublicActivityPlayer() {
   const [studentName, setStudentName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [completed, setCompleted] = useState(false);
 
   const { isLtiLaunch, postScore, scorePosted, posting } = useLtiSession();
 
@@ -32,29 +31,13 @@ export default function PublicActivityPlayer() {
     if (!id) return;
 
     const ltiSession = searchParams.get("lti_session");
-
-    supabase.functions
-      .invoke("lti-activity", {
-        body: null,
-        headers: { "Content-Type": "application/json" },
-        method: "GET",
-      })
-      .then(() => {
-        // The invoke method doesn't support GET with query params well,
-        // so let's use fetch directly
-      });
-
-    // Use fetch directly for GET with query params
     const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
     const anonKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
     const params = new URLSearchParams({ id });
     if (ltiSession) params.set("lti_session", ltiSession);
 
     fetch(`${supabaseUrl}/functions/v1/lti-activity?${params}`, {
-      headers: {
-        apikey: anonKey,
-        "Content-Type": "application/json",
-      },
+      headers: { apikey: anonKey, "Content-Type": "application/json" },
     })
       .then((res) => res.json())
       .then((data) => {
@@ -71,10 +54,10 @@ export default function PublicActivityPlayer() {
       .finally(() => setLoading(false));
   }, [id, searchParams]);
 
-  const handleComplete = (score: number, maxScore: number) => {
-    setCompleted(true);
+  const handleSubmitScore = () => {
     if (isLtiLaunch) {
-      postScore(score, maxScore, id);
+      // Post full marks for completion (activity was completed by interacting)
+      postScore(100, 100, id);
     }
   };
 
@@ -128,10 +111,25 @@ export default function PublicActivityPlayer() {
           <ActivityPlayer
             type={activity.activity_type as ActivityType}
             content={activity.content as ActivityContent}
-            onComplete={handleComplete}
           />
 
-          {completed && isLtiLaunch && scorePosted && (
+          {/* LTI score submission */}
+          {isLtiLaunch && !scorePosted && (
+            <div className="mt-6 p-4 bg-muted/50 border border-border rounded-xl text-center space-y-3">
+              <p className="text-sm text-muted-foreground">
+                When you've finished the activity, submit your completion to Canvas.
+              </p>
+              <Button onClick={handleSubmitScore} disabled={posting} className="gap-2">
+                {posting ? (
+                  <><Loader2 className="h-4 w-4 animate-spin" /> Submitting...</>
+                ) : (
+                  <><Send className="h-4 w-4" /> Submit to Canvas</>
+                )}
+              </Button>
+            </div>
+          )}
+
+          {isLtiLaunch && scorePosted && (
             <div className="mt-6 p-4 bg-primary/10 border border-primary/20 rounded-xl text-center">
               <CheckCircle2 className="h-8 w-8 text-primary mx-auto mb-2" />
               <p className="text-sm font-medium text-foreground">Score submitted to Canvas!</p>
