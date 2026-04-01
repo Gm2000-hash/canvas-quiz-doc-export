@@ -93,6 +93,10 @@ export default function ActivityBuilder() {
     return list;
   }, [standardFramework, idahoFilter, standardSearch]);
 
+  // Canvas push
+  const { config: canvasConfig } = useCanvasConfig();
+  const [pushTarget, setPushTarget] = useState<Activity | null>(null);
+
   // Preview dialog
   const [previewActivity, setPreviewActivity] = useState<Activity | null>(null);
 
