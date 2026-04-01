@@ -346,6 +346,15 @@ export default function ActivityBuilder() {
     return sorted;
   }, [filtered]);
 
+  const PUBLISHED_BASE = "https://canvas-quiz-doc-export.lovable.app";
+
+  const copyActivityEmbed = (activityId: string) => {
+    const url = `${PUBLISHED_BASE}/activities/${activityId}`;
+    const embed = `<iframe src="${url}" width="100%" height="800" style="border:none;border-radius:12px;" allowfullscreen></iframe>`;
+    navigator.clipboard.writeText(embed);
+    toast({ title: "Embed code copied!", description: "Paste into a Canvas assignment using the HTML editor." });
+  };
+
   return (
     <div className="min-h-screen bg-white flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
