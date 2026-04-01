@@ -22,7 +22,7 @@ export const SUBJECT_OPTIONS = [
   { value: "ELA", label: "English Language Arts", standards: "Idaho" },
   { value: "Math", label: "Mathematics", standards: "Idaho" },
   { value: "Social Studies", label: "Social Studies", standards: "Idaho" },
-  { value: "Careers", label: "Careers", standards: "Custom" },
+  { value: "Careers", label: "Careers (CTE)", standards: "Idaho" },
 ] as const;
 
 export function useProfile() {
