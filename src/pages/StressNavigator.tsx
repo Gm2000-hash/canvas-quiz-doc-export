@@ -3,6 +3,7 @@ import { usePageTitle } from "@/hooks/usePageTitle";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
 import {
   Zap, Brain, Heart, ArrowRight, RotateCcw, CheckCircle2,
   AlertCircle, BookOpen, Smartphone, Trophy, Clock,
