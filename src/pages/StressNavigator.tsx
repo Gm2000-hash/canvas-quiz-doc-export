@@ -680,6 +680,14 @@ export default function StressNavigator() {
                   </p>
                 </div>
 
+                {/* LTI score confirmation */}
+                {isLtiLaunch && scorePosted && (
+                  <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl text-center flex items-center gap-3 justify-center">
+                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                    <p className="text-sm font-medium text-foreground">Score submitted to Canvas!</p>
+                  </div>
+                )}
+
                 {/* Retake button */}
                 <Button onClick={startAdventure} className="w-full py-5 text-lg gap-2 rounded-xl">
                   <RotateCcw className="w-5 h-5" /> Retake the Training
