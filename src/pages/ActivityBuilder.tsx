@@ -25,6 +25,8 @@ import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
 import { Plus, Puzzle, Search, Sparkles, Loader2, LayoutGrid, List, FileText, BookOpen, Library, RotateCcw, Brain, ArrowRight } from "lucide-react";
+import { useCanvasConfig } from "@/hooks/useCanvasConfig";
+import PushActivityToCanvasDialog from "@/components/PushActivityToCanvasDialog";
 
 interface SourceOption { id: string; title: string; type: "lesson_plan" | "curriculum_lesson" | "reading_library"; }
 
@@ -90,6 +92,10 @@ export default function ActivityBuilder() {
     }
     return list;
   }, [standardFramework, idahoFilter, standardSearch]);
+
+  // Canvas push
+  const { config: canvasConfig } = useCanvasConfig();
+  const [pushTarget, setPushTarget] = useState<Activity | null>(null);
 
   // Preview dialog
   const [previewActivity, setPreviewActivity] = useState<Activity | null>(null);
@@ -457,6 +463,7 @@ export default function ActivityBuilder() {
                 onDuplicate={() => handleDuplicate(a)}
                 onDelete={() => setDeleteTarget({ id: a.id, title: a.title })}
                 onCopyEmbed={() => copyActivityEmbed(a.id)}
+                onPushToCanvas={canvasConfig ? () => setPushTarget(a) : undefined}
               />
             ))}
           </div>
@@ -482,6 +489,7 @@ export default function ActivityBuilder() {
                       onDuplicate={() => handleDuplicate(a)}
                       onDelete={() => setDeleteTarget({ id: a.id, title: a.title })}
                       onCopyEmbed={() => copyActivityEmbed(a.id)}
+                      onPushToCanvas={canvasConfig ? () => setPushTarget(a) : undefined}
                     />
                   ))}
                 </div>
@@ -820,6 +828,17 @@ export default function ActivityBuilder() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {canvasConfig && pushTarget && (
+        <PushActivityToCanvasDialog
+          open={!!pushTarget}
+          onOpenChange={(open) => !open && setPushTarget(null)}
+          activityId={pushTarget.id}
+          activityTitle={pushTarget.title}
+          activityType={ACTIVITY_TYPES.find(t => t.type === pushTarget.activity_type)?.label ?? pushTarget.activity_type}
+          config={canvasConfig}
+        />
+      )}
     </div>
   );
 }

@@ -95,7 +95,7 @@ serve(withLogging("canvas-proxy", async (req) => {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData, submissionId, pageData } = parsedBody;
+    const { action, canvasUrl, apiToken, courseId, quizId, quizData, questionData, submissionId, pageData, assignmentData } = parsedBody;
 
     if (!canvasUrl || !apiToken) {
       return new Response(JSON.stringify({ error: 'Canvas URL and API token are required' }), {
@@ -225,6 +225,15 @@ serve(withLogging("canvas-proxy", async (req) => {
         method = 'POST';
         headers['Content-Type'] = 'application/json';
         body = JSON.stringify({ wiki_page: pageData });
+        break;
+      }
+      case 'create_assignment': {
+        const { assignmentData } = parsedBody;
+        if (!courseId || !assignmentData) throw new Error('courseId and assignmentData are required');
+        url = `${baseUrl}/api/v1/courses/${courseId}/assignments`;
+        method = 'POST';
+        headers['Content-Type'] = 'application/json';
+        body = JSON.stringify({ assignment: assignmentData });
         break;
       }
       default:
