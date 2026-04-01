@@ -3,10 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
-import { Upload, FileText, Loader2, Check, AlertCircle } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Upload, FileText, Link, Loader2, Check, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -35,37 +37,45 @@ export function UniversalImportDialog({ open, onOpenChange, units, onImported }:
   const { toast } = useToast();
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const [step, setStep] = useState<"upload" | "review">("upload");
+  const [step, setStep] = useState<"input" | "review">("input");
   const [uploading, setUploading] = useState(false);
   const [importing, setImporting] = useState(false);
-  const [fileName, setFileName] = useState("");
+  const [sourceName, setSourceName] = useState("");
   const [parsedLessons, setParsedLessons] = useState<ParsedLesson[]>([]);
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [unitId, setUnitId] = useState("");
   const [error, setError] = useState("");
+  const [googleUrl, setGoogleUrl] = useState("");
 
   const reset = () => {
-    setStep("upload");
+    setStep("input");
     setUploading(false);
     setImporting(false);
-    setFileName("");
+    setSourceName("");
     setParsedLessons([]);
     setSelected(new Set());
     setUnitId("");
     setError("");
+    setGoogleUrl("");
   };
 
+  const goToReview = (lessons: ParsedLesson[], source: string) => {
+    setParsedLessons(lessons);
+    setSourceName(source);
+    setSelected(new Set(lessons.map((_, i) => i)));
+    setStep("review");
+  };
+
+  // ── File upload handler ──
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file size (max 10MB)
     if (file.size > 10 * 1024 * 1024) {
       setError("File must be under 10MB");
       return;
     }
 
-    setFileName(file.name);
     setError("");
     setUploading(true);
 
@@ -80,31 +90,62 @@ export function UniversalImportDialog({ open, onOpenChange, units, onImported }:
         `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/parse-import-file`,
         {
           method: "POST",
-          headers: {
-            Authorization: `Bearer ${session.access_token}`,
-          },
+          headers: { Authorization: `Bearer ${session.access_token}` },
           body: formData,
         }
       );
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to parse file");
+      if (!data.lessons?.length) throw new Error("No lesson content could be extracted");
 
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to parse file");
-      }
-
-      if (!data.lessons || data.lessons.length === 0) {
-        throw new Error("No lesson content could be extracted from this file");
-      }
-
-      setParsedLessons(data.lessons);
-      setSelected(new Set(data.lessons.map((_: unknown, i: number) => i)));
-      setStep("review");
+      goToReview(data.lessons, file.name);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to parse file");
     } finally {
       setUploading(false);
       if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
+  // ── Google link handler ──
+  const handleGoogleLink = async () => {
+    if (!googleUrl.trim()) return;
+
+    const isGoogleUrl = /docs\.google\.com\/(document|spreadsheets|presentation)\/d\//.test(googleUrl);
+    if (!isGoogleUrl) {
+      setError("Please paste a valid Google Docs, Sheets, or Slides link");
+      return;
+    }
+
+    setError("");
+    setUploading(true);
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) throw new Error("Not authenticated");
+
+      const res = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/import-google-link`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ url: googleUrl.trim() }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to fetch Google document");
+      if (!data.lessons?.length) throw new Error("No lesson content could be extracted");
+
+      goToReview(data.lessons, data.source || "Google Document");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to import");
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -142,7 +183,7 @@ export function UniversalImportDialog({ open, onOpenChange, units, onImported }:
 
       if (insertError) throw insertError;
 
-      toast({ title: `Imported ${lessonsToImport.length} lesson(s) from ${fileName}` });
+      toast({ title: `Imported ${lessonsToImport.length} lesson(s) from ${sourceName}` });
       onImported();
       onOpenChange(false);
       reset();
@@ -169,62 +210,104 @@ export function UniversalImportDialog({ open, onOpenChange, units, onImported }:
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Upload className="h-5 w-5" />
-            Import File
+            Import Content
           </DialogTitle>
         </DialogHeader>
 
-        {step === "upload" && (
-          <div className="space-y-4 pt-2">
-            <p className="text-sm text-muted-foreground">
-              Upload a document and AI will extract lesson plan content from it.
-              Supports <strong>.docx, .xlsx, .pptx, .pdf, .txt, .md, .csv</strong>.
-            </p>
+        {step === "input" && (
+          <Tabs defaultValue="file" className="w-full">
+            <TabsList className="w-full">
+              <TabsTrigger value="file" className="flex-1 gap-2">
+                <FileText className="h-4 w-4" /> Upload File
+              </TabsTrigger>
+              <TabsTrigger value="google" className="flex-1 gap-2">
+                <Link className="h-4 w-4" /> Google Link
+              </TabsTrigger>
+            </TabsList>
 
-            <div
-              onClick={() => !uploading && fileRef.current?.click()}
-              className="border-2 border-dashed border-muted-foreground/30 rounded-xl p-8 flex flex-col items-center gap-3 cursor-pointer hover:border-primary/50 transition-colors"
-            >
-              {uploading ? (
-                <>
-                  <Loader2 className="h-10 w-10 animate-spin text-primary" />
-                  <p className="text-sm text-muted-foreground">Parsing {fileName}…</p>
-                </>
-              ) : (
-                <>
-                  <FileText className="h-10 w-10 text-muted-foreground/50" />
-                  <p className="text-sm font-medium text-foreground">
-                    Click to select a file
-                  </p>
-                  <p className="text-xs text-muted-foreground">Max 10MB</p>
-                </>
-              )}
-            </div>
+            <TabsContent value="file" className="space-y-4 mt-4">
+              <p className="text-sm text-muted-foreground">
+                Upload a document and AI will extract lesson plan content.
+                Supports <strong>.docx, .xlsx, .pptx, .pdf, .txt, .md, .csv</strong>.
+              </p>
 
-            <input
-              ref={fileRef}
-              type="file"
-              accept={ACCEPTED_TYPES}
-              className="hidden"
-              onChange={handleFileSelect}
-            />
+              <div
+                onClick={() => !uploading && fileRef.current?.click()}
+                className="border-2 border-dashed border-muted-foreground/30 rounded-xl p-8 flex flex-col items-center gap-3 cursor-pointer hover:border-primary/50 transition-colors"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                    <p className="text-sm text-muted-foreground">Parsing file…</p>
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-10 w-10 text-muted-foreground/50" />
+                    <p className="text-sm font-medium text-foreground">Click to select a file</p>
+                    <p className="text-xs text-muted-foreground">Max 10MB</p>
+                  </>
+                )}
+              </div>
+
+              <input
+                ref={fileRef}
+                type="file"
+                accept={ACCEPTED_TYPES}
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+            </TabsContent>
+
+            <TabsContent value="google" className="space-y-4 mt-4">
+              <p className="text-sm text-muted-foreground">
+                Paste a <strong>public</strong> Google Docs, Sheets, or Slides link.
+                The document must be shared with "Anyone with the link" access.
+              </p>
+
+              <div className="flex gap-2">
+                <Input
+                  placeholder="https://docs.google.com/document/d/..."
+                  value={googleUrl}
+                  onChange={(e) => { setGoogleUrl(e.target.value); setError(""); }}
+                  disabled={uploading}
+                />
+                <Button
+                  onClick={handleGoogleLink}
+                  disabled={uploading || !googleUrl.trim()}
+                  className="shrink-0 gap-2 rounded-xl"
+                >
+                  {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                  Fetch
+                </Button>
+              </div>
+
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>Supported links:</p>
+                <ul className="list-disc pl-4 space-y-0.5">
+                  <li>Google Docs — docs.google.com/document/d/…</li>
+                  <li>Google Sheets — docs.google.com/spreadsheets/d/…</li>
+                  <li>Google Slides — docs.google.com/presentation/d/…</li>
+                </ul>
+              </div>
+            </TabsContent>
 
             {error && (
-              <div className="flex items-center gap-2 text-sm text-destructive">
+              <div className="flex items-center gap-2 text-sm text-destructive mt-2">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 {error}
               </div>
             )}
-          </div>
+          </Tabs>
         )}
 
         {step === "review" && (
           <div className="space-y-4 pt-2">
             <div className="flex items-center justify-between">
               <Badge variant="secondary" className="text-xs">
-                {parsedLessons.length} lesson(s) found in {fileName}
+                {parsedLessons.length} lesson(s) from {sourceName}
               </Badge>
               <Button variant="ghost" size="sm" onClick={reset}>
-                Choose different file
+                Start over
               </Button>
             </div>
 
