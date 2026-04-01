@@ -397,12 +397,11 @@ export default function StressNavigator() {
 
   const handleChoice = (choice: Choice) => {
     setSelectedChoice(choice);
-    setScore(prev => prev + choice.points);
     setResponses(prev => [...prev, {
       scenarioTitle: current.title,
       choiceText: choice.text,
       choiceType: choice.type,
-      points: choice.points,
+      quality: choice.points === 10 ? "excellent" : choice.points === 5 ? "partial" : "ineffective",
     }]);
     setStep("feedback");
   };
