@@ -416,6 +416,15 @@ export default function StressNavigator() {
     }
   };
 
+  // LTI grade passback
+  const { isLtiLaunch, postScore, scorePosted } = useLtiSession();
+
+  useEffect(() => {
+    if (step === "summary" && isLtiLaunch && !scorePosted) {
+      postScore(score, maxScore, "stress-navigator");
+    }
+  }, [step, isLtiLaunch, scorePosted, score, maxScore]);
+
   const scorePercent = Math.round((score / maxScore) * 100);
   const perfectCount = responses.filter(r => r.points === 10).length;
   const partialCount = responses.filter(r => r.points === 5).length;

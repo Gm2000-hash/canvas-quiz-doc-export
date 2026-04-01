@@ -396,6 +396,9 @@ export default function Profile() {
           </CardContent>
         </Card>
 
+        {/* LTI 1.3 Integration */}
+        <LtiSettings />
+
         {/* Save button at bottom for mobile */}
         <div className="pb-6">
           <Button onClick={handleSave} disabled={saving} className="w-full h-11 rounded-xl font-medium">
