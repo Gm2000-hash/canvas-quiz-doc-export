@@ -671,6 +671,15 @@ export default function StressNavigator() {
           </div>
         </div>
       </main>
+
+      {canvasConfig && (
+        <PushStressNavToCanvasDialog
+          open={showCanvasPush}
+          onOpenChange={setShowCanvasPush}
+          scenarios={scenarios.map(s => ({ title: s.title, description: s.description, choices: s.choices }))}
+          config={canvasConfig}
+        />
+      )}
     </div>
   );
 }
