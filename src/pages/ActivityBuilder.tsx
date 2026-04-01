@@ -828,6 +828,17 @@ export default function ActivityBuilder() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {canvasConfig && pushTarget && (
+        <PushActivityToCanvasDialog
+          open={!!pushTarget}
+          onOpenChange={(open) => !open && setPushTarget(null)}
+          activityId={pushTarget.id}
+          activityTitle={pushTarget.title}
+          activityType={ACTIVITY_TYPES.find(t => t.type === pushTarget.activity_type)?.label ?? pushTarget.activity_type}
+          config={canvasConfig}
+        />
+      )}
     </div>
   );
 }
