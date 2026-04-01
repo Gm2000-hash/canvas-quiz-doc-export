@@ -374,7 +374,6 @@ export default function StressNavigator() {
   const { toast } = useToast();
 
   const current = scenarios[scenarioIndex];
-  const maxScore = scenarios.length * 10;
 
   const publishedUrl = "https://canvas-quiz-doc-export.lovable.app/stress-navigator";
   const embedCode = `<iframe src="${publishedUrl}" width="100%" height="800" style="border:none;border-radius:12px;" allowfullscreen></iframe>`;
