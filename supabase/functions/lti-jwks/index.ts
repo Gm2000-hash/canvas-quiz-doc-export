@@ -14,14 +14,29 @@ serve(async (req) => {
   }
 
   try {
-    const publicKeyB64 = Deno.env.get('LTI_RSA_PUBLIC_KEY');
-    if (!publicKeyB64) {
+    const publicKeyRaw = Deno.env.get('LTI_RSA_PUBLIC_KEY');
+    if (!publicKeyRaw) {
       throw new Error('LTI_RSA_PUBLIC_KEY not configured');
     }
 
-    const publicKeyPem = new TextDecoder().decode(
-      Uint8Array.from(atob(publicKeyB64), c => c.charCodeAt(0))
-    );
+    // Support both raw PEM and base64-encoded PEM
+    let publicKeyPem: string;
+    if (publicKeyRaw.startsWith('-----BEGIN')) {
+      publicKeyPem = publicKeyRaw;
+    } else {
+      try {
+        publicKeyPem = new TextDecoder().decode(
+          Uint8Array.from(atob(publicKeyRaw), c => c.charCodeAt(0))
+        );
+      } catch {
+        // Might be base64url or have whitespace issues
+        const cleaned = publicKeyRaw.replace(/\s/g, '').replace(/-/g, '+').replace(/_/g, '/');
+        const padded = cleaned + '='.repeat((4 - cleaned.length % 4) % 4);
+        publicKeyPem = new TextDecoder().decode(
+          Uint8Array.from(atob(padded), c => c.charCodeAt(0))
+        );
+      }
+    }
 
     // Parse PEM to extract the raw key data
     const pemBody = publicKeyPem
