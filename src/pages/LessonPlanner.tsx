@@ -386,6 +386,12 @@ const LessonPlanner = () => {
         units={units}
         onImported={fetchUnits}
       />
+      <UniversalImportDialog
+        open={universalImportOpen}
+        onOpenChange={setUniversalImportOpen}
+        units={units}
+        onImported={fetchUnits}
+      />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
