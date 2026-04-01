@@ -425,9 +425,6 @@ export default function StressNavigator() {
     }
   }, [step, isLtiLaunch, scorePosted, postScore]);
 
-  const excellentCount = responses.filter(r => r.quality === "excellent").length;
-  const partialCount = responses.filter(r => r.quality === "partial").length;
-  const ineffectiveCount = responses.filter(r => r.quality === "ineffective").length;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
