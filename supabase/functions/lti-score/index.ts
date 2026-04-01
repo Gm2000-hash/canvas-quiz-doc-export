@@ -96,9 +96,23 @@ serve(async (req) => {
       });
     }
 
-    const privateKeyPem = new TextDecoder().decode(
-      Uint8Array.from(atob(privateKeyB64), c => c.charCodeAt(0))
-    );
+    // Support both raw PEM and base64-encoded PEM
+    let privateKeyPem: string;
+    if (privateKeyB64.startsWith('-----BEGIN')) {
+      privateKeyPem = privateKeyB64;
+    } else {
+      try {
+        privateKeyPem = new TextDecoder().decode(
+          Uint8Array.from(atob(privateKeyB64), c => c.charCodeAt(0))
+        );
+      } catch {
+        const cleaned = privateKeyB64.replace(/\s/g, '').replace(/-/g, '+').replace(/_/g, '/');
+        const padded = cleaned + '='.repeat((4 - cleaned.length % 4) % 4);
+        privateKeyPem = new TextDecoder().decode(
+          Uint8Array.from(atob(padded), c => c.charCodeAt(0))
+        );
+      }
+    }
 
     // Parse PEM to import as CryptoKey
     const pemBody = privateKeyPem
