@@ -227,6 +227,15 @@ serve(withLogging("canvas-proxy", async (req) => {
         body = JSON.stringify({ wiki_page: pageData });
         break;
       }
+      case 'create_assignment': {
+        const { assignmentData } = parsedBody;
+        if (!courseId || !assignmentData) throw new Error('courseId and assignmentData are required');
+        url = `${baseUrl}/api/v1/courses/${courseId}/assignments`;
+        method = 'POST';
+        headers['Content-Type'] = 'application/json';
+        body = JSON.stringify({ assignment: assignmentData });
+        break;
+      }
       default:
         throw new Error(`Unknown action: ${action}`);
     }
