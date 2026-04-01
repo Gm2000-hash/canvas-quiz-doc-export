@@ -11,7 +11,7 @@ import {
   Activity, ShieldAlert, Sparkles,
   Ear, Smile, Star, GraduationCap, Flame,
   HandHeart, Frown, Eye, Coffee,
-  Palette, Theater, Bomb, Gauge
+  Palette, Theater, Bomb, Gauge, Copy, Link
 } from "lucide-react";
 
 interface Choice {
