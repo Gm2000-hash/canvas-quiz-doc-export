@@ -26,6 +26,7 @@ import SharedReading from "./pages/SharedReading";
 import ISATExamPlayer from "./pages/ISATExamPlayer";
 import QuizBuilder from "./pages/QuizBuilder";
 import QuizAnalytics from "./pages/QuizAnalytics";
+import StressNavigator from "./pages/StressNavigator";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -107,6 +108,7 @@ const App = () => (
           <Route path="/quiz-builder/:id" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-analytics" element={<ProtectedRoute><QuizAnalytics /></ProtectedRoute>} />
           <Route path="/shared-reading/:token" element={<SharedReading />} />
+          <Route path="/stress-navigator" element={<ProtectedRoute><StressNavigator /></ProtectedRoute>} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
