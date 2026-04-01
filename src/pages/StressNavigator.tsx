@@ -363,6 +363,9 @@ export default function StressNavigator() {
   const [selectedChoice, setSelectedChoice] = useState<Choice | null>(null);
   const [score, setScore] = useState(0);
   const [responses, setResponses] = useState<ResponseRecord[]>([]);
+  const [showCanvasPush, setShowCanvasPush] = useState(false);
+
+  const { config: canvasConfig } = useCanvasConfig();
 
   const { toast } = useToast();
 
