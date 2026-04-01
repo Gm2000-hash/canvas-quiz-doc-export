@@ -362,8 +362,23 @@ export default function StressNavigator() {
   const [score, setScore] = useState(0);
   const [responses, setResponses] = useState<ResponseRecord[]>([]);
 
+  const { toast } = useToast();
+
   const current = scenarios[scenarioIndex];
   const maxScore = scenarios.length * 10;
+
+  const publishedUrl = "https://canvas-quiz-doc-export.lovable.app/stress-navigator";
+  const embedCode = `<iframe src="${publishedUrl}" width="100%" height="800" style="border:none;border-radius:12px;" allowfullscreen></iframe>`;
+
+  const copyEmbedLink = () => {
+    navigator.clipboard.writeText(embedCode);
+    toast({ title: "Embed code copied!", description: "Paste this into a Canvas assignment using the HTML editor." });
+  };
+
+  const copyDirectLink = () => {
+    navigator.clipboard.writeText(publishedUrl);
+    toast({ title: "Link copied!", description: "Share this URL directly with students." });
+  };
 
   const startAdventure = () => {
     setStep("scenario");
