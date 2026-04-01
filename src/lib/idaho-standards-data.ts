@@ -536,8 +536,10 @@ const SS_WGH: IdahoGradeStandards = {
 };
 
 // ────────────────────────────────────────
-// Export all Idaho standards
+// Export all Idaho standards (including Careers / First Steps CTE)
 // ────────────────────────────────────────
+import { CAREERS_7, CAREERS_8 } from "./careers-standards-data";
+
 export const ALL_IDAHO_STANDARDS: IdahoGradeStandards[] = [
   ELA_6,
   ELA_7,
@@ -546,6 +548,8 @@ export const ALL_IDAHO_STANDARDS: IdahoGradeStandards[] = [
   MATH_7,
   MATH_8,
   SS_WGH,
+  CAREERS_7,
+  CAREERS_8,
 ];
 
 /** Flat list of all Idaho standards for search/picker usage */
