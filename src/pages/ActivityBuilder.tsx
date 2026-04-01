@@ -481,6 +481,7 @@ export default function ActivityBuilder() {
                       onEdit={() => navigate(`/activities/${a.id}`)}
                       onDuplicate={() => handleDuplicate(a)}
                       onDelete={() => setDeleteTarget({ id: a.id, title: a.title })}
+                      onCopyEmbed={() => copyActivityEmbed(a.id)}
                     />
                   ))}
                 </div>
