@@ -423,7 +423,7 @@ export default function StressNavigator() {
     if (step === "summary" && isLtiLaunch && !scorePosted) {
       postScore(score, maxScore, "stress-navigator");
     }
-  }, [step, isLtiLaunch, scorePosted, score, maxScore]);
+  }, [step, isLtiLaunch, scorePosted, score, maxScore, postScore]);
 
   const scorePercent = Math.round((score / maxScore) * 100);
   const perfectCount = responses.filter(r => r.points === 10).length;
