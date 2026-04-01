@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useLtiSession } from "@/hooks/useLtiSession";
+import { useAuth } from "@/hooks/useAuth";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { Button } from "@/components/ui/button";
@@ -366,6 +367,9 @@ export default function StressNavigator() {
   const [responses, setResponses] = useState<ResponseRecord[]>([]);
   const [showCanvasPush, setShowCanvasPush] = useState(false);
 
+  // Only show teacher controls when logged in (not for LTI/embed students)
+  const { user } = useAuth();
+  const isTeacher = !!user;
   const { config: canvasConfig } = useCanvasConfig();
 
   const { toast } = useToast();
@@ -487,18 +491,22 @@ export default function StressNavigator() {
                 <Button onClick={startAdventure} className="w-full py-6 text-lg gap-3 rounded-xl">
                   Start Training <ArrowRight className="w-5 h-5" />
                 </Button>
-                <div className="flex gap-2">
-                  <Button variant="outline" onClick={copyEmbedLink} className="flex-1 gap-2 text-sm">
-                    <Copy className="w-4 h-4" /> Copy Embed Code
-                  </Button>
-                  <Button variant="outline" onClick={copyDirectLink} className="flex-1 gap-2 text-sm">
-                    <Link className="w-4 h-4" /> Copy Link
-                  </Button>
-                </div>
-                {canvasConfig && (
-                  <Button variant="outline" onClick={() => setShowCanvasPush(true)} className="w-full gap-2 text-sm">
-                    <ArrowRight className="w-4 h-4" /> Push to Canvas as Quiz
-                  </Button>
+                {isTeacher && (
+                  <>
+                    <div className="flex gap-2">
+                      <Button variant="outline" onClick={copyEmbedLink} className="flex-1 gap-2 text-sm">
+                        <Copy className="w-4 h-4" /> Copy Embed Code
+                      </Button>
+                      <Button variant="outline" onClick={copyDirectLink} className="flex-1 gap-2 text-sm">
+                        <Link className="w-4 h-4" /> Copy Link
+                      </Button>
+                    </div>
+                    {canvasConfig && (
+                      <Button variant="outline" onClick={() => setShowCanvasPush(true)} className="w-full gap-2 text-sm">
+                        <ArrowRight className="w-4 h-4" /> Push to Canvas as Quiz
+                      </Button>
+                    )}
+                  </>
                 )}
               </div>
             )}
@@ -671,6 +679,14 @@ export default function StressNavigator() {
                     Remember: healthy coping is a skill that gets stronger with practice. Every time you choose a healthy response, you're rewiring your brain for resilience!
                   </p>
                 </div>
+
+                {/* LTI score confirmation */}
+                {isLtiLaunch && scorePosted && (
+                  <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl text-center flex items-center gap-3 justify-center">
+                    <CheckCircle2 className="h-5 w-5 text-primary" />
+                    <p className="text-sm font-medium text-foreground">Score submitted to Canvas!</p>
+                  </div>
+                )}
 
                 {/* Retake button */}
                 <Button onClick={startAdventure} className="w-full py-5 text-lg gap-2 rounded-xl">
