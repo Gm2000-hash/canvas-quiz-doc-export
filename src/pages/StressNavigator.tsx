@@ -9,7 +9,7 @@ import {
   Users, MessageCircle, Wind, Droplets,
   Activity, ShieldAlert, Sparkles,
   Ear, Smile, Star, GraduationCap, Flame,
-  HandHeart, Frown, Eye, Coffee, Music,
+  HandHeart, Frown, Eye, Coffee,
   Palette, Theater, Bomb, Gauge
 } from "lucide-react";
 
