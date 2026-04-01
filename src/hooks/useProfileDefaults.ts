@@ -12,7 +12,7 @@ export function useProfileDefaults() {
 
   // Determine default framework: if user teaches Science, default to NGSS; otherwise Idaho
   const hasScience = subjects.includes("Science");
-  const hasIdahoSubjects = subjects.some(s => s !== "Science");
+  const hasIdahoSubjects = subjects.some(s => s !== "Science" && s !== "Careers");
   const defaultFramework: "ngss" | "idaho" = hasIdahoSubjects ? "idaho" : hasScience ? "ngss" : "idaho";
 
   // Compute the best default Idaho grade filter (e.g. "ELA|6")
