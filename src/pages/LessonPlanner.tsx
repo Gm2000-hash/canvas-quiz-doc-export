@@ -24,12 +24,6 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PageBanner } from "@/components/PageBanner";
 import { useToast } from "@/hooks/use-toast";
 import { DisciplineGroupedUnits } from "@/components/DisciplineGroupedUnits";
-import { AppNavSheet } from "@/components/AppNavSheet";
-import { WeeklyDashboard } from "@/components/WeeklyDashboard";
-import { Breadcrumbs } from "@/components/Breadcrumbs";
-import { PageBanner } from "@/components/PageBanner";
-import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
 
 interface Unit {
   id: string;
@@ -43,15 +37,9 @@ interface Unit {
   lesson_count?: number;
 }
 
-const DISCIPLINE_GROUPS = [
-  { key: "Life Science", label: "Life Science", icon: Beaker },
-  { key: "Physical Science", label: "Physical Science", icon: Zap },
-  { key: "Earth & Space Science", label: "Earth & Space Science", icon: Globe },
-  { key: "Engineering", label: "Engineering", icon: Wrench },
-  { key: "Careers", label: "Careers", icon: Briefcase },
-] as const;
-
-const DISCIPLINES = DISCIPLINE_GROUPS.map(d => d.key);
+const DISCIPLINES = [
+  "Life Science", "Physical Science", "Earth & Space Science", "Engineering", "Careers"
+];
 
 const GRADE_LEVELS = [
   "6th Grade", "7th Grade", "8th Grade", "6th-8th Grade"
