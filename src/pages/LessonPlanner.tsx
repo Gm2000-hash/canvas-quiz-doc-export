@@ -374,6 +374,12 @@ const LessonPlanner = () => {
         onComplete={fetchUnits}
         teacherSubjects={profile?.subjects ?? []}
       />
+      <ImportNextStepsDialog
+        open={importNextStepsOpen}
+        onOpenChange={setImportNextStepsOpen}
+        units={units}
+        onImported={fetchUnits}
+      />
 
       <AlertDialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
