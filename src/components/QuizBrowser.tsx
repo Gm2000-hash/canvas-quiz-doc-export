@@ -10,7 +10,8 @@ import { tagQuestionsWithStandards, type StandardMatch } from '@/lib/standards-a
 import { exportQuizToDocx } from '@/lib/export-docx';
 import { saveQuestionsToBank } from '@/lib/question-bank';
 import { toast } from 'sonner';
-import { BookOpen, FileText, Download, Loader2, ArrowLeft, ChevronRight, FlaskConical, Sparkles, Palette, GripVertical, Pin, PinOff } from 'lucide-react';
+import { BookOpen, FileText, Download, Loader2, ArrowLeft, ChevronRight, FlaskConical, Sparkles, Palette, GripVertical, Pin, PinOff, Search, Plus, X } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { Separator } from '@/components/ui/separator';
 
 interface QuizBrowserProps {
