@@ -80,6 +80,7 @@ serve(withLogging("suggest-dok-blooms", async (req) => {
 
     // Build answer context for the AI
     let answerContext = "";
+    let answerJsonExample = "";
     if (answers) {
       if (Array.isArray(answers)) {
         // MC / Select-All / True-False / Matching
@@ -89,16 +90,20 @@ serve(withLogging("suggest-dok-blooms", async (req) => {
           return `  ${i + 1}. "${a.text}"${marker}`;
         }).join("\n");
         answerContext = `\nCurrent Answer Choices:\n${formatted}`;
+        answerJsonExample = `\nCurrent answers JSON (you MUST return rewritten_answers in this EXACT same JSON array format):\n${JSON.stringify(answers)}`;
       } else if (answers.parts) {
         answerContext = `\nCurrent Multi-Step Parts: ${JSON.stringify(answers.parts)}`;
+        answerJsonExample = `\nCurrent answers JSON (return rewritten_answers in this EXACT same format):\n${JSON.stringify(answers)}`;
       } else if (answers.categories) {
         answerContext = `\nCurrent Drag & Drop Categories: ${JSON.stringify(answers.categories)}`;
+        answerJsonExample = `\nCurrent answers JSON (return rewritten_answers in this EXACT same format):\n${JSON.stringify(answers)}`;
       } else if (answers.passage) {
         answerContext = `\nCurrent Passage: "${answers.passage}"`;
+        answerJsonExample = `\nCurrent answers JSON (return rewritten_answers in this EXACT same format):\n${JSON.stringify(answers)}`;
       }
     }
 
-    const hasAnswers = !!answerContext;
+    const hasAnswers = !!(answerContext && answerJsonExample);
 
     const systemPrompt = `You are an expert science education consultant specializing in Depth of Knowledge (DOK) and Bloom's Taxonomy alignment for middle school science assessments.
 
