@@ -93,10 +93,10 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
   const [dragSection, setDragSection] = useState<'active' | 'other' | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<Course[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [showSearch, setShowSearch] = useState(false);
+  const [showAddCourse, setShowAddCourse] = useState(false);
+  const [allCanvasCourses, setAllCanvasCourses] = useState<Course[]>([]);
+  const [loadingAllCourses, setLoadingAllCourses] = useState(false);
+  const [addCourseFilter, setAddCourseFilter] = useState('');
 
   const getColorForCourse = useCallback((courseId: number, idx: number) => {
     return courseColors[String(courseId)] || COURSE_COLORS[idx % COURSE_COLORS.length];
