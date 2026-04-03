@@ -447,6 +447,12 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
               <Button variant="outline" size="sm" className="gap-2" onClick={startEditing}>
                 <Pencil className="h-3.5 w-3.5" /> Edit
               </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => lesson && currentLesson !== null && exportReadingAsPdf(lesson, currentLesson)}>
+                <FileDown className="h-3.5 w-3.5" /> Export PDF
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => exportTextbookAsPdf(lessons, unitMap, title)}>
+                <FileDown className="h-3.5 w-3.5" /> Export Textbook
+              </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive" disabled={deletingId === lesson?.id}>
