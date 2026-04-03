@@ -485,70 +485,58 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
-      {/* Search bar */}
+      {/* Add Course dropdown */}
       <div className="flex items-center gap-2">
-        {showSearch ? (
-          <div className="flex-1 flex items-center gap-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search for a course by name..."
-                value={searchQuery}
-                onChange={e => setSearchQuery(e.target.value)}
-                onKeyDown={e => e.key === 'Enter' && handleSearch()}
-                className="pl-9"
-                autoFocus
-              />
+        {showAddCourse ? (
+          <div className="flex-1 space-y-3">
+            <div className="flex items-center gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Filter courses..."
+                  value={addCourseFilter}
+                  onChange={e => setAddCourseFilter(e.target.value)}
+                  className="pl-9"
+                  autoFocus
+                />
+              </div>
+              <Button variant="ghost" size="sm" onClick={() => { setShowAddCourse(false); setAddCourseFilter(''); }}>
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-            <Button onClick={handleSearch} disabled={searching || !searchQuery.trim()} size="sm" className="gap-1.5">
-              {searching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-              Search
-            </Button>
-            <Button variant="ghost" size="sm" onClick={closeSearch}>
-              <X className="h-4 w-4" />
-            </Button>
+            {loadingAllCourses ? (
+              <div className="flex items-center gap-2 text-muted-foreground py-4 justify-center">
+                <Loader2 className="h-5 w-5 animate-spin" /> Loading all Canvas courses...
+              </div>
+            ) : availableToAdd.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                {allCanvasCourses.length > 0 ? 'No additional courses found.' : 'No courses loaded.'}
+              </p>
+            ) : (
+              <div className="max-h-64 overflow-y-auto border border-border rounded-md divide-y divide-border">
+                {availableToAdd.map(course => (
+                  <div key={course.id} className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted/50">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{course.name}</p>
+                      <div className="flex gap-2 text-xs text-muted-foreground">
+                        {course.course_code && <span>{course.course_code}</span>}
+                        {course.term?.name && <span>• {course.term.name}</span>}
+                      </div>
+                    </div>
+                    <Button size="sm" variant="outline" onClick={() => addCourseFromList(course)} className="gap-1 shrink-0">
+                      <Plus className="h-3.5 w-3.5" /> Add
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
-          <Button variant="outline" size="sm" onClick={() => setShowSearch(true)} className="gap-1.5 ml-auto">
-            <Search className="h-4 w-4" /> Find a Course
+          <Button variant="outline" size="sm" onClick={handleOpenAddCourse} className="gap-1.5 ml-auto">
+            <Plus className="h-4 w-4" /> Add a Course
           </Button>
         )}
       </div>
-
-      {/* Search results */}
-      {searchResults.length > 0 && (
-        <div>
-          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
-            <Search className="h-3.5 w-3.5 text-muted-foreground" />
-            Search Results
-          </h3>
-          <div className="space-y-2">
-            {searchResults.map(course => (
-              <Card key={course.id} className="overflow-hidden">
-                <CardContent className="flex items-center gap-4 p-4">
-                  <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center shrink-0">
-                    <BookOpen className="h-5 w-5 text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-foreground truncate">{course.name}</p>
-                    {course.course_code && <p className="text-xs text-muted-foreground">{course.course_code}</p>}
-                    {course.term?.name && <p className="text-xs text-muted-foreground">{course.term.name}</p>}
-                  </div>
-                  <Button size="sm" onClick={() => addCourseFromSearch(course)} className="gap-1.5 shrink-0">
-                    <Plus className="h-4 w-4" /> Add
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {searching && (
-        <div className="flex items-center gap-2 text-muted-foreground py-4 justify-center">
-          <Loader2 className="h-5 w-5 animate-spin" /> Searching Canvas courses...
-        </div>
-      )}
 
       {activeCourses.length > 0 && (
         <div>
