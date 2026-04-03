@@ -247,6 +247,16 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
           config={canvasConfig}
         />
       )}
+      {canvasConnected && canvasConfig && embedTarget && (
+        <PushISATEmbedToCanvasDialog
+          open={!!embedTarget}
+          onOpenChange={(v) => !v && setEmbedTarget(null)}
+          examId={embedTarget.id}
+          examTitle={embedTarget.title}
+          questionCount={embedTarget.question_count}
+          config={canvasConfig}
+        />
+      )}
     </div>
   );
 }
