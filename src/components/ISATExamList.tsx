@@ -10,7 +10,7 @@ import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbu
 import { format } from "date-fns";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import PushISATToCanvasDialog from "@/components/PushISATToCanvasDialog";
-import { Copy } from "lucide-react";
+
 
 interface ISATExam {
   id: string;
