@@ -127,8 +127,9 @@ Current Bloom's Level: ${current_blooms || "Not set"}${answerContext}${answerJso
 
 Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's levels (Remember, Understand, Apply, Analyze, Evaluate, Create).${hasAnswers ? "\n\nCRITICAL: For each rewritten question, you MUST also provide rewritten_answers. The rewritten_answers MUST be in the EXACT same JSON structure/format as the current answers JSON shown above — same keys (id, text, weight for MC/TF; left, right for matching; parts for multi-step). Only change the text content to match the rewritten question. Keep the same number of answer options." : ""}`;
 
+    const isArrayAnswers = Array.isArray(answers);
     const answersProperty = hasAnswers
-      ? { rewritten_answers: { type: "object" as const, description: "Rewritten answer choices matching the rewritten question. Same JSON structure as original answers." } }
+      ? { rewritten_answers: { type: (isArrayAnswers ? "array" : "object") as const, description: `Rewritten answer choices matching the rewritten question. MUST use the EXACT same JSON structure as the original answers. ${isArrayAnswers ? "Return as a JSON array with same keys (id, text, weight, etc)." : "Return as a JSON object with same keys."}` } }
       : {};
 
     const answersRequired = hasAnswers ? ["rewritten_answers"] : [];
