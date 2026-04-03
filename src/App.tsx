@@ -111,7 +111,7 @@ const App = () => (
           <Route path="/activities/:id" element={<ProtectedRoute><ActivityEditorPage /></ProtectedRoute>} />
           <Route path="/reading-library" element={<ProtectedRoute><ReadingLibrary /></ProtectedRoute>} />
           <Route path="/library" element={<Navigate to="/admin/library" replace />} />
-          <Route path="/isat-exam/:id" element={<ProtectedRoute><ISATExamPlayer /></ProtectedRoute>} />
+          <Route path="/isat-exam/:id" element={<ISATExamPlayer />} />
           <Route path="/quiz-builder" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-builder/:id" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-analytics" element={<ProtectedRoute><QuizAnalytics /></ProtectedRoute>} />
