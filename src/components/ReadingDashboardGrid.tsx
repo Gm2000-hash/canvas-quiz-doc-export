@@ -184,6 +184,15 @@ export function ReadingDashboardGrid({
                       <Trash2 className="h-3 w-3" />
                     </button>
                   )}
+                  {onExportPdf && book.source_discipline && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onExportPdf(book); }}
+                      className="p-0.5 rounded text-muted-foreground hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                      title="Export as PDF"
+                    >
+                      <FileDown className="h-3 w-3" />
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
