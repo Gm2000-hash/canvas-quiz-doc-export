@@ -5,7 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { getCourses, getQuizzes, getQuiz, getQuizQuestions, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from '@/lib/canvas-api';
+import { getCourses, getQuizzes, getQuiz, getQuizQuestions, searchCourses, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from '@/lib/canvas-api';
 import { tagQuestionsWithStandards, type StandardMatch } from '@/lib/standards-api';
 import { exportQuizToDocx } from '@/lib/export-docx';
 import { saveQuestionsToBank } from '@/lib/question-bank';
