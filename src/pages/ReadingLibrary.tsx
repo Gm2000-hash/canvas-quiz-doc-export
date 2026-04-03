@@ -194,6 +194,32 @@ export default function ReadingLibrary() {
     }
   };
 
+  const handleExportPdf = async (book: LibraryBook) => {
+    if (!book.source_discipline || !user) return;
+    toast.info("Loading readings for export...");
+    try {
+      const { data: units } = await supabase
+        .from("units")
+        .select("id, title, sort_order")
+        .eq("user_id", user.id)
+        .eq("discipline", book.source_discipline)
+        .order("sort_order");
+      if (!units?.length) { toast.error("No units found for this discipline"); return; }
+      const unitMap: Record<string, string> = {};
+      units.forEach((u: any) => { unitMap[u.id] = u.title; });
+      const { data: lessons } = await supabase
+        .from("curriculum_lessons")
+        .select("*")
+        .eq("user_id", user.id)
+        .in("unit_id", units.map((u: any) => u.id))
+        .order("sort_order");
+      if (!lessons?.length) { toast.error("No readings found to export"); return; }
+      exportTextbookAsPdf(lessons as any, unitMap, book.title);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to export PDF");
+    }
+  };
+
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
