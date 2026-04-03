@@ -80,6 +80,7 @@ serve(withLogging("suggest-dok-blooms", async (req) => {
 
     // Build answer context for the AI
     let answerContext = "";
+    let answerJsonExample = "";
     if (answers) {
       if (Array.isArray(answers)) {
         // MC / Select-All / True-False / Matching
@@ -89,16 +90,20 @@ serve(withLogging("suggest-dok-blooms", async (req) => {
           return `  ${i + 1}. "${a.text}"${marker}`;
         }).join("\n");
         answerContext = `\nCurrent Answer Choices:\n${formatted}`;
+        answerJsonExample = `\nCurrent answers JSON (you MUST return rewritten_answers in this EXACT same JSON array format):\n${JSON.stringify(answers)}`;
       } else if (answers.parts) {
         answerContext = `\nCurrent Multi-Step Parts: ${JSON.stringify(answers.parts)}`;
+        answerJsonExample = `\nCurrent answers JSON (return rewritten_answers in this EXACT same format):\n${JSON.stringify(answers)}`;
       } else if (answers.categories) {
         answerContext = `\nCurrent Drag & Drop Categories: ${JSON.stringify(answers.categories)}`;
+        answerJsonExample = `\nCurrent answers JSON (return rewritten_answers in this EXACT same format):\n${JSON.stringify(answers)}`;
       } else if (answers.passage) {
         answerContext = `\nCurrent Passage: "${answers.passage}"`;
+        answerJsonExample = `\nCurrent answers JSON (return rewritten_answers in this EXACT same format):\n${JSON.stringify(answers)}`;
       }
     }
 
-    const hasAnswers = !!answerContext;
+    const hasAnswers = !!(answerContext && answerJsonExample);
 
     const systemPrompt = `You are an expert science education consultant specializing in Depth of Knowledge (DOK) and Bloom's Taxonomy alignment for middle school science assessments.
 
@@ -118,12 +123,13 @@ Focus on levels that differ from the current level. For the current level, just 
 Question Type: ${question_type || "multiple_choice_question"}
 Question Text: ${question_text}
 Current DOK Level: ${current_dok || "Not set"}
-Current Bloom's Level: ${current_blooms || "Not set"}${answerContext}
+Current Bloom's Level: ${current_blooms || "Not set"}${answerContext}${answerJsonExample}
 
-Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's levels (Remember, Understand, Apply, Analyze, Evaluate, Create).${hasAnswers ? "\n\nIMPORTANT: For each rewritten question, also provide rewritten_answers that match. Keep the same JSON structure as the current answers but update the text content to fit the rewritten question." : ""}`;
+Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's levels (Remember, Understand, Apply, Analyze, Evaluate, Create).${hasAnswers ? "\n\nCRITICAL: For each rewritten question, you MUST also provide rewritten_answers. The rewritten_answers MUST be in the EXACT same JSON structure/format as the current answers JSON shown above — same keys (id, text, weight for MC/TF; left, right for matching; parts for multi-step). Only change the text content to match the rewritten question. Keep the same number of answer options." : ""}`;
 
+    const isArrayAnswers = Array.isArray(answers);
     const answersProperty = hasAnswers
-      ? { rewritten_answers: { type: "object" as const, description: "Rewritten answer choices matching the rewritten question. Same JSON structure as original answers." } }
+      ? { rewritten_answers: { type: (isArrayAnswers ? "array" : "object") as const, description: `Rewritten answer choices matching the rewritten question. MUST use the EXACT same JSON structure as the original answers. ${isArrayAnswers ? "Return as a JSON array with same keys (id, text, weight, etc)." : "Return as a JSON object with same keys."}` } }
       : {};
 
     const answersRequired = hasAnswers ? ["rewritten_answers"] : [];

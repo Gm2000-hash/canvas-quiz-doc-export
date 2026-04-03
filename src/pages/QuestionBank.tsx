@@ -1723,7 +1723,9 @@ const QuestionBank = () => {
         answers={suggestionsQuestion?.answers}
         onApplySuggestion={(text, dok, blooms, newAnswers) => {
           if (suggestionsQuestion) {
-            const answersUpdate = newAnswers ? { answers: newAnswers } : {};
+            // Only use new answers if they're a valid array (for MC/TF/matching) or valid object (for multi-step/drag-drop)
+            const validAnswers = newAnswers && (Array.isArray(newAnswers) ? newAnswers.length > 0 : typeof newAnswers === 'object' && Object.keys(newAnswers).length > 0);
+            const answersUpdate = validAnswers ? { answers: newAnswers } : {};
             // If editing, update edit state; otherwise update the question directly
             if (editingQuestion && editingQuestion.id === suggestionsQuestion.id) {
               setEditText(text);
