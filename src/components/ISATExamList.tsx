@@ -190,6 +190,17 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
                   Push to Canvas
                 </Button>
               )}
+              {canvasConnected && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEmbedTarget(exam)}
+                  className="gap-1.5"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Embed in Canvas
+                </Button>
+              )}
               <Button
                 size="sm"
                 onClick={() => onTakeExam(exam.id)}
