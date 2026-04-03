@@ -115,12 +115,26 @@ serve(withLogging("canvas-proxy", async (req) => {
       case 'get_courses':
         url = `${baseUrl}/api/v1/courses?per_page=100&include[]=term&include[]=total_students`;
         break;
-      case 'search_courses': {
-        const { searchTerm } = parsedBody;
-        if (!searchTerm) throw new Error('searchTerm is required');
-        const encoded = encodeURIComponent(searchTerm);
-        url = `${baseUrl}/api/v1/courses?per_page=20&include[]=term&include[]=total_students&search_term=${encoded}`;
-        break;
+      case 'get_all_courses': {
+        // Fetch ALL courses across multiple pages with all enrollment states
+        const allCourses: any[] = [];
+        let page = 1;
+        let hasMore = true;
+        while (hasMore && page <= 10) {
+          const pageUrl = `${baseUrl}/api/v1/courses?per_page=100&page=${page}&include[]=term&include[]=total_students&state[]=available&state[]=completed&state[]=unpublished`;
+          const pageResp = await fetch(pageUrl, { headers: { 'Authorization': `Bearer ${apiToken}` } });
+          if (!pageResp.ok) break;
+          const pageData = await pageResp.json();
+          if (!Array.isArray(pageData) || pageData.length === 0) break;
+          allCourses.push(...pageData);
+          // Check Link header for next page
+          const linkHeader = pageResp.headers.get('Link') || '';
+          hasMore = linkHeader.includes('rel="next"');
+          page++;
+        }
+        return new Response(JSON.stringify(allCourses), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
       }
       case 'get_quizzes':
         if (!courseId) throw new Error('courseId is required');
