@@ -180,36 +180,40 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (!canvasConnected) {
-                    toast.error("Configure Canvas in Settings first");
-                    return;
-                  }
-                  handlePushToCanvas(exam);
-                }}
-                className="gap-1.5"
-              >
-                <Upload className="h-4 w-4" />
-                Push to Canvas
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (!canvasConnected) {
-                    toast.error("Configure Canvas in Settings first");
-                    return;
-                  }
-                  setEmbedTarget(exam);
-                }}
-                className="gap-1.5"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Embed in Canvas
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    Canvas
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (!canvasConnected) {
+                        toast.error("Configure Canvas in Settings first");
+                        return;
+                      }
+                      handlePushToCanvas(exam);
+                    }}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Push as Quiz
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (!canvasConnected) {
+                        toast.error("Configure Canvas in Settings first");
+                        return;
+                      }
+                      setEmbedTarget(exam);
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Embed as LTI Assignment
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 size="sm"
                 onClick={() => onTakeExam(exam.id)}
