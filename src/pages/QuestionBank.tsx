@@ -1720,20 +1720,31 @@ const QuestionBank = () => {
         questionType={suggestionsQuestion?.question_type || "multiple_choice_question"}
         currentDok={suggestionsQuestion?.dok_level ?? null}
         currentBlooms={suggestionsQuestion?.blooms_level ?? null}
-        onApplySuggestion={(text, dok, blooms) => {
+        answers={suggestionsQuestion?.answers}
+        onApplySuggestion={(text, dok, blooms, newAnswers) => {
           if (suggestionsQuestion) {
+            const answersUpdate = newAnswers ? { answers: newAnswers } : {};
             // If editing, update edit state; otherwise update the question directly
             if (editingQuestion && editingQuestion.id === suggestionsQuestion.id) {
               setEditText(text);
               setEditDok(dok);
               setEditBlooms(blooms);
+              if (newAnswers && Array.isArray(newAnswers)) {
+                setEditAnswers(newAnswers.map((a: any, i: number) => ({
+                  id: a.id || i,
+                  text: a.text || "",
+                  weight: a.weight ?? 0,
+                  left: a.left,
+                  right: a.right,
+                })));
+              }
             } else {
               // Apply directly via updateQuestion
-              updateQuestion(suggestionsQuestion.id, { question_text: text, dok_level: dok, blooms_level: blooms })
+              updateQuestion(suggestionsQuestion.id, { question_text: text, dok_level: dok, blooms_level: blooms, ...answersUpdate })
                 .then(() => {
                   setQuestions(prev => prev.map(q =>
                     q.id === suggestionsQuestion.id
-                      ? { ...q, question_text: text, dok_level: dok, blooms_level: blooms }
+                      ? { ...q, question_text: text, dok_level: dok, blooms_level: blooms, ...answersUpdate }
                       : q
                   ));
                   toast.success("Question updated with suggested version");
