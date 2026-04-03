@@ -179,28 +179,36 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
-              {canvasConnected && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePushToCanvas(exam)}
-                  className="gap-1.5"
-                >
-                  <Upload className="h-4 w-4" />
-                  Push to Canvas
-                </Button>
-              )}
-              {canvasConnected && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setEmbedTarget(exam)}
-                  className="gap-1.5"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Embed in Canvas
-                </Button>
-              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (!canvasConnected) {
+                    toast.error("Configure Canvas in Settings first");
+                    return;
+                  }
+                  handlePushToCanvas(exam);
+                }}
+                className="gap-1.5"
+              >
+                <Upload className="h-4 w-4" />
+                Push to Canvas
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (!canvasConnected) {
+                    toast.error("Configure Canvas in Settings first");
+                    return;
+                  }
+                  setEmbedTarget(exam);
+                }}
+                className="gap-1.5"
+              >
+                <ExternalLink className="h-4 w-4" />
+                Embed in Canvas
+              </Button>
               <Button
                 size="sm"
                 onClick={() => onTakeExam(exam.id)}
