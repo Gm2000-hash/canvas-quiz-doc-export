@@ -3,9 +3,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload, ExternalLink } from "lucide-react";
+import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload, ExternalLink, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import PushISATToCanvasDialog from "@/components/PushISATToCanvasDialog";
@@ -179,36 +180,40 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
               </div>
             </div>
             <div className="flex gap-2 shrink-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (!canvasConnected) {
-                    toast.error("Configure Canvas in Settings first");
-                    return;
-                  }
-                  handlePushToCanvas(exam);
-                }}
-                className="gap-1.5"
-              >
-                <Upload className="h-4 w-4" />
-                Push to Canvas
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  if (!canvasConnected) {
-                    toast.error("Configure Canvas in Settings first");
-                    return;
-                  }
-                  setEmbedTarget(exam);
-                }}
-                className="gap-1.5"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Embed in Canvas
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-1.5">
+                    Canvas
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (!canvasConnected) {
+                        toast.error("Configure Canvas in Settings first");
+                        return;
+                      }
+                      handlePushToCanvas(exam);
+                    }}
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Push as Quiz
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (!canvasConnected) {
+                        toast.error("Configure Canvas in Settings first");
+                        return;
+                      }
+                      setEmbedTarget(exam);
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Embed as LTI Assignment
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Button
                 size="sm"
                 onClick={() => onTakeExam(exam.id)}
