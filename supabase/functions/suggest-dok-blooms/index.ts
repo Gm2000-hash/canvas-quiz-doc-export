@@ -223,6 +223,40 @@ Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's level
 
     const suggestions = JSON.parse(toolCall.function.arguments);
 
+    // Validate rewritten_answers structure matches original
+    if (answers && Array.isArray(answers) && answers.length > 0) {
+      const validateAnswerArray = (arr: any) => {
+        if (!Array.isArray(arr) || arr.length === 0) return null;
+        // Check that items have the expected keys
+        const sample = answers[0];
+        const hasText = 'text' in sample;
+        const hasLeft = 'left' in sample;
+        for (const item of arr) {
+          if (typeof item !== 'object' || item === null) return null;
+          if (hasText && typeof item.text !== 'string') return null;
+          if (hasLeft && (typeof item.left !== 'string' || typeof item.right !== 'string')) return null;
+        }
+        // Ensure each item has proper id and weight
+        return arr.map((item: any, i: number) => ({
+          ...item,
+          id: item.id ?? answers[i]?.id ?? i + 1,
+          weight: item.weight ?? (hasText ? (i === 0 && !arr.some((a: any) => a.weight > 0) ? 100 : (item.weight ?? 0)) : undefined),
+        }));
+      };
+
+      for (const s of [...(suggestions.dok_suggestions || []), ...(suggestions.blooms_suggestions || [])]) {
+        if (s.rewritten_answers) {
+          const validated = validateAnswerArray(s.rewritten_answers);
+          if (validated) {
+            s.rewritten_answers = validated;
+          } else {
+            // Invalid format — remove so we don't corrupt data
+            delete s.rewritten_answers;
+          }
+        }
+      }
+    }
+
     return new Response(JSON.stringify(suggestions), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
