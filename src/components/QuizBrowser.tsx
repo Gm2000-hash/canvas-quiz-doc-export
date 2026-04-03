@@ -60,6 +60,12 @@ function loadCourseOrder(): number[] {
 function saveCourseOrder(order: number[]) {
   localStorage.setItem('course-tile-order', JSON.stringify(order));
 }
+function loadAddedCourses(): Course[] {
+  try { return JSON.parse(localStorage.getItem('course-added-manual') || '[]'); } catch { return []; }
+}
+function saveAddedCourses(courses: Course[]) {
+  localStorage.setItem('course-added-manual', JSON.stringify(courses));
+}
 function applyStoredOrder(courses: Course[]): Course[] {
   const order = loadCourseOrder();
   if (order.length === 0) return courses;
