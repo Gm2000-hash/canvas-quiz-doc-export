@@ -71,8 +71,8 @@ export async function getCourses(config: CanvasConfig): Promise<Course[]> {
   return canvasRequest(config, 'get_courses');
 }
 
-export async function searchCourses(config: CanvasConfig, searchTerm: string): Promise<Course[]> {
-  return canvasRequest(config, 'search_courses', { searchTerm });
+export async function getAllCourses(config: CanvasConfig): Promise<Course[]> {
+  return canvasRequest(config, 'get_all_courses');
 }
 
 export async function getQuizzes(config: CanvasConfig, courseId: number): Promise<Quiz[]> {
