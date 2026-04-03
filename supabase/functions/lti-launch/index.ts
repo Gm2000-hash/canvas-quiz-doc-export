@@ -184,9 +184,14 @@ serve(async (req) => {
 
     // Redirect to the activity with the LTI session ID
     const appUrl = Deno.env.get('LTI_APP_URL') || 'https://canvas-quiz-doc-export.lovable.app';
-    const activityUrl = activityId
-      ? `${appUrl}/activities/${activityId}/play?lti_session=${sessionId}`
-      : `${appUrl}/stress-navigator?lti_session=${sessionId}`;
+    let activityUrl: string;
+    if (isatExamId) {
+      activityUrl = `${appUrl}/isat-exam/${isatExamId}?lti_session=${sessionId}`;
+    } else if (activityId) {
+      activityUrl = `${appUrl}/activities/${activityId}/play?lti_session=${sessionId}`;
+    } else {
+      activityUrl = `${appUrl}/stress-navigator?lti_session=${sessionId}`;
+    }
 
     return new Response(null, {
       status: 302,
