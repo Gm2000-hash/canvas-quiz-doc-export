@@ -5,10 +5,11 @@ import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload } from "lucide-react";
+import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload, ExternalLink } from "lucide-react";
 import { format } from "date-fns";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import PushISATToCanvasDialog from "@/components/PushISATToCanvasDialog";
+import PushISATEmbedToCanvasDialog from "@/components/PushISATEmbedToCanvasDialog";
 
 interface ISATExam {
   id: string;
@@ -41,6 +42,7 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
   const [deleteTarget, setDeleteTarget] = useState<ISATExam | null>(null);
   const [pushTarget, setPushTarget] = useState<ISATExam | null>(null);
   const [pushQuestions, setPushQuestions] = useState<any[]>([]);
+  const [embedTarget, setEmbedTarget] = useState<ISATExam | null>(null);
   const { config: canvasConfig, isConfigured: canvasConnected } = useCanvasConfig();
 
   const loadExams = async () => {
@@ -188,6 +190,17 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
                   Push to Canvas
                 </Button>
               )}
+              {canvasConnected && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setEmbedTarget(exam)}
+                  className="gap-1.5"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Embed in Canvas
+                </Button>
+              )}
               <Button
                 size="sm"
                 onClick={() => onTakeExam(exam.id)}
@@ -231,6 +244,16 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
           onOpenChange={(v) => !v && setPushTarget(null)}
           examTitle={pushTarget.title}
           questions={pushQuestions}
+          config={canvasConfig}
+        />
+      )}
+      {canvasConnected && canvasConfig && embedTarget && (
+        <PushISATEmbedToCanvasDialog
+          open={!!embedTarget}
+          onOpenChange={(v) => !v && setEmbedTarget(null)}
+          examId={embedTarget.id}
+          examTitle={embedTarget.title}
+          questionCount={embedTarget.question_count}
           config={canvasConfig}
         />
       )}
