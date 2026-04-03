@@ -195,15 +195,17 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {
-                      if (!canvasConnected) {
-                        toast.error("Configure Canvas in Settings first");
-                        return;
-                      }
-                      setEmbedTarget(exam);
+                      const embedUrl = `https://canvas-quiz-doc-export.lovable.app/isat-exam/${exam.id}`;
+                      const iframeHtml = `<iframe src="${embedUrl}" width="100%" height="600" style="border:none;" allowfullscreen></iframe>`;
+                      navigator.clipboard.writeText(iframeHtml).then(() => {
+                        toast.success("Embed code copied to clipboard");
+                      }).catch(() => {
+                        toast.error("Failed to copy embed code");
+                      });
                     }}
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Embed as LTI Assignment
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Embed Code
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
