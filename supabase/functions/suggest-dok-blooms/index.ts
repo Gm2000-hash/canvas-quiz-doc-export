@@ -129,7 +129,18 @@ Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's level
 
     const isArrayAnswers = Array.isArray(answers);
     const answersProperty = hasAnswers
-      ? { rewritten_answers: { type: (isArrayAnswers ? "array" : "object") as const, description: `Rewritten answer choices matching the rewritten question. MUST use the EXACT same JSON structure as the original answers. ${isArrayAnswers ? "Return as a JSON array with same keys (id, text, weight, etc)." : "Return as a JSON object with same keys."}` } }
+      ? {
+          rewritten_answers: isArrayAnswers
+            ? {
+                type: "array" as const,
+                description: `Rewritten answer choices. MUST use the EXACT same JSON structure as the original answers with same keys (id, text, weight, etc).`,
+                items: { type: "object" as const, description: "An answer choice object with the same keys as the original." },
+              }
+            : {
+                type: "object" as const,
+                description: `Rewritten answers object. MUST use the EXACT same JSON structure as the original answers with same keys.`,
+              },
+        }
       : {};
 
     const answersRequired = hasAnswers ? ["rewritten_answers"] : [];
