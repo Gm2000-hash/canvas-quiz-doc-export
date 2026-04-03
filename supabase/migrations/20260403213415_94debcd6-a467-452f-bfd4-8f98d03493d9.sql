@@ -1,0 +1,1 @@
+CREATE POLICY "Public can view exams by id" ON public.isat_exams FOR SELECT TO anon USING (true);
