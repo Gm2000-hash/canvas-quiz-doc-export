@@ -115,6 +115,13 @@ serve(withLogging("canvas-proxy", async (req) => {
       case 'get_courses':
         url = `${baseUrl}/api/v1/courses?per_page=100&include[]=term&include[]=total_students`;
         break;
+      case 'search_courses': {
+        const { searchTerm } = parsedBody;
+        if (!searchTerm) throw new Error('searchTerm is required');
+        const encoded = encodeURIComponent(searchTerm);
+        url = `${baseUrl}/api/v1/courses?per_page=20&include[]=term&include[]=total_students&search_term=${encoded}`;
+        break;
+      }
       case 'get_quizzes':
         if (!courseId) throw new Error('courseId is required');
         url = `${baseUrl}/api/v1/courses/${courseId}/quizzes?per_page=100`;
