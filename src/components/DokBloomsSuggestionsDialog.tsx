@@ -13,6 +13,7 @@ interface DokSuggestion {
   level_name: string;
   explanation: string;
   rewritten_question: string;
+  rewritten_answers?: any;
   is_current: boolean;
 }
 
@@ -20,6 +21,7 @@ interface BloomsSuggestion {
   level: string;
   explanation: string;
   rewritten_question: string;
+  rewritten_answers?: any;
   is_current: boolean;
 }
 
@@ -35,7 +37,8 @@ interface Props {
   questionType: string;
   currentDok: number | null;
   currentBlooms: string | null;
-  onApplySuggestion?: (text: string, dok: number, blooms: string) => void;
+  answers?: any;
+  onApplySuggestion?: (text: string, dok: number, blooms: string, answers?: any) => void;
 }
 
 export default function DokBloomsSuggestionsDialog({
@@ -45,6 +48,7 @@ export default function DokBloomsSuggestionsDialog({
   questionType,
   currentDok,
   currentBlooms,
+  answers,
   onApplySuggestion,
 }: Props) {
   const [loading, setLoading] = useState(false);
@@ -61,6 +65,7 @@ export default function DokBloomsSuggestionsDialog({
           question_type: questionType,
           current_dok: currentDok,
           current_blooms: currentBlooms,
+          answers: answers || undefined,
         },
       });
 
@@ -208,7 +213,7 @@ export default function DokBloomsSuggestionsDialog({
                       onApplySuggestion
                         ? () => {
                             const bloomsForDok: Record<number, string> = { 1: "Remember", 2: "Apply", 3: "Analyze", 4: "Create" };
-                            onApplySuggestion(s.rewritten_question, s.level, bloomsForDok[s.level] || currentBlooms || "Remember");
+                            onApplySuggestion(s.rewritten_question, s.level, bloomsForDok[s.level] || currentBlooms || "Remember", s.rewritten_answers);
                             onOpenChange(false);
                           }
                         : undefined
@@ -231,7 +236,7 @@ export default function DokBloomsSuggestionsDialog({
                     onApplySuggestion
                       ? () => {
                           const dokForBlooms: Record<string, number> = { Remember: 1, Understand: 2, Apply: 2, Analyze: 3, Evaluate: 3, Create: 4 };
-                          onApplySuggestion(s.rewritten_question, dokForBlooms[s.level] || currentDok || 1, s.level);
+                          onApplySuggestion(s.rewritten_question, dokForBlooms[s.level] || currentDok || 1, s.level, s.rewritten_answers);
                           onOpenChange(false);
                         }
                       : undefined
