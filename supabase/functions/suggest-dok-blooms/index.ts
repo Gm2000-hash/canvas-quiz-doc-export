@@ -128,17 +128,32 @@ Current Bloom's Level: ${current_blooms || "Not set"}${answerContext}${answerJso
 Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's levels (Remember, Understand, Apply, Analyze, Evaluate, Create).${hasAnswers ? "\n\nCRITICAL: For each rewritten question, you MUST also provide rewritten_answers. The rewritten_answers MUST be in the EXACT same JSON structure/format as the current answers JSON shown above — same keys (id, text, weight for MC/TF; left, right for matching; parts for multi-step). Only change the text content to match the rewritten question. Keep the same number of answer options." : ""}`;
 
     const isArrayAnswers = Array.isArray(answers);
+
+    // Build a precise items schema from the actual answer structure
+    let answersItemsSchema: Record<string, any> = {};
+    if (hasAnswers && isArrayAnswers && answers.length > 0) {
+      const sample = answers[0];
+      const props: Record<string, any> = {};
+      const req: string[] = [];
+      if ('id' in sample) { props.id = { type: typeof sample.id === 'number' ? 'number' : 'string' }; req.push('id'); }
+      if ('text' in sample) { props.text = { type: 'string', description: 'Answer choice text' }; req.push('text'); }
+      if ('html' in sample) { props.html = { type: 'string', description: 'Answer choice HTML' }; }
+      if ('weight' in sample) { props.weight = { type: 'number', description: '100 for correct, 0 for incorrect' }; req.push('weight'); }
+      if ('left' in sample) { props.left = { type: 'string' }; props.right = { type: 'string' }; req.push('left', 'right'); }
+      answersItemsSchema = { type: 'object' as const, properties: props, required: req };
+    }
+
     const answersProperty = hasAnswers
       ? {
           rewritten_answers: isArrayAnswers
             ? {
                 type: "array" as const,
-                description: `Rewritten answer choices. MUST use the EXACT same JSON structure as the original answers with same keys (id, text, weight, etc).`,
-                items: { type: "object" as const, description: "An answer choice object with the same keys as the original." },
+                description: `Rewritten answer choices. MUST have the same number of items as the original (${Array.isArray(answers) ? answers.length : 'N/A'}). Use the EXACT same keys per item.`,
+                items: Object.keys(answersItemsSchema).length > 0 ? answersItemsSchema : { type: "object" as const },
               }
             : {
                 type: "object" as const,
-                description: `Rewritten answers object. MUST use the EXACT same JSON structure as the original answers with same keys.`,
+                description: `Rewritten answers object. MUST use the EXACT same JSON structure as the original answers.`,
               },
         }
       : {};
