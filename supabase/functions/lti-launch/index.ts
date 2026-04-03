@@ -116,10 +116,17 @@ serve(async (req) => {
 
     // Determine activity ID from custom claims or target_link_uri
     let activityId = customClaims.activity_id || '';
+    let isatExamId = '';
     if (!activityId && targetLinkUri) {
-      // Try to extract from URL like /activities/{id}/play
-      const match = targetLinkUri.match(/\/activities\/([^/]+)/);
-      if (match) activityId = match[1];
+      // Try to extract ISAT exam ID from URL like /isat-exam/{id}
+      const isatMatch = targetLinkUri.match(/\/isat-exam\/([^/?#]+)/);
+      if (isatMatch) {
+        isatExamId = isatMatch[1];
+      } else {
+        // Try to extract activity ID from URL like /activities/{id}/play
+        const match = targetLinkUri.match(/\/activities\/([^/]+)/);
+        if (match) activityId = match[1];
+      }
     }
 
     // Extract lineitem URL for grade passback
