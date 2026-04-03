@@ -132,7 +132,12 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
   useEffect(() => {
     setLoadingCourses(true);
     getCourses(config)
-      .then(c => setCourses(applyStoredOrder(c)))
+      .then(c => {
+        const added = loadAddedCourses();
+        const existingIds = new Set(c.map(x => x.id));
+        const merged = [...c, ...added.filter(a => !existingIds.has(a.id))];
+        setCourses(applyStoredOrder(merged));
+      })
       .catch(() => toast.error('Failed to load courses'))
       .finally(() => setLoadingCourses(false));
   }, [config]);
