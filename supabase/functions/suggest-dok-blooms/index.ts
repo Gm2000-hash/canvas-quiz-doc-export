@@ -64,7 +64,7 @@ serve(withLogging("suggest-dok-blooms", async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const { question_text, question_type, current_dok, current_blooms } = parsedBody;
+    const { question_text, question_type, current_dok, current_blooms, answers } = parsedBody;
 
     if (!question_text?.trim()) {
       return new Response(JSON.stringify({ error: "question_text is required" }), {
@@ -78,6 +78,28 @@ serve(withLogging("suggest-dok-blooms", async (req) => {
       throw new Error("LOVABLE_API_KEY is not configured");
     }
 
+    // Build answer context for the AI
+    let answerContext = "";
+    if (answers) {
+      if (Array.isArray(answers)) {
+        // MC / Select-All / True-False / Matching
+        const formatted = answers.map((a: any, i: number) => {
+          if (a.left !== undefined) return `  ${i + 1}. "${a.left}" → "${a.right}"`;
+          const marker = a.weight > 0 ? " ✓" : "";
+          return `  ${i + 1}. "${a.text}"${marker}`;
+        }).join("\n");
+        answerContext = `\nCurrent Answer Choices:\n${formatted}`;
+      } else if (answers.parts) {
+        answerContext = `\nCurrent Multi-Step Parts: ${JSON.stringify(answers.parts)}`;
+      } else if (answers.categories) {
+        answerContext = `\nCurrent Drag & Drop Categories: ${JSON.stringify(answers.categories)}`;
+      } else if (answers.passage) {
+        answerContext = `\nCurrent Passage: "${answers.passage}"`;
+      }
+    }
+
+    const hasAnswers = !!answerContext;
+
     const systemPrompt = `You are an expert science education consultant specializing in Depth of Knowledge (DOK) and Bloom's Taxonomy alignment for middle school science assessments.
 
 Given a question, provide specific, actionable suggestions for how to modify or rewrite it to target each DOK level (1-4) and each Bloom's level (Remember, Understand, Apply, Analyze, Evaluate, Create).
@@ -85,6 +107,7 @@ Given a question, provide specific, actionable suggestions for how to modify or 
 For each level, provide:
 1. A brief explanation of what changes are needed
 2. A concrete rewritten version of the question at that level
+${hasAnswers ? "3. Rewritten answer choices that match the rewritten question. Keep the same format (number of choices, correct/incorrect marking) but update the text to align with the new question." : ""}
 
 Keep the same science content/topic but adjust cognitive demand. Be specific and practical — these suggestions should be directly usable by a teacher.
 
@@ -95,9 +118,15 @@ Focus on levels that differ from the current level. For the current level, just 
 Question Type: ${question_type || "multiple_choice_question"}
 Question Text: ${question_text}
 Current DOK Level: ${current_dok || "Not set"}
-Current Bloom's Level: ${current_blooms || "Not set"}
+Current Bloom's Level: ${current_blooms || "Not set"}${answerContext}
 
-Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's levels (Remember, Understand, Apply, Analyze, Evaluate, Create).`;
+Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's levels (Remember, Understand, Apply, Analyze, Evaluate, Create).${hasAnswers ? "\n\nIMPORTANT: For each rewritten question, also provide rewritten_answers that match. Keep the same JSON structure as the current answers but update the text content to fit the rewritten question." : ""}`;
+
+    const answersProperty = hasAnswers
+      ? { rewritten_answers: { type: "object" as const, description: "Rewritten answer choices matching the rewritten question. Same JSON structure as original answers." } }
+      : {};
+
+    const answersRequired = hasAnswers ? ["rewritten_answers"] : [];
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -131,8 +160,9 @@ Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's level
                         explanation: { type: "string", description: "Brief explanation of what changes are needed" },
                         rewritten_question: { type: "string", description: "The question rewritten at this DOK level" },
                         is_current: { type: "boolean", description: "Whether this matches the current level" },
+                        ...answersProperty,
                       },
-                      required: ["level", "level_name", "explanation", "rewritten_question", "is_current"],
+                      required: ["level", "level_name", "explanation", "rewritten_question", "is_current", ...answersRequired],
                     },
                   },
                   blooms_suggestions: {
@@ -145,8 +175,9 @@ Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's level
                         explanation: { type: "string", description: "Brief explanation of what changes are needed" },
                         rewritten_question: { type: "string", description: "The question rewritten at this Bloom's level" },
                         is_current: { type: "boolean", description: "Whether this matches the current level" },
+                        ...answersProperty,
                       },
-                      required: ["level", "explanation", "rewritten_question", "is_current"],
+                      required: ["level", "explanation", "rewritten_question", "is_current", ...answersRequired],
                     },
                   },
                 },

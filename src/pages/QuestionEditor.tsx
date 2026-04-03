@@ -175,10 +175,12 @@ export default function QuestionEditor() {
         questionType={questionType}
         currentDok={dokLevel}
         currentBlooms={bloomsLevel}
-        onApplySuggestion={(text, dok, blooms) => {
+        answers={answers}
+        onApplySuggestion={(text, dok, blooms, newAnswers) => {
           setQuestionText(text);
           setDokLevel(dok);
           setBloomsLevel(blooms);
+          if (newAnswers) setAnswers(newAnswers);
         }}
       />
     </div>
