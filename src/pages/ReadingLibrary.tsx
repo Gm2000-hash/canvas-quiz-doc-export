@@ -419,6 +419,7 @@ export default function ReadingLibrary() {
             onShare={handleShare}
             onEditCover={setCoverPickerBook}
             onDelete={handleDelete}
+            onExportPdf={handleExportPdf}
             openingId={openingId}
             sharingId={sharingId}
             copiedId={copiedId}
