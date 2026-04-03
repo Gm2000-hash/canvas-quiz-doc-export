@@ -61,6 +61,7 @@ export function ReadingDashboardGrid({
   onShare,
   onEditCover,
   onDelete,
+  onExportPdf,
   openingId,
   sharingId,
   copiedId,
