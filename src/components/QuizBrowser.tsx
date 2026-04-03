@@ -166,6 +166,36 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
     setDragIdx(null); setDragOverIdx(null); setDragSection(null);
   };
 
+  const handleSearch = async () => {
+    if (!searchQuery.trim()) return;
+    setSearching(true);
+    try {
+      const results = await searchCourses(config, searchQuery.trim());
+      const existingIds = new Set(courses.map(c => c.id));
+      setSearchResults(results.filter(c => !existingIds.has(c.id)));
+    } catch {
+      toast.error('Failed to search courses');
+    } finally {
+      setSearching(false);
+    }
+  };
+
+  const addCourseFromSearch = (course: Course) => {
+    setCourses(prev => {
+      const next = [...prev, course];
+      saveCourseOrder(next.map(c => c.id));
+      return next;
+    });
+    setSearchResults(prev => prev.filter(c => c.id !== course.id));
+    toast.success(`Added "${course.name}" to your courses`);
+  };
+
+  const closeSearch = () => {
+    setShowSearch(false);
+    setSearchQuery('');
+    setSearchResults([]);
+  };
+
   const handleSelectCourse = (course: Course) => {
     setSelectedCourse(course);
     setSelectedQuizId('');
