@@ -166,35 +166,37 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
     setDragIdx(null); setDragOverIdx(null); setDragSection(null);
   };
 
-  const handleSearch = async () => {
-    if (!searchQuery.trim()) return;
-    setSearching(true);
-    try {
-      const results = await searchCourses(config, searchQuery.trim());
-      const existingIds = new Set(courses.map(c => c.id));
-      setSearchResults(results.filter(c => !existingIds.has(c.id)));
-    } catch {
-      toast.error('Failed to search courses');
-    } finally {
-      setSearching(false);
+  const handleOpenAddCourse = async () => {
+    setShowAddCourse(true);
+    if (allCanvasCourses.length === 0) {
+      setLoadingAllCourses(true);
+      try {
+        const all = await getAllCourses(config);
+        setAllCanvasCourses(all);
+      } catch {
+        toast.error('Failed to load all courses from Canvas');
+      } finally {
+        setLoadingAllCourses(false);
+      }
     }
   };
 
-  const addCourseFromSearch = (course: Course) => {
+  const addCourseFromList = (course: Course) => {
     setCourses(prev => {
       const next = [...prev, course];
       saveCourseOrder(next.map(c => c.id));
       return next;
     });
-    setSearchResults(prev => prev.filter(c => c.id !== course.id));
     toast.success(`Added "${course.name}" to your courses`);
   };
 
-  const closeSearch = () => {
-    setShowSearch(false);
-    setSearchQuery('');
-    setSearchResults([]);
-  };
+  const availableToAdd = useMemo(() => {
+    const existingIds = new Set(courses.map(c => c.id));
+    const filtered = allCanvasCourses.filter(c => !existingIds.has(c.id));
+    if (!addCourseFilter.trim()) return filtered;
+    const q = addCourseFilter.toLowerCase();
+    return filtered.filter(c => c.name.toLowerCase().includes(q) || (c.course_code || '').toLowerCase().includes(q));
+  }, [allCanvasCourses, courses, addCourseFilter]);
 
   const handleSelectCourse = (course: Course) => {
     setSelectedCourse(course);
