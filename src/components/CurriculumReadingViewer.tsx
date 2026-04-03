@@ -20,6 +20,7 @@ import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { toast } from 'sonner';
 import type { CurriculumLesson } from '@/hooks/useCurriculum';
 import { LessonStandardsPicker } from '@/components/LessonStandardsPicker';
+import { exportReadingAsPdf, exportTextbookAsPdf } from '@/lib/export-reading-pdf';
 
 interface CurriculumReadingViewerProps {
   discipline: string;
