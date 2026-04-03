@@ -22,6 +22,7 @@ import { ReadingDashboardGrid } from "@/components/ReadingDashboardGrid";
 import { useDashboardLayout } from "@/hooks/useDashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { exportTextbookAsPdf } from "@/lib/export-reading-pdf";
 
 interface LibraryBook {
   id: string;
