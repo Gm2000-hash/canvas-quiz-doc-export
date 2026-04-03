@@ -60,6 +60,12 @@ function loadCourseOrder(): number[] {
 function saveCourseOrder(order: number[]) {
   localStorage.setItem('course-tile-order', JSON.stringify(order));
 }
+function loadAddedCourses(): Course[] {
+  try { return JSON.parse(localStorage.getItem('course-added-manual') || '[]'); } catch { return []; }
+}
+function saveAddedCourses(courses: Course[]) {
+  localStorage.setItem('course-added-manual', JSON.stringify(courses));
+}
 function applyStoredOrder(courses: Course[]): Course[] {
   const order = loadCourseOrder();
   if (order.length === 0) return courses;
@@ -126,7 +132,12 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
   useEffect(() => {
     setLoadingCourses(true);
     getCourses(config)
-      .then(c => setCourses(applyStoredOrder(c)))
+      .then(c => {
+        const added = loadAddedCourses();
+        const existingIds = new Set(c.map(x => x.id));
+        const merged = [...c, ...added.filter(a => !existingIds.has(a.id))];
+        setCourses(applyStoredOrder(merged));
+      })
       .catch(() => toast.error('Failed to load courses'))
       .finally(() => setLoadingCourses(false));
   }, [config]);
@@ -187,6 +198,10 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
       saveCourseOrder(next.map(c => c.id));
       return next;
     });
+    // Persist manually added courses
+    const added = loadAddedCourses();
+    added.push(course);
+    saveAddedCourses(added);
     toast.success(`Added "${course.name}" to your courses`);
   };
 
