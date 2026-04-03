@@ -126,14 +126,7 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <p className="text-sm text-muted-foreground">{exams.length} exam{exams.length !== 1 ? "s" : ""}</p>
-          {!canvasConnected && (
-            <p className="text-xs text-muted-foreground/70 italic">
-              Configure Canvas in Settings to push exams to your LMS
-            </p>
-          )}
-        </div>
+        <p className="text-sm text-muted-foreground">{exams.length} exam{exams.length !== 1 ? "s" : ""}</p>
         <Button size="sm" onClick={onGenerateNew} className="gap-1.5">
           <Sparkles className="h-4 w-4" />
           Generate New Exam
