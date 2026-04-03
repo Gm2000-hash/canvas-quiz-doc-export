@@ -23,6 +23,7 @@ interface ReadingDashboardGridProps {
   onShare: (book: LibraryBook) => void;
   onEditCover?: (book: LibraryBook) => void;
   onDelete?: (book: LibraryBook) => void;
+  onExportPdf?: (book: LibraryBook) => void;
   openingId: string | null;
   sharingId: string | null;
   copiedId: string | null;
