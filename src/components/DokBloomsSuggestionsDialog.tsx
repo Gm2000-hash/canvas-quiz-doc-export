@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Loader2, Lightbulb, Copy, Check, Sparkles } from "lucide-react";
+import { Loader2, Lightbulb, Copy, Check, Sparkles, CheckCircle2, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -39,6 +39,62 @@ interface Props {
   currentBlooms: string | null;
   answers?: any;
   onApplySuggestion?: (text: string, dok: number, blooms: string, answers?: any) => void;
+}
+
+function AnswerPreview({ answers }: { answers: any }) {
+  if (!answers) return null;
+
+  // Array answers (MC, TF, Select All, Matching)
+  if (Array.isArray(answers) && answers.length > 0) {
+    const isMatching = answers[0]?.left !== undefined;
+    if (isMatching) {
+      return (
+        <div className="mt-2 space-y-1">
+          <p className="text-xs font-medium text-muted-foreground">Answer Choices:</p>
+          {answers.map((a: any, i: number) => (
+            <div key={i} className="flex items-center gap-2 text-xs text-muted-foreground pl-2">
+              <span className="font-medium">{a.left}</span>
+              <span>→</span>
+              <span>{a.right}</span>
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return (
+      <div className="mt-2 space-y-1">
+        <p className="text-xs font-medium text-muted-foreground">Answer Choices:</p>
+        {answers.map((a: any, i: number) => (
+          <div key={i} className="flex items-center gap-1.5 text-xs pl-2">
+            {a.weight > 0 ? (
+              <CheckCircle2 className="h-3 w-3 text-success shrink-0" />
+            ) : (
+              <XCircle className="h-3 w-3 text-muted-foreground/40 shrink-0" />
+            )}
+            <span className={a.weight > 0 ? "text-foreground font-medium" : "text-muted-foreground"}>
+              {a.text || a.html || `Option ${i + 1}`}
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  // Multi-step
+  if (answers?.parts && Array.isArray(answers.parts)) {
+    return (
+      <div className="mt-2 space-y-1">
+        <p className="text-xs font-medium text-muted-foreground">Parts:</p>
+        {answers.parts.map((p: any, i: number) => (
+          <div key={i} className="text-xs text-muted-foreground pl-2">
+            <span className="font-medium">{p.label}:</span> {p.prompt}
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return null;
 }
 
 export default function DokBloomsSuggestionsDialog({
@@ -118,6 +174,7 @@ export default function DokBloomsSuggestionsDialog({
     colorClass,
     explanation,
     rewrittenQuestion,
+    rewrittenAnswers,
     isCurrent,
     id,
     onApply,
@@ -126,6 +183,7 @@ export default function DokBloomsSuggestionsDialog({
     colorClass: string;
     explanation: string;
     rewrittenQuestion: string;
+    rewrittenAnswers?: any;
     isCurrent: boolean;
     id: string;
     onApply?: () => void;
@@ -143,6 +201,7 @@ export default function DokBloomsSuggestionsDialog({
         <p className="text-sm text-muted-foreground">{explanation}</p>
         <div className="bg-muted/50 rounded-md p-3 text-sm leading-relaxed">
           {rewrittenQuestion}
+          <AnswerPreview answers={rewrittenAnswers} />
         </div>
         <div className="flex gap-2">
           <Button
@@ -208,6 +267,7 @@ export default function DokBloomsSuggestionsDialog({
                     colorClass={dokColors[s.level] || ""}
                     explanation={s.explanation}
                     rewrittenQuestion={s.rewritten_question}
+                    rewrittenAnswers={s.rewritten_answers}
                     isCurrent={s.is_current}
                     onApply={
                       onApplySuggestion
@@ -231,6 +291,7 @@ export default function DokBloomsSuggestionsDialog({
                   colorClass={bloomsColors[s.level] || ""}
                   explanation={s.explanation}
                   rewrittenQuestion={s.rewritten_question}
+                  rewrittenAnswers={s.rewritten_answers}
                   isCurrent={s.is_current}
                   onApply={
                     onApplySuggestion
