@@ -198,6 +198,10 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
       saveCourseOrder(next.map(c => c.id));
       return next;
     });
+    // Persist manually added courses
+    const added = loadAddedCourses();
+    added.push(course);
+    saveAddedCourses(added);
     toast.success(`Added "${course.name}" to your courses`);
   };
 
