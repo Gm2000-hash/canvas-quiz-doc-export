@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -72,6 +72,8 @@ export default function ISATExamPlayer() {
   usePageTitle("ISAT Practice Exam");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const ltiSessionId = searchParams.get("lti_session");
   const [exam, setExam] = useState<ExamData | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentQ, setCurrentQ] = useState(0);
@@ -183,6 +185,30 @@ export default function ISATExamPlayer() {
       setSubmitted(true);
       setShowSummary(true);
       toast.success(`Exam submitted! Auto-scored: ${totalScore}/${totalPoints} points`);
+
+      // LTI grade passback if launched from Canvas
+      if (ltiSessionId) {
+        try {
+          const { data: gradeResult, error: gradeError } = await supabase.functions.invoke('lti-score', {
+            body: {
+              sessionId: ltiSessionId,
+              score: totalScore,
+              maxScore: totalPoints,
+              activityId: `isat-exam-${exam.id}`,
+            },
+          });
+          if (gradeError) {
+            console.error('LTI grade passback error:', gradeError);
+            toast.info("Score saved but grade passback to Canvas failed");
+          } else if (gradeResult?.gradePosted) {
+            toast.success("Score posted to Canvas gradebook");
+          } else {
+            toast.info(gradeResult?.message || "Score saved locally");
+          }
+        } catch (e) {
+          console.error('LTI grade passback error:', e);
+        }
+      }
     } catch {
       toast.error("Failed to submit exam");
     } finally {
