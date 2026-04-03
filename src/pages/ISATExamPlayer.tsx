@@ -72,6 +72,8 @@ export default function ISATExamPlayer() {
   usePageTitle("ISAT Practice Exam");
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const ltiSessionId = searchParams.get("lti_session");
   const [exam, setExam] = useState<ExamData | null>(null);
   const [loading, setLoading] = useState(true);
   const [currentQ, setCurrentQ] = useState(0);
