@@ -6,11 +6,11 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload, ExternalLink, ChevronDown } from "lucide-react";
+import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload, ChevronDown, Copy } from "lucide-react";
 import { format } from "date-fns";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import PushISATToCanvasDialog from "@/components/PushISATToCanvasDialog";
-import PushISATEmbedToCanvasDialog from "@/components/PushISATEmbedToCanvasDialog";
+
 
 interface ISATExam {
   id: string;
@@ -43,7 +43,7 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
   const [deleteTarget, setDeleteTarget] = useState<ISATExam | null>(null);
   const [pushTarget, setPushTarget] = useState<ISATExam | null>(null);
   const [pushQuestions, setPushQuestions] = useState<any[]>([]);
-  const [embedTarget, setEmbedTarget] = useState<ISATExam | null>(null);
+  
   const { config: canvasConfig, isConfigured: canvasConnected } = useCanvasConfig();
 
   const loadExams = async () => {
@@ -195,15 +195,17 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {
-                      if (!canvasConnected) {
-                        toast.error("Configure Canvas in Settings first");
-                        return;
-                      }
-                      setEmbedTarget(exam);
+                      const embedUrl = `https://canvas-quiz-doc-export.lovable.app/isat-exam/${exam.id}`;
+                      const iframeHtml = `<iframe src="${embedUrl}" width="100%" height="600" style="border:none;" allowfullscreen></iframe>`;
+                      navigator.clipboard.writeText(iframeHtml).then(() => {
+                        toast.success("Embed code copied to clipboard");
+                      }).catch(() => {
+                        toast.error("Failed to copy embed code");
+                      });
                     }}
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Embed as LTI Assignment
+                    <Copy className="h-4 w-4 mr-2" />
+                    Copy Embed Code
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -250,16 +252,6 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
           onOpenChange={(v) => !v && setPushTarget(null)}
           examTitle={pushTarget.title}
           questions={pushQuestions}
-          config={canvasConfig}
-        />
-      )}
-      {canvasConnected && canvasConfig && embedTarget && (
-        <PushISATEmbedToCanvasDialog
-          open={!!embedTarget}
-          onOpenChange={(v) => !v && setEmbedTarget(null)}
-          examId={embedTarget.id}
-          examTitle={embedTarget.title}
-          questionCount={embedTarget.question_count}
           config={canvasConfig}
         />
       )}
