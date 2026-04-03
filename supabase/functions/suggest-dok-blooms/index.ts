@@ -123,9 +123,9 @@ Focus on levels that differ from the current level. For the current level, just 
 Question Type: ${question_type || "multiple_choice_question"}
 Question Text: ${question_text}
 Current DOK Level: ${current_dok || "Not set"}
-Current Bloom's Level: ${current_blooms || "Not set"}${answerContext}
+Current Bloom's Level: ${current_blooms || "Not set"}${answerContext}${answerJsonExample}
 
-Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's levels (Remember, Understand, Apply, Analyze, Evaluate, Create).${hasAnswers ? "\n\nIMPORTANT: For each rewritten question, also provide rewritten_answers that match. Keep the same JSON structure as the current answers but update the text content to fit the rewritten question." : ""}`;
+Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's levels (Remember, Understand, Apply, Analyze, Evaluate, Create).${hasAnswers ? "\n\nCRITICAL: For each rewritten question, you MUST also provide rewritten_answers. The rewritten_answers MUST be in the EXACT same JSON structure/format as the current answers JSON shown above — same keys (id, text, weight for MC/TF; left, right for matching; parts for multi-step). Only change the text content to match the rewritten question. Keep the same number of answer options." : ""}`;
 
     const answersProperty = hasAnswers
       ? { rewritten_answers: { type: "object" as const, description: "Rewritten answer choices matching the rewritten question. Same JSON structure as original answers." } }
