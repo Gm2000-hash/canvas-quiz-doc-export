@@ -3,7 +3,7 @@ import { GridLayout, verticalCompactor } from "react-grid-layout";
 import type { LayoutItem } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { FileText, Link2, Check, Loader2, RotateCcw, ImageIcon, Trash2 } from "lucide-react";
+import { FileText, Link2, Check, Loader2, RotateCcw, ImageIcon, Trash2, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -23,6 +23,7 @@ interface ReadingDashboardGridProps {
   onShare: (book: LibraryBook) => void;
   onEditCover?: (book: LibraryBook) => void;
   onDelete?: (book: LibraryBook) => void;
+  onExportPdf?: (book: LibraryBook) => void;
   openingId: string | null;
   sharingId: string | null;
   copiedId: string | null;
@@ -60,6 +61,7 @@ export function ReadingDashboardGrid({
   onShare,
   onEditCover,
   onDelete,
+  onExportPdf,
   openingId,
   sharingId,
   copiedId,
@@ -180,6 +182,15 @@ export function ReadingDashboardGrid({
                       title="Delete book"
                     >
                       <Trash2 className="h-3 w-3" />
+                    </button>
+                  )}
+                  {onExportPdf && book.source_discipline && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); onExportPdf(book); }}
+                      className="p-0.5 rounded text-muted-foreground hover:text-primary transition-colors opacity-0 group-hover:opacity-100"
+                      title="Export as PDF"
+                    >
+                      <FileDown className="h-3 w-3" />
                     </button>
                   )}
                 </div>

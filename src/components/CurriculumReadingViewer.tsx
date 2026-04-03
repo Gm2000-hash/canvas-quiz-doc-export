@@ -12,7 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RichTextEditor } from '@/components/RichTextEditor';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save, Undo2, Redo2, Sparkles, Target, Trash2, RotateCcw } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, BookOpen, Upload, Loader2, CheckCircle, Search, List, Pencil, Save, Undo2, Redo2, Sparkles, Target, Trash2, RotateCcw, FileDown } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { ReadingEditToolbar, ItemToolbar, type EditorAction, type SectionKind } from '@/components/ReadingEditToolbar';
@@ -20,6 +20,7 @@ import { useUndoRedo } from '@/hooks/useUndoRedo';
 import { toast } from 'sonner';
 import type { CurriculumLesson } from '@/hooks/useCurriculum';
 import { LessonStandardsPicker } from '@/components/LessonStandardsPicker';
+import { exportReadingAsPdf, exportTextbookAsPdf } from '@/lib/export-reading-pdf';
 
 interface CurriculumReadingViewerProps {
   discipline: string;
@@ -445,6 +446,12 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
               </Button>
               <Button variant="outline" size="sm" className="gap-2" onClick={startEditing}>
                 <Pencil className="h-3.5 w-3.5" /> Edit
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => lesson && currentLesson !== null && exportReadingAsPdf(lesson, currentLesson)}>
+                <FileDown className="h-3.5 w-3.5" /> Export PDF
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={() => exportTextbookAsPdf(lessons, unitMap, title)}>
+                <FileDown className="h-3.5 w-3.5" /> Export Textbook
               </Button>
               <AlertDialog>
                 <AlertDialogTrigger asChild>

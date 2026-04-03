@@ -15,13 +15,14 @@ import { useToast } from "@/hooks/use-toast";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import {
   Sparkles, Search, FileText, BookOpenCheck, Share2, Copy, Check, Link2, Loader2,
-  LayoutGrid, List, LayoutDashboard, Upload, ImageIcon, Trash2,
+  LayoutGrid, List, LayoutDashboard, Upload, ImageIcon, Trash2, FileDown,
 } from "lucide-react";
 import { generatePdfThumbnail } from "@/lib/pdf-thumbnail";
 import { ReadingDashboardGrid } from "@/components/ReadingDashboardGrid";
 import { useDashboardLayout } from "@/hooks/useDashboardLayout";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+import { exportTextbookAsPdf } from "@/lib/export-reading-pdf";
 
 interface LibraryBook {
   id: string;
@@ -190,6 +191,32 @@ export default function ReadingLibrary() {
     } catch (err: any) {
       console.error("Delete failed:", err);
       toast.error("Failed to delete book");
+    }
+  };
+
+  const handleExportPdf = async (book: LibraryBook) => {
+    if (!book.source_discipline || !user) return;
+    toast.info("Loading readings for export...");
+    try {
+      const { data: units } = await supabase
+        .from("units")
+        .select("id, title, sort_order")
+        .eq("user_id", user.id)
+        .eq("discipline", book.source_discipline)
+        .order("sort_order");
+      if (!units?.length) { toast.error("No units found for this discipline"); return; }
+      const unitMap: Record<string, string> = {};
+      units.forEach((u: any) => { unitMap[u.id] = u.title; });
+      const { data: lessons } = await supabase
+        .from("curriculum_lessons")
+        .select("*")
+        .eq("user_id", user.id)
+        .in("unit_id", units.map((u: any) => u.id))
+        .order("sort_order");
+      if (!lessons?.length) { toast.error("No readings found to export"); return; }
+      exportTextbookAsPdf(lessons as any, unitMap, book.title);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to export PDF");
     }
   };
 
@@ -392,6 +419,7 @@ export default function ReadingLibrary() {
             onShare={handleShare}
             onEditCover={setCoverPickerBook}
             onDelete={handleDelete}
+            onExportPdf={handleExportPdf}
             openingId={openingId}
             sharingId={sharingId}
             copiedId={copiedId}
