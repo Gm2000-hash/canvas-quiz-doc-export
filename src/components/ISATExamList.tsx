@@ -42,6 +42,7 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
   const [deleteTarget, setDeleteTarget] = useState<ISATExam | null>(null);
   const [pushTarget, setPushTarget] = useState<ISATExam | null>(null);
   const [pushQuestions, setPushQuestions] = useState<any[]>([]);
+  const [embedTarget, setEmbedTarget] = useState<ISATExam | null>(null);
   const { config: canvasConfig, isConfigured: canvasConnected } = useCanvasConfig();
 
   const loadExams = async () => {
