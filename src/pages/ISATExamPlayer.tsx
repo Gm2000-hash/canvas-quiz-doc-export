@@ -84,6 +84,8 @@ export default function ISATExamPlayer() {
   const [revealedHints, setRevealedHints] = useState<Set<number>>(new Set());
   const [showSummary, setShowSummary] = useState(false);
 
+  const isEmbedded = window.self !== window.top;
+
   useEffect(() => {
     if (!id) return;
     (async () => {
@@ -95,7 +97,7 @@ export default function ISATExamPlayer() {
 
       if (error || !data) {
         toast.error("Exam not found");
-        navigate("/question-bank");
+        if (!isEmbedded) navigate("/question-bank");
         return;
       }
 
@@ -167,19 +169,24 @@ export default function ISATExamPlayer() {
 
       const hintsCount = revealedHints.size;
 
-      const { error } = await supabase
-        .from("isat_exams")
-        .update({
-          answers: studentAnswers as any,
-          score: totalScore,
-          total_points: totalPoints,
-          hints_used: hintsCount,
-          completed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        } as any)
-        .eq("id", exam.id) as any;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const isAuthenticated = !!sessionData?.session;
 
-      if (error) throw error;
+      if (isAuthenticated) {
+        const { error } = await supabase
+          .from("isat_exams")
+          .update({
+            answers: studentAnswers as any,
+            score: totalScore,
+            total_points: totalPoints,
+            hints_used: hintsCount,
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          } as any)
+          .eq("id", exam.id) as any;
+
+        if (error) console.warn("Could not save exam results:", error.message);
+      }
 
       setExam((prev) => prev ? { ...prev, score: totalScore, total_points: totalPoints, hints_used: hintsCount, completed_at: new Date().toISOString(), answers: studentAnswers } : prev);
       setSubmitted(true);
@@ -530,10 +537,12 @@ export default function ISATExamPlayer() {
                 Retake
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={() => navigate("/question-bank")} className="gap-1.5">
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
+            {!isEmbedded && (
+              <Button variant="ghost" size="sm" onClick={() => navigate("/question-bank")} className="gap-1.5">
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+            )}
           </div>
         </div>
 
