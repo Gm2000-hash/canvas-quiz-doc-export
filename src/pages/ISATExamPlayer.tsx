@@ -84,6 +84,8 @@ export default function ISATExamPlayer() {
   const [revealedHints, setRevealedHints] = useState<Set<number>>(new Set());
   const [showSummary, setShowSummary] = useState(false);
 
+  const isEmbedded = window.self !== window.top;
+
   useEffect(() => {
     if (!id) return;
     (async () => {
@@ -95,7 +97,7 @@ export default function ISATExamPlayer() {
 
       if (error || !data) {
         toast.error("Exam not found");
-        navigate("/question-bank");
+        if (!isEmbedded) navigate("/question-bank");
         return;
       }
 
