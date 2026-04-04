@@ -169,19 +169,24 @@ export default function ISATExamPlayer() {
 
       const hintsCount = revealedHints.size;
 
-      const { error } = await supabase
-        .from("isat_exams")
-        .update({
-          answers: studentAnswers as any,
-          score: totalScore,
-          total_points: totalPoints,
-          hints_used: hintsCount,
-          completed_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        } as any)
-        .eq("id", exam.id) as any;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const isAuthenticated = !!sessionData?.session;
 
-      if (error) throw error;
+      if (isAuthenticated) {
+        const { error } = await supabase
+          .from("isat_exams")
+          .update({
+            answers: studentAnswers as any,
+            score: totalScore,
+            total_points: totalPoints,
+            hints_used: hintsCount,
+            completed_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          } as any)
+          .eq("id", exam.id) as any;
+
+        if (error) console.warn("Could not save exam results:", error.message);
+      }
 
       setExam((prev) => prev ? { ...prev, score: totalScore, total_points: totalPoints, hints_used: hintsCount, completed_at: new Date().toISOString(), answers: studentAnswers } : prev);
       setSubmitted(true);
