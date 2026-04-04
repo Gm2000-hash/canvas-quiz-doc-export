@@ -89,24 +89,51 @@ export default function ISATExamPlayer() {
   useEffect(() => {
     if (!id) return;
     (async () => {
-      const { data, error } = await supabase
-        .from("isat_exams")
-        .select("*")
-        .eq("id", id)
-        .single() as any;
+      // Check if user is authenticated
+      const { data: sessionData } = await supabase.auth.getSession();
+      const isAuthenticated = !!sessionData?.session;
 
-      if (error || !data) {
-        toast.error("Exam not found");
-        if (!isEmbedded) navigate("/question-bank");
-        return;
+      if (isAuthenticated) {
+        // Authenticated users get full exam data (answers, scores, etc.)
+        const { data, error } = await supabase
+          .from("isat_exams")
+          .select("*")
+          .eq("id", id)
+          .single() as any;
+
+        if (error || !data) {
+          toast.error("Exam not found");
+          if (!isEmbedded) navigate("/question-bank");
+          return;
+        }
+
+        setExam(data as ExamData);
+        if (data.completed_at && data.answers) {
+          setStudentAnswers(data.answers);
+          setSubmitted(true);
+          setShowSummary(true);
+        }
+      } else {
+        // Public access: use secure function that only returns content fields
+        const { data, error } = await supabase
+          .rpc("get_public_exam", { _exam_id: id }) as any;
+
+        if (error || !data || data.length === 0) {
+          toast.error("Exam not found");
+          return;
+        }
+
+        const exam = data[0];
+        setExam({
+          ...exam,
+          answers: null,
+          score: null,
+          total_points: null,
+          completed_at: null,
+          hints_used: 0,
+        } as ExamData);
       }
 
-      setExam(data as ExamData);
-      if (data.completed_at && data.answers) {
-        setStudentAnswers(data.answers);
-        setSubmitted(true);
-        setShowSummary(true);
-      }
       setLoading(false);
     })();
   }, [id]);

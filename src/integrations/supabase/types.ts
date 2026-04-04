@@ -778,6 +778,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_exam: {
+        Args: { _exam_id: string }
+        Returns: {
+          grade_level: string
+          hints_enabled: boolean
+          id: string
+          question_count: number
+          questions: Json
+          title: string
+        }[]
+      }
       get_published_books: {
         Args: never
         Returns: {
