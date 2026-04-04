@@ -537,10 +537,12 @@ export default function ISATExamPlayer() {
                 Retake
               </Button>
             )}
-            <Button variant="ghost" size="sm" onClick={() => navigate("/question-bank")} className="gap-1.5">
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
+            {!isEmbedded && (
+              <Button variant="ghost" size="sm" onClick={() => navigate("/question-bank")} className="gap-1.5">
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+            )}
           </div>
         </div>
 
