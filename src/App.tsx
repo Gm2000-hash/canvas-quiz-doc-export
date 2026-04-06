@@ -25,6 +25,7 @@ import ReadingLibrary from "./pages/ReadingLibrary";
 import SharedReading from "./pages/SharedReading";
 import ISATExamPlayer from "./pages/ISATExamPlayer";
 import ISATExamEditor from "./pages/ISATExamEditor";
+import ISATReviewPage from "./pages/ISATReviewPage";
 import QuizBuilder from "./pages/QuizBuilder";
 import QuizAnalytics from "./pages/QuizAnalytics";
 import StressNavigator from "./pages/StressNavigator";
@@ -114,6 +115,7 @@ const App = () => (
           <Route path="/library" element={<Navigate to="/admin/library" replace />} />
           <Route path="/isat-exam/:id" element={<ISATExamPlayer />} />
           <Route path="/isat-exam/:id/edit" element={<ProtectedRoute><ISATExamEditor /></ProtectedRoute>} />
+          <Route path="/isat-exam/:id/review" element={<ISATReviewPage />} />
           <Route path="/quiz-builder" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-builder/:id" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-analytics" element={<ProtectedRoute><QuizAnalytics /></ProtectedRoute>} />

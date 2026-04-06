@@ -12,7 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, FileText, Clock, Send, RotateCcw, Lightbulb, BarChart3 } from "lucide-react";
+import { Loader2, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, FileText, Clock, Send, RotateCcw, Lightbulb, BarChart3, BookOpen } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ExamSummaryPanel } from "@/components/ExamSummaryPanel";
@@ -550,6 +550,17 @@ export default function ISATExamPlayer() {
             </div>
           </div>
           <div className="flex gap-2">
+            {submitted && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/isat-exam/${id}/review`)}
+                className="gap-1.5"
+              >
+                <BookOpen className="h-4 w-4" />
+                Study Materials
+              </Button>
+            )}
             {submitted && (
               <Button
                 variant={showSummary ? "default" : "outline"}

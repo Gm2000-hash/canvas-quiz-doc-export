@@ -13,7 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Loader2, ArrowLeft, Save, Trash2, Plus, GripVertical,
-  ChevronUp, ChevronDown, Sparkles, X,
+  ChevronUp, ChevronDown, Sparkles, X, BookOpen,
 } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
@@ -61,6 +61,7 @@ export default function ISATExamEditor() {
   const [selectedQ, setSelectedQ] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const [dirty, setDirty] = useState(false);
+  const [generatingReview, setGeneratingReview] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -182,6 +183,32 @@ export default function ISATExamEditor() {
         <div className="flex-1" />
         <div className="flex items-center gap-2">
           {dirty && <span className="text-xs text-amber-600 font-medium">Unsaved changes</span>}
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={generatingReview}
+            onClick={async () => {
+              if (!id) return;
+              setGeneratingReview(true);
+              try {
+                const { data, error } = await supabase.functions.invoke("generate-exam-review", {
+                  body: { exam_id: id },
+                });
+                if (error) throw error;
+                if (data?.error) throw new Error(data.error);
+                toast.success("Review materials generated!");
+                window.open(`/isat-exam/${id}/review`, "_blank");
+              } catch (e: any) {
+                toast.error(e.message || "Failed to generate review");
+              } finally {
+                setGeneratingReview(false);
+              }
+            }}
+            className="gap-1.5"
+          >
+            {generatingReview ? <Loader2 className="h-4 w-4 animate-spin" /> : <BookOpen className="h-4 w-4" />}
+            {generatingReview ? "Generating..." : "Generate Review"}
+          </Button>
           <Button variant="outline" size="sm" onClick={() => navigate(`/isat-exam/${id}`)} className="gap-1.5">
             <ArrowLeft className="h-4 w-4" /> Back
           </Button>
