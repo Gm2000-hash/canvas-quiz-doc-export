@@ -83,6 +83,58 @@ export default function ISATReviewPage() {
   const card = flashcards[cardIdx];
   const knownPct = flashcards.length ? Math.round((known.size / flashcards.length) * 100) : 0;
 
+  const handleExportPdf = () => {
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+      toast.error("Please allow popups to export PDF");
+      return;
+    }
+
+    const studyHtml = studyGuide.map(s =>
+      `<div class="section"><h2>${s.title}</h2><div>${s.content}</div>${s.key_points?.length ? `<div class="key-points"><p><strong>Key Takeaways:</strong></p><ul>${s.key_points.map(p => `<li>${p}</li>`).join("")}</ul></div>` : ""}</div>`
+    ).join("");
+
+    const flashcardsHtml = flashcards.map(f =>
+      `<div class="card"><p class="term">${f.term}</p><p>${f.definition}</p>${f.example ? `<p class="example">Example: ${f.example}</p>` : ""}</div>`
+    ).join("");
+
+    const lessonHtml = reviewLesson ? `
+      <h2>${reviewLesson.title}</h2>
+      ${reviewLesson.objectives?.length ? `<div class="objectives"><p><strong>Learning Objectives:</strong></p><ul>${reviewLesson.objectives.map(o => `<li>${o}</li>`).join("")}</ul></div>` : ""}
+      <div>${reviewLesson.introduction}</div>
+      ${reviewLesson.sections?.map(s => `<div class="section"><h3>${s.title}</h3><div>${s.content}</div></div>`).join("") || ""}
+      ${reviewLesson.summary ? `<div class="summary"><h3>Summary</h3><div>${reviewLesson.summary}</div></div>` : ""}
+      ${reviewLesson.practice_questions?.length ? `<div class="practice"><h3>Practice Questions</h3>${reviewLesson.practice_questions.map((pq, i) => `<div class="pq"><p><strong>${i + 1}. ${pq.question}</strong></p><p class="answer">Answer: ${pq.answer}</p></div>`).join("")}</div>` : ""}
+    ` : "";
+
+    printWindow.document.write(`<!DOCTYPE html><html><head><title>Review: ${examTitle}</title>
+      <style>
+        body { font-family: system-ui, sans-serif; max-width: 800px; margin: 0 auto; padding: 40px 30px; color: #1a1a1a; font-size: 14px; line-height: 1.6; }
+        h1 { font-size: 24px; border-bottom: 2px solid #2563eb; padding-bottom: 8px; margin-bottom: 24px; }
+        h2 { font-size: 18px; color: #2563eb; margin-top: 28px; }
+        h3 { font-size: 15px; margin-top: 16px; }
+        .section { margin-bottom: 20px; page-break-inside: avoid; }
+        .key-points { background: #f1f5f9; border-radius: 8px; padding: 12px 16px; margin-top: 8px; }
+        .key-points ul { margin: 4px 0; padding-left: 20px; }
+        .divider { border-top: 1px solid #e2e8f0; margin: 32px 0; }
+        .card { border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; margin-bottom: 10px; page-break-inside: avoid; }
+        .term { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+        .example { color: #64748b; font-style: italic; }
+        .objectives ul { margin: 4px 0; padding-left: 20px; }
+        .summary { background: #eff6ff; border-radius: 8px; padding: 12px 16px; margin-top: 16px; }
+        .pq { margin-bottom: 12px; }
+        .answer { color: #2563eb; padding-left: 16px; border-left: 3px solid #2563eb; }
+        @media print { body { padding: 20px; } }
+      </style></head><body>
+      <h1>📚 Review: ${examTitle}</h1>
+      ${studyHtml ? `<h2>Study Guide</h2>${studyHtml}` : ""}
+      ${flashcardsHtml ? `<div class="divider"></div><h2>Flashcards</h2>${flashcardsHtml}` : ""}
+      ${lessonHtml ? `<div class="divider"></div>${lessonHtml}` : ""}
+    </body></html>`);
+    printWindow.document.close();
+    setTimeout(() => printWindow.print(), 500);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {!isEmbedded && (
@@ -90,10 +142,13 @@ export default function ISATReviewPage() {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-lg font-bold">Review: {examTitle}</h1>
             <p className="text-xs text-muted-foreground">Study materials to help you prepare</p>
           </div>
+          <Button variant="outline" size="sm" className="gap-1.5" onClick={handleExportPdf}>
+            <FileDown className="h-4 w-4" /> Export PDF
+          </Button>
         </div>
       )}
 
