@@ -9,16 +9,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { RichTextEditor } from "@/components/RichTextEditor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import {
   Loader2, ArrowLeft, Save, Trash2, Plus, GripVertical,
-  ChevronUp, ChevronDown, Sparkles, X, BookOpen,
+  ChevronUp, ChevronDown, Sparkles, X, BookOpen, FileText,
 } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { MediaInsert } from "@/components/activities/editors/MediaInsert";
 import { moveItem } from "@/components/activities/editors/ReorderControls";
+import { ReviewMaterialsEditor } from "@/components/ReviewMaterialsEditor";
 import type { MediaEmbed } from "@/lib/h5p-types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
