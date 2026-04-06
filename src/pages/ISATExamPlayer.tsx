@@ -552,6 +552,17 @@ export default function ISATExamPlayer() {
           <div className="flex gap-2">
             {submitted && (
               <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate(`/isat-exam/${id}/review`)}
+                className="gap-1.5"
+              >
+                <BookOpen className="h-4 w-4" />
+                Study Materials
+              </Button>
+            )}
+            {submitted && (
+              <Button
                 variant={showSummary ? "default" : "outline"}
                 size="sm"
                 onClick={() => setShowSummary(s => !s)}
