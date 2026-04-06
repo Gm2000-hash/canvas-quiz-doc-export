@@ -39,6 +39,7 @@ const GRADE_LABELS: Record<string, string> = {
 };
 
 export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: Props) {
+  const navigate = useNavigate();
   const [exams, setExams] = useState<ISATExam[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<ISATExam | null>(null);
