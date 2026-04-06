@@ -203,6 +203,47 @@ export type Database = {
         }
         Relationships: []
       }
+      exam_review_materials: {
+        Row: {
+          created_at: string
+          exam_id: string
+          flashcards: Json
+          id: string
+          review_lesson: Json
+          study_guide: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          exam_id: string
+          flashcards?: Json
+          id?: string
+          review_lesson?: Json
+          study_guide?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          exam_id?: string
+          flashcards?: Json
+          id?: string
+          review_lesson?: Json
+          study_guide?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exam_review_materials_exam_id_fkey"
+            columns: ["exam_id"]
+            isOneToOne: true
+            referencedRelation: "isat_exams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       h5p_activities: {
         Row: {
           activity_type: string
@@ -787,6 +828,17 @@ export type Database = {
           question_count: number
           questions: Json
           title: string
+        }[]
+      }
+      get_public_review: {
+        Args: { _exam_id: string }
+        Returns: {
+          exam_id: string
+          exam_title: string
+          flashcards: Json
+          id: string
+          review_lesson: Json
+          study_guide: Json
         }[]
       }
       get_published_books: {
