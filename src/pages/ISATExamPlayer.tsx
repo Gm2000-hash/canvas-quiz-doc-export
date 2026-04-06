@@ -28,6 +28,8 @@ interface ExamQuestion {
   blooms_level: string;
   hint?: string;
   answers: any;
+  image_url?: string;
+  media?: { url: string; type: string };
 }
 
 interface ExamData {
