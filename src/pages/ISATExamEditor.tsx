@@ -64,6 +64,7 @@ export default function ISATExamEditor() {
   const [deleteTarget, setDeleteTarget] = useState<number | null>(null);
   const [dirty, setDirty] = useState(false);
   const [generatingReview, setGeneratingReview] = useState(false);
+  const [editorMode, setEditorMode] = useState<"questions" | "review">("questions");
 
   useEffect(() => {
     if (!id) return;
