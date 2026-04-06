@@ -6,8 +6,9 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload, ChevronDown, Copy } from "lucide-react";
+import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload, ChevronDown, Copy, Pencil } from "lucide-react";
 import { format } from "date-fns";
+import { useNavigate } from "react-router-dom";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import PushISATToCanvasDialog from "@/components/PushISATToCanvasDialog";
 
@@ -38,6 +39,7 @@ const GRADE_LABELS: Record<string, string> = {
 };
 
 export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: Props) {
+  const navigate = useNavigate();
   const [exams, setExams] = useState<ISATExam[]>([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState<ISATExam | null>(null);
@@ -209,6 +211,15 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => navigate(`/isat-exam/${exam.id}/edit`)}
+                className="gap-1.5"
+              >
+                <Pencil className="h-4 w-4" />
+                Edit
+              </Button>
               <Button
                 size="sm"
                 onClick={() => onTakeExam(exam.id)}
