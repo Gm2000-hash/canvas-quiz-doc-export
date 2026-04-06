@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, ArrowLeft, BookOpen, Layers, GraduationCap, RotateCcw, ChevronLeft, ChevronRight, Check, X } from "lucide-react";
+import { Loader2, ArrowLeft, BookOpen, Layers, GraduationCap, RotateCcw, ChevronLeft, ChevronRight, Check, X, FileDown } from "lucide-react";
 import { RichContent } from "@/components/activities/players/RichContent";
 
 interface StudySection {
