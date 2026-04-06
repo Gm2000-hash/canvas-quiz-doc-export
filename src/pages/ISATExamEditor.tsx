@@ -236,193 +236,201 @@ export default function ISATExamEditor() {
         </div>
       </header>
 
-      <div className="flex h-[calc(100vh-3.5rem)]">
-        {/* Left sidebar: question list */}
-        <div className="w-72 border-r border-border bg-muted/30 flex flex-col">
-          <div className="p-3 border-b border-border space-y-2">
-            <Input
-              value={title}
-              onChange={e => { setTitle(e.target.value); markDirty(); }}
-              placeholder="Exam title"
-              className="text-sm font-medium"
-            />
-          </div>
-          <ScrollArea className="flex-1">
-            <div className="p-2 space-y-1">
-              {questions.map((question, i) => (
-                <button
-                  key={i}
-                  onClick={() => setSelectedQ(i)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors
-                    ${i === selectedQ ? "bg-primary/10 border border-primary/30 font-medium" : "hover:bg-accent"}
-                  `}
-                >
-                  <span className="text-xs text-muted-foreground w-5 shrink-0">{i + 1}</span>
-                  <span className="truncate flex-1">
-                    {question.question_text?.replace(/<[^>]*>/g, '').slice(0, 50) || "New question"}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </ScrollArea>
-          <div className="p-2 border-t border-border">
-            <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={addQuestion}>
-              <Plus className="h-4 w-4" /> Add Question
-            </Button>
-          </div>
-        </div>
-
-        {/* Right: question editor */}
-        <div className="flex-1 overflow-y-auto">
-          {q ? (
-            <div className="max-w-3xl mx-auto py-6 px-6 space-y-6">
-              {/* Reorder & delete controls */}
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <GripVertical className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm font-semibold">Question {selectedQ + 1} of {questions.length}</span>
-                  <Button
-                    size="icon" variant="ghost" className="h-7 w-7"
-                    disabled={selectedQ === 0}
-                    onClick={() => moveQuestion(selectedQ, -1)}
-                  >
-                    <ChevronUp className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    size="icon" variant="ghost" className="h-7 w-7"
-                    disabled={selectedQ === questions.length - 1}
-                    onClick={() => moveQuestion(selectedQ, 1)}
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </div>
-                <Button
-                  variant="ghost" size="sm"
-                  className="text-destructive gap-1.5"
-                  onClick={() => setDeleteTarget(selectedQ)}
-                  disabled={questions.length <= 1}
-                >
-                  <Trash2 className="h-4 w-4" /> Remove
-                </Button>
-              </div>
-
-              {/* Question type & metadata */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="col-span-2 space-y-1.5">
-                  <Label className="text-xs">Question Type</Label>
-                  <Select
-                    value={q.question_type}
-                    onValueChange={v => updateQuestion(selectedQ, { question_type: v })}
-                  >
-                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {QUESTION_TYPES.map(t => (
-                        <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Points</Label>
-                  <Input
-                    type="number" min={1}
-                    value={q.points_possible}
-                    onChange={e => updateQuestion(selectedQ, { points_possible: Number(e.target.value) || 1 })}
-                    className="h-9 text-sm"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">DOK Level</Label>
-                  <Select
-                    value={String(q.dok_level)}
-                    onValueChange={v => updateQuestion(selectedQ, { dok_level: Number(v) })}
-                  >
-                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {[1, 2, 3, 4].map(n => (
-                        <SelectItem key={n} value={String(n)}>DOK {n}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Standard Code</Label>
-                  <Input
-                    value={q.standard_code || ""}
-                    onChange={e => updateQuestion(selectedQ, { standard_code: e.target.value })}
-                    placeholder="e.g. MS-PS1-2"
-                    className="h-9 text-sm"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label className="text-xs">Bloom's Level</Label>
-                  <Select
-                    value={q.blooms_level || "Remember"}
-                    onValueChange={v => updateQuestion(selectedQ, { blooms_level: v })}
-                  >
-                    <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      {["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"].map(b => (
-                        <SelectItem key={b} value={b}>{b}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Question text */}
-              <div className="space-y-1.5">
-                <Label className="text-xs">Question Text</Label>
-                <RichTextEditor
-                  content={q.question_text}
-                  onChange={html => updateQuestion(selectedQ, { question_text: html })}
-                  placeholder="Enter question text..."
-                  compact
-                />
-              </div>
-
-              {/* Media / Image */}
-              <div className="space-y-1.5">
-                <Label className="text-xs">Media / Image</Label>
-                <AIImageGenerator
-                  questionText={q.question_text}
-                  questionType={q.question_type}
-                  currentImageUrl={q.image_url}
-                  currentMedia={q.media}
-                  onImageGenerated={(url) => updateQuestion(selectedQ, { image_url: url, media: undefined })}
-                  onMediaChange={(media) => updateQuestion(selectedQ, { media })}
-                  onRemoveImage={() => updateQuestion(selectedQ, { image_url: undefined })}
-                />
-              </div>
-
-              {/* Hint */}
-              <div className="space-y-1.5">
-                <Label className="text-xs">Hint (shown to students on request)</Label>
-                <Textarea
-                  value={q.hint || ""}
-                  onChange={e => updateQuestion(selectedQ, { hint: e.target.value })}
-                  placeholder="Optional hint..."
-                  rows={2}
-                  className="text-sm"
-                />
-              </div>
-
-              {/* Answer editor based on type */}
-              <AnswerEditor
-                question={q}
-                onChange={(answers) => updateQuestion(selectedQ, { answers })}
+      {editorMode === "questions" ? (
+        <div className="flex h-[calc(100vh-3.5rem)]">
+          {/* Left sidebar: question list */}
+          <div className="w-72 border-r border-border bg-muted/30 flex flex-col">
+            <div className="p-3 border-b border-border space-y-2">
+              <Input
+                value={title}
+                onChange={e => { setTitle(e.target.value); markDirty(); }}
+                placeholder="Exam title"
+                className="text-sm font-medium"
               />
             </div>
-          ) : (
-            <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-              Select a question from the sidebar or add a new one.
+            <ScrollArea className="flex-1">
+              <div className="p-2 space-y-1">
+                {questions.map((question, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setSelectedQ(i)}
+                    className={`w-full text-left px-3 py-2 rounded-lg text-sm flex items-center gap-2 transition-colors
+                      ${i === selectedQ ? "bg-primary/10 border border-primary/30 font-medium" : "hover:bg-accent"}
+                    `}
+                  >
+                    <span className="text-xs text-muted-foreground w-5 shrink-0">{i + 1}</span>
+                    <span className="truncate flex-1">
+                      {question.question_text?.replace(/<[^>]*>/g, '').slice(0, 50) || "New question"}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </ScrollArea>
+            <div className="p-2 border-t border-border">
+              <Button variant="outline" size="sm" className="w-full gap-1.5" onClick={addQuestion}>
+                <Plus className="h-4 w-4" /> Add Question
+              </Button>
             </div>
-          )}
+          </div>
+
+          {/* Right: question editor */}
+          <div className="flex-1 overflow-y-auto">
+            {q ? (
+              <div className="max-w-3xl mx-auto py-6 px-6 space-y-6">
+                {/* Reorder & delete controls */}
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <GripVertical className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-sm font-semibold">Question {selectedQ + 1} of {questions.length}</span>
+                    <Button
+                      size="icon" variant="ghost" className="h-7 w-7"
+                      disabled={selectedQ === 0}
+                      onClick={() => moveQuestion(selectedQ, -1)}
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="icon" variant="ghost" className="h-7 w-7"
+                      disabled={selectedQ === questions.length - 1}
+                      onClick={() => moveQuestion(selectedQ, 1)}
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Button
+                    variant="ghost" size="sm"
+                    className="text-destructive gap-1.5"
+                    onClick={() => setDeleteTarget(selectedQ)}
+                    disabled={questions.length <= 1}
+                  >
+                    <Trash2 className="h-4 w-4" /> Remove
+                  </Button>
+                </div>
+
+                {/* Question type & metadata */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="col-span-2 space-y-1.5">
+                    <Label className="text-xs">Question Type</Label>
+                    <Select
+                      value={q.question_type}
+                      onValueChange={v => updateQuestion(selectedQ, { question_type: v })}
+                    >
+                      <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {QUESTION_TYPES.map(t => (
+                          <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Points</Label>
+                    <Input
+                      type="number" min={1}
+                      value={q.points_possible}
+                      onChange={e => updateQuestion(selectedQ, { points_possible: Number(e.target.value) || 1 })}
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">DOK Level</Label>
+                    <Select
+                      value={String(q.dok_level)}
+                      onValueChange={v => updateQuestion(selectedQ, { dok_level: Number(v) })}
+                    >
+                      <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {[1, 2, 3, 4].map(n => (
+                          <SelectItem key={n} value={String(n)}>DOK {n}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Standard Code</Label>
+                    <Input
+                      value={q.standard_code || ""}
+                      onChange={e => updateQuestion(selectedQ, { standard_code: e.target.value })}
+                      placeholder="e.g. MS-PS1-2"
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Bloom's Level</Label>
+                    <Select
+                      value={q.blooms_level || "Remember"}
+                      onValueChange={v => updateQuestion(selectedQ, { blooms_level: v })}
+                    >
+                      <SelectTrigger className="h-9 text-sm"><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        {["Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"].map(b => (
+                          <SelectItem key={b} value={b}>{b}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                {/* Question text */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Question Text</Label>
+                  <RichTextEditor
+                    content={q.question_text}
+                    onChange={html => updateQuestion(selectedQ, { question_text: html })}
+                    placeholder="Enter question text..."
+                    compact
+                  />
+                </div>
+
+                {/* Media / Image */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Media / Image</Label>
+                  <AIImageGenerator
+                    questionText={q.question_text}
+                    questionType={q.question_type}
+                    currentImageUrl={q.image_url}
+                    currentMedia={q.media}
+                    onImageGenerated={(url) => updateQuestion(selectedQ, { image_url: url, media: undefined })}
+                    onMediaChange={(media) => updateQuestion(selectedQ, { media })}
+                    onRemoveImage={() => updateQuestion(selectedQ, { image_url: undefined })}
+                  />
+                </div>
+
+                {/* Hint */}
+                <div className="space-y-1.5">
+                  <Label className="text-xs">Hint (shown to students on request)</Label>
+                  <Textarea
+                    value={q.hint || ""}
+                    onChange={e => updateQuestion(selectedQ, { hint: e.target.value })}
+                    placeholder="Optional hint..."
+                    rows={2}
+                    className="text-sm"
+                  />
+                </div>
+
+                {/* Answer editor based on type */}
+                <AnswerEditor
+                  question={q}
+                  onChange={(answers) => updateQuestion(selectedQ, { answers })}
+                />
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
+                Select a question from the sidebar or add a new one.
+              </div>
+            )}
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="h-[calc(100vh-3.5rem)] overflow-y-auto">
+          <div className="max-w-4xl mx-auto py-6 px-6">
+            <ReviewMaterialsEditor examId={id!} examTitle={title} />
+          </div>
+        </div>
+      )}
 
       {/* Delete confirmation */}
       <AlertDialog open={deleteTarget !== null} onOpenChange={v => !v && setDeleteTarget(null)}>
