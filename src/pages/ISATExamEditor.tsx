@@ -343,21 +343,15 @@ export default function ISATExamEditor() {
               {/* Media / Image */}
               <div className="space-y-1.5">
                 <Label className="text-xs">Media / Image</Label>
-                <MediaInsert
-                  media={q.media}
-                  onChange={media => updateQuestion(selectedQ, { media })}
+                <AIImageGenerator
+                  questionText={q.question_text}
+                  questionType={q.question_type}
+                  currentImageUrl={q.image_url}
+                  currentMedia={q.media}
+                  onImageGenerated={(url) => updateQuestion(selectedQ, { image_url: url, media: undefined })}
+                  onMediaChange={(media) => updateQuestion(selectedQ, { media })}
+                  onRemoveImage={() => updateQuestion(selectedQ, { image_url: undefined })}
                 />
-                {q.image_url && !q.media && (
-                  <div className="space-y-1">
-                    <img src={q.image_url} alt="Question" className="max-h-40 rounded-lg border" />
-                    <Button
-                      variant="ghost" size="sm" className="text-xs text-destructive"
-                      onClick={() => updateQuestion(selectedQ, { image_url: undefined })}
-                    >
-                      Remove image
-                    </Button>
-                  </div>
-                )}
               </div>
 
               {/* Hint */}
