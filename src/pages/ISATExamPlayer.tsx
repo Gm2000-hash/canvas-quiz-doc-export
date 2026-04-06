@@ -633,6 +633,20 @@ export default function ISATExamPlayer() {
 
               <div className="text-sm leading-relaxed whitespace-pre-wrap">{question.question_text}</div>
 
+              {/* Question image/media */}
+              {question.image_url && (
+                <img src={question.image_url} alt="Question illustration" className="max-h-64 rounded-lg border" />
+              )}
+              {question.media?.url && question.media.type === "image" && (
+                <img src={question.media.url} alt="Question media" className="max-h-64 rounded-lg border" />
+              )}
+              {question.media?.url && question.media.type === "video" && (
+                <video src={question.media.url} controls className="w-full rounded-lg max-h-64" preload="metadata" />
+              )}
+              {question.media?.url && question.media.type === "audio" && (
+                <audio src={question.media.url} controls className="w-full" preload="metadata" />
+              )}
+
               {/* Hint section — only when hints are enabled */}
               {exam.hints_enabled && question.hint && !submitted && (
                 <div>
