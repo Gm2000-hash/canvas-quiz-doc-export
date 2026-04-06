@@ -332,12 +332,11 @@ export default function ISATExamEditor() {
               {/* Question text */}
               <div className="space-y-1.5">
                 <Label className="text-xs">Question Text</Label>
-                <Textarea
-                  value={q.question_text}
-                  onChange={e => updateQuestion(selectedQ, { question_text: e.target.value })}
+                <RichTextEditor
+                  content={q.question_text}
+                  onChange={html => updateQuestion(selectedQ, { question_text: html })}
                   placeholder="Enter question text..."
-                  rows={4}
-                  className="text-sm"
+                  compact
                 />
               </div>
 

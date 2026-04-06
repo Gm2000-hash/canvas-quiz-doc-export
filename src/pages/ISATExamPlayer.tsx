@@ -633,7 +633,7 @@ export default function ISATExamPlayer() {
                 <span className="text-xs text-muted-foreground shrink-0">{question.points_possible} pt{question.points_possible !== 1 ? "s" : ""}</span>
               </div>
 
-              <div className="text-sm leading-relaxed whitespace-pre-wrap">{question.question_text}</div>
+              <RichContent html={question.question_text} />
 
               {/* Question image/media */}
               {question.image_url && (
