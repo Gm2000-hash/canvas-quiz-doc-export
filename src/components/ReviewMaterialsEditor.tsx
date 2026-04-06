@@ -59,7 +59,7 @@ export function ReviewMaterialsEditor({ examId }: Props) {
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from("exam_review_materials")
         .select("*")
         .eq("exam_id", examId)
