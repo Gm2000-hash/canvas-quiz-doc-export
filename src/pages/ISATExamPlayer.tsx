@@ -16,6 +16,7 @@ import { Loader2, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, FileText, Cl
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ExamSummaryPanel } from "@/components/ExamSummaryPanel";
+import { RichContent } from "@/components/activities/players/RichContent";
 
 interface ExamQuestion {
   question_number: number;
