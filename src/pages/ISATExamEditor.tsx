@@ -186,6 +186,20 @@ export default function ISATExamEditor() {
         <div className="flex-1" />
         <div className="flex items-center gap-2">
           {dirty && <span className="text-xs text-amber-600 font-medium">Unsaved changes</span>}
+          <div className="flex items-center rounded-lg border border-border bg-muted/50 p-0.5">
+            <button
+              onClick={() => setEditorMode("questions")}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${editorMode === "questions" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Questions
+            </button>
+            <button
+              onClick={() => setEditorMode("review")}
+              className={`px-3 py-1 rounded-md text-xs font-medium transition-colors ${editorMode === "review" ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+            >
+              Review Materials
+            </button>
+          </div>
           <Button
             variant="outline"
             size="sm"
@@ -200,7 +214,7 @@ export default function ISATExamEditor() {
                 if (error) throw error;
                 if (data?.error) throw new Error(data.error);
                 toast.success("Review materials generated!");
-                window.open(`/isat-exam/${id}/review`, "_blank");
+                setEditorMode("review");
               } catch (e: any) {
                 toast.error(e.message || "Failed to generate review");
               } finally {
