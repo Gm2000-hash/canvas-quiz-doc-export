@@ -113,6 +113,7 @@ const App = () => (
           <Route path="/reading-library" element={<ProtectedRoute><ReadingLibrary /></ProtectedRoute>} />
           <Route path="/library" element={<Navigate to="/admin/library" replace />} />
           <Route path="/isat-exam/:id" element={<ISATExamPlayer />} />
+          <Route path="/isat-exam/:id/edit" element={<ProtectedRoute><ISATExamEditor /></ProtectedRoute>} />
           <Route path="/quiz-builder" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-builder/:id" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-analytics" element={<ProtectedRoute><QuizAnalytics /></ProtectedRoute>} />
