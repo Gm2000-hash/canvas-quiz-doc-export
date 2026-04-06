@@ -25,6 +25,7 @@ import ReadingLibrary from "./pages/ReadingLibrary";
 import SharedReading from "./pages/SharedReading";
 import ISATExamPlayer from "./pages/ISATExamPlayer";
 import ISATExamEditor from "./pages/ISATExamEditor";
+import ISATReviewPage from "./pages/ISATReviewPage";
 import QuizBuilder from "./pages/QuizBuilder";
 import QuizAnalytics from "./pages/QuizAnalytics";
 import StressNavigator from "./pages/StressNavigator";
