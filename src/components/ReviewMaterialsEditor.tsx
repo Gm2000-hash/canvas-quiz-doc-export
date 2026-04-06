@@ -40,7 +40,7 @@ interface Props {
   examTitle: string;
 }
 
-export function ReviewMaterialsEditor({ examId, examTitle }: Props) {
+export function ReviewMaterialsEditor({ examId }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
