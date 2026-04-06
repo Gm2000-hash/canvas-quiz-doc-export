@@ -16,6 +16,7 @@ import { Loader2, ArrowLeft, ArrowRight, CheckCircle2, AlertCircle, FileText, Cl
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ExamSummaryPanel } from "@/components/ExamSummaryPanel";
+import { RichContent } from "@/components/activities/players/RichContent";
 
 interface ExamQuestion {
   question_number: number;
@@ -633,7 +634,7 @@ export default function ISATExamPlayer() {
                 <span className="text-xs text-muted-foreground shrink-0">{question.points_possible} pt{question.points_possible !== 1 ? "s" : ""}</span>
               </div>
 
-              <div className="text-sm leading-relaxed whitespace-pre-wrap">{question.question_text}</div>
+              <RichContent html={question.question_text} />
 
               {/* Question image/media */}
               {question.image_url && (

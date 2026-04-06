@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { RichTextEditor } from "@/components/RichTextEditor";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
@@ -214,7 +215,7 @@ export default function ISATExamEditor() {
                 >
                   <span className="text-xs text-muted-foreground w-5 shrink-0">{i + 1}</span>
                   <span className="truncate flex-1">
-                    {question.question_text?.slice(0, 50) || "New question"}
+                    {question.question_text?.replace(/<[^>]*>/g, '').slice(0, 50) || "New question"}
                   </span>
                 </button>
               ))}
@@ -331,12 +332,11 @@ export default function ISATExamEditor() {
               {/* Question text */}
               <div className="space-y-1.5">
                 <Label className="text-xs">Question Text</Label>
-                <Textarea
-                  value={q.question_text}
-                  onChange={e => updateQuestion(selectedQ, { question_text: e.target.value })}
+                <RichTextEditor
+                  content={q.question_text}
+                  onChange={html => updateQuestion(selectedQ, { question_text: html })}
                   placeholder="Enter question text..."
-                  rows={4}
-                  className="text-sm"
+                  compact
                 />
               </div>
 
