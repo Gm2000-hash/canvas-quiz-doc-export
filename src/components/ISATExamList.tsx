@@ -222,6 +222,15 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
               </Button>
               <Button
                 size="sm"
+                variant="outline"
+                onClick={() => navigate(`/isat-exam/${exam.id}/review`)}
+                className="gap-1.5"
+              >
+                <BookOpen className="h-4 w-4" />
+                Review
+              </Button>
+              <Button
+                size="sm"
                 onClick={() => onTakeExam(exam.id)}
                 className="gap-1.5"
               >
