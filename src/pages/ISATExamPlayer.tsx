@@ -422,7 +422,7 @@ export default function ISATExamPlayer() {
                     return (
                       <label key={oi} className={`flex items-start gap-3 p-2 rounded border cursor-pointer hover:bg-accent/50 ${borderClass}`}>
                         <RadioGroupItem value={opt.text} disabled={isReview} className="mt-0.5" />
-                        <span className="text-sm">{opt.text}</span>
+                        <MathText text={opt.text} className="text-sm" inline />
                       </label>
                     );
                   })}
