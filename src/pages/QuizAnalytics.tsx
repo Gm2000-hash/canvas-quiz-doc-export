@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
@@ -18,7 +18,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import {
   Loader2, BarChart3, TrendingUp, TrendingDown, Users, Target,
-  Trophy, AlertTriangle, ArrowLeft, RefreshCw, BookOpen, FileText,
+  Trophy, AlertTriangle, ArrowLeft, RefreshCw, BookOpen, FileText, Globe,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
