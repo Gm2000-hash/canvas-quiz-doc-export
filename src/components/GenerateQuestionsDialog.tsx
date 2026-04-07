@@ -67,6 +67,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
     if (open && initialStandard) {
       setTargetDok("any");
       setQuestionsPerSub(10);
+      setQuestionStyle("standard");
     }
   }, [open, initialStandard]);
 
