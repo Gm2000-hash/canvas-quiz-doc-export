@@ -30,6 +30,7 @@ import PushToCanvasDialog from "@/components/PushToCanvasDialog";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { PageBanner } from "@/components/PageBanner";
 import { useNavigate } from "react-router-dom";
+import { MathText } from "@/components/MathText";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useProfile } from "@/hooks/useProfile";
 import { StandardsCoverageGrid } from "@/components/StandardsCoverageGrid";
@@ -473,7 +474,7 @@ const QuestionBank = () => {
       <CardContent className="p-3 space-y-1.5">
         <div className="flex items-start gap-3">
           <Checkbox checked={selected.has(q.id)} onCheckedChange={() => toggleSelect(q.id)} onClick={e => e.stopPropagation()} className="mt-0.5" />
-          <p className="text-sm text-foreground flex-1">{stripHtml(q.question_text)}</p>
+          <MathText text={q.question_text} className="text-sm text-foreground flex-1" inline />
           <div className="flex gap-1 shrink-0">
             <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-amber-600 hover:text-amber-700" onClick={e => { e.stopPropagation(); setSuggestionsQuestion(q); }} title="AI DOK/Bloom's suggestions">
               <Lightbulb className="h-3.5 w-3.5" />

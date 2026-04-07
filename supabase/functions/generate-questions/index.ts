@@ -147,6 +147,26 @@ MS-PS2-1, MS-PS2-2, MS-PS2-3, MS-PS2-4, MS-PS2-5
 MS-PS3-1, MS-PS3-2, MS-PS3-3, MS-PS3-4, MS-PS3-5
 MS-PS4-1, MS-PS4-2, MS-PS4-3`;
 
+    const formattingInstructions = subject === "Math"
+      ? `\n\nFORMATTING: Use LaTeX notation for ALL mathematical expressions in both question text and answer options:
+- Exponents: $x^2$, $3^4$, $10^{-3}$
+- Fractions: $\\frac{1}{2}$, $\\frac{x+1}{x-1}$
+- Square roots: $\\sqrt{16}$, $\\sqrt{x^2 + y^2}$
+- Multiplication: $3 \\times 5$, NOT 3*5
+- Variables and expressions: $2x + 3 = 7$, NOT 2x + 3 = 7
+- Subscripts: $a_1$, $x_n$
+- Greek letters: $\\pi$, $\\theta$
+- Inequalities: $x \\geq 5$, $y < 3$
+Never use plain text for math expressions like x^2 or 1/2. Always wrap in $ delimiters.`
+      : subject === "ELA" || subject === "Social Studies"
+      ? ``
+      : `\n\nFORMATTING: Use proper notation for scientific expressions:
+- Chemical formulas: use HTML subscripts like H<sub>2</sub>O, CO<sub>2</sub>, NaCl
+- Scientific notation: use LaTeX like $3 \\times 10^5$ or $6.02 \\times 10^{23}$
+- Exponents in science: use LaTeX like $m/s^2$, $kg \\cdot m^2$
+- Units with exponents: $cm^3$, $m^2$
+Never write plain text like 10^5 or H2O. Use proper formatting.`;
+
     const systemPrompt = `You are an expert ${gradeRange} ${subjectContext} assessment writer specializing in ${testName}-aligned questions. Generate high-quality, rigorous questions that assess the given standard.
 
 ${framework === "NGSS" ? `IMPORTANT: Only generate questions for valid Middle School NGSS standards. Do NOT reference any High School (HS-) standards.\n${msStandardsList}\n` : ''}
@@ -162,6 +182,7 @@ ${dok_level
   : `- Include a range of DOK levels (1-3)
 - Vary Bloom's taxonomy levels (Remember, Understand, Apply, Analyze, Evaluate)`}
 - For drag-and-drop, categories should be clearly distinct
+${formattingInstructions}
 
 Use the tool provided to return your questions.`;
 

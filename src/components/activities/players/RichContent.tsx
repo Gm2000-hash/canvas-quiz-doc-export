@@ -1,4 +1,6 @@
 import DOMPurify from "dompurify";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 
 interface Props {
   html: string;
@@ -7,18 +9,22 @@ interface Props {
 
 /**
  * Renders rich text HTML content safely using DOMPurify-sanitized markup.
- * Falls back to plain text display if content doesn't contain HTML tags.
+ * Automatically detects and renders LaTeX math ($...$, $$...$$).
+ * Falls back to plain text display if content doesn't contain HTML tags or math.
  */
 export function RichContent({ html, className = "" }: Props) {
-  const isHTML = /<[a-z][\s\S]*>/i.test(html);
+  // Process LaTeX math first
+  const processed = renderMathInText(html);
+
+  const isHTML = /<[a-z][\s\S]*>/i.test(processed);
 
   if (!isHTML) {
     return <p className={`text-sm text-muted-foreground whitespace-pre-wrap leading-relaxed ${className}`}>{html}</p>;
   }
 
-  const clean = DOMPurify.sanitize(html, {
-    ADD_TAGS: ["iframe"],
-    ADD_ATTR: ["allowfullscreen", "frameborder", "allow", "src", "target"],
+  const clean = DOMPurify.sanitize(processed, {
+    ADD_TAGS: ["iframe", "span", "math", "semantics", "mrow", "mi", "mo", "mn", "msup", "msub", "mfrac", "msqrt", "mover", "munder", "mtext", "annotation"],
+    ADD_ATTR: ["allowfullscreen", "frameborder", "allow", "src", "target", "class", "style", "aria-hidden", "xmlns", "encoding"],
   });
 
   return (
@@ -27,4 +33,37 @@ export function RichContent({ html, className = "" }: Props) {
       dangerouslySetInnerHTML={{ __html: clean }}
     />
   );
+}
+
+function renderMathInText(text: string): string {
+  // Display math: $$...$$
+  let result = text.replace(/\$\$([\s\S]+?)\$\$/g, (_match, formula) => {
+    try {
+      return katex.renderToString(formula.trim(), {
+        displayMode: true,
+        throwOnError: false,
+        trust: true,
+      });
+    } catch {
+      return `<code>${formula}</code>`;
+    }
+  });
+
+  // Inline math: $...$
+  result = result.replace(/\$([^\$\n]+?)\$/g, (_match, formula) => {
+    if (/^\d+(\.\d+)?$/.test(formula.trim())) {
+      return `$${formula}$`;
+    }
+    try {
+      return katex.renderToString(formula.trim(), {
+        displayMode: false,
+        throwOnError: false,
+        trust: true,
+      });
+    } catch {
+      return `<code>${formula}</code>`;
+    }
+  });
+
+  return result;
 }

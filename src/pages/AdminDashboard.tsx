@@ -16,6 +16,7 @@ import { ShieldCheck, Users, Loader2, GraduationCap, Search, Trash2, KeyRound, E
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { MathText } from "@/components/MathText";
 
 type UserRow = {
   id: string;
@@ -467,9 +468,7 @@ export default function AdminDashboard() {
                   {filteredQuestions.map((q) => (
                     <Card key={q.id} className="p-3">
                       <div className="flex items-start justify-between gap-2 mb-1.5">
-                        <p className="text-sm font-medium leading-snug flex-1">
-                          {q.question_text}
-                        </p>
+                         <MathText text={q.question_text} className="text-sm font-medium leading-snug flex-1" inline />
                         <Badge variant="outline" className="text-[10px] shrink-0">
                           {q.question_type}
                         </Badge>
