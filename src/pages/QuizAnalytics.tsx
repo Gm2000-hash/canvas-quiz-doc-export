@@ -304,8 +304,64 @@ export default function QuizAnalytics() {
     return buckets;
   }, [canvasQuizData]);
 
+  // ── Embedded Results ──
+
+  const loadEmbeddedResults = async () => {
+    setLoadingEmbedded(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("get-embedded-results");
+      if (error) throw error;
+      setEmbeddedResults(data.results || []);
+      setEmbeddedSummary(data.summary || null);
+      setEmbeddedLoaded(true);
+      if ((data.results || []).length === 0) {
+        toast.info("No embedded completions found yet");
+      } else {
+        toast.success(`Loaded ${data.results.length} student completions`);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to load embedded results");
+    } finally {
+      setLoadingEmbedded(false);
+    }
+  };
+
+  const embeddedDistribution = useMemo(() => {
+    const buckets = [
+      { range: "0-59%", count: 0, label: "F" },
+      { range: "60-69%", count: 0, label: "D" },
+      { range: "70-79%", count: 0, label: "C" },
+      { range: "80-89%", count: 0, label: "B" },
+      { range: "90-100%", count: 0, label: "A" },
+    ];
+    embeddedResults.forEach(r => {
+      if (r.percentage >= 90) buckets[4].count++;
+      else if (r.percentage >= 80) buckets[3].count++;
+      else if (r.percentage >= 70) buckets[2].count++;
+      else if (r.percentage >= 60) buckets[1].count++;
+      else buckets[0].count++;
+    });
+    return buckets;
+  }, [embeddedResults]);
+
+  const embeddedByActivity = useMemo(() => {
+    const map: Record<string, { title: string; type: string; scores: number[] }> = {};
+    embeddedResults.forEach(r => {
+      if (!map[r.activityId]) map[r.activityId] = { title: r.activityTitle, type: r.activityType, scores: [] };
+      map[r.activityId].scores.push(r.percentage);
+    });
+    return Object.entries(map).map(([id, v]) => ({
+      id,
+      title: v.title,
+      type: v.type,
+      count: v.scores.length,
+      avg: Math.round(v.scores.reduce((a, b) => a + b, 0) / v.scores.length),
+      high: Math.max(...v.scores),
+      low: Math.min(...v.scores),
+    }));
+  }, [embeddedResults]);
+
   const loading = loadingIsat;
-  const hasAnyData = completedIsats.length > 0 || canvasQuizData.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
