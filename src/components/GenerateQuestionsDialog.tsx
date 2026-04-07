@@ -242,9 +242,38 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                 </Select>
               </div>
             </div>
+
+            {/* Math question style picker */}
+            {initialStandard.subject === "Math" && (
+              <div className="space-y-1.5">
+                <Label className="text-sm">Question Style</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: "standard" as const, label: "Standard ISAT", desc: "Traditional test-style" },
+                    { value: "big_ideas" as const, label: "Big Ideas Math", desc: "Curriculum-aligned" },
+                    { value: "desmos" as const, label: "Desmos-Style", desc: "Visual & exploratory" },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setQuestionStyle(opt.value)}
+                      className={`rounded-lg border p-2.5 text-left transition-all ${
+                        questionStyle === opt.value
+                          ? "border-primary bg-primary/10 ring-1 ring-primary"
+                          : "border-border hover:border-primary/50 hover:bg-muted/50"
+                      }`}
+                    >
+                      <p className="text-xs font-semibold">{opt.label}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{opt.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <Button onClick={handleGapGenerate} className="w-full gap-2">
               <Sparkles className="h-4 w-4" />
-              Generate {questionsPerSub} Questions for {initialStandard.code}{targetDok !== "any" ? ` at DOK ${targetDok}` : ""}
+              Generate {questionsPerSub} Questions for {initialStandard.code}{targetDok !== "any" ? ` at DOK ${targetDok}` : ""}{questionStyle !== "standard" && initialStandard.subject === "Math" ? ` (${questionStyle === "big_ideas" ? "Big Ideas" : "Desmos"})` : ""}
             </Button>
           </div>
         ) : null}
