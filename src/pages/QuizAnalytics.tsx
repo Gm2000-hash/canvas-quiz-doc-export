@@ -49,6 +49,26 @@ interface CanvasQuizData {
   enrollments: Enrollment[];
 }
 
+interface EmbeddedResult {
+  id: string;
+  studentName: string;
+  canvasUserId: string;
+  activityId: string;
+  activityTitle: string;
+  activityType: string;
+  score: number;
+  maxScore: number;
+  percentage: number;
+  completedAt: string;
+}
+
+interface EmbeddedSummary {
+  total: number;
+  uniqueStudents: number;
+  avgScore: number;
+  activityCount: number;
+}
+
 // ── Helpers ──
 
 function pct(n: number, d: number) {
