@@ -34,6 +34,9 @@ export default function PushISATEmbedToCanvasDialog({
   const [pushing, setPushing] = useState(false);
   const [done, setDone] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [ltiBaseUrl, setLtiBaseUrl] = useState<string | null>(null);
+  const [ltiChecked, setLtiChecked] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (open) {
@@ -47,8 +50,23 @@ export default function PushISATEmbedToCanvasDialog({
           .catch(() => toast.error("Failed to load Canvas courses"))
           .finally(() => setLoadingCourses(false));
       }
+      // Check if LTI is configured
+      if (!ltiChecked && user) {
+        supabase
+          .from("lti_platforms")
+          .select("id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .then(({ data }) => {
+            if (data && data.length > 0) {
+              const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+              setLtiBaseUrl(`${supabaseUrl}/functions/v1/lti-login`);
+            }
+            setLtiChecked(true);
+          });
+      }
     }
-  }, [open, config, examTitle]);
+  }, [open, config, examTitle, user]);
 
   const toggleCourse = (id: string) => {
     setSelectedCourseIds(prev => {
@@ -58,7 +76,10 @@ export default function PushISATEmbedToCanvasDialog({
     });
   };
 
-  const embedUrl = `${PUBLISHED_BASE}/isat-exam/${examId}`;
+  const directUrl = `${PUBLISHED_BASE}/isat-exam/${examId}`;
+  const embedUrl = ltiBaseUrl
+    ? `${ltiBaseUrl}?activity_id=isat-exam-${examId}`
+    : directUrl;
 
   const handlePush = async () => {
     if (selectedCourseIds.size === 0) {
