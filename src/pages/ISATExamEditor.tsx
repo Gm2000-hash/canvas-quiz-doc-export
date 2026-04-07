@@ -260,7 +260,7 @@ export default function ISATExamEditor() {
                   >
                     <span className="text-xs text-muted-foreground w-5 shrink-0">{i + 1}</span>
                     <span className="truncate flex-1">
-                      {question.question_text?.replace(/<[^>]*>/g, '').slice(0, 50) || "New question"}
+                      <MathText text={(question.question_text?.replace(/<[^>]*>/g, '') || "New question").slice(0, 50)} className="truncate" inline />
                     </span>
                   </button>
                 ))}
