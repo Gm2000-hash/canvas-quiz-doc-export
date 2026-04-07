@@ -473,7 +473,7 @@ const QuestionBank = () => {
       <CardContent className="p-3 space-y-1.5">
         <div className="flex items-start gap-3">
           <Checkbox checked={selected.has(q.id)} onCheckedChange={() => toggleSelect(q.id)} onClick={e => e.stopPropagation()} className="mt-0.5" />
-          <p className="text-sm text-foreground flex-1">{stripHtml(q.question_text)}</p>
+          <MathText text={q.question_text} className="text-sm text-foreground flex-1" inline />
           <div className="flex gap-1 shrink-0">
             <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-amber-600 hover:text-amber-700" onClick={e => { e.stopPropagation(); setSuggestionsQuestion(q); }} title="AI DOK/Bloom's suggestions">
               <Lightbulb className="h-3.5 w-3.5" />
