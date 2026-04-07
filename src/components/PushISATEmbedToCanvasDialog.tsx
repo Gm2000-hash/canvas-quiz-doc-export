@@ -6,8 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getCourses, createCanvasAssignment, type CanvasConfig, type Course } from "@/lib/canvas-api";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Loader2, ExternalLink, CheckCircle } from "lucide-react";
+import { Loader2, ExternalLink, CheckCircle, AlertTriangle } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -32,6 +34,9 @@ export default function PushISATEmbedToCanvasDialog({
   const [pushing, setPushing] = useState(false);
   const [done, setDone] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [ltiBaseUrl, setLtiBaseUrl] = useState<string | null>(null);
+  const [ltiChecked, setLtiChecked] = useState(false);
+  const { user } = useAuth();
 
   useEffect(() => {
     if (open) {
@@ -45,8 +50,23 @@ export default function PushISATEmbedToCanvasDialog({
           .catch(() => toast.error("Failed to load Canvas courses"))
           .finally(() => setLoadingCourses(false));
       }
+      // Check if LTI is configured
+      if (!ltiChecked && user) {
+        supabase
+          .from("lti_platforms")
+          .select("id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .then(({ data }) => {
+            if (data && data.length > 0) {
+              const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+              setLtiBaseUrl(`${supabaseUrl}/functions/v1/lti-login`);
+            }
+            setLtiChecked(true);
+          });
+      }
     }
-  }, [open, config, examTitle]);
+  }, [open, config, examTitle, user]);
 
   const toggleCourse = (id: string) => {
     setSelectedCourseIds(prev => {
@@ -56,7 +76,10 @@ export default function PushISATEmbedToCanvasDialog({
     });
   };
 
-  const embedUrl = `${PUBLISHED_BASE}/isat-exam/${examId}`;
+  const directUrl = `${PUBLISHED_BASE}/isat-exam/${examId}`;
+  const embedUrl = ltiBaseUrl
+    ? `${ltiBaseUrl}?activity_id=isat-exam-${examId}`
+    : directUrl;
 
   const handlePush = async () => {
     if (selectedCourseIds.size === 0) {
@@ -168,6 +191,16 @@ export default function PushISATEmbedToCanvasDialog({
                 <p className="text-xs font-medium text-muted-foreground">Embed URL</p>
                 <p className="text-xs text-muted-foreground break-all font-mono">{embedUrl}</p>
               </div>
+
+              {!ltiBaseUrl && ltiChecked && (
+                <div className="flex items-start gap-2 rounded-md bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 p-3">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
+                  <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                    LTI is not configured. Scores won't automatically sync to Canvas gradebook.{" "}
+                    Configure LTI 1.3 in Settings for automatic grade passback.
+                  </p>
+                </div>
+              )}
             </div>
 
             {pushing && (

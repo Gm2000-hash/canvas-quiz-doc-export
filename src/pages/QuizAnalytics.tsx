@@ -17,7 +17,7 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import {
-  Loader2, BarChart3, TrendingUp, TrendingDown, Users, Target,
+  Loader2, BarChart3, TrendingUp, Users, Target,
   Trophy, AlertTriangle, ArrowLeft, RefreshCw, BookOpen, FileText,
 } from "lucide-react";
 import {
@@ -47,6 +47,26 @@ interface CanvasQuizData {
   quiz: Quiz;
   submissions: QuizSubmission[];
   enrollments: Enrollment[];
+}
+
+interface EmbeddedResult {
+  id: string;
+  studentName: string;
+  canvasUserId: string;
+  activityId: string;
+  activityTitle: string;
+  activityType: string;
+  score: number;
+  maxScore: number;
+  percentage: number;
+  completedAt: string;
+}
+
+interface EmbeddedSummary {
+  total: number;
+  uniqueStudents: number;
+  avgScore: number;
+  activityCount: number;
 }
 
 // ── Helpers ──
@@ -91,6 +111,12 @@ export default function QuizAnalytics() {
   const [canvasQuizData, setCanvasQuizData] = useState<CanvasQuizData[]>([]);
   const [loadingCanvas, setLoadingCanvas] = useState(false);
   const [fetchedCanvasCourses, setFetchedCanvasCourses] = useState(false);
+
+  // Embedded results data
+  const [embeddedResults, setEmbeddedResults] = useState<EmbeddedResult[]>([]);
+  const [embeddedSummary, setEmbeddedSummary] = useState<EmbeddedSummary | null>(null);
+  const [loadingEmbedded, setLoadingEmbedded] = useState(false);
+  const [embeddedLoaded, setEmbeddedLoaded] = useState(false);
 
   // Load ISAT exams
   useEffect(() => {
@@ -278,8 +304,64 @@ export default function QuizAnalytics() {
     return buckets;
   }, [canvasQuizData]);
 
+  // ── Embedded Results ──
+
+  const loadEmbeddedResults = async () => {
+    setLoadingEmbedded(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("get-embedded-results");
+      if (error) throw error;
+      setEmbeddedResults(data.results || []);
+      setEmbeddedSummary(data.summary || null);
+      setEmbeddedLoaded(true);
+      if ((data.results || []).length === 0) {
+        toast.info("No embedded completions found yet");
+      } else {
+        toast.success(`Loaded ${data.results.length} student completions`);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to load embedded results");
+    } finally {
+      setLoadingEmbedded(false);
+    }
+  };
+
+  const embeddedDistribution = useMemo(() => {
+    const buckets = [
+      { range: "0-59%", count: 0, label: "F" },
+      { range: "60-69%", count: 0, label: "D" },
+      { range: "70-79%", count: 0, label: "C" },
+      { range: "80-89%", count: 0, label: "B" },
+      { range: "90-100%", count: 0, label: "A" },
+    ];
+    embeddedResults.forEach(r => {
+      if (r.percentage >= 90) buckets[4].count++;
+      else if (r.percentage >= 80) buckets[3].count++;
+      else if (r.percentage >= 70) buckets[2].count++;
+      else if (r.percentage >= 60) buckets[1].count++;
+      else buckets[0].count++;
+    });
+    return buckets;
+  }, [embeddedResults]);
+
+  const embeddedByActivity = useMemo(() => {
+    const map: Record<string, { title: string; type: string; scores: number[] }> = {};
+    embeddedResults.forEach(r => {
+      if (!map[r.activityId]) map[r.activityId] = { title: r.activityTitle, type: r.activityType, scores: [] };
+      map[r.activityId].scores.push(r.percentage);
+    });
+    return Object.entries(map).map(([id, v]) => ({
+      id,
+      title: v.title,
+      type: v.type,
+      count: v.scores.length,
+      avg: Math.round(v.scores.reduce((a, b) => a + b, 0) / v.scores.length),
+      high: Math.max(...v.scores),
+      low: Math.min(...v.scores),
+    }));
+  }, [embeddedResults]);
+
   const loading = loadingIsat;
-  const hasAnyData = completedIsats.length > 0 || canvasQuizData.length > 0;
 
   return (
     <div className="min-h-screen bg-background">
@@ -313,6 +395,12 @@ export default function QuizAnalytics() {
                 <BookOpen className="h-4 w-4" /> Canvas Quizzes
                 {canvasQuizData.length > 0 && (
                   <Badge variant="secondary" className="ml-1 text-[10px] px-1.5">{canvasQuizData.length}</Badge>
+                )}
+              </TabsTrigger>
+              <TabsTrigger value="embedded" className="gap-1.5">
+                <Users className="h-4 w-4" /> Embedded Results
+                {embeddedResults.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 text-[10px] px-1.5">{embeddedResults.length}</Badge>
                 )}
               </TabsTrigger>
             </TabsList>
@@ -709,6 +797,196 @@ export default function QuizAnalytics() {
                       </Card>
                     </>
                   )}
+                </>
+              )}
+            </TabsContent>
+
+            {/* ─── Embedded Results Tab ─── */}
+            <TabsContent value="embedded" className="space-y-6">
+              {/* Controls */}
+              <Card>
+                <CardContent className="p-4 flex flex-wrap items-center gap-3">
+                  <Button size="sm" onClick={loadEmbeddedResults} disabled={loadingEmbedded} className="gap-1.5">
+                    {loadingEmbedded ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                    Load Embedded Results
+                  </Button>
+                  {embeddedResults.length > 0 && (
+                    <Badge variant="secondary">{embeddedResults.length} completions loaded</Badge>
+                  )}
+                </CardContent>
+              </Card>
+
+              {!embeddedLoaded && !loadingEmbedded ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-16">
+                    <Users className="h-12 w-12 text-muted-foreground/40 mb-4" />
+                    <p className="text-lg font-semibold">Embedded Activity Results</p>
+                    <p className="text-sm text-muted-foreground mt-1">Click "Load Embedded Results" to view student scores from Canvas-embedded exams and activities</p>
+                  </CardContent>
+                </Card>
+              ) : embeddedResults.length === 0 && embeddedLoaded ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-16">
+                    <Target className="h-12 w-12 text-muted-foreground/40 mb-4" />
+                    <p className="text-lg font-semibold">No completions yet</p>
+                    <p className="text-sm text-muted-foreground mt-1">Students haven't completed any embedded exams or activities via Canvas LTI yet</p>
+                  </CardContent>
+                </Card>
+              ) : embeddedResults.length > 0 && (
+                <>
+                  {/* Overview Cards */}
+                  {embeddedSummary && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <FileText className="h-5 w-5 text-primary mx-auto mb-1" />
+                          <p className="text-2xl font-bold">{embeddedSummary.total}</p>
+                          <p className="text-xs text-muted-foreground">Completions</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <Users className="h-5 w-5 text-primary mx-auto mb-1" />
+                          <p className="text-2xl font-bold">{embeddedSummary.uniqueStudents}</p>
+                          <p className="text-xs text-muted-foreground">Students</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <Trophy className="h-5 w-5 text-primary mx-auto mb-1" />
+                          <p className="text-2xl font-bold">{embeddedSummary.avgScore}%</p>
+                          <p className="text-xs text-muted-foreground">Avg Score</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <Target className="h-5 w-5 text-primary mx-auto mb-1" />
+                          <p className="text-2xl font-bold">{embeddedSummary.activityCount}</p>
+                          <p className="text-xs text-muted-foreground">Activities</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {/* Score Distribution */}
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <BarChart3 className="h-4 w-4" /> Grade Distribution
+                        </CardTitle>
+                        <CardDescription>Student scores across all embedded activities</CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        <ResponsiveContainer width="100%" height={250}>
+                          <BarChart data={embeddedDistribution}>
+                            <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                            <XAxis dataKey="range" tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                            <YAxis tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                            <Tooltip
+                              content={({ active, payload }) => {
+                                if (!active || !payload?.length) return null;
+                                const d = payload[0].payload;
+                                return (
+                                  <div className="bg-popover border border-border rounded-lg p-2 shadow-md text-xs">
+                                    <p className="font-semibold">{d.range} ({d.label})</p>
+                                    <p>{d.count} completions</p>
+                                  </div>
+                                );
+                              }}
+                            />
+                            <Bar dataKey="count" radius={[6, 6, 0, 0]}>
+                              {embeddedDistribution.map((_, i) => (
+                                <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
+                              ))}
+                            </Bar>
+                          </BarChart>
+                        </ResponsiveContainer>
+                      </CardContent>
+                    </Card>
+
+                    {/* Per-Activity Breakdown */}
+                    {embeddedByActivity.length > 0 && (
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-base flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4" /> Activity Averages
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <ResponsiveContainer width="100%" height={250}>
+                            <BarChart data={embeddedByActivity.slice(0, 10)} layout="vertical">
+                              <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                              <XAxis type="number" domain={[0, 100]} tick={{ fontSize: 11 }} className="fill-muted-foreground" />
+                              <YAxis
+                                type="category"
+                                dataKey="title"
+                                width={120}
+                                tick={{ fontSize: 10 }}
+                                className="fill-muted-foreground"
+                                tickFormatter={(v: string) => v.length > 18 ? v.slice(0, 18) + "…" : v}
+                              />
+                              <Tooltip
+                                content={({ active, payload }) => {
+                                  if (!active || !payload?.length) return null;
+                                  const d = payload[0].payload;
+                                  return (
+                                    <div className="bg-popover border border-border rounded-lg p-2 shadow-md text-xs space-y-0.5">
+                                      <p className="font-semibold">{d.title}</p>
+                                      <p className="text-muted-foreground">{d.type}</p>
+                                      <p>Avg: <span className="font-bold">{d.avg}%</span></p>
+                                      <p>Range: {d.low}% – {d.high}%</p>
+                                      <p>{d.count} completions</p>
+                                    </div>
+                                  );
+                                }}
+                              />
+                              <Bar dataKey="avg" fill="hsl(var(--primary))" radius={[0, 6, 6, 0]} />
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </CardContent>
+                      </Card>
+                    )}
+                  </div>
+
+                  {/* Student Results Table */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-base">Student Completions</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="max-h-[400px]">
+                        <Table>
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Student</TableHead>
+                              <TableHead>Activity</TableHead>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Score</TableHead>
+                              <TableHead>Percentage</TableHead>
+                              <TableHead>Date</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {embeddedResults.map(r => (
+                              <TableRow key={r.id}>
+                                <TableCell className="font-medium">{r.studentName}</TableCell>
+                                <TableCell className="max-w-[180px] truncate">{r.activityTitle}</TableCell>
+                                <TableCell><Badge variant="outline" className="text-xs">{r.activityType}</Badge></TableCell>
+                                <TableCell className="text-sm">{r.score}/{r.maxScore}</TableCell>
+                                <TableCell>
+                                  <span className={`font-bold ${gradeColor(r.percentage)}`}>{r.percentage}%</span>
+                                </TableCell>
+                                <TableCell className="text-xs text-muted-foreground">
+                                  {new Date(r.completedAt).toLocaleDateString()}
+                                </TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
                 </>
               )}
             </TabsContent>
