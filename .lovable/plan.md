@@ -1,60 +1,53 @@
 
 
-# Fix Math Exponents and Formatting Display in Questions
+# Embedded Exam Results Analysis & Canvas Score Recording
 
 ## Problem
 
-Questions containing mathematical notation (exponents like x², fractions, expressions) display incorrectly because:
-1. **AI generates plain text notation** — the edge function prompt doesn't instruct the AI to use HTML for math formatting (e.g., `x^2` instead of `x<sup>2</sup>`)
-2. **Question Bank strips all HTML** — `stripHtml(q.question_text)` removes any formatting, turning `x<sup>2</sup>` back into `x2`
-3. **Answer options also lack math rendering** — answer text in multiple choice, drag-and-drop categories, etc. is rendered as plain text
+1. **No visibility into student results**: When ISAT exams and H5P activities are embedded in Canvas, student completion data is recorded in the `activity_completions` table but there's no UI to view it.
+2. **Embed URL bypasses LTI**: The "Embed in Canvas" dialog (`PushISATEmbedToCanvasDialog`) uses a direct URL (`/isat-exam/{id}`) instead of the LTI launch URL, so Canvas can't record grades — even though the LTI grade passback infrastructure already exists.
 
 ## Plan
 
-### 1. Add KaTeX for Math Rendering
+### 1. Fix Canvas Assignment URLs to Use LTI Launch
 
-Install KaTeX (lightweight LaTeX math renderer). Create a `MathText` component that detects LaTeX delimiters (`$...$` for inline, `$$...$$` for block) and renders them as formatted math, while passing non-math content through as HTML via `RichContent`.
+Update `PushISATEmbedToCanvasDialog.tsx` and `PushActivityToCanvasDialog.tsx` to use the LTI launch URL pattern instead of the direct embed URL. This ensures Canvas initiates a proper LTI 1.3 flow, which enables automatic grade passback when students complete the exam.
 
-**New file**: `src/components/MathText.tsx`
+- Change the `external_tool_tag_attributes.url` from the direct app URL to the LTI launch URL based on the user's configured LTI platform settings
+- Fall back to the direct embed URL if LTI is not configured, with a warning that grades won't sync
 
-### 2. Update AI Prompt to Use LaTeX Notation
+### 2. Add "Embedded Results" Tab to Quiz Analytics
 
-Modify `supabase/functions/generate-questions/index.ts` to instruct the AI to:
-- Use LaTeX notation for all math expressions: `$x^2$`, `$\frac{1}{2}$`, `$3 \times 10^5$`
-- Use HTML `<sup>` / `<sub>` as fallback for simple exponents in science questions (e.g., CO`<sub>`2`</sub>`)
-- This applies to both question text AND answer option text
+Add a third tab to `QuizAnalytics.tsx` — **Embedded Results** — that queries `activity_completions` joined with `lti_sessions` to show:
 
-### 3. Fix Question Bank Display
+- **Overview cards**: Total completions, unique students, average score, number of distinct activities/exams
+- **Results table**: Student name, activity/exam title, score, max score, percentage, completion date
+- **Score distribution chart**: Same A-F grade distribution as the Canvas tab
+- **Per-exam breakdown**: Group completions by activity ID, show avg/high/low per exam
 
-In `src/pages/QuestionBank.tsx`:
-- Replace `stripHtml(q.question_text)` in the card display (line 476) with the new `MathText` component that preserves math formatting
-- Keep `stripHtml` only for search filtering and delete confirmation (where plain text is fine)
+This requires a new edge function or RPC since `activity_completions` and `lti_sessions` are service-role-only tables.
 
-### 4. Update All Question Rendering Locations
+### 3. Create Edge Function for Fetching Embedded Results
 
-Replace plain-text question rendering with `MathText` in:
-- `src/pages/QuestionBank.tsx` — question cards and edit dialog
-- `src/pages/ISATExamPlayer.tsx` — answer options (question text already uses `RichContent`)
-- `src/pages/ISATExamEditor.tsx` — sidebar question list preview
-- `src/pages/QuestionEditor.tsx` — preview areas
-- `src/pages/AdminDashboard.tsx` — question list
-- `src/components/ExamSummaryPanel.tsx` — if it displays question text
+New edge function `get-embedded-results` that:
+- Authenticates the teacher via JWT
+- Joins `activity_completions` with `lti_sessions` (for student names) and cross-references `isat_exams` and `h5p_activities` (for titles)
+- Filters to only show completions for exams/activities owned by the authenticated teacher
+- Returns structured results grouped by activity
 
-### 5. Update RichContent Component
+### 4. Auto-Submit Score for ISAT Exams in LTI Context
 
-Enhance `src/components/activities/players/RichContent.tsx` to detect and render LaTeX math delimiters using KaTeX before sanitizing, so all rich content areas automatically support math.
+Currently, the ISAT exam player posts scores via LTI on submit (line 228-249 of `ISATExamPlayer.tsx`), which is correct. But verify the flow works end-to-end when the exam is launched via LTI (the `lti_session` param is present). No code change expected here — just validation.
 
 ## Technical Details
 
-**Files to modify:**
-- `package.json` — add `katex` dependency
-- `src/components/MathText.tsx` — new shared math-aware text component
-- `src/components/activities/players/RichContent.tsx` — add KaTeX support
-- `supabase/functions/generate-questions/index.ts` — update prompt for LaTeX math notation
-- `src/pages/QuestionBank.tsx` — use MathText instead of stripHtml for display
-- `src/pages/ISATExamPlayer.tsx` — use MathText for answer options
-- `src/pages/ISATExamEditor.tsx` — use MathText for sidebar previews
-- `src/pages/AdminDashboard.tsx` — use MathText for question display
+**Files to create:**
+- `supabase/functions/get-embedded-results/index.ts` — Authenticated edge function to query completions
 
-**No database changes needed.**
+**Files to modify:**
+- `src/components/PushISATEmbedToCanvasDialog.tsx` — Use LTI launch URL for external tool assignments
+- `src/components/PushActivityToCanvasDialog.tsx` — Same LTI URL fix
+- `src/pages/QuizAnalytics.tsx` — Add "Embedded Results" tab with completions data, charts, and student table
+
+**Database:** No schema changes needed. The `activity_completions` and `lti_sessions` tables already have the required data. The new edge function uses service role to read them.
 
