@@ -85,7 +85,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
         [{ code: initialStandard.code, description: initialStandard.description }],
         questionsPerSub,
         (p) => { latestProgressRef.current = p; setProgress(p); },
-        { framework: fw, subject: subj, dokLevel: dokValue }
+        { framework: fw, subject: subj, dokLevel: dokValue, questionStyle: subj === "Math" ? questionStyle : null }
       );
       setDone(true);
       const total = latestProgressRef.current?.questionsGenerated ?? 0;
