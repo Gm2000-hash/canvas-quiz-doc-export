@@ -17,8 +17,8 @@ import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
 import {
-  Loader2, BarChart3, TrendingUp, TrendingDown, Users, Target,
-  Trophy, AlertTriangle, ArrowLeft, RefreshCw, BookOpen, FileText, Globe,
+  Loader2, BarChart3, TrendingUp, Users, Target,
+  Trophy, AlertTriangle, ArrowLeft, RefreshCw, BookOpen, FileText,
 } from "lucide-react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
