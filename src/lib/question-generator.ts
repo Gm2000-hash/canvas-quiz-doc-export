@@ -38,6 +38,7 @@ async function generateForSubstandard(
       framework: options.framework || "NGSS",
       subject: options.subject || "Science",
       ...(options.dokLevel ? { dok_level: options.dokLevel } : {}),
+      ...(options.questionStyle && options.questionStyle !== "standard" ? { question_style: options.questionStyle } : {}),
     },
   });
 
