@@ -352,7 +352,7 @@ export default function ISATExamPlayer() {
                   }}
                   className="mt-0.5"
                 />
-                <span className="text-sm">{opt.text}</span>
+                <MathText text={opt.text} className="text-sm" inline />
                 {isReview && isCorrect && <CheckCircle2 className="h-4 w-4 text-green-600 ml-auto shrink-0" />}
               </label>
             );
