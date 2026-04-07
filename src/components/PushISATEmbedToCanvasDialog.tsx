@@ -6,8 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getCourses, createCanvasAssignment, type CanvasConfig, type Course } from "@/lib/canvas-api";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
-import { Loader2, ExternalLink, CheckCircle } from "lucide-react";
+import { Loader2, ExternalLink, CheckCircle, AlertTriangle } from "lucide-react";
 
 interface Props {
   open: boolean;
