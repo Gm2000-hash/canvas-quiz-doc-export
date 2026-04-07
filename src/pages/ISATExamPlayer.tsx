@@ -311,7 +311,7 @@ export default function ISATExamPlayer() {
                 className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer hover:bg-accent/50 transition-colors ${borderClass}`}
               >
                 <RadioGroupItem value={opt.text} disabled={isReview} className="mt-0.5" />
-                <span className="text-sm">{opt.text}</span>
+                <MathText text={opt.text} className="text-sm" inline />
                 {isReview && isCorrect && <CheckCircle2 className="h-4 w-4 text-green-600 ml-auto shrink-0" />}
                 {isReview && isSelected && !isCorrect && <AlertCircle className="h-4 w-4 text-red-500 ml-auto shrink-0" />}
               </label>
