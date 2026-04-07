@@ -52,6 +52,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
   const [idahoCategoryFilter, setIdahoCategoryFilter] = useState<string>("essential");
   const [selectedIdahoStandards, setSelectedIdahoStandards] = useState<Set<string>>(new Set());
   const [targetDok, setTargetDok] = useState<string>("any");
+  const [questionStyle, setQuestionStyle] = useState<"standard" | "big_ideas" | "desmos">("standard");
   const abortRef = useRef(false);
   const latestProgressRef = useRef<GenerationProgress | null>(null);
 
