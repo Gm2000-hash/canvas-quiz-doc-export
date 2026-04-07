@@ -148,6 +148,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
         await generateForStandards(target.standards, questionsPerSub, handleProgressUpdate, {
           framework: "Idaho",
           subject: target.subject,
+          questionStyle: target.subject === "Math" ? questionStyle : null,
         });
       } else {
         const allCoreIdeas = DISCIPLINES.flatMap(d => d.coreIdeas);
