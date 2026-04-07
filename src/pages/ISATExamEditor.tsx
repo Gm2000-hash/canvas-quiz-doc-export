@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { MathText } from "@/components/MathText";
 import { MediaInsert } from "@/components/activities/editors/MediaInsert";
 import { moveItem } from "@/components/activities/editors/ReorderControls";
 import { ReviewMaterialsEditor } from "@/components/ReviewMaterialsEditor";

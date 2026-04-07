@@ -16,6 +16,7 @@ import { ShieldCheck, Users, Loader2, GraduationCap, Search, Trash2, KeyRound, E
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { MathText } from "@/components/MathText";
 
 type UserRow = {
   id: string;

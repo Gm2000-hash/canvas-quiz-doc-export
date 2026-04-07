@@ -30,6 +30,7 @@ import PushToCanvasDialog from "@/components/PushToCanvasDialog";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { PageBanner } from "@/components/PageBanner";
 import { useNavigate } from "react-router-dom";
+import { MathText } from "@/components/MathText";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useProfile } from "@/hooks/useProfile";
 import { StandardsCoverageGrid } from "@/components/StandardsCoverageGrid";
