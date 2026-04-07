@@ -112,6 +112,12 @@ export default function QuizAnalytics() {
   const [loadingCanvas, setLoadingCanvas] = useState(false);
   const [fetchedCanvasCourses, setFetchedCanvasCourses] = useState(false);
 
+  // Embedded results data
+  const [embeddedResults, setEmbeddedResults] = useState<EmbeddedResult[]>([]);
+  const [embeddedSummary, setEmbeddedSummary] = useState<EmbeddedSummary | null>(null);
+  const [loadingEmbedded, setLoadingEmbedded] = useState(false);
+  const [embeddedLoaded, setEmbeddedLoaded] = useState(false);
+
   // Load ISAT exams
   useEffect(() => {
     if (!user) return;
