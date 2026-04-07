@@ -412,6 +412,33 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                   </div>
                 </ScrollArea>
 
+                {/* Math question style picker for Idaho Math */}
+                {idahoGradeFilter.startsWith("Math|") && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Question Style</Label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { value: "standard" as const, label: "Standard ISAT" },
+                        { value: "big_ideas" as const, label: "Big Ideas Math" },
+                        { value: "desmos" as const, label: "Desmos-Style" },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setQuestionStyle(opt.value)}
+                          className={`rounded-md border px-2 py-1.5 text-xs font-medium transition-all ${
+                            questionStyle === opt.value
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border text-muted-foreground hover:border-primary/50"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <Button
                   className="w-full gap-2"
                   onClick={handleIdahoGenerate}
@@ -420,6 +447,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                   <Sparkles className="h-4 w-4" />
                   Generate {selectedIdahoStandards.size * questionsPerSub} Questions
                   ({selectedIdahoStandards.size} standards × {questionsPerSub})
+                  {questionStyle !== "standard" && idahoGradeFilter.startsWith("Math|") ? ` • ${questionStyle === "big_ideas" ? "Big Ideas" : "Desmos"}` : ""}
                 </Button>
               </div>
             ) : (
