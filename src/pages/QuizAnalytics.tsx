@@ -397,6 +397,12 @@ export default function QuizAnalytics() {
                   <Badge variant="secondary" className="ml-1 text-[10px] px-1.5">{canvasQuizData.length}</Badge>
                 )}
               </TabsTrigger>
+              <TabsTrigger value="embedded" className="gap-1.5">
+                <Users className="h-4 w-4" /> Embedded Results
+                {embeddedResults.length > 0 && (
+                  <Badge variant="secondary" className="ml-1 text-[10px] px-1.5">{embeddedResults.length}</Badge>
+                )}
+              </TabsTrigger>
             </TabsList>
 
             {/* ─── ISAT Tab ─── */}
