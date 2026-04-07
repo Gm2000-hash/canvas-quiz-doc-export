@@ -59,7 +59,8 @@ async function generateForSubstandard(
         }));
       }
 
-      const sourceLabel = options.framework === "Idaho" ? `Idaho ${options.subject}` : "NGSS Science";
+      const styleLabel = options.questionStyle === "big_ideas" ? " (Big Ideas)" : options.questionStyle === "desmos" ? " (Desmos)" : "";
+      const sourceLabel = options.framework === "Idaho" ? `Idaho ${options.subject}${styleLabel}` : "NGSS Science";
 
       const { data: inserted, error: insertError } = await supabase
         .from("question_bank")
