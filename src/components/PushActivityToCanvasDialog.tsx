@@ -198,6 +198,15 @@ export default function PushActivityToCanvasDialog({
               </div>
             )}
 
+            {!ltiBaseUrl && ltiChecked && (
+              <div className="flex items-start gap-2 rounded-md bg-yellow-50 dark:bg-yellow-950/30 border border-yellow-200 dark:border-yellow-800 p-3">
+                <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-400 mt-0.5 shrink-0" />
+                <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                  LTI not configured. Scores won't sync to Canvas gradebook. Configure LTI 1.3 in Settings.
+                </p>
+              </div>
+            )}
+
             <DialogFooter>
               <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pushing}>Cancel</Button>
               <Button onClick={handlePush} disabled={pushing || selectedCourseIds.size === 0} className="gap-2">
