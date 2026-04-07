@@ -52,6 +52,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
   const [idahoCategoryFilter, setIdahoCategoryFilter] = useState<string>("essential");
   const [selectedIdahoStandards, setSelectedIdahoStandards] = useState<Set<string>>(new Set());
   const [targetDok, setTargetDok] = useState<string>("any");
+  const [questionStyle, setQuestionStyle] = useState<"standard" | "big_ideas" | "desmos">("standard");
   const abortRef = useRef(false);
   const latestProgressRef = useRef<GenerationProgress | null>(null);
 
@@ -66,6 +67,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
     if (open && initialStandard) {
       setTargetDok("any");
       setQuestionsPerSub(10);
+      setQuestionStyle("standard");
     }
   }, [open, initialStandard]);
 
@@ -83,7 +85,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
         [{ code: initialStandard.code, description: initialStandard.description }],
         questionsPerSub,
         (p) => { latestProgressRef.current = p; setProgress(p); },
-        { framework: fw, subject: subj, dokLevel: dokValue }
+        { framework: fw, subject: subj, dokLevel: dokValue, questionStyle: subj === "Math" ? questionStyle : null }
       );
       setDone(true);
       const total = latestProgressRef.current?.questionsGenerated ?? 0;
@@ -146,6 +148,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
         await generateForStandards(target.standards, questionsPerSub, handleProgressUpdate, {
           framework: "Idaho",
           subject: target.subject,
+          questionStyle: target.subject === "Math" ? questionStyle : null,
         });
       } else {
         const allCoreIdeas = DISCIPLINES.flatMap(d => d.coreIdeas);
@@ -239,9 +242,38 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                 </Select>
               </div>
             </div>
+
+            {/* Math question style picker */}
+            {initialStandard.subject === "Math" && (
+              <div className="space-y-1.5">
+                <Label className="text-sm">Question Style</Label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { value: "standard" as const, label: "Standard ISAT", desc: "Traditional test-style" },
+                    { value: "big_ideas" as const, label: "Big Ideas Math", desc: "Curriculum-aligned" },
+                    { value: "desmos" as const, label: "Desmos-Style", desc: "Visual & exploratory" },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => setQuestionStyle(opt.value)}
+                      className={`rounded-lg border p-2.5 text-left transition-all ${
+                        questionStyle === opt.value
+                          ? "border-primary bg-primary/10 ring-1 ring-primary"
+                          : "border-border hover:border-primary/50 hover:bg-muted/50"
+                      }`}
+                    >
+                      <p className="text-xs font-semibold">{opt.label}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{opt.desc}</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <Button onClick={handleGapGenerate} className="w-full gap-2">
               <Sparkles className="h-4 w-4" />
-              Generate {questionsPerSub} Questions for {initialStandard.code}{targetDok !== "any" ? ` at DOK ${targetDok}` : ""}
+              Generate {questionsPerSub} Questions for {initialStandard.code}{targetDok !== "any" ? ` at DOK ${targetDok}` : ""}{questionStyle !== "standard" && initialStandard.subject === "Math" ? ` (${questionStyle === "big_ideas" ? "Big Ideas" : "Desmos"})` : ""}
             </Button>
           </div>
         ) : null}
@@ -380,6 +412,33 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                   </div>
                 </ScrollArea>
 
+                {/* Math question style picker for Idaho Math */}
+                {idahoGradeFilter.startsWith("Math|") && (
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Question Style</Label>
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {[
+                        { value: "standard" as const, label: "Standard ISAT" },
+                        { value: "big_ideas" as const, label: "Big Ideas Math" },
+                        { value: "desmos" as const, label: "Desmos-Style" },
+                      ].map(opt => (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => setQuestionStyle(opt.value)}
+                          className={`rounded-md border px-2 py-1.5 text-xs font-medium transition-all ${
+                            questionStyle === opt.value
+                              ? "border-primary bg-primary/10 text-primary"
+                              : "border-border text-muted-foreground hover:border-primary/50"
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <Button
                   className="w-full gap-2"
                   onClick={handleIdahoGenerate}
@@ -388,6 +447,7 @@ export default function GenerateQuestionsDialog({ open, onOpenChange, onComplete
                   <Sparkles className="h-4 w-4" />
                   Generate {selectedIdahoStandards.size * questionsPerSub} Questions
                   ({selectedIdahoStandards.size} standards × {questionsPerSub})
+                  {questionStyle !== "standard" && idahoGradeFilter.startsWith("Math|") ? ` • ${questionStyle === "big_ideas" ? "Big Ideas" : "Desmos"}` : ""}
                 </Button>
               </div>
             ) : (

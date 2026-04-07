@@ -66,12 +66,12 @@ serve(withLogging("generate-questions", async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const { standard_code, standard_description, count = 10, subject, framework = "NGSS", dok_level } = parsedBody;
+    const { standard_code, standard_description, count = 10, subject, framework = "NGSS", dok_level, question_style } = parsedBody;
     if (!standard_code || !standard_description) {
       throw new Error('standard_code and standard_description are required');
     }
 
-    console.log(`Generating ${count} questions for ${standard_code} (${framework})`);
+    console.log(`Generating ${count} questions for ${standard_code} (${framework}, style: ${question_style || 'standard'})`);
 
     // Adapt system prompt based on framework/subject
     const isIdaho = framework === "Idaho";
@@ -94,7 +94,45 @@ serve(withLogging("generate-questions", async (req) => {
 3. "multi_step_question" - Multi-part (Part A, Part B) where later parts build on earlier reasoning.
 4. "drag_and_drop_question" - 2-3 categories with 4-8 items total that students sort.`;
 
-    const mathQuestionTypes = `
+    // Big Ideas Math style question types
+    const bigIdeasMathTypes = `
+1. "multiple_choice_question" - 4 options, one correct. Questions should follow Big Ideas Math curriculum style:
+   - Start with a clear worked example or model, then ask students to apply the same method to a new problem
+   - Include "Tell whether..." or "Determine whether..." classification questions
+   - Feature real-world application problems with specific numerical contexts
+   - Use scaffolded difficulty within the standard
+2. "multiple_answers_question" - 4-5 options, 2-3 correct. "Select ALL that apply" style:
+   - Ask students to identify all correct examples, properties, or representations
+   - Include problems like "Which of the following are equivalent to..." or "Which expressions represent..."
+3. "multi_step_question" - Multi-part following Big Ideas "Explore & Grow" pattern:
+   - Part A: Set up or identify the concept (e.g., "What equation represents this situation?")
+   - Part B: Solve or apply (e.g., "Solve the equation")
+   - Part C (optional): Explain reasoning or interpret the result in context
+4. "drag_and_drop_question" - Sorting/matching activities:
+   - Sort expressions, equations, or values into categories (e.g., "Linear vs. Nonlinear", "Rational vs. Irrational")
+   - Match representations (graph → equation → table)`;
+
+    // Desmos-style question types
+    const desmosMathTypes = `
+1. "multiple_choice_question" - 4 options, one correct. Questions should follow Desmos/activity-builder style:
+   - Present a visual scenario, graph description, or interactive-style prompt
+   - Ask "Which graph represents...", "What happens to the graph when...", or "Which statement best describes..."
+   - Focus on graphical reasoning, pattern recognition, and conceptual understanding over computation
+   - Include questions about transformations, function behavior, and data interpretation
+2. "multiple_answers_question" - 4-5 options, 2-3 correct. Desmos "Check all" style:
+   - "Select ALL statements that are true about this function/graph/pattern"
+   - Ask students to identify multiple correct representations or properties
+   - Focus on connecting different representations (verbal, graphical, algebraic, tabular)
+3. "multi_step_question" - Multi-part following Desmos "Screen by Screen" exploration:
+   - Part A: Make a prediction or observation (e.g., "Describe the pattern you notice")
+   - Part B: Apply mathematical reasoning (e.g., "Write a rule that fits the pattern")
+   - Part C (optional): Extend or generalize (e.g., "What would happen if...")
+4. "drag_and_drop_question" - Interactive matching/sorting:
+   - Match graphs to equations, tables to rules, or descriptions to representations
+   - Sort values, expressions, or scenarios into categories based on properties
+   - Sequence steps in a mathematical process or proof`;
+
+    const standardMathTypes = `
 1. "multiple_choice_question" - 4 options, one correct. Include common computational errors as distractors.
 2. "multiple_answers_question" - 4-5 options, 2-3 correct. Students must select ALL correct answers.
 3. "multi_step_question" - Multi-part (Part A, Part B, optionally Part C) where later parts build on earlier reasoning. Include showing work or explaining reasoning.
@@ -106,12 +144,40 @@ serve(withLogging("generate-questions", async (req) => {
 3. "multi_step_question" - Multi-part (Part A, Part B, optionally Part C) where later parts build on earlier reasoning.
 4. "drag_and_drop_question" - 2-3 categories with 4-8 items total that students sort into the correct category.`;
 
-    const questionTypes = subject === "Math" ? mathQuestionTypes
-      : subject === "ELA" ? elaQuestionTypes
-      : scienceQuestionTypes;
+    let questionTypes: string;
+    if (subject === "ELA") {
+      questionTypes = elaQuestionTypes;
+    } else if (subject === "Math") {
+      if (question_style === "big_ideas") questionTypes = bigIdeasMathTypes;
+      else if (question_style === "desmos") questionTypes = desmosMathTypes;
+      else questionTypes = standardMathTypes;
+    } else {
+      questionTypes = scienceQuestionTypes;
+    }
+
+    // Style-specific guidelines
+    const bigIdeasGuidelines = `- Follow Big Ideas Math curriculum design philosophy: conceptual understanding → procedural fluency → application
+- Use "Explore & Grow" discovery-style questioning that guides students to understand the concept
+- Include vocabulary-check questions (e.g., "What is the slope of the line?", "Name the property illustrated")
+- Feature "Real-Life Application" problems with realistic contexts (sports, cooking, construction, finance)
+- Include "Error Analysis" questions where students identify and correct common mistakes
+- Use precise mathematical language consistent with Big Ideas Math textbooks`;
+
+    const desmosGuidelines = `- Follow Desmos Activity Builder design philosophy: visual, interactive, and exploratory
+- Emphasize graphical and visual reasoning over pure computation
+- Include "Notice and Wonder" style prompts that encourage observation before formal analysis
+- Feature "Card Sort" style categorization and matching activities
+- Ask students to describe patterns in their own words before formalizing with equations
+- Focus on multiple representations: graphs, tables, equations, and verbal descriptions
+- Include questions that build mathematical intuition through estimation and prediction
+- Use accessible, conversational language that invites exploration`;
 
     const subjectGuidelines = subject === "Math"
-      ? `- Include real-world mathematical scenarios and word problems
+      ? question_style === "big_ideas"
+        ? bigIdeasGuidelines
+        : question_style === "desmos"
+        ? desmosGuidelines
+        : `- Include real-world mathematical scenarios and word problems
 - Use accurate mathematical notation
 - Vary computational complexity
 - Include problems that require conceptual understanding, not just procedures`

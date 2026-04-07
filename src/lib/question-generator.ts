@@ -15,6 +15,7 @@ interface GenerateOptions {
   framework?: "NGSS" | "Idaho";
   subject?: string;
   dokLevel?: number | null;
+  questionStyle?: "standard" | "big_ideas" | "desmos" | null;
 }
 
 /**
@@ -37,6 +38,7 @@ async function generateForSubstandard(
       framework: options.framework || "NGSS",
       subject: options.subject || "Science",
       ...(options.dokLevel ? { dok_level: options.dokLevel } : {}),
+      ...(options.questionStyle && options.questionStyle !== "standard" ? { question_style: options.questionStyle } : {}),
     },
   });
 
@@ -57,7 +59,8 @@ async function generateForSubstandard(
         }));
       }
 
-      const sourceLabel = options.framework === "Idaho" ? `Idaho ${options.subject}` : "NGSS Science";
+      const styleLabel = options.questionStyle === "big_ideas" ? " (Big Ideas)" : options.questionStyle === "desmos" ? " (Desmos)" : "";
+      const sourceLabel = options.framework === "Idaho" ? `Idaho ${options.subject}${styleLabel}` : "NGSS Science";
 
       const { data: inserted, error: insertError } = await supabase
         .from("question_bank")
