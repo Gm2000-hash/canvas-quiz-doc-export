@@ -15,6 +15,7 @@ interface GenerateOptions {
   framework?: "NGSS" | "Idaho";
   subject?: string;
   dokLevel?: number | null;
+  questionStyle?: "standard" | "big_ideas" | "desmos" | null;
 }
 
 /**
