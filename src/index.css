@@ -161,15 +161,27 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Nunito', 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-    letter-spacing: -0.011em;
+    letter-spacing: -0.005em;
+    font-size: 16.5px;
+    line-height: 1.6;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    background-image:
+      radial-gradient(at 12% 8%, hsl(var(--page-green) / 0.18) 0, transparent 45%),
+      radial-gradient(at 88% 12%, hsl(var(--neon-pink) / 0.14) 0, transparent 45%),
+      radial-gradient(at 70% 90%, hsl(var(--page-tangerine) / 0.16) 0, transparent 50%),
+      radial-gradient(at 10% 95%, hsl(var(--neon-cyan) / 0.14) 0, transparent 50%);
+    background-attachment: fixed;
   }
 
   html {
     scroll-behavior: smooth;
     -webkit-overflow-scrolling: touch;
+    font-size: 16px;
   }
+
+  h1 { letter-spacing: -0.02em; }
+  h2, h3 { letter-spacing: -0.015em; }
 }
 
 /* Clickable links inside curriculum reading viewer */
@@ -207,6 +219,66 @@
   .glass-header {
     backdrop-filter: saturate(180%) blur(20px);
     -webkit-backdrop-filter: saturate(180%) blur(20px);
+  }
+
+  /* Bubble glass surfaces — friendly, soft, frosted */
+  .bubble-glass {
+    background: linear-gradient(
+      135deg,
+      hsl(var(--card) / 0.75) 0%,
+      hsl(var(--card) / 0.55) 100%
+    );
+    backdrop-filter: saturate(180%) blur(18px);
+    -webkit-backdrop-filter: saturate(180%) blur(18px);
+    border: 1px solid hsl(0 0% 100% / 0.6);
+    box-shadow:
+      0 1px 0 0 hsl(0 0% 100% / 0.7) inset,
+      0 -1px 0 0 hsl(220 30% 60% / 0.08) inset,
+      0 8px 24px -8px hsl(220 30% 30% / 0.12),
+      0 2px 6px -2px hsl(220 30% 30% / 0.06);
+    border-radius: 1.5rem;
+    transition: transform 220ms cubic-bezier(.2,.9,.3,1.3), box-shadow 220ms ease, border-color 220ms ease;
+  }
+
+  .bubble-glass:hover {
+    transform: translateY(-3px);
+    box-shadow:
+      0 1px 0 0 hsl(0 0% 100% / 0.85) inset,
+      0 -1px 0 0 hsl(220 30% 60% / 0.1) inset,
+      0 18px 36px -10px hsl(220 30% 30% / 0.18),
+      0 6px 12px -4px hsl(220 30% 30% / 0.08);
+    border-color: hsl(var(--primary) / 0.35);
+  }
+
+  .bubble-glass-soft {
+    background: hsl(var(--card) / 0.6);
+    backdrop-filter: saturate(180%) blur(14px);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    border: 1px solid hsl(0 0% 100% / 0.55);
+    box-shadow:
+      0 1px 0 0 hsl(0 0% 100% / 0.65) inset,
+      0 6px 18px -6px hsl(220 30% 30% / 0.1);
+    border-radius: 1.25rem;
+  }
+
+  .bubble-tint-pink   { background-image: linear-gradient(135deg, hsl(340 90% 96% / 0.85), hsl(340 70% 92% / 0.6)); }
+  .bubble-tint-cyan   { background-image: linear-gradient(135deg, hsl(185 80% 95% / 0.85), hsl(200 70% 92% / 0.6)); }
+  .bubble-tint-purple { background-image: linear-gradient(135deg, hsl(280 70% 96% / 0.85), hsl(270 60% 92% / 0.6)); }
+  .bubble-tint-orange { background-image: linear-gradient(135deg, hsl(25 90% 95% / 0.85),  hsl(25 75% 90% / 0.6));  }
+  .bubble-tint-green  { background-image: linear-gradient(135deg, hsl(150 70% 95% / 0.85), hsl(150 55% 90% / 0.6)); }
+  .bubble-tint-yellow { background-image: linear-gradient(135deg, hsl(45 95% 95% / 0.9),   hsl(38 90% 90% / 0.6));  }
+
+  .dark .bubble-glass {
+    background: linear-gradient(135deg, hsl(var(--card) / 0.65), hsl(var(--card) / 0.4));
+    border-color: hsl(0 0% 100% / 0.08);
+    box-shadow:
+      0 1px 0 0 hsl(0 0% 100% / 0.06) inset,
+      0 8px 24px -8px hsl(0 0% 0% / 0.5);
+  }
+
+  .dark .bubble-glass-soft {
+    background: hsl(var(--card) / 0.5);
+    border-color: hsl(0 0% 100% / 0.08);
   }
 
   .neon-glow-pink {
