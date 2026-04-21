@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,7 +80,6 @@ export function DashboardAnalytics({ userId }: Props) {
             .limit(1000),
         ]);
 
-      // Merge recent items
       const items: RecentItem[] = [
         ...(recentLessons.data || []).map((l) => ({
           id: l.id,
@@ -105,7 +103,6 @@ export function DashboardAnalytics({ userId }: Props) {
       items.sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime());
       setRecentItems(items.slice(0, 5));
 
-      // Upcoming lessons
       setUpcoming(
         (upcomingRes.data || []).map((l) => ({
           id: l.id,
@@ -114,7 +111,6 @@ export function DashboardAnalytics({ userId }: Props) {
         }))
       );
 
-      // Standards coverage
       const stdRows = standardsRes.data || [];
       const codeMap = new Map<string, number>();
       stdRows.forEach((r) => {
@@ -136,59 +132,48 @@ export function DashboardAnalytics({ userId }: Props) {
     unit: TrendingUp,
   };
 
-  const typeColor = {
-    lesson: "text-primary",
-    question: "text-neon-orange",
-    activity: "text-neon-purple",
-    unit: "text-neon-cyan",
-  };
-
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {[1, 2, 3].map((i) => (
-          <Card key={i} className="animate-pulse">
-            <CardHeader className="pb-2">
-              <div className="h-4 bg-muted rounded w-1/2" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="h-3 bg-muted rounded w-full" />
-                <div className="h-3 bg-muted rounded w-3/4" />
-              </div>
-            </CardContent>
-          </Card>
+          <div key={i} className="bubble-glass bubble-tint-cyan p-6 animate-pulse">
+            <div className="h-6 bg-white/60 rounded w-2/3 mb-4" />
+            <div className="space-y-2">
+              <div className="h-4 bg-white/60 rounded w-full" />
+              <div className="h-4 bg-white/60 rounded w-3/4" />
+            </div>
+          </div>
         ))}
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
       {/* Upcoming Lessons */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <CalendarDays className="h-4 w-4 text-primary" />
-            Upcoming Lessons
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
+      <div className="bubble-glass bubble-tint-cyan p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-12 w-12 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center shadow-sm border border-white/80">
+            <CalendarDays className="h-6 w-6 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground">Upcoming Lessons</h3>
+        </div>
+        <div className="space-y-2">
           {upcoming.length === 0 ? (
-            <p className="text-xs italic text-sidebar-foreground">No lessons scheduled this week</p>
+            <p className="text-sm text-muted-foreground italic">No lessons scheduled this week</p>
           ) : (
             upcoming.map((l) => (
               <button
                 key={l.id}
                 onClick={() => navigate(`/lesson-planner/${l.id}`)}
-                className="w-full flex items-center gap-2 rounded-lg p-2 text-left hover:bg-muted/60 transition-colors"
+                className="w-full flex items-center gap-3 rounded-xl p-2.5 text-left hover:bg-white/50 transition-colors"
               >
-                <div className="shrink-0 h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
-                  <CalendarDays className="h-3.5 w-3.5 text-primary" />
+                <div className="shrink-0 h-9 w-9 rounded-xl bg-white/70 flex items-center justify-center border border-white/80">
+                  <CalendarDays className="h-4 w-4 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-xs font-medium truncate text-sidebar-foreground">{l.title}</p>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-sm font-semibold truncate text-foreground">{l.title}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {new Date(l.lesson_date + "T00:00:00").toLocaleDateString("en-US", {
                       weekday: "short",
                       month: "short",
@@ -202,95 +187,97 @@ export function DashboardAnalytics({ userId }: Props) {
           <Button
             variant="ghost"
             size="sm"
-            className="w-full text-xs mt-1"
+            className="w-full text-sm mt-2 rounded-full hover:bg-white/60"
             onClick={() => navigate("/lesson-planner")}
           >
-            View all <ArrowRight className="h-3 w-3 ml-1" />
+            View all <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Recent Activity */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <Activity className="h-4 w-4 text-neon-orange" />
-            Recent Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
+      <div className="bubble-glass bubble-tint-orange p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-12 w-12 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center shadow-sm border border-white/80">
+            <Activity className="h-6 w-6 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground">Recent Activity</h3>
+        </div>
+        <div className="space-y-2">
           {recentItems.length === 0 ? (
-            <p className="text-xs text-muted-foreground italic">No recent activity</p>
+            <p className="text-sm text-muted-foreground italic">No recent activity</p>
           ) : (
             recentItems.map((item) => {
               const Icon = typeIcon[item.type];
               return (
                 <div
                   key={`${item.type}-${item.id}`}
-                  className="flex items-center gap-2 rounded-lg p-2 text-foreground"
+                  className="flex items-center gap-3 rounded-xl p-2.5"
                 >
-                  <Icon className={`h-3.5 w-3.5 shrink-0 ${typeColor[item.type]}`} />
+                  <div className="shrink-0 h-9 w-9 rounded-xl bg-white/70 flex items-center justify-center border border-white/80">
+                    <Icon className="h-4 w-4 text-primary" />
+                  </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-xs font-medium truncate text-sidebar-foreground">{item.title}</p>
-                    <p className="text-[10px] text-muted-foreground flex items-center gap-1">
-                      <Clock className="h-2.5 w-2.5" />
+                    <p className="text-sm font-semibold truncate text-foreground">{item.title}</p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                      <Clock className="h-3 w-3" />
                       {formatDistanceToNow(new Date(item.updated_at), { addSuffix: true })}
                     </p>
                   </div>
-                  <Badge variant="outline" className="text-[9px] px-1.5 py-0 shrink-0 capitalize">
+                  <Badge variant="secondary" className="text-xs rounded-full bg-white/70 border border-white/80 capitalize shrink-0">
                     {item.type}
                   </Badge>
                 </div>
               );
             })
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Standards Coverage */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold flex items-center gap-2">
-            <TrendingUp className="h-4 w-4 text-neon-green" />
-            Standards Coverage
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+      <div className="bubble-glass bubble-tint-green p-6">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="h-12 w-12 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center shadow-sm border border-white/80">
+            <TrendingUp className="h-6 w-6 text-primary" />
+          </div>
+          <h3 className="text-lg font-bold text-foreground">Standards Coverage</h3>
+        </div>
+        <div className="space-y-4">
           <div>
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-info-foreground">Standards tagged</span>
-              <span className="font-semibold text-foreground">{coverage.covered}</span>
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="text-foreground">Standards tagged</span>
+              <span className="font-bold text-foreground">{coverage.covered}</span>
             </div>
             <Progress value={100} className="h-2" />
           </div>
           <div>
-            <div className="flex justify-between text-xs mb-1 text-card-foreground">
-              <span className="text-card-foreground">Well-covered (3+ questions)</span>
-              <span className="font-semibold text-foreground">{coverage.wellCovered}</span>
+            <div className="flex justify-between text-sm mb-1.5">
+              <span className="text-foreground">Well-covered (3+ questions)</span>
+              <span className="font-bold text-foreground">{coverage.wellCovered}</span>
             </div>
             <Progress
               value={coverage.covered > 0 ? (coverage.wellCovered / coverage.covered) * 100 : 0}
               className="h-2"
             />
           </div>
-          <div className="pt-1 flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary" className="text-[10px] text-warning-foreground">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Badge variant="secondary" className="text-xs rounded-full bg-white/70 border border-white/80">
               🟢 {coverage.wellCovered} solid
             </Badge>
-            <Badge variant="secondary" className="text-[10px] text-info-foreground">
+            <Badge variant="secondary" className="text-xs rounded-full bg-white/70 border border-white/80">
               🟡 {coverage.covered - coverage.wellCovered} needs work
             </Badge>
           </div>
           <Button
             variant="ghost"
             size="sm"
-            className="w-full text-xs mt-1"
+            className="w-full text-sm rounded-full hover:bg-white/60"
             onClick={() => navigate("/question-bank")}
           >
-            View coverage grid <ArrowRight className="h-3 w-3 ml-1" />
+            View coverage grid <ArrowRight className="h-4 w-4 ml-1" />
           </Button>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }
