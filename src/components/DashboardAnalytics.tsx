@@ -149,7 +149,7 @@ export function DashboardAnalytics({ userId }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
       {/* Upcoming Lessons */}
       <div className="bubble-glass bubble-tint-cyan p-6">
         <div className="flex items-start gap-4 mb-4">
@@ -171,9 +171,9 @@ export function DashboardAnalytics({ userId }: Props) {
               <button
                 key={l.id}
                 onClick={() => navigate(`/lesson-planner/${l.id}`)}
-                className="w-full flex items-center gap-3 rounded-xl p-2.5 text-left hover:bg-white/50 transition-colors"
+                className="w-full flex items-center gap-3 rounded-2xl p-3 text-left bubble-glass-soft hover:bg-white/60 transition-colors"
               >
-                <div className="shrink-0 h-9 w-9 rounded-xl bg-white/70 flex items-center justify-center border border-white/80">
+                <div className="shrink-0 h-10 w-10 rounded-xl bg-white/70 backdrop-blur flex items-center justify-center shadow-sm border border-white/80">
                   <CalendarDays className="h-4 w-4 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
@@ -222,9 +222,9 @@ export function DashboardAnalytics({ userId }: Props) {
               return (
                 <div
                   key={`${item.type}-${item.id}`}
-                  className="flex items-center gap-3 rounded-xl p-2.5"
+                  className="flex items-center gap-3 rounded-2xl p-3 bubble-glass-soft"
                 >
-                  <div className="shrink-0 h-9 w-9 rounded-xl bg-white/70 flex items-center justify-center border border-white/80">
+                  <div className="shrink-0 h-10 w-10 rounded-xl bg-white/70 backdrop-blur flex items-center justify-center shadow-sm border border-white/80">
                     <Icon className="h-4 w-4 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
@@ -234,7 +234,7 @@ export function DashboardAnalytics({ userId }: Props) {
                       {formatDistanceToNow(new Date(item.updated_at), { addSuffix: true })}
                     </p>
                   </div>
-                  <Badge variant="secondary" className="text-xs rounded-full bg-white/70 border border-white/80 capitalize shrink-0">
+                  <Badge variant="secondary" className="text-xs rounded-full bg-white/70 border border-white/80 shadow-sm capitalize shrink-0">
                     {item.type}
                   </Badge>
                 </div>
@@ -258,14 +258,14 @@ export function DashboardAnalytics({ userId }: Props) {
           </div>
         </div>
         <div className="space-y-4">
-          <div>
+          <div className="rounded-2xl p-3 bubble-glass-soft">
             <div className="flex justify-between text-sm mb-1.5 leading-relaxed">
               <span className="text-muted-foreground">Standards tagged</span>
               <span className="font-bold text-foreground">{coverage.covered}</span>
             </div>
             <Progress value={100} className="h-2" />
           </div>
-          <div>
+          <div className="rounded-2xl p-3 bubble-glass-soft">
             <div className="flex justify-between text-sm mb-1.5 leading-relaxed">
               <span className="text-muted-foreground">Well-covered (3+ questions)</span>
               <span className="font-bold text-foreground">{coverage.wellCovered}</span>
@@ -276,10 +276,10 @@ export function DashboardAnalytics({ userId }: Props) {
             />
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant="secondary" className="text-xs rounded-full bg-white/70 border border-white/80">
+            <Badge variant="secondary" className="text-xs rounded-full bg-white/70 border border-white/80 shadow-sm">
               🟢 {coverage.wellCovered} solid
             </Badge>
-            <Badge variant="secondary" className="text-xs rounded-full bg-white/70 border border-white/80">
+            <Badge variant="secondary" className="text-xs rounded-full bg-white/70 border border-white/80 shadow-sm">
               🟡 {coverage.covered - coverage.wellCovered} needs work
             </Badge>
           </div>
