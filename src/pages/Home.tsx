@@ -205,13 +205,15 @@ export default function Home() {
 
         {/* Draggable Dashboard Cards */}
         <div>
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-foreground">Your Dashboard</h2>
-            <p className="text-xs text-muted-foreground">Drag to rearrange</p>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-2xl font-bold text-foreground">Your Dashboard</h2>
+            <p className="text-sm text-muted-foreground">Drag to rearrange</p>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {cards.map((card, idx) => {
               const Icon = card.icon;
+              const tints = ["bubble-tint-green", "bubble-tint-cyan", "bubble-tint-pink", "bubble-tint-orange", "bubble-tint-purple", "bubble-tint-yellow"];
+              const tint = tints[idx % tints.length];
               return (
                 <div
                   key={card.id}
@@ -219,37 +221,37 @@ export default function Home() {
                   onDragStart={(e) => handleDragStart(e, idx)}
                   onDragEnd={handleDragEnd}
                   onDragOver={(e) => handleDragOver(e, idx)}
-                  className={`group relative rounded-2xl border-2 border-card-foreground bg-white text-left transition-all duration-200 hover:shadow-lg hover:border-primary/30 hover:-translate-y-0.5 cursor-grab active:cursor-grabbing ${
+                  className={`group relative bubble-glass ${tint} cursor-grab active:cursor-grabbing ${
                     overIdx === idx && dragIdx !== null && dragIdx !== idx
-                      ? "ring-2 ring-primary/40 border-primary/40"
+                      ? "ring-2 ring-primary/50"
                       : ""
                   }`}
                 >
-                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-60 transition-opacity">
+                  <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-70 transition-opacity">
                     <GripVertical className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <button
                     onClick={() => navigate(card.path)}
-                    className="w-full p-5 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-2xl"
+                    className="w-full p-6 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-3xl"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="shrink-0 h-14 w-14 rounded-xl bg-primary/15 flex items-center justify-center overflow-hidden">
+                      <div className="shrink-0 h-16 w-16 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center overflow-hidden shadow-sm border border-white/80">
                         {card.image ? (
                           <img
                             src={card.image}
                             alt={card.title}
-                            className="h-10 w-10 object-contain transition-transform duration-200 group-hover:scale-110"
+                            className="h-11 w-11 object-contain transition-transform duration-300 group-hover:scale-110"
                             loading="lazy"
                           />
                         ) : (
-                          <Icon className="h-6 w-6 text-primary transition-transform duration-200 group-hover:scale-110" />
+                          <Icon className="h-7 w-7 text-primary transition-transform duration-300 group-hover:scale-110" />
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
                           {card.title}
                         </h3>
-                        <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
+                        <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed line-clamp-2">
                           {card.description}
                         </p>
                       </div>
@@ -265,16 +267,16 @@ export default function Home() {
         {user && <DashboardAnalytics userId={user.id} />}
 
         {/* Daily Tip */}
-        <div className="mx-auto max-w-lg rounded-2xl border border-border bg-white p-5 text-center">
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <Lightbulb className="h-4 w-4 text-neon-yellow" />
-            <span className="text-xs font-semibold uppercase tracking-wider text-neon-yellow">
+        <div className="mx-auto max-w-xl bubble-glass bubble-tint-yellow p-6 text-center">
+          <div className="flex items-center justify-center gap-2 mb-3">
+            <Lightbulb className="h-5 w-5 text-neon-yellow" />
+            <span className="text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-300">
               {todayTip.author === "Tip" ? "Daily Teaching Tip" : "Daily Inspiration"}
             </span>
           </div>
-          <p className="text-sm text-foreground leading-relaxed italic">"{todayTip.text}"</p>
+          <p className="text-base text-foreground leading-relaxed italic">"{todayTip.text}"</p>
           {todayTip.author !== "Tip" && (
-            <p className="text-xs text-muted-foreground mt-2">— {todayTip.author}</p>
+            <p className="text-sm text-muted-foreground mt-2">— {todayTip.author}</p>
           )}
         </div>
     </div>

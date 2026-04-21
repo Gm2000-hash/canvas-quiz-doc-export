@@ -26,20 +26,20 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full bg-background">
+      <div className="min-h-screen flex w-full">
         <WorkspaceSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-12 border-b border-border/60 bg-card/80 backdrop-blur flex items-center px-2 gap-2 sticky top-0 z-40">
+          <header className="h-14 border-b border-white/40 bg-white/50 dark:bg-card/40 backdrop-blur-xl flex items-center px-3 gap-2 sticky top-0 z-40">
             <SidebarTrigger />
             <Button
               variant="ghost"
               size="sm"
               onClick={() => setPaletteOpen(true)}
-              className="ml-auto text-muted-foreground gap-2 rounded-xl"
+              className="ml-auto text-muted-foreground gap-2 rounded-full bg-white/60 hover:bg-white/80 border border-white/60 px-3"
             >
               <Search className="h-4 w-4" />
-              <span className="text-xs hidden sm:inline">Search</span>
-              <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px]">
+              <span className="text-sm hidden sm:inline">Search</span>
+              <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded-full border border-border/60 bg-muted/80 px-1.5 font-mono text-[10px]">
                 ⌘K
               </kbd>
             </Button>
