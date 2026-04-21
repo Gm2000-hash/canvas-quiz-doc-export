@@ -152,15 +152,20 @@ export function DashboardAnalytics({ userId }: Props) {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
       {/* Upcoming Lessons */}
       <div className="bubble-glass bubble-tint-cyan p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="h-12 w-12 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center shadow-sm border border-white/80">
-            <CalendarDays className="h-6 w-6 text-primary" />
+        <div className="flex items-start gap-4 mb-4">
+          <div className="shrink-0 h-16 w-16 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center shadow-sm border border-white/80">
+            <CalendarDays className="h-7 w-7 text-primary" />
           </div>
-          <h3 className="text-lg font-bold text-foreground">Upcoming Lessons</h3>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg font-bold text-foreground">Upcoming Lessons</h3>
+            <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+              Your scheduled lessons for the next 7 days.
+            </p>
+          </div>
         </div>
         <div className="space-y-2">
           {upcoming.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic">No lessons scheduled this week</p>
+            <p className="text-sm text-muted-foreground italic leading-relaxed">No lessons scheduled this week</p>
           ) : (
             upcoming.map((l) => (
               <button
@@ -172,8 +177,8 @@ export function DashboardAnalytics({ userId }: Props) {
                   <CalendarDays className="h-4 w-4 text-primary" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold truncate text-foreground">{l.title}</p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="text-sm font-bold truncate text-foreground">{l.title}</p>
+                  <p className="text-sm text-muted-foreground mt-0.5 leading-relaxed">
                     {new Date(l.lesson_date + "T00:00:00").toLocaleDateString("en-US", {
                       weekday: "short",
                       month: "short",
@@ -197,15 +202,20 @@ export function DashboardAnalytics({ userId }: Props) {
 
       {/* Recent Activity */}
       <div className="bubble-glass bubble-tint-orange p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="h-12 w-12 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center shadow-sm border border-white/80">
-            <Activity className="h-6 w-6 text-primary" />
+        <div className="flex items-start gap-4 mb-4">
+          <div className="shrink-0 h-16 w-16 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center shadow-sm border border-white/80">
+            <Activity className="h-7 w-7 text-primary" />
           </div>
-          <h3 className="text-lg font-bold text-foreground">Recent Activity</h3>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg font-bold text-foreground">Recent Activity</h3>
+            <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+              Your latest lessons, questions, and activities.
+            </p>
+          </div>
         </div>
         <div className="space-y-2">
           {recentItems.length === 0 ? (
-            <p className="text-sm text-muted-foreground italic">No recent activity</p>
+            <p className="text-sm text-muted-foreground italic leading-relaxed">No recent activity</p>
           ) : (
             recentItems.map((item) => {
               const Icon = typeIcon[item.type];
@@ -218,8 +228,8 @@ export function DashboardAnalytics({ userId }: Props) {
                     <Icon className="h-4 w-4 text-primary" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold truncate text-foreground">{item.title}</p>
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                    <p className="text-sm font-bold truncate text-foreground">{item.title}</p>
+                    <p className="text-sm text-muted-foreground flex items-center gap-1 mt-0.5 leading-relaxed">
                       <Clock className="h-3 w-3" />
                       {formatDistanceToNow(new Date(item.updated_at), { addSuffix: true })}
                     </p>
@@ -236,23 +246,28 @@ export function DashboardAnalytics({ userId }: Props) {
 
       {/* Standards Coverage */}
       <div className="bubble-glass bubble-tint-green p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="h-12 w-12 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center shadow-sm border border-white/80">
-            <TrendingUp className="h-6 w-6 text-primary" />
+        <div className="flex items-start gap-4 mb-4">
+          <div className="shrink-0 h-16 w-16 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center shadow-sm border border-white/80">
+            <TrendingUp className="h-7 w-7 text-primary" />
           </div>
-          <h3 className="text-lg font-bold text-foreground">Standards Coverage</h3>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-lg font-bold text-foreground">Standards Coverage</h3>
+            <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed">
+              How well your question bank covers tagged standards.
+            </p>
+          </div>
         </div>
         <div className="space-y-4">
           <div>
-            <div className="flex justify-between text-sm mb-1.5">
-              <span className="text-foreground">Standards tagged</span>
+            <div className="flex justify-between text-sm mb-1.5 leading-relaxed">
+              <span className="text-muted-foreground">Standards tagged</span>
               <span className="font-bold text-foreground">{coverage.covered}</span>
             </div>
             <Progress value={100} className="h-2" />
           </div>
           <div>
-            <div className="flex justify-between text-sm mb-1.5">
-              <span className="text-foreground">Well-covered (3+ questions)</span>
+            <div className="flex justify-between text-sm mb-1.5 leading-relaxed">
+              <span className="text-muted-foreground">Well-covered (3+ questions)</span>
               <span className="font-bold text-foreground">{coverage.wellCovered}</span>
             </div>
             <Progress
