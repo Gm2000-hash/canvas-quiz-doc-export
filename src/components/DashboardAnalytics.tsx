@@ -134,7 +134,7 @@ export function DashboardAnalytics({ userId }: Props) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {[1, 2, 3].map((i) => (
           <div key={i} className="bubble-glass bubble-tint-cyan p-6 animate-pulse">
             <div className="h-6 bg-white/60 rounded w-2/3 mb-4" />
