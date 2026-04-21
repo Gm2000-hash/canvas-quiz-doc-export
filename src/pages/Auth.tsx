@@ -11,7 +11,6 @@ import { Loader2, FileText } from "lucide-react";
 
 const Auth = () => {
   usePageTitle("Sign In");
-  const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -35,15 +34,9 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      if (isLogin) {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        toast.success("Signed in!");
-      } else {
-        const { error } = await supabase.auth.signUp({ email, password });
-        if (error) throw error;
-        toast.success("Check your email to confirm your account!");
-      }
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      toast.success("Signed in!");
     } catch (err: any) {
       toast.error(err.message);
     } finally {
@@ -58,15 +51,13 @@ const Auth = () => {
           <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center">
             <FileText className="h-7 w-7 text-primary" />
           </div>
-          <h1 className="text-xl font-semibold text-foreground">Canvas Quiz Exporter</h1>
-          <p className="text-sm text-muted-foreground">Sign in to access your question bank</p>
+          <h1 className="text-xl font-semibold text-foreground">Teaching Toolkit</h1>
+          <p className="text-sm text-muted-foreground">Sign in to your workspace</p>
         </div>
         <Card className="shadow-md border-border/60">
           <CardHeader className="pb-4">
-            <CardTitle className="text-base">{isLogin ? "Sign In" : "Create Account"}</CardTitle>
-            <CardDescription className="text-sm">
-              {isLogin ? "Enter your credentials to continue" : "Create an account to get started"}
-            </CardDescription>
+            <CardTitle className="text-base">Sign In</CardTitle>
+            <CardDescription className="text-sm">Enter your credentials to continue</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -79,7 +70,7 @@ const Auth = () => {
                 <Input id="password" type="password" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} className="h-11 rounded-xl" />
               </div>
               <Button type="submit" className="w-full h-11 rounded-xl font-medium" disabled={loading}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : isLogin ? "Sign In" : "Sign Up"}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Sign In"}
               </Button>
             </form>
             <div className="relative my-4">
@@ -100,12 +91,9 @@ const Auth = () => {
               )}
               Continue with Google
             </Button>
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="mt-4 text-sm text-primary hover:underline w-full text-center font-medium"
-            >
-              {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-            </button>
+            <p className="mt-4 text-xs text-center text-muted-foreground">
+              This is a private workspace. New signups are disabled.
+            </p>
           </CardContent>
         </Card>
       </div>

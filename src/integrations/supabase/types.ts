@@ -608,6 +608,101 @@ export type Database = {
           },
         ]
       }
+      note_links: {
+        Row: {
+          created_at: string
+          id: string
+          source_note_id: string
+          target_note_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          source_note_id: string
+          target_note_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          source_note_id?: string
+          target_note_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "note_links_source_note_id_fkey"
+            columns: ["source_note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "note_links_target_note_id_fkey"
+            columns: ["target_note_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notes: {
+        Row: {
+          content: Json
+          content_text: string
+          created_at: string
+          icon: string | null
+          id: string
+          is_public: boolean
+          parent_id: string | null
+          search_vector: unknown
+          share_token: string | null
+          sort_order: number
+          tags: string[]
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: Json
+          content_text?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_public?: boolean
+          parent_id?: string | null
+          search_vector?: unknown
+          share_token?: string | null
+          sort_order?: number
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: Json
+          content_text?: string
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_public?: boolean
+          parent_id?: string | null
+          search_vector?: unknown
+          share_token?: string | null
+          sort_order?: number
+          tags?: string[]
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "notes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -863,6 +958,18 @@ export type Database = {
           id: string
           source_discipline: string
           title: string
+        }[]
+      }
+      get_shared_note: {
+        Args: { _token: string }
+        Returns: {
+          author_display_name: string
+          content: Json
+          icon: string
+          id: string
+          tags: string[]
+          title: string
+          updated_at: string
         }[]
       }
       has_role: {

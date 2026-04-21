@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
+import { AppShell } from "@/components/AppShell";
 import Home from "./pages/Home";
 import CanvasExport from "./pages/CanvasExport";
 import Auth from "./pages/Auth";
@@ -30,6 +31,9 @@ import QuizBuilder from "./pages/QuizBuilder";
 import QuizAnalytics from "./pages/QuizAnalytics";
 import StressNavigator from "./pages/StressNavigator";
 import PublicActivityPlayer from "./pages/PublicActivityPlayer";
+import NotePage from "./pages/NotePage";
+import NotesHome from "./pages/NotesHome";
+import SharedNote from "./pages/SharedNote";
 import NotFound from "./pages/NotFound";
 import { Loader2 } from "lucide-react";
 
@@ -37,7 +41,7 @@ const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
     },
   },
 });
@@ -57,7 +61,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (loading || profileLoading) return <LoadingScreen />;
   if (!user) return <Navigate to="/auth" replace />;
   if (needsOnboarding) return <Navigate to="/onboarding" replace />;
-  return <>{children}</>;
+  return <AppShell>{children}</AppShell>;
 }
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
@@ -68,7 +72,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   if (!user) return <Navigate to="/auth" replace />;
   if (needsOnboarding) return <Navigate to="/onboarding" replace />;
   if (!isAdmin) return <Navigate to="/" replace />;
-  return <>{children}</>;
+  return <AppShell>{children}</AppShell>;
 }
 
 function OnboardingRoute() {
@@ -95,9 +99,20 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public / shell-less */}
           <Route path="/auth" element={<AuthRoute />} />
           <Route path="/onboarding" element={<OnboardingRoute />} />
+          <Route path="/share/:token" element={<SharedNote />} />
+          <Route path="/isat-exam/:id" element={<ISATExamPlayer />} />
+          <Route path="/isat-exam/:id/review" element={<ISATReviewPage />} />
+          <Route path="/shared-reading/:token" element={<SharedReading />} />
+          <Route path="/activities/:id/play" element={<PublicActivityPlayer />} />
+          <Route path="/stress-navigator" element={<StressNavigator />} />
+
+          {/* Protected — wrapped in AppShell */}
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
+          <Route path="/notes" element={<ProtectedRoute><NotesHome /></ProtectedRoute>} />
+          <Route path="/notes/:id" element={<ProtectedRoute><NotePage /></ProtectedRoute>} />
           <Route path="/canvas" element={<ProtectedRoute><CanvasExport /></ProtectedRoute>} />
           <Route path="/question-bank" element={<ProtectedRoute><QuestionBank /></ProtectedRoute>} />
           <Route path="/create-question" element={<ProtectedRoute><QuestionEditor /></ProtectedRoute>} />
@@ -113,15 +128,11 @@ const App = () => (
           <Route path="/activities/:id" element={<ProtectedRoute><ActivityEditorPage /></ProtectedRoute>} />
           <Route path="/reading-library" element={<ProtectedRoute><ReadingLibrary /></ProtectedRoute>} />
           <Route path="/library" element={<Navigate to="/admin/library" replace />} />
-          <Route path="/isat-exam/:id" element={<ISATExamPlayer />} />
           <Route path="/isat-exam/:id/edit" element={<ProtectedRoute><ISATExamEditor /></ProtectedRoute>} />
-          <Route path="/isat-exam/:id/review" element={<ISATReviewPage />} />
           <Route path="/quiz-builder" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-builder/:id" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-analytics" element={<ProtectedRoute><QuizAnalytics /></ProtectedRoute>} />
-          <Route path="/shared-reading/:token" element={<SharedReading />} />
-          <Route path="/activities/:id/play" element={<PublicActivityPlayer />} />
-          <Route path="/stress-navigator" element={<StressNavigator />} />
+
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

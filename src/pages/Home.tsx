@@ -1,17 +1,14 @@
 import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AppNavSheet } from "@/components/AppNavSheet";
 import { PageBanner } from "@/components/PageBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useProfile, SUBJECT_OPTIONS } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  GraduationCap, Lightbulb, FileText, BookOpen, Layers,
-  Library, GripVertical, ArrowRight, Puzzle, BookOpenCheck,
+  Lightbulb, FileText, BookOpen, Layers,
+  Library, GripVertical, Puzzle, BookOpenCheck,
 } from "lucide-react";
 import { DashboardAnalytics } from "@/components/DashboardAnalytics";
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
@@ -181,18 +178,7 @@ export default function Home() {
   const gradeLabels = ((profile as any)?.grade_levels || []).map((g: string) => `Grade ${g}`);
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
-      <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
-        <AppNavSheet />
-        <div className="flex items-center gap-2.5">
-          <div className="h-8 w-8 rounded-xl bg-primary/10 flex items-center justify-center">
-            <GraduationCap className="h-4 w-4 text-primary" />
-          </div>
-          <span className="text-base font-semibold text-foreground">Teaching Toolkit</span>
-        </div>
-      </header>
-
-      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-8 text-card-foreground bg-page-green">
+    <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-8 text-card-foreground">
         {/* Welcome Banner */}
         <PageBanner
           greeting={`Good ${new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}${profile?.display_name ? `, ${profile.display_name}` : ""}`}
@@ -291,7 +277,6 @@ export default function Home() {
             <p className="text-xs text-muted-foreground mt-2">— {todayTip.author}</p>
           )}
         </div>
-      </main>
     </div>
   );
 }
