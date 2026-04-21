@@ -183,10 +183,6 @@ export default function Home() {
         <PageBanner
           greeting={`Good ${new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}${profile?.display_name ? `, ${profile.display_name}` : ""}`}
           subtitle={new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-          avatarUrl={(profile as any)?.avatar_url || ""}
-          avatarFallback={initials}
-          avatarPosition="right"
-          avatarSize="large"
         >
           {/* Today's Lessons */}
           {todayLessons.length > 0 ? (

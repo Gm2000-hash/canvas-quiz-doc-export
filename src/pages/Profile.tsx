@@ -181,53 +181,13 @@ export default function Profile() {
       </header>
 
       <main className="max-w-2xl mx-auto px-4 py-6 space-y-6 bg-page-green">
-        {/* Avatar Section */}
+        {/* Identity Section */}
         <Card className="border-border/60">
           <CardContent className="pt-6">
-            <div className="flex items-center gap-5">
-              <div className="relative group">
-                <Avatar className="h-20 w-20 ring-2 ring-border">
-                  <AvatarImage src={avatarUrl} alt={displayName} />
-                  <AvatarFallback className="text-lg font-semibold bg-primary/10 text-primary">
-                    {initials}
-                  </AvatarFallback>
-                </Avatar>
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                  className="absolute inset-0 rounded-full bg-foreground/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                >
-                  {uploading ? (
-                    <Loader2 className="h-5 w-5 animate-spin text-primary-foreground" />
-                  ) : (
-                    <Camera className="h-5 w-5 text-primary-foreground" />
-                  )}
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleAvatarUpload}
-                />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="text-lg font-semibold text-foreground truncate">
-                  {displayName || "Your Name"}
-                </h2>
-                <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="mt-2 rounded-xl text-xs"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploading}
-                >
-                  {uploading ? "Uploading..." : "Change Photo"}
-                </Button>
-              </div>
-            </div>
-            <AvatarPicker selected={avatarUrl} onSelect={handlePresetAvatar} />
+            <h2 className="text-lg font-semibold text-foreground truncate">
+              {displayName || "Your Name"}
+            </h2>
+            <p className="text-sm text-muted-foreground truncate">{user?.email}</p>
           </CardContent>
         </Card>
 

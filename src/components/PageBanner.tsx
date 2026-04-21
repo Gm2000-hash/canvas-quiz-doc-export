@@ -26,22 +26,6 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
   },
   ref,
 ) {
-  const sizeClass = avatarSize === "large"
-    ? "h-24 w-24 sm:h-28 sm:w-28 lg:h-32 lg:w-32"
-    : compact ? "h-10 w-10" : "h-14 w-14 sm:h-16 sm:w-16";
-
-  const avatarEl = avatarUrl !== undefined ? (
-    <div className={`relative ${sizeClass} rounded-2xl overflow-hidden border-4 border-foreground shadow-[4px_4px_0px_0px_hsl(var(--foreground))] transition-transform hover:rotate-2 shrink-0`}>
-      {avatarUrl ? (
-        <img src={avatarUrl} alt="Profile" className="w-full h-full object-cover" />
-      ) : (
-        <div className="w-full h-full bg-secondary flex items-center justify-center">
-          <span className="text-primary font-semibold">{avatarFallback || "?"}</span>
-        </div>
-      )}
-    </div>
-  ) : null;
-
   return (
     <div
       ref={ref}
@@ -58,27 +42,19 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
       </div>
 
       <div className="relative z-10">
-        <div className="flex items-center gap-4 sm:gap-6">
-          {avatarPosition === "left" && avatarEl}
-          <div className="flex-1 min-w-0 text-left pl-2 sm:pl-4 lg:pl-8">
-            {greeting && (
-              <h1 className={`font-bold text-foreground ${compact ? "text-xl" : "text-2xl sm:text-3xl lg:text-4xl"}`}>
-                {greeting}
-              </h1>
-            )}
-            {subtitle && (
-              <p className="text-base sm:text-lg mt-1 text-card-foreground">{subtitle}</p>
-            )}
-          </div>
-          {avatarPosition === "right" && (
-            <div className="shrink-0 mr-8 sm:mr-20 lg:mr-32">
-              {avatarEl}
-            </div>
+        <div className="flex-1 min-w-0 text-left">
+          {greeting && (
+            <h1 className={`font-bold text-foreground ${compact ? "text-xl" : "text-2xl sm:text-3xl lg:text-4xl"}`}>
+              {greeting}
+            </h1>
+          )}
+          {subtitle && (
+            <p className="text-base sm:text-lg mt-1 text-card-foreground">{subtitle}</p>
           )}
         </div>
 
         {stats && stats.length > 0 && (
-          <div className={`flex flex-wrap gap-4 sm:gap-6 ${greeting || avatarUrl ? "mt-4" : ""}`}>
+          <div className={`flex flex-wrap gap-4 sm:gap-6 ${greeting ? "mt-4" : ""}`}>
             {stats.map((stat) => (
               <div key={stat.label} className="flex flex-col">
                 <span className="text-2xl sm:text-3xl font-bold tabular-nums text-card-foreground">
@@ -92,7 +68,7 @@ export const PageBanner = React.forwardRef<HTMLDivElement, PageBannerProps>(func
           </div>
         )}
 
-        {children && <div className={`pl-2 sm:pl-4 lg:pl-8 ${greeting || stats ? "mt-4" : ""}`}>{children}</div>}
+        {children && <div className={`${greeting || stats ? "mt-4" : ""}`}>{children}</div>}
       </div>
     </div>
   );
