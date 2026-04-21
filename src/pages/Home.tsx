@@ -1,17 +1,14 @@
 import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AppNavSheet } from "@/components/AppNavSheet";
 import { PageBanner } from "@/components/PageBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useProfile, SUBJECT_OPTIONS } from "@/hooks/useProfile";
 import { supabase } from "@/integrations/supabase/client";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  GraduationCap, Lightbulb, FileText, BookOpen, Layers,
-  Library, GripVertical, ArrowRight, Puzzle, BookOpenCheck,
+  Lightbulb, FileText, BookOpen, Layers,
+  Library, GripVertical, Puzzle, BookOpenCheck,
 } from "lucide-react";
 import { DashboardAnalytics } from "@/components/DashboardAnalytics";
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
