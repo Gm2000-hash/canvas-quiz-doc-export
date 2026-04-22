@@ -9,8 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
+import { NGSS_DIMENSIONS, getDimensionByCode } from "@/lib/ngss-dimensions";
+import { NgssDimensionPicker } from "@/components/NgssDimensionPicker";
 import { useProfileDefaults } from "@/hooks/useProfileDefaults";
-import { Search } from "lucide-react";
+import { Search, Layers } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -28,6 +30,7 @@ export function LessonStandardsPicker({ open, onOpenChange, selected, onSave }: 
   const [localSelected, setLocalSelected] = useState<Map<string, string>>(
     new Map(selected.map(s => [s.code, s.description]))
   );
+  const [dimensionPickerOpen, setDimensionPickerOpen] = useState(false);
 
   // Sync defaults when profile loads
   useEffect(() => {
@@ -79,6 +82,28 @@ export function LessonStandardsPicker({ open, onOpenChange, selected, onSave }: 
   const handleSave = () => {
     onSave(Array.from(localSelected.entries()).map(([code, description]) => ({ code, description })));
     onOpenChange(false);
+  };
+
+  // NGSS PEs that are currently selected — eligible for sub-component drill-down
+  const selectedNgssParents = Array.from(localSelected.keys()).filter(code => NGSS_DIMENSIONS[code]);
+  // Currently chosen sub-component codes (anything that resolves via getDimensionByCode)
+  const selectedDimensionCodes = Array.from(localSelected.keys()).filter(code => !!getDimensionByCode(code));
+
+  const handleDimensionsSave = (codes: string[]) => {
+    const next = new Map(localSelected);
+    // Drop existing dimensions whose parent PE is in scope, then add fresh selections
+    for (const code of Array.from(next.keys())) {
+      const dim = getDimensionByCode(code);
+      if (dim) {
+        const parentPE = code.split(".")[0];
+        if (selectedNgssParents.includes(parentPE)) next.delete(code);
+      }
+    }
+    for (const code of codes) {
+      const dim = getDimensionByCode(code);
+      if (dim) next.set(dim.code, `${dim.type} · ${dim.title} — ${dim.description}`);
+    }
+    setLocalSelected(next);
   };
 
   const categoryColor = (cat: string) => {
@@ -168,11 +193,45 @@ export function LessonStandardsPicker({ open, onOpenChange, selected, onSave }: 
           </div>
         </ScrollArea>
 
+        {framework === "ngss" && (
+          <div className="flex items-center justify-between gap-2 rounded-xl border border-card-foreground/10 bg-muted/40 px-3 py-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Layers className="h-4 w-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium leading-tight">NGSS sub-components</p>
+                <p className="text-[10px] text-muted-foreground leading-tight truncate">
+                  {selectedNgssParents.length === 0
+                    ? "Select an NGSS standard above to drill into SEP / DCI / CCC."
+                    : `${selectedDimensionCodes.length} sub-component${selectedDimensionCodes.length === 1 ? "" : "s"} chosen across ${selectedNgssParents.length} PE${selectedNgssParents.length === 1 ? "" : "s"}.`}
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs rounded-lg shrink-0"
+              disabled={selectedNgssParents.length === 0}
+              onClick={() => setDimensionPickerOpen(true)}
+            >
+              {selectedDimensionCodes.length > 0 ? "Edit" : "Choose"}
+            </Button>
+          </div>
+        )}
+
         <div className="flex justify-between items-center">
           <span className="text-xs text-muted-foreground">{localSelected.size} selected</span>
           <Button onClick={handleSave} className="rounded-xl">Save</Button>
         </div>
       </DialogContent>
+
+      <NgssDimensionPicker
+        open={dimensionPickerOpen}
+        onOpenChange={setDimensionPickerOpen}
+        parentCodes={selectedNgssParents}
+        selected={selectedDimensionCodes}
+        onSave={handleDimensionsSave}
+      />
     </Dialog>
   );
 }

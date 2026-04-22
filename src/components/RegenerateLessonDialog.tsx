@@ -1,15 +1,17 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Progress } from "@/components/ui/progress";
 import { Switch } from "@/components/ui/switch";
-import { Sparkles, Loader2, RefreshCw, BookOpen, Tag } from "lucide-react";
+import { Sparkles, Loader2, RefreshCw, BookOpen, Tag, Layers } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
+import { NGSS_DIMENSIONS, getDimensionByCode, formatDimensionsForPrompt } from "@/lib/ngss-dimensions";
+import { NgssDimensionPicker } from "@/components/NgssDimensionPicker";
 import { syncDisciplineToLibrary } from "@/lib/content-generator";
 import { AiEngineSelect } from "@/components/AiEngineSelect";
 import { useAiPreferences } from "@/hooks/useAiPreferences";
@@ -36,10 +38,12 @@ interface Props {
   discipline: string;
   gradeLevel: string;
   unitTitle: string;
+  /** NGSS/Idaho standards already attached to this lesson — used to scope sub-component picker. */
+  standards?: { ngss_code: string; ngss_description: string }[];
   onRegenerated: () => void;
 }
 
-export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline, gradeLevel, unitTitle, onRegenerated }: Props) {
+export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline, gradeLevel, unitTitle, standards = [], onRegenerated }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [additionalContext, setAdditionalContext] = useState("");
@@ -48,7 +52,19 @@ export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline,
   const [statusText, setStatusText] = useState("");
   const [regenerateReading, setRegenerateReading] = useState(false);
   const [modelOverride, setModelOverride] = useState<string>("");
+  const [dimensionPickerOpen, setDimensionPickerOpen] = useState(false);
+  const [selectedDimensionCodes, setSelectedDimensionCodes] = useState<string[]>([]);
   const { preferences } = useAiPreferences();
+
+  // NGSS PE codes attached to this lesson — eligible for sub-component drill-down
+  const ngssParentCodes = useMemo(
+    () => standards.map(s => s.ngss_code).filter(c => !!NGSS_DIMENSIONS[c]),
+    [standards]
+  );
+  const selectedDimensions = useMemo(
+    () => selectedDimensionCodes.map(c => getDimensionByCode(c)).filter(Boolean) as NonNullable<ReturnType<typeof getDimensionByCode>>[],
+    [selectedDimensionCodes]
+  );
 
   const handleRegenerate = async () => {
     if (!user) return;
@@ -68,6 +84,7 @@ export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline,
           additionalContext: `Regenerate this specific lesson: "${lesson.title}". 
 Current objectives: ${lesson.objectives}
 ${additionalContext ? `Teacher instructions: ${additionalContext}` : ""}
+${selectedDimensions.length > 0 ? `\nFOCUS ON THESE NGSS SUB-COMPONENTS — design activities, vocabulary, and assessment so students explicitly engage with each one:\n${formatDimensionsForPrompt(selectedDimensions)}\n` : ""}
 Improve and fill in any missing information. Keep the same general topic but make it better.`,
           ...(modelOverride ? { model_override: modelOverride } : {}),
           ai_preferences: preferences,
@@ -311,6 +328,42 @@ Improve and fill in any missing information. Keep the same general topic but mak
             </div>
           </div>
 
+          {ngssParentCodes.length > 0 && (
+            <div className="rounded-xl border border-card-foreground/10 bg-muted/40 p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Layers className="h-4 w-4 text-primary shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium leading-tight">Focus on NGSS sub-components</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">
+                      {selectedDimensionCodes.length === 0
+                        ? "Optionally narrow the AI to specific Practices, Core Ideas, or Crosscutting Concepts."
+                        : `${selectedDimensionCodes.length} selected — AI will lean into these.`}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs rounded-lg shrink-0"
+                  onClick={() => setDimensionPickerOpen(true)}
+                >
+                  {selectedDimensionCodes.length > 0 ? "Edit" : "Choose"}
+                </Button>
+              </div>
+              {selectedDimensions.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {selectedDimensions.map(d => (
+                    <span key={d.code} className="text-[10px] rounded-full bg-primary/10 text-primary px-2 py-0.5">
+                      {d.type} · {d.title}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="space-y-2">
             <AiEngineSelect value={modelOverride} onChange={setModelOverride} tier="default" />
             <div className="flex items-center gap-2 text-xs text-muted-foreground"><span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 font-medium">UDL-aligned</span><span>Engagement · Representation · Action & Expression baked into the lesson.</span></div>
@@ -329,6 +382,16 @@ Improve and fill in any missing information. Keep the same general topic but mak
           </Button>
         </div>
       </DialogContent>
+
+      <NgssDimensionPicker
+        open={dimensionPickerOpen}
+        onOpenChange={setDimensionPickerOpen}
+        parentCodes={ngssParentCodes}
+        selected={selectedDimensionCodes}
+        onSave={setSelectedDimensionCodes}
+        title="Focus this regeneration on…"
+        description="Pick the Practices, Core Ideas, or Crosscutting Concepts the AI should emphasize."
+      />
     </Dialog>
   );
 }

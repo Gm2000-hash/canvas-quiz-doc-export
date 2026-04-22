@@ -951,6 +951,7 @@ const LessonPlanEditor = () => {
           discipline={unitDiscipline || "Science"}
           gradeLevel={unitGradeLevel || "Middle School"}
           unitTitle={unitTitle || lesson.title}
+          standards={standards}
           onRegenerated={() => {
             // Re-fetch lesson data
             window.location.reload();
