@@ -163,6 +163,41 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
 
   const clearSelected = () => setSelectedIdahoStandards(new Set());
 
+  const toggleNgssSub = (code: string) => {
+    const next = new Set(selectedNgssSubs);
+    if (next.has(code)) next.delete(code);
+    else next.add(code);
+    setSelectedNgssSubs(next);
+  };
+
+  const toggleCoreIdeaExpanded = (id: string) => {
+    const next = new Set(expandedCoreIdeas);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setExpandedCoreIdeas(next);
+  };
+
+  const toggleAllInCoreIdea = (coreIdeaId: string, select: boolean) => {
+    const subs = ALL_SUBSTANDARDS[coreIdeaId] || [];
+    const next = new Set(selectedNgssSubs);
+    subs.forEach(s => { if (select) next.add(s.code); else next.delete(s.code); });
+    setSelectedNgssSubs(next);
+  };
+
+  const clearNgssSubs = () => setSelectedNgssSubs(new Set());
+
+  const handleNgssSubsGenerate = () => {
+    const allSubs = Object.values(ALL_SUBSTANDARDS).flat();
+    const standards = allSubs
+      .filter(s => selectedNgssSubs.has(s.code))
+      .map(s => ({ code: s.code, description: s.description }));
+    if (standards.length === 0) {
+      toast.error("Select at least one substandard");
+      return;
+    }
+    handleGenerate({ type: "ngssSubs", standards });
+  };
+
   const handleGenerate = async (target: GenerateTarget) => {
     setGenerating(true);
     setDone(false);
