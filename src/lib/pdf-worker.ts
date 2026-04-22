@@ -1,11 +1,13 @@
 import { pdfjs } from 'react-pdf';
-import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker';
 
 let workerConfigured = false;
 
 export function ensurePdfWorker() {
   if (workerConfigured) return;
 
-  pdfjs.GlobalWorkerOptions.workerPort = new PdfWorker();
+  pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+    'pdfjs-dist/build/pdf.worker.min.mjs',
+    import.meta.url,
+  ).toString();
   workerConfigured = true;
 }
