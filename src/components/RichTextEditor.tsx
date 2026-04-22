@@ -8,17 +8,17 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import TaskList from '@tiptap/extension-task-list';
-import TaskItem from '@tiptap/extension-task-item';
-import Table from '@tiptap/extension-table';
-import TableRow from '@tiptap/extension-table-row';
-import TableHeader from '@tiptap/extension-table-header';
-import TableCell from '@tiptap/extension-table-cell';
-import Details from '@tiptap/extension-details';
-import DetailsSummary from '@tiptap/extension-details-summary';
-import DetailsContent from '@tiptap/extension-details-content';
+import { TaskList } from '@tiptap/extension-task-list';
+import { TaskItem } from '@tiptap/extension-task-item';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableCell } from '@tiptap/extension-table-cell';
+import { Details } from '@tiptap/extension-details';
+import { DetailsSummary } from '@tiptap/extension-details-summary';
+import { DetailsContent } from '@tiptap/extension-details-content';
 import { Node, mergeAttributes } from '@tiptap/core';
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { RichTextToolbar } from './RichTextToolbar';
 
 // Notion-style "callout" block — a styled wrapper containing block content
@@ -102,6 +102,16 @@ export function RichTextEditor({
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
             Link.configure({ openOnClick: false, HTMLAttributes: { class: 'text-primary underline cursor-pointer' } }),
             Image.configure({ inline: true }),
+            TaskList.configure({ HTMLAttributes: { class: 'tk-task-list' } }),
+            TaskItem.configure({ nested: true, HTMLAttributes: { class: 'tk-task-item' } }),
+            Table.configure({ resizable: true, HTMLAttributes: { class: 'tk-table' } }),
+            TableRow,
+            TableHeader,
+            TableCell,
+            Details.configure({ HTMLAttributes: { class: 'tk-details' } }),
+            DetailsSummary,
+            DetailsContent,
+            Callout,
           ]),
       Placeholder.configure({ placeholder }),
     ],
