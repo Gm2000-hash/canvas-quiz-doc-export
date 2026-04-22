@@ -368,8 +368,8 @@ Improve and fill in any missing information. Keep the same general topic but mak
                     <p className="text-xs font-medium leading-tight">Focus on NGSS sub-components</p>
                     <p className="text-[10px] text-muted-foreground leading-tight">
                       {selectedDimensionCodes.length === 0
-                        ? "Optionally narrow the AI to specific Practices, Core Ideas, or Crosscutting Concepts."
-                        : `${selectedDimensionCodes.length} selected — AI will lean into these.`}
+                        ? "Optionally narrow the AI to specific Practices, Core Ideas, or Crosscutting Concepts. Saved per unit."
+                        : `${selectedDimensionCodes.length} selected — remembered for this unit.`}
                     </p>
                   </div>
                 </div>
