@@ -18,13 +18,15 @@ import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT } from "@/lib/idaho-stand
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { exportToQTI } from "@/lib/export-qti";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb, Upload, Hash, Landmark, ClipboardCheck } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb, Upload, Hash, Landmark, ClipboardCheck, Tag } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import GenerateISATExamDialog from "@/components/GenerateISATExamDialog";
 import ISATExamList from "@/components/ISATExamList";
 import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
+import { QuestionStandardsTagDialog } from "@/components/QuestionStandardsTagDialog";
+import { supabase } from "@/integrations/supabase/client";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import PushToCanvasDialog from "@/components/PushToCanvasDialog";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
@@ -158,6 +160,8 @@ const QuestionBank = () => {
   const [saving, setSaving] = useState(false);
   const [backfilling, setBackfilling] = useState(false);
   const [suggestionsQuestion, setSuggestionsQuestion] = useState<QuestionBankItem | null>(null);
+  const [tagQuestion, setTagQuestion] = useState<QuestionBankItem | null>(null);
+  const [bulkTagging, setBulkTagging] = useState(false);
   const [bulkDeleteTarget, setBulkDeleteTarget] = useState<{ ids: string[]; label: string } | null>(null);
   const [bulkDeleting, setBulkDeleting] = useState(false);
 
@@ -335,6 +339,68 @@ const QuestionBank = () => {
     }
   };
 
+  /** AI-tag every selected question (or every untagged question if none selected) with NGSS standards. */
+  const handleBulkAiTag = async () => {
+    const targetIds = selected.size > 0
+      ? [...selected]
+      : questions.filter(q => q.standards.length === 0).map(q => q.id);
+
+    if (targetIds.length === 0) {
+      toast.info("Nothing to tag — every question already has standards.");
+      return;
+    }
+    const targets = questions.filter(q => targetIds.includes(q.id));
+    if (targets.length === 0) return;
+
+    setBulkTagging(true);
+    let tagged = 0;
+    let skipped = 0;
+    try {
+      // Process in chunks of 10 to keep the AI request payload small
+      const chunkSize = 10;
+      for (let i = 0; i < targets.length; i += chunkSize) {
+        const chunk = targets.slice(i, i + chunkSize);
+        const { data, error } = await supabase.functions.invoke("standards-tagger", {
+          body: {
+            questions: chunk.map((q, idx) => ({ id: idx, question_text: stripHtml(q.question_text) })),
+            framework: "ngss",
+          },
+        });
+        if (error) throw error;
+
+        const tagsByIdx: Record<number, { code: string; description: string }[]> =
+          (data?.tags || []).reduce((acc: any, t: any) => {
+            acc[t.id] = t.standards || [];
+            return acc;
+          }, {});
+
+        // Persist results
+        await Promise.all(chunk.map(async (q, idx) => {
+          const newTags = tagsByIdx[idx] || [];
+          if (newTags.length === 0) { skipped++; return; }
+          const standards = newTags.map(t => ({ ngss_code: t.code, ngss_description: t.description }));
+          await updateQuestion(q.id, {}, standards);
+          tagged++;
+          // Update local state immediately
+          setQuestions(prev => prev.map(item =>
+            item.id === q.id ? { ...item, standards } : item
+          ));
+        }));
+      }
+      if (tagged === 0) {
+        toast.info("No confident NGSS matches found for the selected questions.");
+      } else if (skipped > 0) {
+        toast.success(`Tagged ${tagged} · ${skipped} skipped (no confident match)`);
+      } else {
+        toast.success(`Tagged ${tagged} question${tagged === 1 ? "" : "s"} with NGSS standards`);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Bulk AI tagging failed");
+    } finally {
+      setBulkTagging(false);
+    }
+  };
+
   const handleExport = async () => {
     const selectedQuestions = questions.filter(q => selected.has(q.id));
     if (selectedQuestions.length === 0) return;
@@ -476,6 +542,9 @@ const QuestionBank = () => {
           <Checkbox checked={selected.has(q.id)} onCheckedChange={() => toggleSelect(q.id)} onClick={e => e.stopPropagation()} className="mt-0.5" />
           <MathText text={q.question_text} className="text-sm text-foreground flex-1" inline />
           <div className="flex gap-1 shrink-0">
+            <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-primary hover:text-primary" onClick={e => { e.stopPropagation(); setTagQuestion(q); }} title="Tag NGSS standards">
+              <Tag className="h-3.5 w-3.5" />
+            </Button>
             <Button variant="ghost" size="icon" className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity text-amber-600 hover:text-amber-700" onClick={e => { e.stopPropagation(); setSuggestionsQuestion(q); }} title="AI DOK/Bloom's suggestions">
               <Lightbulb className="h-3.5 w-3.5" />
             </Button>
@@ -632,11 +701,21 @@ const QuestionBank = () => {
               <X className="h-3.5 w-3.5" /> Clear Filters
             </Button>
           )}
+          {selected.size === 0 && questions.some(q => q.standards.length === 0) && (
+            <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs" onClick={handleBulkAiTag} disabled={bulkTagging} title="AI-tag every question that currently has no standards">
+              {bulkTagging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Tag className="h-3.5 w-3.5" />}
+              Tag Untagged ({questions.filter(q => q.standards.length === 0).length})
+            </Button>
+          )}
           {selected.size > 0 && (
             <>
               <Button onClick={() => setShowExportDialog(true)} className="gap-2">
                 <FileText className="h-4 w-4" />
                 Create Quiz ({selected.size})
+              </Button>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={handleBulkAiTag} disabled={bulkTagging}>
+                {bulkTagging ? <Loader2 className="h-4 w-4 animate-spin" /> : <Tag className="h-4 w-4" />}
+                AI Tag Standards ({selected.size})
               </Button>
               <Button
                 variant="destructive"
@@ -1814,6 +1893,14 @@ const QuestionBank = () => {
         open={showISATDialog}
         onOpenChange={setShowISATDialog}
         onComplete={() => setIsatRefreshKey(k => k + 1)}
+      />
+      <QuestionStandardsTagDialog
+        open={tagQuestion !== null}
+        onOpenChange={(v) => { if (!v) setTagQuestion(null); }}
+        question={tagQuestion}
+        onSaved={(qid, standards) => {
+          setQuestions(prev => prev.map(q => q.id === qid ? { ...q, standards } : q));
+        }}
       />
     </div>
   );
