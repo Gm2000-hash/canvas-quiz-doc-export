@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { StandardsPickerDialog } from "@/components/StandardsPickerDialog";
 import { AiEngineSelect } from "@/components/AiEngineSelect";
+import { useAiPreferences } from "@/hooks/useAiPreferences";
 
 interface Props {
   open: boolean;

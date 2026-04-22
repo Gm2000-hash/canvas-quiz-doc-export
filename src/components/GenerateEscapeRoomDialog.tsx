@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { exportEscapeRoomToDocx } from "@/lib/export-escape-room-docx";
 import { AiEngineSelect } from "@/components/AiEngineSelect";
+import { useAiPreferences } from "@/hooks/useAiPreferences";
 
 interface Puzzle {
   room_number: number;

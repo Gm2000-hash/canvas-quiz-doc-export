@@ -12,6 +12,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { syncDisciplineToLibrary } from "@/lib/content-generator";
 import { AiEngineSelect } from "@/components/AiEngineSelect";
+import { useAiPreferences } from "@/hooks/useAiPreferences";
 
 interface LessonData {
   id: string;
