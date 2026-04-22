@@ -169,9 +169,9 @@ Provide customization suggestions for ALL DOK levels (1-4) and ALL Bloom's level
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: resolveModel(body, "utility"),
+        model: resolveModel(parsedBody, "utility"),
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: withUdl(systemPrompt, "DOK / Bloom's suggestions: in each 'explanation', briefly note which UDL supports the rewritten question would benefit from (e.g., visual aid, sentence starter, alternative response mode) so the teacher sees the UDL implication of the cognitive shift.") },
           { role: "user", content: userPrompt },
         ],
         tools: [
