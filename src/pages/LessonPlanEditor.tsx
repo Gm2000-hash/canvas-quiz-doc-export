@@ -132,6 +132,7 @@ const LessonPlanEditor = () => {
   const [readingOpen, setReadingOpen] = useState(false);
   const [embedPickerOpen, setEmbedPickerOpen] = useState(false);
   const [previewingActivity, setPreviewingActivity] = useState<{ type: ActivityType; content: ActivityContent } | null>(null);
+  const [udlTemplateOpen, setUdlTemplateOpen] = useState(false);
   const [unitDiscipline, setUnitDiscipline] = useState<string | null>(null);
   const [unitGradeLevel, setUnitGradeLevel] = useState<string>("");
   const [unitTitle, setUnitTitle] = useState('');
@@ -710,13 +711,25 @@ const LessonPlanEditor = () => {
         {/* UDL Supports */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Sparkles className="h-4 w-4 text-primary" /> UDL Supports
-              <Badge variant="secondary" className="text-[10px] ml-1">CAST v2.2</Badge>
-            </CardTitle>
-            <p className="text-xs text-muted-foreground mt-1">
-              Universal Design for Learning — concrete, classroom-ready supports for every learner.
-            </p>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 text-primary" /> UDL Supports
+                  <Badge variant="secondary" className="text-[10px] ml-1">CAST v2.2</Badge>
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Universal Design for Learning — concrete, classroom-ready supports for every learner.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                className="rounded-xl gap-1.5 shrink-0"
+                onClick={() => setUdlTemplateOpen(true)}
+              >
+                <Sparkles className="h-3.5 w-3.5" /> Templates
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* ENGAGEMENT */}
