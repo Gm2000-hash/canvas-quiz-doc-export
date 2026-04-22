@@ -84,6 +84,28 @@ export function LessonStandardsPicker({ open, onOpenChange, selected, onSave }: 
     onOpenChange(false);
   };
 
+  // NGSS PEs that are currently selected — eligible for sub-component drill-down
+  const selectedNgssParents = Array.from(localSelected.keys()).filter(code => NGSS_DIMENSIONS[code]);
+  // Currently chosen sub-component codes (anything that resolves via getDimensionByCode)
+  const selectedDimensionCodes = Array.from(localSelected.keys()).filter(code => !!getDimensionByCode(code));
+
+  const handleDimensionsSave = (codes: string[]) => {
+    const next = new Map(localSelected);
+    // Drop existing dimensions whose parent PE is in scope, then add fresh selections
+    for (const code of Array.from(next.keys())) {
+      const dim = getDimensionByCode(code);
+      if (dim) {
+        const parentPE = code.split(".")[0];
+        if (selectedNgssParents.includes(parentPE)) next.delete(code);
+      }
+    }
+    for (const code of codes) {
+      const dim = getDimensionByCode(code);
+      if (dim) next.set(dim.code, `${dim.type} · ${dim.title} — ${dim.description}`);
+    }
+    setLocalSelected(next);
+  };
+
   const categoryColor = (cat: string) => {
     switch (cat) {
       case "essential": return "default";
