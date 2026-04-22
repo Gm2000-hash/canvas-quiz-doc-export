@@ -255,6 +255,56 @@ const LessonPlanEditor = () => {
     setLesson({ ...lesson, resources: lesson.resources.filter((_, i) => i !== idx) });
   };
 
+  // ─── UDL helpers ───────────────────────────────────────────────────────
+  const updateUdlField = <P extends "engagement" | "representation" | "action_expression">(
+    principle: P,
+    field: string,
+    value: any,
+  ) => {
+    if (!lesson) return;
+    const current = (lesson.udl_supports?.[principle] as any) || {};
+    setLesson({
+      ...lesson,
+      udl_supports: {
+        ...lesson.udl_supports,
+        [principle]: { ...current, [field]: value },
+      },
+    });
+  };
+
+  const updateReflectionPrompt = (value: string) => {
+    if (!lesson) return;
+    setLesson({ ...lesson, udl_supports: { ...lesson.udl_supports, reflection_prompt: value } });
+  };
+
+  const addChip = (principle: "engagement" | "action_expression", field: "student_choice" | "response_modes", value: string) => {
+    if (!value.trim()) return;
+    const current = ((lesson?.udl_supports?.[principle] as any)?.[field] as string[]) || [];
+    updateUdlField(principle, field, [...current, value.trim()]);
+  };
+
+  const removeChip = (principle: "engagement" | "action_expression", field: "student_choice" | "response_modes", idx: number) => {
+    const current = ((lesson?.udl_supports?.[principle] as any)?.[field] as string[]) || [];
+    updateUdlField(principle, field, current.filter((_, i) => i !== idx));
+  };
+
+  const addVocabScaffold = () => {
+    const current = lesson?.udl_supports?.representation?.vocabulary_scaffolds || [];
+    updateUdlField("representation", "vocabulary_scaffolds", [...current, { term: "", student_friendly: "", visual_cue: "" }]);
+  };
+
+  const updateVocabScaffold = (idx: number, field: keyof VocabularyScaffold, value: string) => {
+    const current = lesson?.udl_supports?.representation?.vocabulary_scaffolds || [];
+    const next = current.map((v, i) => i === idx ? { ...v, [field]: value } : v);
+    updateUdlField("representation", "vocabulary_scaffolds", next);
+  };
+
+  const removeVocabScaffold = (idx: number) => {
+    const current = lesson?.udl_supports?.representation?.vocabulary_scaffolds || [];
+    updateUdlField("representation", "vocabulary_scaffolds", current.filter((_, i) => i !== idx));
+  };
+
+
   const handleStandardsChange = async (selected: { code: string; description: string }[]) => {
     if (!id) return;
     await supabase.from("lesson_plan_standards").delete().eq("lesson_plan_id", id);
