@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom, BookOpen, Calculator, Landmark, FileText, GraduationCap } from "lucide-react";
+import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom, BookOpen, Calculator, Landmark, FileText, GraduationCap, ChevronDown, ChevronRight } from "lucide-react";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
 import {
@@ -72,6 +72,8 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
   const [idahoGradeFilter, setIdahoGradeFilter] = useState<string>(defaultIdahoFilter);
   const [idahoCategoryFilter, setIdahoCategoryFilter] = useState<string>("essential");
   const [selectedIdahoStandards, setSelectedIdahoStandards] = useState<Set<string>>(new Set());
+  const [selectedNgssSubs, setSelectedNgssSubs] = useState<Set<string>>(new Set());
+  const [expandedCoreIdeas, setExpandedCoreIdeas] = useState<Set<string>>(new Set());
   const [targetDok, setTargetDok] = useState<string>("any");
   const [modelOverride, setModelOverride] = useState<string>("");
   const abortRef = useRef(false);
