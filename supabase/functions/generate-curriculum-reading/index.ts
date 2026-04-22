@@ -73,54 +73,110 @@ serve(withLogging("generate-curriculum-reading", async (req) => {
       });
     }
 
-    // Full generation
+    // Full generation — 5-act narrative arc
+    const FIVE_ACT_CONTRACT = `
+FIVE-ACT NARRATIVE STRUCTURE (the reader never sees act labels — the structure is invisible in the prose):
+
+ACT 1 — EXPOSITION (exactly 2 paragraphs).
+- Set the scene of the scientific question or natural phenomenon at the heart of the lesson.
+- Establish what was known (and what was NOT yet known) at the time, and why this question mattered to ordinary people then.
+- Plant a hook that pulls the reader forward. No "Imagine..." openings.
+
+ACT 2 — RISING ACTION (3-4 paragraphs). This is the STORY-RICH scientist section. REQUIRED to include:
+- The scientist's birth era and place (year + city/region/country).
+- Family and social context (class, religion, culture, what their parents did, siblings, formative childhood detail).
+- What first drew them into science (a teacher, a book, a moment of wonder, a tragedy).
+- Specific obstacles they faced — at least 2 named: poverty, prejudice, war, lack of equipment, scientific resistance, illness, gender or racial barriers, exile, personal loss.
+- The exact problem they became obsessed with and WHY it haunted them.
+- Sensory detail of daily life in their lab, study, or fieldwork (what the room smelled like, what tools they used, how long their days were).
+- Treat the scientist as a CHARACTER, not a footnote. Paraphrased dialogue is allowed and encouraged.
+
+ACT 3 — CLIMAX (2-3 paragraphs).
+- The breakthrough moment, with real narrative tension: the failed attempts, the dead ends, the "aha" instant, the experiment or observation that finally cracked it.
+- The final paragraph of this act MUST explicitly map the discovery onto the targeted content standard${ngss_standard ? ` (${ngss_standard})` : ""} so students see the connection between the human story and the science they are learning.
+
+ACT 4 — FALLING ACTION (3-4 paragraphs). This is the deep teaching pass.
+- Re-explain the underlying science thoroughly: mechanisms, cause and effect, vocabulary defined IN CONTEXT (inline parenthetical or em-dash definitions the first time a key term appears).
+- Reference diagrams in prose ("picture two plates grinding past each other...").
+- Name and correct at least one common misconception students typically hold about this concept.
+- This is where students "get it" technically — be precise, not vague.
+
+ACT 5 — DENOUEMENT (2-3 paragraphs).
+- A modern, real-world case study showing the concept active in the world TODAY. Name the event, the place, and the year when possible (e.g., the 2011 Tōhoku earthquake, the 2021 Mauna Loa CO₂ readings, the 2020 Pfizer mRNA vaccine).
+- Close the arc: connect this modern example back to the scientist's original question so the reader feels the through-line from past to present.
+
+TOTAL paragraph budget: 12-16 narrative paragraphs across the five acts. Then append the UDL block (see below) AFTER the denouement.
+
+PREFERRED SCIENTIST ROSTER (use one of these unless the standard genuinely makes it implausible):
+- Albert Einstein (1879-1955, Germany/Switzerland/USA — relativity, photoelectric effect, quantum theory).
+- Marie Curie (1867-1934, Poland/France — radioactivity, polonium, radium; only person to win Nobels in two sciences).
+- Isaac Newton (1643-1727, England — gravity, motion, optics, calculus).
+- Charles Darwin (1809-1882, England — evolution by natural selection, the Beagle voyage).
+- Nikola Tesla (1856-1943, Serbia/USA — alternating current, electromagnetism, wireless power).
+- Galileo Galilei (1564-1642, Italy — telescope, heliocentrism, kinematics; tried by the Inquisition).
+- Ada Lovelace (1815-1852, England — first computer algorithm, Babbage's Analytical Engine).
+- Pythagoras (c.570-495 BCE, Greece — geometry, ratios, mathematical philosophy).
+- Carl Linnaeus (1707-1778, Sweden — binomial nomenclature, taxonomy of life).
+- Rosalind Franklin (1920-1958, England — X-ray crystallography, Photo 51, DNA structure).
+
+If none of these credibly fits the standard (e.g. modern plate tectonics, mRNA vaccines, climate science), pick another real, historically documented scientist and justify the choice naturally inside Act 2 — never invent a scientist.
+
+ANTI-THINNESS GUARDRAILS (hard rules):
+- No paragraph shorter than ~4 sentences. Aim for 5-7 sentences per paragraph.
+- No vague summary lines like "this was a major discovery" or "this changed everything." Every claim must be SPECIFIC: what, where, who, when, why it mattered.
+- The scientist's hardships, era, and personality are REQUIRED in Act 2, not optional.
+- Do NOT print act labels ("Act 1", "Exposition", etc.) in the output prose. The structure must be invisible to the reader.
+- Do NOT use bullet lists inside the reading paragraphs. Continuous narrative prose only.
+
+STORYTELLING VOICE:
+Warm, vivid, third-person narrator. Tell scenes, don't summarize them. Let the scientist speak (paraphrased dialogue is welcome). Ground every abstract idea in something physical and observable. Aim for the tone of a great middle-grade nonfiction book — *Hidden Figures Young Readers Edition*, *The Boy Who Harnessed the Wind*, *The Disappearing Spoon*. Curiosity-forward. Never condescending.`;
+
     const readingInstructions = `
-IMPORTANT — Connected Reading:
-Also generate a "reading" object with:
-- reading_title: A compelling title for a standalone reading passage about how this concept affects the student's daily life.${ngss_standard ? ` IMPORTANT: The reading_title MUST begin with the standard code "${ngss_standard}" followed by a colon and space, then the title. Example: "${ngss_standard}: How Plate Tectonics Shape Our World"` : ""}
-- reading_paragraphs: Array of 8-12 detailed paragraphs with concrete, relatable examples of how this concept directly impacts students — through everyday phenomena, health, technology, environmental impacts, or decisions they might make.`;
+IMPORTANT — Connected Reading (the central artifact of this lesson):
+Generate a "reading" object with:
+- reading_title: A plain, descriptive narrative title for the reading passage (e.g., "Marie Curie and the Hidden Element", "Galileo's Forbidden Sky"). Do NOT prefix the title with the standard code or any code at all — keep it human and inviting.
+- reading_paragraphs: An array of 12-16 narrative paragraphs that follow the FIVE-ACT NARRATIVE STRUCTURE described in the system prompt, followed by the UDL closing block (inline vocabulary callouts already woven through the prose, then a "Try it your way" paragraph offering 2-3 engagement modes, then a clearly labeled "Reflect:" question). The act structure must be invisible to the reader — no headings, no labels.`;
 
     const formatInstructions = format === "textbook"
-      ? `Output the lesson following this three-part storytelling structure:
-- title
+      ? `Output the lesson following the five-act narrative arc:
+- title (plain, descriptive — no standard codes prefixed)
 - objectives (3-5 measurable learning objectives)
 - key_terms (8-12 {term, definition})
-- intro (6-8 paragraphs): Jump straight in and introduce a real scientist — do NOT start with "Imagine..." or hypothetical scenarios. Develop their story richly: the historical era, the scientific landscape, the specific problem driving their work, their key experiments, and their breakthrough. Include enough context about their life, challenges, and motivations that students understand WHY this research mattered. End with a clean segue sentence bridging into the explanation.
-- explanation (8-12 paragraphs): Provide a detailed, slightly technical explanation of the concept. Use and define ALL key terms naturally within the text. Explain mechanisms, principles, and processes thoroughly.
+- intro (5-7 paragraphs): This is Acts 1 and 2 of the narrative — exposition (2 paragraphs setting the scientific scene of the era) followed by rising action (3-4 story-rich paragraphs introducing the scientist with full biographical depth: birth era + place, family/social context, what drew them to science, specific obstacles, the problem that obsessed them, sensory detail of their daily work). End with a clean segue sentence into the explanation. No "Imagine..." openings.
+- explanation (3-4 paragraphs): This is Act 4 — the deep teaching pass. Re-explain the science thoroughly, define ALL key terms in context (inline parenthetical the first time a term appears), reference diagrams in prose, and correct at least one common misconception. Precise, not vague.
 ${readingInstructions}`
       : format === "scripted"
       ? `Output as scripted lesson plan:
-- title, hook (3-5 paragraphs — open with a scientist's story), key_concepts (6-8 {heading, content}), assignment ({title, description, instructions})
+- title (plain, descriptive — no standard codes prefixed)
+- hook (3-5 paragraphs — open with the scientist's story per Acts 1-2 above)
+- key_concepts (6-8 {heading, content})
+- assignment ({title, description, instructions})
 ${readingInstructions}`
       : `Output in BOTH formats under "textbook" and "scripted" keys. Include "reading" at the top level.
-FORMAT 1 "textbook": title, objectives, key_terms, intro (scientist story narrative), explanation (technical with key terms)
-FORMAT 2 "scripted": title, hook (scientist story), key_concepts, assignment
+FORMAT 1 "textbook": title (plain), objectives, key_terms, intro (Acts 1-2: exposition + story-rich scientist), explanation (Act 4: deep technical re-teaching with key terms inline)
+FORMAT 2 "scripted": title (plain), hook (Acts 1-2 scientist story), key_concepts, assignment
 ${readingInstructions}`;
 
-    const systemPrompt = `You are an expert middle school science curriculum designer specializing in NGSS-aligned lesson creation. You follow a proven three-part storytelling framework:
+    const systemPrompt = `You are an expert middle school science curriculum designer specializing in NGSS-aligned lesson creation. Every reading you produce is a complete five-act narrative built around a real historical scientist, written for ${grade_level} students.
+${FIVE_ACT_CONTRACT}
 
-1. **Scientist Story Introduction** — Jump straight in and introduce a real, historically relevant scientist (or scientists) connected to the concept. Do NOT open with "Imagine..." or any hypothetical scenario — begin with the scientist directly. Develop the story richly: the historical era they lived in, the scientific landscape, the specific problem driving their work, their key experiments or observations, and their breakthrough. Include enough context about their life, challenges, and motivations that students understand WHY this research mattered. End with a clean segue sentence that bridges into the technical explanation.
+UDL OUTPUT REQUIREMENTS (appended AFTER the denouement, in the same reading_paragraphs array):
+- Inline vocabulary callouts: weave a parenthetical or em-dash definition the first time each key term appears in the narrative — this is UDL Representation.
+- A "Try it your way" paragraph offering students 2-3 different ways to engage with the idea (write, draw/diagram, talk it through, build/demonstrate) — UDL Action & Expression.
+- A clearly labeled "Reflect:" paragraph with a metacognitive or relevance prompt — UDL Engagement / Self-Regulation.
+These three UDL elements come AFTER Act 5 so they don't interrupt the narrative flow.`;
 
-2. **Technical Explanation** — Transition into a clear, slightly technical explanation. Define and use all key vocabulary terms in context. Explain underlying mechanisms and processes thoroughly but accessibly.
-
-3. **Student Connection** — Conclude with concrete examples of how the concept directly affects students' daily lives.
-
-Write engaging, narrative-driven lessons appropriate for ${grade_level} students. Each reading should be substantial in length — detailed paragraphs, not summaries.
-
-UDL OUTPUT REQUIREMENTS for this lesson:
-- Inside the reading, weave in inline vocabulary callouts (a parenthetical or em-dash definition the first time a key term appears) — this is UDL Representation.
-- The reading_paragraphs MUST end with a "Try it your way" paragraph offering students 2-3 different ways to engage with the idea (write, draw/diagram, talk it through, build/demonstrate) — this is UDL Action & Expression.
-- The reading_paragraphs MUST also end with a clearly labeled "Reflect:" question that prompts metacognition or relevance — this is UDL Engagement / Self-Regulation.`;
-
-    const wrappedSystemPrompt = withUdl(systemPrompt, "Curriculum reading: bake UDL Engagement, Representation, and Action & Expression directly into the reading text. Surface vocabulary supports inline, give a 'Try it your way' choice block, and end with a reflection prompt.");
+    const wrappedSystemPrompt = withUdl(systemPrompt, "Curriculum reading: bake UDL Engagement, Representation, and Action & Expression directly into the reading text. Surface vocabulary supports inline, give a 'Try it your way' choice block, and end with a reflection prompt — all AFTER the five-act narrative completes.");
 
     const userPrompt = `Create a ${grade_level} science lesson about "${subject_area}".
 
 Learning Objectives: ${objectives}
 ${key_terms ? `Key Terms to include: ${key_terms}` : ""}
-${ngss_standard ? `NGSS Standard: ${ngss_standard}` : ""}
+${ngss_standard ? `NGSS Standard: ${ngss_standard} — the climax (Act 3) must explicitly map the scientist's breakthrough onto this standard.` : ""}
 
-IMPORTANT: The introduction MUST jump straight into a real scientist's story — do NOT start with "Imagine..." or hypothetical scenarios. Develop the scientist's context, era, motivations, and breakthrough richly. End the intro with a clean segue into the explanation. The explanation MUST use key terms in context. The connected reading MUST show how this concept affects students personally.
+Build the reading as a complete five-act narrative (12-16 paragraphs of prose) anchored in a real historical scientist — preferably one of the preferred roster — with full biographical depth in Act 2 (era, family, obstacles, daily life, the problem that obsessed them). Honor every anti-thinness guardrail: no paragraph under ~4 sentences, no vague summary lines, no act labels in the output prose. Then append the UDL block (inline vocabulary already woven in, a "Try it your way" paragraph, a "Reflect:" prompt).
+
+The title MUST be plain and descriptive — do NOT prefix it with any standard code.
 
 ${formatInstructions}
 
@@ -249,13 +305,28 @@ async function handleRegeneration(opts: {
 }) {
   const { regenerate_section, existing_lesson, subject_area, objectives, key_terms, grade_level, ngss_standard, LOVABLE_API_KEY } = opts;
 
-  const standardTitleInstruction = ngss_standard
-    ? ` IMPORTANT: The reading_title MUST begin with the standard code "${ngss_standard}" followed by a colon and space, then the title.`
-    : "";
+  const FIVE_ACT_REGEN = `
+
+Build the reading as a complete FIVE-ACT NARRATIVE (12-16 paragraphs, prose only — never print act labels in the output):
+1) EXPOSITION (2 paragraphs): scene of the scientific question; what was known and not known at the time; why it mattered.
+2) RISING ACTION (3-4 story-rich paragraphs): introduce a real historical scientist with full biographical depth — birth era + place, family/social context, what drew them to science, at least 2 specific obstacles (poverty, prejudice, war, lack of equipment, scientific resistance, illness, gender/racial barriers, exile, personal loss), the problem that obsessed them, sensory detail of their daily lab/fieldwork life. Treat them as a character.
+3) CLIMAX (2-3 paragraphs): the breakthrough with narrative tension — failed attempts, the "aha", the experiment that worked. Final paragraph of this act explicitly maps the discovery onto the targeted content standard${ngss_standard ? ` (${ngss_standard})` : ""}.
+4) FALLING ACTION (3-4 paragraphs): deep technical re-teaching — mechanisms, vocabulary defined inline, diagrams referenced in prose, at least one common misconception named and corrected.
+5) DENOUEMENT (2-3 paragraphs): a modern real-world case study (named event, place, year when possible) connecting back to the scientist's original question.
+
+PREFERRED SCIENTISTS (pick one unless implausible for the standard): Einstein, Marie Curie, Newton, Darwin, Tesla, Galileo, Ada Lovelace, Pythagoras, Linnaeus, Rosalind Franklin. If none fit, choose another real, historically documented scientist — never invent one.
+
+ANTI-THINNESS GUARDRAILS: no paragraph under ~4 sentences; no vague summary lines; specific (what/where/who/when/why) on every claim; the scientist's hardships, era, and personality are required, not optional; no act labels in output prose; no bullet lists inside paragraphs.
+
+VOICE: warm, vivid, third-person narrator; scenes not summaries; paraphrased dialogue welcome; ground abstractions in physical detail; tone of *Hidden Figures Young Readers Edition* or *The Boy Who Harnessed the Wind*.
+
+After Act 5, append the UDL block in the same paragraphs array: inline vocabulary callouts already woven through the prose, then a "Try it your way" paragraph (2-3 engagement modes), then a clearly labeled "Reflect:" prompt.`;
 
   const sectionConfigs: Record<string, { prompt: string; schema: any }> = {
     reading: {
-      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Write 8-12 paragraphs focused on how this concept directly affects and connects to the student's daily life — through everyday phenomena, health, technology, environmental impacts, or personal decisions.${standardTitleInstruction}`,
+      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}".${FIVE_ACT_REGEN}
+
+The reading_title MUST be plain and descriptive (e.g., "Marie Curie and the Hidden Element") — do NOT prefix it with any standard code.`,
       schema: { type: "object", properties: { reading_title: { type: "string" }, reading_paragraphs: { type: "array", items: { type: "string" } } }, required: ["reading_title", "reading_paragraphs"] },
     },
     objectives: {
@@ -267,7 +338,12 @@ async function handleRegeneration(opts: {
       schema: { type: "object", properties: { key_terms: { type: "array", items: { type: "object", properties: { term: { type: "string" }, definition: { type: "string" } }, required: ["term", "definition"] } } }, required: ["key_terms"] },
     },
     intro: {
-      prompt: `Regenerate ONLY the introduction for a lesson about "${subject_area}". Jump straight in and introduce a real, historically relevant scientist — do NOT start with "Imagine..." or hypothetical scenarios. Develop their story richly: describe the historical era they lived in, the scientific landscape of the time, the specific problem driving their work, their key experiments or observations, and their breakthrough. Include enough context about their life, challenges, and motivations that students understand WHY this research mattered. Write 5-7 narrative paragraphs and end with a clean segue sentence that bridges naturally into the technical explanation.`,
+      prompt: `Regenerate ONLY the introduction (Acts 1 and 2 of the five-act narrative) for a lesson about "${subject_area}". Write 5-7 paragraphs total:
+- First 2 paragraphs (EXPOSITION): set the scene of the scientific question or natural phenomenon, establish what was known and not known at the time, and plant a hook. No "Imagine..." openings.
+- Next 3-4 paragraphs (RISING ACTION): introduce a real historical scientist (preferably from this roster: Einstein, Marie Curie, Newton, Darwin, Tesla, Galileo, Ada Lovelace, Pythagoras, Linnaeus, Rosalind Franklin) with full biographical depth — birth era + place, family/social context, what drew them to science, at least 2 specific obstacles (poverty, prejudice, war, lack of equipment, scientific resistance, illness, gender/racial barriers, exile, personal loss), the problem that obsessed them, and sensory detail of their daily lab or fieldwork. Treat them as a character — paraphrased dialogue welcome.
+End with a clean segue sentence into the explanation.
+
+ANTI-THINNESS: no paragraph under ~4 sentences; no vague summary lines; every claim specific (what, where, who, when, why). VOICE: warm, vivid, third-person — tone of a great middle-grade nonfiction book.`,
       schema: { type: "object", properties: { intro: { type: "array", items: { type: "string" } } }, required: ["intro"] },
     },
     explanation: {
