@@ -549,7 +549,7 @@ export function applyTemplate(
   const isEmpty = (v: unknown) => v === undefined || v === null || v === "" || (Array.isArray(v) && v.length === 0);
 
   const mergeSection = <T extends Record<string, any>>(curSec: T | undefined, tplSec: T | undefined): T => {
-    const out: Record<string, any> = { ...(curSec || {}) };
+    const out: Record<string, any> = { ...curSec };
     if (!tplSec) return out as T;
     for (const k of Object.keys(tplSec)) {
       if (isEmpty(out[k])) out[k] = tplSec[k];
