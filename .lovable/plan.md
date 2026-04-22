@@ -1,35 +1,79 @@
 
+Fix the blank preview by resolving two frontend build/import errors that are crashing the whole app. The Canvas token is not the root cause here.
 
-## Add a "Reset Canvas Connection" escape hatch
+## What is actually broken
 
-Give you a way to clear a stale Canvas token without opening DevTools, so you can recover when the preview won't load due to a 401.
+The preview is failing at build time because Vite cannot resolve these imports:
 
-### What you'll see
+1. `react-resizable/css/styles.css` from `src/components/ReadingDashboardGrid.tsx`
+2. `pdfjs-dist/build/pdf.worker.min.mjs?worker` from `src/lib/pdf-worker.ts`
 
-1. On the **Canvas Quiz Exporter** page, the welcome/connect screen will show a small **"Reset Canvas connection"** link under the connect form. Clicking it wipes the stored token from localStorage and reloads the page.
-2. A new **global safety net**: if any page crashes hard because of a stale Canvas token, a tiny floating **"Clear Canvas token & reload"** button appears in the bottom-right corner. It's only rendered when a `canvas_config` exists in localStorage AND a Canvas 401 has been detected this session.
-3. The existing auto-disconnect (listening for `canvas-token-invalid`) stays in place — this is just a manual fallback for when the preview is too broken to reach the in-app Settings sheet.
+Because `src/App.tsx` imports pages that eventually import those files, the entire preview can fail even if you are only trying to use the Canvas screen.
 
-### Technical changes
+## Why it seemed tied to entering the token
 
-- **`src/components/SettingsForm.tsx`** — In the "no config yet" branch, add a subtle text button below the Connect button: "Reset Canvas connection (clear stored token)". On click: `localStorage.removeItem('canvas_config')` then `location.reload()`.
-- **New `src/components/CanvasTokenRescue.tsx`** — A tiny always-mounted component (added once in `src/App.tsx`) that:
-  - Listens for the existing `canvas-token-invalid` event and also inspects `unhandledrejection` for the Canvas 401 signature.
-  - When triggered, sets local state to show a fixed-position bubble-glass button bottom-right: "Canvas token invalid — Clear & reload".
-  - Click handler removes `canvas_config` from localStorage and reloads.
-  - Renders nothing when no stale token is present.
-- **`src/App.tsx`** — Mount `<CanvasTokenRescue />` once near the root so the rescue button is reachable from any route, even if the current page errored.
+Entering the token likely triggered a navigation/re-render that exposed the existing unresolved imports. The blank screen is coming from the app failing to compile, not from Canvas rejecting the token.
 
-### Recovery steps for right now
+## Implementation plan
 
-While I'm adding this, you can unblock the preview immediately:
-1. Open the preview URL in a new tab.
-2. Open DevTools (F12) → **Console** tab.
-3. Paste and run: `localStorage.removeItem('canvas_config'); location.reload();`
-4. Navigate to **Canvas Quiz Exporter** and paste your new token.
+### 1) Fix the missing `react-resizable` dependency path
+Update the Reading Library dashboard dependency issue so the import resolves cleanly.
 
-### Out of scope
+- Inspect whether `react-grid-layout` is being used with its required peer dependency.
+- Add the missing `react-resizable` package to the project dependencies if it is not installed.
+- Keep the existing CSS import only if the package is present and needed for resize handles.
+- If the package is intentionally not wanted, remove the unsupported CSS import and adjust the dashboard grid so it does not depend on missing resize styles.
 
-- No backend/edge function changes — the 401 originates from Canvas itself, not our code.
-- No change to how tokens are stored (still localStorage, per existing `auth/canvas-credentials` memory).
+Preferred fix: install the proper peer dependency so the dashboard layout keeps working as designed.
 
+### 2) Fix PDF worker setup for `react-pdf`
+Replace the current worker import pattern in `src/lib/pdf-worker.ts` with a Vite-compatible `react-pdf` setup.
+
+- Remove the failing direct worker module import:
+  `import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker';`
+- Configure the worker using the recommended URL-based approach for Vite:
+  `pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()`
+- If needed, add `pdfjs-dist` as a direct dependency so Vite can resolve that module path reliably.
+
+This avoids the current import-resolution failure and keeps the PDF viewer + thumbnail generation working.
+
+### 3) Verify the import chain that currently breaks startup
+After the dependency/import fixes, verify the app path that currently pulls these files in:
+
+```text
+App.tsx
+  -> ReadingLibrary.tsx
+     -> ReadingDashboardGrid.tsx
+     -> pdf-thumbnail.ts
+        -> pdf-worker.ts
+```
+
+This ensures the preview can boot even before opening the Reading Library.
+
+### 4) Keep the recent Canvas recovery UX
+Do not remove the new rescue behavior:
+- `CanvasTokenRescue`
+- reset button in `SettingsForm`
+
+Those changes are still useful, but they are separate from the current blank-preview problem.
+
+## Files to update
+
+- `package.json`
+- `src/lib/pdf-worker.ts`
+- possibly lockfile(s)
+- optionally `src/components/ReadingDashboardGrid.tsx` if the resize styling/import needs adjustment
+
+## Expected result
+
+After these fixes:
+- the preview should load normally again
+- your Canvas connection screen should remain visible after entering a valid token
+- Reading Library PDF features should still work
+- the reset-token safety net remains available if Canvas credentials ever expire again
+
+## Technical notes
+
+- `react-grid-layout` commonly expects `react-resizable` to be present.
+- `react-pdf` worker configuration is sensitive to bundler setup; the current `?worker` import is the likely incompatibility.
+- The edge function logs show successful `canvas-proxy` calls, which further suggests the current blocker is frontend build failure, not the backend integration.
