@@ -220,6 +220,14 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
           modelOverride: modelOverride || undefined,
           aiPreferences: preferences,
         });
+      } else if (target.type === "ngssSubs") {
+        await generateForStandards(contentType, target.standards, countPerSub, handleProgressUpdate, {
+          framework: "NGSS",
+          subject: "Science",
+          unitId,
+          modelOverride: modelOverride || undefined,
+          aiPreferences: preferences,
+        });
       } else {
         const allCoreIdeas = DISCIPLINES.flatMap(d => d.coreIdeas);
         await generateForDiscipline(contentType, allCoreIdeas, countPerSub, handleProgressUpdate, opts);
