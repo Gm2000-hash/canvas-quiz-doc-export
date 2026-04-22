@@ -133,6 +133,20 @@ export function SettingsForm({ config, onSave, onDisconnect }: SettingsFormProps
             'Connect to Canvas'
           )}
         </Button>
+        <button
+          type="button"
+          onClick={() => {
+            try {
+              localStorage.removeItem('canvas_config');
+            } catch {
+              /* ignore */
+            }
+            window.location.reload();
+          }}
+          className="w-full text-xs text-muted-foreground hover:text-foreground hover:underline text-center"
+        >
+          Reset Canvas connection (clear stored token)
+        </button>
       </CardContent>
     </Card>
   );
