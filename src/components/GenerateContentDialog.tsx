@@ -58,6 +58,7 @@ type GenerateTarget =
   | { type: "coreIdea"; id: string }
   | { type: "discipline"; key: string }
   | { type: "all" }
+  | { type: "ngssSubs"; standards: { code: string; description: string }[] }
   | { type: "idaho"; standards: { code: string; description: string }[]; subject: string };
 
 export default function GenerateContentDialog({ open, onOpenChange, onComplete, initialStandard, defaultContentType = "questions", unitId }: Props) {
