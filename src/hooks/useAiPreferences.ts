@@ -72,7 +72,7 @@ export function useAiPreferences() {
         .eq("user_id", user.id)
         .maybeSingle();
       if (!cancelled) {
-        setPreferences(normalize((data as any)?.ai_preferences));
+        setPreferences(normalize((data as { ai_preferences?: unknown } | null)?.ai_preferences));
         setLoading(false);
       }
     })();
@@ -85,7 +85,7 @@ export function useAiPreferences() {
     setPreferences(next);
     const { error } = await supabase
       .from("profiles")
-      .update({ ai_preferences: next as any, updated_at: new Date().toISOString() } as any)
+      .update({ ai_preferences: next as unknown as Record<string, unknown>, updated_at: new Date().toISOString() })
       .eq("user_id", user.id);
     return { error };
   }, [user]);
