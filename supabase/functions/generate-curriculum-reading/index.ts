@@ -305,13 +305,28 @@ async function handleRegeneration(opts: {
 }) {
   const { regenerate_section, existing_lesson, subject_area, objectives, key_terms, grade_level, ngss_standard, LOVABLE_API_KEY } = opts;
 
-  const standardTitleInstruction = ngss_standard
-    ? ` IMPORTANT: The reading_title MUST begin with the standard code "${ngss_standard}" followed by a colon and space, then the title.`
-    : "";
+  const FIVE_ACT_REGEN = `
+
+Build the reading as a complete FIVE-ACT NARRATIVE (12-16 paragraphs, prose only — never print act labels in the output):
+1) EXPOSITION (2 paragraphs): scene of the scientific question; what was known and not known at the time; why it mattered.
+2) RISING ACTION (3-4 story-rich paragraphs): introduce a real historical scientist with full biographical depth — birth era + place, family/social context, what drew them to science, at least 2 specific obstacles (poverty, prejudice, war, lack of equipment, scientific resistance, illness, gender/racial barriers, exile, personal loss), the problem that obsessed them, sensory detail of their daily lab/fieldwork life. Treat them as a character.
+3) CLIMAX (2-3 paragraphs): the breakthrough with narrative tension — failed attempts, the "aha", the experiment that worked. Final paragraph of this act explicitly maps the discovery onto the targeted content standard${ngss_standard ? ` (${ngss_standard})` : ""}.
+4) FALLING ACTION (3-4 paragraphs): deep technical re-teaching — mechanisms, vocabulary defined inline, diagrams referenced in prose, at least one common misconception named and corrected.
+5) DENOUEMENT (2-3 paragraphs): a modern real-world case study (named event, place, year when possible) connecting back to the scientist's original question.
+
+PREFERRED SCIENTISTS (pick one unless implausible for the standard): Einstein, Marie Curie, Newton, Darwin, Tesla, Galileo, Ada Lovelace, Pythagoras, Linnaeus, Rosalind Franklin. If none fit, choose another real, historically documented scientist — never invent one.
+
+ANTI-THINNESS GUARDRAILS: no paragraph under ~4 sentences; no vague summary lines; specific (what/where/who/when/why) on every claim; the scientist's hardships, era, and personality are required, not optional; no act labels in output prose; no bullet lists inside paragraphs.
+
+VOICE: warm, vivid, third-person narrator; scenes not summaries; paraphrased dialogue welcome; ground abstractions in physical detail; tone of *Hidden Figures Young Readers Edition* or *The Boy Who Harnessed the Wind*.
+
+After Act 5, append the UDL block in the same paragraphs array: inline vocabulary callouts already woven through the prose, then a "Try it your way" paragraph (2-3 engagement modes), then a clearly labeled "Reflect:" prompt.`;
 
   const sectionConfigs: Record<string, { prompt: string; schema: any }> = {
     reading: {
-      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}". Write 8-12 paragraphs focused on how this concept directly affects and connects to the student's daily life — through everyday phenomena, health, technology, environmental impacts, or personal decisions.${standardTitleInstruction}`,
+      prompt: `Regenerate ONLY the reading passage for a lesson about "${subject_area}".${FIVE_ACT_REGEN}
+
+The reading_title MUST be plain and descriptive (e.g., "Marie Curie and the Hidden Element") — do NOT prefix it with any standard code.`,
       schema: { type: "object", properties: { reading_title: { type: "string" }, reading_paragraphs: { type: "array", items: { type: "string" } } }, required: ["reading_title", "reading_paragraphs"] },
     },
     objectives: {
@@ -323,7 +338,12 @@ async function handleRegeneration(opts: {
       schema: { type: "object", properties: { key_terms: { type: "array", items: { type: "object", properties: { term: { type: "string" }, definition: { type: "string" } }, required: ["term", "definition"] } } }, required: ["key_terms"] },
     },
     intro: {
-      prompt: `Regenerate ONLY the introduction for a lesson about "${subject_area}". Jump straight in and introduce a real, historically relevant scientist — do NOT start with "Imagine..." or hypothetical scenarios. Develop their story richly: describe the historical era they lived in, the scientific landscape of the time, the specific problem driving their work, their key experiments or observations, and their breakthrough. Include enough context about their life, challenges, and motivations that students understand WHY this research mattered. Write 5-7 narrative paragraphs and end with a clean segue sentence that bridges naturally into the technical explanation.`,
+      prompt: `Regenerate ONLY the introduction (Acts 1 and 2 of the five-act narrative) for a lesson about "${subject_area}". Write 5-7 paragraphs total:
+- First 2 paragraphs (EXPOSITION): set the scene of the scientific question or natural phenomenon, establish what was known and not known at the time, and plant a hook. No "Imagine..." openings.
+- Next 3-4 paragraphs (RISING ACTION): introduce a real historical scientist (preferably from this roster: Einstein, Marie Curie, Newton, Darwin, Tesla, Galileo, Ada Lovelace, Pythagoras, Linnaeus, Rosalind Franklin) with full biographical depth — birth era + place, family/social context, what drew them to science, at least 2 specific obstacles (poverty, prejudice, war, lack of equipment, scientific resistance, illness, gender/racial barriers, exile, personal loss), the problem that obsessed them, and sensory detail of their daily lab or fieldwork. Treat them as a character — paraphrased dialogue welcome.
+End with a clean segue sentence into the explanation.
+
+ANTI-THINNESS: no paragraph under ~4 sentences; no vague summary lines; every claim specific (what, where, who, when, why). VOICE: warm, vivid, third-person — tone of a great middle-grade nonfiction book.`,
       schema: { type: "object", properties: { intro: { type: "array", items: { type: "string" } } }, required: ["intro"] },
     },
     explanation: {
