@@ -42,7 +42,6 @@ const tools = [
   { label: "Dashboard", path: "/", icon: Home },
   { label: "Question Bank", path: "/question-bank", icon: BookOpen },
   { label: "Curriculum", path: "/lesson-planner", icon: Layers },
-  { label: "ISAT Practice", path: "/isat-exam", icon: ClipboardCheck, fallbackPath: "/lesson-planner" },
   { label: "Activities", path: "/activities", icon: Puzzle },
   { label: "Reading Library", path: "/reading-library", icon: BookOpenCheck },
   { label: "Canvas Export", path: "/canvas", icon: FileText },
