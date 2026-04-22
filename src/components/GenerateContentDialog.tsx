@@ -21,6 +21,7 @@ import {
   type ContentType,
 } from "@/lib/content-generator";
 import { useProfileDefaults } from "@/hooks/useProfileDefaults";
+import { useAiPreferences } from "@/hooks/useAiPreferences";
 import { AiEngineSelect } from "@/components/AiEngineSelect";
 import { toast } from "sonner";
 
@@ -61,6 +62,7 @@ type GenerateTarget =
 
 export default function GenerateContentDialog({ open, onOpenChange, onComplete, initialStandard, defaultContentType = "questions", unitId }: Props) {
   const { defaultFramework, defaultIdahoFilter } = useProfileDefaults();
+  const { preferences } = useAiPreferences();
   const [contentType, setContentType] = useState<ContentType>(defaultContentType);
   const [countPerSub, setCountPerSub] = useState(10);
   const [progress, setProgress] = useState<GenerationProgress | null>(null);
