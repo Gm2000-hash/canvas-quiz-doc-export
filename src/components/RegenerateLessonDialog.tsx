@@ -328,10 +328,42 @@ Improve and fill in any missing information. Keep the same general topic but mak
             </div>
           </div>
 
-          <div className="space-y-2">
-            <AiEngineSelect value={modelOverride} onChange={setModelOverride} tier="default" />
-            <div className="flex items-center gap-2 text-xs text-muted-foreground"><span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 font-medium">UDL-aligned</span><span>Engagement · Representation · Action & Expression baked into the lesson.</span></div>
-          </div>
+          {ngssParentCodes.length > 0 && (
+            <div className="rounded-xl border border-card-foreground/10 bg-muted/40 p-3 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0">
+                  <Layers className="h-4 w-4 text-primary shrink-0" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-medium leading-tight">Focus on NGSS sub-components</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">
+                      {selectedDimensionCodes.length === 0
+                        ? "Optionally narrow the AI to specific Practices, Core Ideas, or Crosscutting Concepts."
+                        : `${selectedDimensionCodes.length} selected — AI will lean into these.`}
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-7 text-xs rounded-lg shrink-0"
+                  onClick={() => setDimensionPickerOpen(true)}
+                >
+                  {selectedDimensionCodes.length > 0 ? "Edit" : "Choose"}
+                </Button>
+              </div>
+              {selectedDimensions.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {selectedDimensions.map(d => (
+                    <span key={d.code} className="text-[10px] rounded-full bg-primary/10 text-primary px-2 py-0.5">
+                      {d.type} · {d.title}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
 
           {generating && (
             <div className="space-y-2">
