@@ -9,8 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
+import { NGSS_DIMENSIONS, getDimensionByCode } from "@/lib/ngss-dimensions";
+import { NgssDimensionPicker } from "@/components/NgssDimensionPicker";
 import { useProfileDefaults } from "@/hooks/useProfileDefaults";
-import { Search } from "lucide-react";
+import { Search, Layers } from "lucide-react";
 
 interface Props {
   open: boolean;
