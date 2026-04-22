@@ -36,6 +36,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
   const [selectedStandards, setSelectedStandards] = useState<Set<string>>(new Set());
   const [standardsPickerOpen, setStandardsPickerOpen] = useState(false);
   const [modelOverride, setModelOverride] = useState<string>("");
+  const { preferences } = useAiPreferences();
 
   const selectedStandardsList = useMemo(() => {
     const result: { code: string; description: string }[] = [];
@@ -71,6 +72,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
           title: title || undefined,
           selected_standards: selectedStandardsList,
           ...(modelOverride ? { model_override: modelOverride } : {}),
+          ai_preferences: preferences,
         },
       });
 

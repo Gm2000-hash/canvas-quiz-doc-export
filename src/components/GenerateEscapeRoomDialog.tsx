@@ -77,6 +77,7 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
   const [showSetup, setShowSetup] = useState(false);
   const [editingRoom, setEditingRoom] = useState<number | null>(null);
   const [modelOverride, setModelOverride] = useState<string>("");
+  const { preferences } = useAiPreferences();
 
   const updatePuzzleField = (roomNumber: number, field: keyof Puzzle, value: any) => {
     if (!escapeRoom) return;
@@ -120,6 +121,7 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
           difficulty,
           additionalContext,
           ...(modelOverride ? { model_override: modelOverride } : {}),
+          ai_preferences: preferences,
         },
       });
 

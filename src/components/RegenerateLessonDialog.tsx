@@ -47,6 +47,7 @@ export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline,
   const [statusText, setStatusText] = useState("");
   const [regenerateReading, setRegenerateReading] = useState(false);
   const [modelOverride, setModelOverride] = useState<string>("");
+  const { preferences } = useAiPreferences();
 
   const handleRegenerate = async () => {
     if (!user) return;
@@ -68,6 +69,7 @@ Current objectives: ${lesson.objectives}
 ${additionalContext ? `Teacher instructions: ${additionalContext}` : ""}
 Improve and fill in any missing information. Keep the same general topic but make it better.`,
           ...(modelOverride ? { model_override: modelOverride } : {}),
+          ai_preferences: preferences,
         },
       });
 
