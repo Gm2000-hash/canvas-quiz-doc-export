@@ -32,12 +32,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
-import { useCreateNote } from "@/hooks/useNotes";
-import { NotesTree } from "./notes/NotesTree";
-import { toast } from "sonner";
 
 const tools = [
   { label: "Dashboard", path: "/", icon: Home },
+  { label: "Notes", path: "/notes", icon: StickyNote },
   { label: "Question Bank", path: "/question-bank", icon: BookOpen },
   { label: "Curriculum", path: "/lesson-planner", icon: Layers },
   { label: "Activities", path: "/activities", icon: Puzzle },
