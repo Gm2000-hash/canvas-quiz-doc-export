@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -53,7 +53,38 @@ export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline,
   const [regenerateReading, setRegenerateReading] = useState(false);
   const [modelOverride, setModelOverride] = useState<string>("");
   const [dimensionPickerOpen, setDimensionPickerOpen] = useState(false);
-  const [selectedDimensionCodes, setSelectedDimensionCodes] = useState<string[]>([]);
+  const unitDimsKey = lesson.unit_id ? `ngss-dims:unit:${lesson.unit_id}` : null;
+  const [selectedDimensionCodes, setSelectedDimensionCodesState] = useState<string[]>(() => {
+    if (typeof window === "undefined" || !unitDimsKey) return [];
+    try {
+      const raw = localStorage.getItem(unitDimsKey);
+      return raw ? (JSON.parse(raw) as string[]) : [];
+    } catch {
+      return [];
+    }
+  });
+  const setSelectedDimensionCodes = (codes: string[]) => {
+    setSelectedDimensionCodesState(codes);
+    if (unitDimsKey) {
+      try {
+        if (codes.length === 0) localStorage.removeItem(unitDimsKey);
+        else localStorage.setItem(unitDimsKey, JSON.stringify(codes));
+      } catch {}
+    }
+  };
+  // Reload remembered selection when switching to a different unit/lesson
+  useEffect(() => {
+    if (!unitDimsKey) {
+      setSelectedDimensionCodesState([]);
+      return;
+    }
+    try {
+      const raw = localStorage.getItem(unitDimsKey);
+      setSelectedDimensionCodesState(raw ? (JSON.parse(raw) as string[]) : []);
+    } catch {
+      setSelectedDimensionCodesState([]);
+    }
+  }, [unitDimsKey]);
   const { preferences } = useAiPreferences();
 
   // NGSS PE codes attached to this lesson — eligible for sub-component drill-down
