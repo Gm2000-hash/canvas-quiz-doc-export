@@ -382,6 +382,16 @@ Improve and fill in any missing information. Keep the same general topic but mak
           </Button>
         </div>
       </DialogContent>
+
+      <NgssDimensionPicker
+        open={dimensionPickerOpen}
+        onOpenChange={setDimensionPickerOpen}
+        parentCodes={ngssParentCodes}
+        selected={selectedDimensionCodes}
+        onSave={setSelectedDimensionCodes}
+        title="Focus this regeneration on…"
+        description="Pick the Practices, Core Ideas, or Crosscutting Concepts the AI should emphasize."
+      />
     </Dialog>
   );
 }
