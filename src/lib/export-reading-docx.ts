@@ -240,7 +240,10 @@ function buildSourcesPage(
 
 /* ─── Lesson body ─── */
 
-function buildLessonBody(lesson: CurriculumLesson): Paragraph[] {
+function buildLessonBody(
+  lesson: CurriculumLesson,
+  opts: Required<ReadingExportOptions>,
+): Paragraph[] {
   const out: Paragraph[] = [];
 
   const objectives = (lesson.objectives as string[]) || [];
@@ -257,7 +260,7 @@ function buildLessonBody(lesson: CurriculumLesson): Paragraph[] {
   }
 
   // Learning objectives
-  if (objectives.length > 0) {
+  if (opts.includeObjectives && objectives.length > 0) {
     out.push(H2("Learning Objectives"));
     for (const o of objectives) {
       const text = stripHtml(o);
@@ -266,7 +269,7 @@ function buildLessonBody(lesson: CurriculumLesson): Paragraph[] {
   }
 
   // Key terms
-  if (keyTerms.length > 0) {
+  if (opts.includeKeyTerms && keyTerms.length > 0) {
     out.push(H2("Key Terms"));
     for (const kt of keyTerms) {
       const term = stripHtml(kt.term);
@@ -282,8 +285,8 @@ function buildLessonBody(lesson: CurriculumLesson): Paragraph[] {
     }
   }
 
-  // Intro (Acts 1-2 in our contract — but we render as "Introduction" for the student-facing doc)
-  if (intro.length > 0) {
+  // Intro
+  if (opts.includeIntro && intro.length > 0) {
     out.push(H2("Introduction"));
     for (const p of intro) {
       const text = stripHtml(p);
@@ -291,8 +294,8 @@ function buildLessonBody(lesson: CurriculumLesson): Paragraph[] {
     }
   }
 
-  // Explanation (Act 4 — deep technical pass)
-  if (explanation.length > 0) {
+  // Explanation
+  if (opts.includeExplanation && explanation.length > 0) {
     out.push(H2("Explanation"));
     for (const p of explanation) {
       const text = stripHtml(p);
@@ -317,7 +320,7 @@ function buildLessonBody(lesson: CurriculumLesson): Paragraph[] {
       }
     }
 
-    if (closing.length > 0) {
+    if (opts.includeClosingUdl && closing.length > 0) {
       out.push(ActHeading("Closing & UDL prompts"));
       for (const para of closing) {
         const text = stripHtml(para);
