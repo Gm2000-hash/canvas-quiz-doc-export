@@ -860,6 +860,7 @@ export type Database = {
           color: string | null
           created_at: string
           extra: Json
+          hidden_sections: Json
           id: string
           scope_key: string
           scope_type: string
@@ -867,11 +868,13 @@ export type Database = {
           user_id: string
           wallpaper_filters: Json
           wallpaper_path: string | null
+          widgets: Json
         }
         Insert: {
           color?: string | null
           created_at?: string
           extra?: Json
+          hidden_sections?: Json
           id?: string
           scope_key: string
           scope_type: string
@@ -879,11 +882,13 @@ export type Database = {
           user_id: string
           wallpaper_filters?: Json
           wallpaper_path?: string | null
+          widgets?: Json
         }
         Update: {
           color?: string | null
           created_at?: string
           extra?: Json
+          hidden_sections?: Json
           id?: string
           scope_key?: string
           scope_type?: string
@@ -891,6 +896,7 @@ export type Database = {
           user_id?: string
           wallpaper_filters?: Json
           wallpaper_path?: string | null
+          widgets?: Json
         }
         Relationships: []
       }
