@@ -22,7 +22,7 @@ export function HideableSection({
   const hidden = isSectionHidden(sectionKey);
 
   return (
-    <div data-section={sectionKey} className={`relative ${className} ${hidden && editMode ? "tk-hidden-section" : ""}`}>
+    <div data-section={sectionKey} data-section-label={label} className={`relative ${className} ${hidden && editMode ? "tk-hidden-section" : ""}`}>
       {editMode && (
         <div className="absolute -top-3 right-2 z-20 flex items-center gap-1 bg-popover border border-border rounded-full px-2 py-0.5 shadow-sm">
           <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</span>

@@ -353,33 +353,92 @@ function WidgetEditList() {
 }
 
 function SectionsEditor() {
-  const { pageScopeKey, get, toggleSection } = useTheme();
+  const { pageScopeKey, get, mutate, toggleSection, panelOpen } = useTheme();
   const page = get("page", pageScopeKey);
-  // Discover all data-section keys currently in the DOM
-  const [sections, setSections] = useState<string[]>([]);
-  useEffect(() => {
-    const els = document.querySelectorAll<HTMLElement>("[data-section]");
-    const keys = Array.from(new Set(Array.from(els).map(e => e.getAttribute("data-section") || "").filter(Boolean)));
-    setSections(keys);
-  }, [pageScopeKey]);
+  const hiddenList = page.hidden_sections || [];
 
-  if (sections.length === 0) {
-    return <p className="text-xs text-muted-foreground text-center">No hideable sections detected on this page.</p>;
+  // Discover keys: union of DOM-present [data-section] and already-hidden keys (which may not be in DOM if their wrappers unmounted)
+  const [domKeys, setDomKeys] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (!panelOpen) return;
+    const scan = () => {
+      const els = document.querySelectorAll<HTMLElement>("[data-section]");
+      const keys = Array.from(new Set(
+        Array.from(els).map(e => e.getAttribute("data-section") || "").filter(Boolean)
+      )).sort();
+      setDomKeys(prev => (prev.length === keys.length && prev.every((k, i) => k === keys[i])) ? prev : keys);
+    };
+    scan();
+    // Re-scan as the DOM changes (sections rendered async, route content swaps, etc.)
+    const obs = new MutationObserver(scan);
+    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-section"] });
+    const interval = window.setInterval(scan, 1500);
+    return () => { obs.disconnect(); window.clearInterval(interval); };
+  }, [pageScopeKey, panelOpen]);
+
+  // Friendly label from labels we capture via [data-section-label] or fallback to the key
+  const labelFor = (key: string): string => {
+    const el = document.querySelector<HTMLElement>(`[data-section="${CSS.escape(key)}"]`);
+    return el?.getAttribute("data-section-label") || key;
+  };
+
+  const allKeys = Array.from(new Set([...domKeys, ...hiddenList])).sort();
+
+  const showAll = () => {
+    mutate("page", pageScopeKey, { hidden_sections: [] });
+  };
+
+  if (allKeys.length === 0) {
+    return (
+      <div className="space-y-2">
+        <p className="text-xs text-muted-foreground text-center">
+          No hideable sections detected on this page.
+        </p>
+        <p className="text-[11px] text-muted-foreground/70 text-center">
+          Wrap a built-in block in <span className="font-mono">&lt;HideableSection sectionKey="..." /&gt;</span> to make it toggleable here.
+        </p>
+      </div>
+    );
   }
+
   return (
     <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">Toggle built-in sections on this page.</p>
-      {sections.map(s => {
-        const hidden = (page.hidden_sections || []).includes(s);
+      <div className="flex items-center justify-between">
+        <p className="text-xs text-muted-foreground">
+          Toggle built-in sections on this page.
+        </p>
+        {hiddenList.length > 0 && (
+          <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={showAll}>
+            Show all
+          </Button>
+        )}
+      </div>
+      {allKeys.map(s => {
+        const hidden = hiddenList.includes(s);
+        const inDom = domKeys.includes(s);
         return (
           <div key={s} className="flex items-center justify-between border border-border rounded-lg px-3 py-2">
-            <span className="text-sm">{s}</span>
-            <Button size="sm" variant={hidden ? "outline" : "default"} onClick={() => toggleSection(s)}>
+            <div className="min-w-0 flex-1 mr-2">
+              <div className="text-sm truncate">{labelFor(s)}</div>
+              <div className="text-[10px] font-mono text-muted-foreground truncate">
+                {s}{!inDom && " · not currently rendered"}
+              </div>
+            </div>
+            <Button
+              size="sm"
+              variant={hidden ? "outline" : "default"}
+              onClick={() => toggleSection(s)}
+              className="shrink-0"
+            >
               {hidden ? "Hidden" : "Visible"}
             </Button>
           </div>
         );
       })}
+      <p className="text-[11px] text-muted-foreground text-center pt-2">
+        Changes are saved when you press <span className="font-medium">Save</span> below.
+      </p>
     </div>
   );
 }
