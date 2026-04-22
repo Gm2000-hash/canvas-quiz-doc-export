@@ -337,14 +337,34 @@ function buildLessonBody(lesson: CurriculumLesson): Paragraph[] {
 
 /* ─── Public API ─── */
 
+export interface ReadingExportOptions {
+  includeObjectives?: boolean;
+  includeKeyTerms?: boolean;
+  includeIntro?: boolean;
+  includeExplanation?: boolean;
+  includeClosingUdl?: boolean;
+  includeSourcesPage?: boolean;
+}
+
+const DEFAULT_OPTIONS: Required<ReadingExportOptions> = {
+  includeObjectives: true,
+  includeKeyTerms: true,
+  includeIntro: true,
+  includeExplanation: true,
+  includeClosingUdl: true,
+  includeSourcesPage: true,
+};
+
 export async function exportReadingAsDocx(
   lesson: CurriculumLesson,
   standards: { ngss_code: string; ngss_description: string }[] = [],
+  options: ReadingExportOptions = {},
 ): Promise<void> {
+  const opts = { ...DEFAULT_OPTIONS, ...options };
   try {
     const children: Paragraph[] = [
-      ...buildLessonBody(lesson),
-      ...buildSourcesPage(lesson, standards),
+      ...buildLessonBody(lesson, opts),
+      ...(opts.includeSourcesPage ? buildSourcesPage(lesson, standards) : []),
     ];
 
     const doc = new Document({
