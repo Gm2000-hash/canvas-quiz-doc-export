@@ -24,8 +24,6 @@ import {
   GraduationCap,
   LogOut,
   ShieldCheck,
-  StickyNote,
-  Plus,
   UserCircle,
   Brain,
 } from "lucide-react";
@@ -35,7 +33,6 @@ import { useProfile } from "@/hooks/useProfile";
 
 const tools = [
   { label: "Dashboard", path: "/", icon: Home },
-  { label: "Notes", path: "/notes", icon: StickyNote },
   { label: "Question Bank", path: "/question-bank", icon: BookOpen },
   { label: "Curriculum", path: "/lesson-planner", icon: Layers },
   { label: "Activities", path: "/activities", icon: Puzzle },
