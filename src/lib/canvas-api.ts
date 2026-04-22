@@ -62,8 +62,30 @@ async function canvasRequest(config: CanvasConfig, action: string, params: Recor
     },
   });
 
-  if (error) throw new Error(error.message || 'Failed to call Canvas API');
-  if (data?.error) throw new Error(data.error);
+  // Extract the real error message — supabase.functions.invoke wraps non-2xx
+  // responses with a generic message and stashes the body on error.context.
+  let errMsg: string | null = null;
+  if (error) {
+    try {
+      const ctx: any = (error as any).context;
+      if (ctx && typeof ctx.json === 'function') {
+        const body = await ctx.json();
+        errMsg = body?.error || body?.message || null;
+      } else if (ctx && typeof ctx.text === 'function') {
+        errMsg = await ctx.text();
+      }
+    } catch { /* ignore */ }
+    errMsg = errMsg || error.message || 'Failed to call Canvas API';
+  } else if (data?.error) {
+    errMsg = data.error;
+  }
+
+  if (errMsg) {
+    if (/Canvas API error \[401\]|Invalid access token/i.test(errMsg)) {
+      window.dispatchEvent(new CustomEvent('canvas-token-invalid'));
+    }
+    throw new Error(errMsg);
+  }
   return data;
 }
 
