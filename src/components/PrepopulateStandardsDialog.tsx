@@ -110,7 +110,15 @@ export default function PrepopulateStandardsDialog({ open, onOpenChange, onCompl
         // 2. Generate lesson plans via edge function
         setSteps((prev) => prev.map((s, idx) => idx === i ? { ...s, status: "generating" } : s));
 
-        const standardsList = subs.map((s) => `${s.code}: ${s.description}`).join("\n");
+        const standardsList = subs.map((s) => {
+          const dims = NGSS_DIMENSIONS[s.code];
+          if (!emphasizeSubcomponents || !dims?.length) return `${s.code}: ${s.description}`;
+          return `${s.code}: ${s.description}\n${formatDimensionsForPrompt(dims)}`;
+        }).join("\n\n");
+
+        const subcomponentNote = emphasizeSubcomponents
+          ? ` For each lesson, explicitly weave in the listed Science & Engineering Practice (SEP), Disciplinary Core Idea (DCI), and Crosscutting Concept (CCC) — name them in the objectives and design at least one activity that targets each dimension.`
+          : "";
 
         const { data, error } = await supabase.functions.invoke("generate-lesson-plans", {
           body: {
@@ -119,7 +127,7 @@ export default function PrepopulateStandardsDialog({ open, onOpenChange, onCompl
             gradeLevel: ci.gradeLevel,
             topic: `All ${ci.id} performance expectations:\n${standardsList}`,
             numLessons: subs.length,
-            additionalContext: `Create exactly ${subs.length} lessons, one for each performance expectation listed. Each lesson should directly address its specific standard. Title each lesson with the standard code and a descriptive name (e.g., "${subs[0]?.code}: ${subs[0]?.description.split(" ").slice(0, 6).join(" ")}..."). Make sure every lesson has the correct NGSS standard tagged.`,
+            additionalContext: `Create exactly ${subs.length} lessons, one for each performance expectation listed. Each lesson should directly address its specific standard. Title each lesson with the standard code and a descriptive name (e.g., "${subs[0]?.code}: ${subs[0]?.description.split(" ").slice(0, 6).join(" ")}..."). Make sure every lesson has the correct NGSS standard tagged.${subcomponentNote}`,
           },
         });
 
