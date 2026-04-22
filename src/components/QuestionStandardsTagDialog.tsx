@@ -78,7 +78,7 @@ export function QuestionStandardsTagDialog({ open, onOpenChange, question, onSav
         ngss_code: code,
         ngss_description: descriptionFor(code),
       }));
-      await updateQuestion(question.id, { standards });
+      await updateQuestion(question.id, {}, standards);
       onSaved(question.id, standards);
       toast.success(standards.length === 0 ? "Standards cleared" : `Tagged with ${standards.length} standard${standards.length === 1 ? "" : "s"}`);
       onOpenChange(false);
@@ -126,7 +126,7 @@ export function QuestionStandardsTagDialog({ open, onOpenChange, question, onSav
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 gap-1.5 text-xs text-amber-700 hover:text-amber-800 hover:bg-amber-50"
+                    className="h-7 gap-1.5 text-xs text-primary hover:text-primary hover:bg-primary/10"
                     onClick={handleAiSuggest}
                     disabled={aiLoading}
                   >
