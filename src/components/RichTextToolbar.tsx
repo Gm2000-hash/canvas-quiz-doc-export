@@ -14,6 +14,7 @@ import {
   List, ListOrdered, AlignLeft, AlignCenter, AlignRight,
   Quote, Code2, Minus, Link2, Unlink, Image as ImageIcon,
   Undo2, Redo2, Highlighter, Palette, Type, ChevronDown,
+  ListChecks, Table as TableIcon, Lightbulb, ChevronRight,
 } from 'lucide-react';
 
 interface RichTextToolbarProps {
@@ -232,6 +233,7 @@ export function RichTextToolbar({ editor, compact = false, minimal = false }: Ri
           {/* Lists */}
           <ToolBtn icon={List} label="Bullet list" active={editor.isActive('bulletList')} onClick={() => editor.chain().focus().toggleBulletList().run()} />
           <ToolBtn icon={ListOrdered} label="Numbered list" active={editor.isActive('orderedList')} onClick={() => editor.chain().focus().toggleOrderedList().run()} />
+          <ToolBtn icon={ListChecks} label="To-do list" active={editor.isActive('taskList')} onClick={() => editor.chain().focus().toggleTaskList().run()} />
 
           {!compact && (
             <>
@@ -252,6 +254,26 @@ export function RichTextToolbar({ editor, compact = false, minimal = false }: Ri
             <>
               <ToolBtn icon={Code2} label="Code block" active={editor.isActive('codeBlock')} onClick={() => editor.chain().focus().toggleCodeBlock().run()} />
               <ToolBtn icon={Minus} label="Horizontal rule" onClick={() => editor.chain().focus().setHorizontalRule().run()} />
+              <ToolBtn
+                icon={Lightbulb}
+                label="Callout"
+                active={editor.isActive('callout')}
+                onClick={() => {
+                  if (editor.isActive('callout')) (editor.chain().focus() as any).unsetCallout().run();
+                  else (editor.chain().focus() as any).setCallout({ icon: '💡', tone: 'info' }).run();
+                }}
+              />
+              <ToolBtn
+                icon={ChevronRight}
+                label="Toggle / details"
+                active={editor.isActive('details')}
+                onClick={() => (editor.chain().focus() as any).setDetails().run()}
+              />
+              <ToolBtn
+                icon={TableIcon}
+                label="Insert table"
+                onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+              />
             </>
           )}
 
