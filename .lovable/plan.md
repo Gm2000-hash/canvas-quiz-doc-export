@@ -1,79 +1,37 @@
 
-Fix the blank preview by resolving two frontend build/import errors that are crashing the whole app. The Canvas token is not the root cause here.
 
-## What is actually broken
+## Cleanup: remove leftover/unused code
 
-The preview is failing at build time because Vite cannot resolve these imports:
+I audited the whole codebase against the routes wired up in `src/App.tsx` and the imports across pages, components, hooks, and lib files. Here's everything I found that isn't doing anything anymore.
 
-1. `react-resizable/css/styles.css` from `src/components/ReadingDashboardGrid.tsx`
-2. `pdfjs-dist/build/pdf.worker.min.mjs?worker` from `src/lib/pdf-worker.ts`
+### Confirmed orphans — safe to delete
 
-Because `src/App.tsx` imports pages that eventually import those files, the entire preview can fail even if you are only trying to use the Canvas screen.
+These have **zero importers** anywhere in the app:
 
-## Why it seemed tied to entering the token
+1. **`src/App.css`** — default Vite scaffold styles (`.logo`, `.read-the-docs`, etc.). Not imported by `main.tsx` or anything else. The real styling lives in `src/index.css`.
+2. **`src/components/HomeBookShelf.tsx`** — old Home page bookshelf widget. Replaced by the current `HomeBookShelf`-free Home layout. Not imported.
+3. **`src/components/NavLink.tsx`** — older nav link component. Superseded by `WorkspaceSidebar` + `AppNavSheet`. Not imported.
+4. **`src/components/GenerateLessonDialog.tsx`** — older single-lesson generator dialog. Lesson generation now happens through `RegenerateLessonDialog` and the unified `GenerateContentDialog`. Not imported.
+5. **`src/components/GenerateQuestionsDialog.tsx`** — older standalone question generator. Replaced by the unified `GenerateContentDialog` (which uses `content-generator.ts`). Not imported.
+6. **`src/components/PushISATEmbedToCanvasDialog.tsx`** — older ISAT-embed push dialog. The active path is `PushISATToCanvasDialog`. Not imported.
+7. **`src/lib/question-generator.ts`** — only consumed by the orphan `GenerateQuestionsDialog`. The active generation pipeline is `src/lib/content-generator.ts`.
 
-Entering the token likely triggered a navigation/re-render that exposed the existing unresolved imports. The blank screen is coming from the app failing to compile, not from Canvas rejecting the token.
+### Everything else checked and KEPT
 
-## Implementation plan
+- All edge functions in `supabase/functions/` are still invoked from somewhere in the app.
+- All other lib files (`export-*`, `standards-api`, `ngss-api`, `pdf-*`, `canvas-api`, `question-bank`, `unit-colors`, etc.) are in use.
+- All hooks in `src/hooks/` are in use (including `useDashboardLayout`, `useLtiSession`, `usePageTitle`).
+- All other components — including the recent `CanvasTokenRescue` and reset-token UX — are wired up.
 
-### 1) Fix the missing `react-resizable` dependency path
-Update the Reading Library dashboard dependency issue so the import resolves cleanly.
+### What I'll do
 
-- Inspect whether `react-grid-layout` is being used with its required peer dependency.
-- Add the missing `react-resizable` package to the project dependencies if it is not installed.
-- Keep the existing CSS import only if the package is present and needed for resize handles.
-- If the package is intentionally not wanted, remove the unsupported CSS import and adjust the dashboard grid so it does not depend on missing resize styles.
+- Delete the 7 files listed above.
+- Verify no broken imports remain (TypeScript check via the editor).
+- Leave behavior, routes, and UI completely unchanged — these files were already dead, so removing them only shrinks the bundle and reduces noise when navigating the codebase.
 
-Preferred fix: install the proper peer dependency so the dashboard layout keeps working as designed.
+### Out of scope
 
-### 2) Fix PDF worker setup for `react-pdf`
-Replace the current worker import pattern in `src/lib/pdf-worker.ts` with a Vite-compatible `react-pdf` setup.
+- No refactors, no renames, no behavior changes.
+- No edge function deletions — all of them are still called.
+- No dependency removals from `package.json` (the recent `react-resizable` / `pdfjs-dist` additions stay; they're actively used).
 
-- Remove the failing direct worker module import:
-  `import PdfWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?worker';`
-- Configure the worker using the recommended URL-based approach for Vite:
-  `pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/build/pdf.worker.min.mjs', import.meta.url).toString()`
-- If needed, add `pdfjs-dist` as a direct dependency so Vite can resolve that module path reliably.
-
-This avoids the current import-resolution failure and keeps the PDF viewer + thumbnail generation working.
-
-### 3) Verify the import chain that currently breaks startup
-After the dependency/import fixes, verify the app path that currently pulls these files in:
-
-```text
-App.tsx
-  -> ReadingLibrary.tsx
-     -> ReadingDashboardGrid.tsx
-     -> pdf-thumbnail.ts
-        -> pdf-worker.ts
-```
-
-This ensures the preview can boot even before opening the Reading Library.
-
-### 4) Keep the recent Canvas recovery UX
-Do not remove the new rescue behavior:
-- `CanvasTokenRescue`
-- reset button in `SettingsForm`
-
-Those changes are still useful, but they are separate from the current blank-preview problem.
-
-## Files to update
-
-- `package.json`
-- `src/lib/pdf-worker.ts`
-- possibly lockfile(s)
-- optionally `src/components/ReadingDashboardGrid.tsx` if the resize styling/import needs adjustment
-
-## Expected result
-
-After these fixes:
-- the preview should load normally again
-- your Canvas connection screen should remain visible after entering a valid token
-- Reading Library PDF features should still work
-- the reset-token safety net remains available if Canvas credentials ever expire again
-
-## Technical notes
-
-- `react-grid-layout` commonly expects `react-resizable` to be present.
-- `react-pdf` worker configuration is sensitive to bundler setup; the current `?worker` import is the likely incompatibility.
-- The edge function logs show successful `canvas-proxy` calls, which further suggests the current blocker is frontend build failure, not the backend integration.
