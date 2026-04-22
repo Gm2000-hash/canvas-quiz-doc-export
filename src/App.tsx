@@ -35,6 +35,7 @@ import NotePage from "./pages/NotePage";
 import NotesHome from "./pages/NotesHome";
 import SharedNote from "./pages/SharedNote";
 import NotFound from "./pages/NotFound";
+import { CanvasTokenRescue } from "@/components/CanvasTokenRescue";
 import { Loader2 } from "lucide-react";
 
 const queryClient = new QueryClient({
@@ -97,6 +98,7 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <CanvasTokenRescue />
       <BrowserRouter>
         <Routes>
           {/* Public / shell-less */}
