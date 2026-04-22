@@ -30,6 +30,7 @@ export function LessonStandardsPicker({ open, onOpenChange, selected, onSave }: 
   const [localSelected, setLocalSelected] = useState<Map<string, string>>(
     new Map(selected.map(s => [s.code, s.description]))
   );
+  const [dimensionPickerOpen, setDimensionPickerOpen] = useState(false);
 
   // Sync defaults when profile loads
   useEffect(() => {
