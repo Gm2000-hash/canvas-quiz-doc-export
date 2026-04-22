@@ -20,6 +20,8 @@ interface GenerateOptions {
   dokLevel?: number | null;
   unitId?: string; // needed for lesson_plan and reading saves
   modelOverride?: string; // optional AI engine override (model id)
+  /** User's saved AI preferences — forwarded so the edge resolver can apply per-tier defaults. */
+  aiPreferences?: { default_model?: string; overrides?: Record<string, string> } | null;
 }
 
 /**
@@ -45,6 +47,7 @@ async function generateForSubstandard(
       subject: options.subject || "Science",
       ...(options.dokLevel ? { dok_level: options.dokLevel } : {}),
       ...(options.modelOverride ? { model_override: options.modelOverride } : {}),
+      ...(options.aiPreferences ? { ai_preferences: options.aiPreferences } : {}),
     },
   });
 

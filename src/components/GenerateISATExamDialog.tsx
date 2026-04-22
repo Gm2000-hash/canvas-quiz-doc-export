@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { StandardsPickerDialog } from "@/components/StandardsPickerDialog";
 import { AiEngineSelect } from "@/components/AiEngineSelect";
+import { useAiPreferences } from "@/hooks/useAiPreferences";
 
 interface Props {
   open: boolean;
@@ -35,6 +36,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
   const [selectedStandards, setSelectedStandards] = useState<Set<string>>(new Set());
   const [standardsPickerOpen, setStandardsPickerOpen] = useState(false);
   const [modelOverride, setModelOverride] = useState<string>("");
+  const { preferences } = useAiPreferences();
 
   const selectedStandardsList = useMemo(() => {
     const result: { code: string; description: string }[] = [];
@@ -70,6 +72,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
           title: title || undefined,
           selected_standards: selectedStandardsList,
           ...(modelOverride ? { model_override: modelOverride } : {}),
+          ai_preferences: preferences,
         },
       });
 
