@@ -899,6 +899,17 @@ const LessonPlanEditor = () => {
           onClose={() => setReadingOpen(false)}
         />
       )}
+
+      <UdlTemplatePicker
+        open={udlTemplateOpen}
+        onOpenChange={setUdlTemplateOpen}
+        current={lesson.udl_supports}
+        topic={lesson.title}
+        onApply={(next) => {
+          setLesson({ ...lesson, udl_supports: next });
+          toast({ title: "UDL template applied", description: "Edit the placeholders to fit your lesson." });
+        }}
+      />
     </div>
   );
 };
