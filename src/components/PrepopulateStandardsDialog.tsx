@@ -4,11 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom, BookOpen, Calculator, Landmark } from "lucide-react";
+import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom, BookOpen } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { NGSS_DIMENSIONS, formatDimensionsForPrompt } from "@/lib/ngss-dimensions";
-import { ALL_IDAHO_STANDARDS } from "@/lib/idaho-standards-data";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -258,6 +257,24 @@ export default function PrepopulateStandardsDialog({ open, onOpenChange, onCompl
                   Each lesson includes objectives, activities, vocabulary, resources, and NGSS tags.
                 </p>
               </div>
+            </div>
+
+            <div className="p-3 rounded-lg border border-card-foreground/10 bg-card flex items-start justify-between gap-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="emphasize-subs" className="text-sm font-medium cursor-pointer">
+                  Emphasize NGSS sub-components
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Inject the SEP, DCI, and CCC for each performance expectation into the AI prompt so
+                  every generated lesson explicitly addresses all three dimensions.
+                </p>
+              </div>
+              <Switch
+                id="emphasize-subs"
+                checked={emphasizeSubcomponents}
+                onCheckedChange={setEmphasizeSubcomponents}
+                className="mt-1"
+              />
             </div>
 
             <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
