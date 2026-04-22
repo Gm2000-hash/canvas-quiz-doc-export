@@ -14,6 +14,7 @@ import { Sparkles, Loader2, Lock, Key, Copy, ChevronDown, ChevronUp, Lightbulb, 
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { exportEscapeRoomToDocx } from "@/lib/export-escape-room-docx";
+import { AiEngineSelect } from "@/components/AiEngineSelect";
 
 interface Puzzle {
   room_number: number;
@@ -74,6 +75,7 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
   const [expandedPuzzle, setExpandedPuzzle] = useState<number | null>(null);
   const [showSetup, setShowSetup] = useState(false);
   const [editingRoom, setEditingRoom] = useState<number | null>(null);
+  const [modelOverride, setModelOverride] = useState<string>("");
 
   const updatePuzzleField = (roomNumber: number, field: keyof Puzzle, value: any) => {
     if (!escapeRoom) return;
@@ -116,6 +118,7 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
           numPuzzles,
           difficulty,
           additionalContext,
+          ...(modelOverride ? { model_override: modelOverride } : {}),
         },
       });
 
@@ -216,6 +219,7 @@ export function GenerateEscapeRoomDialog({ open, onOpenChange, context }: Props)
                 rows={3}
               />
             </div>
+            <AiEngineSelect value={modelOverride} onChange={setModelOverride} tier="heavy" />
             {generating && (
               <div className="space-y-2">
                 <Progress value={progress} className="h-2" />

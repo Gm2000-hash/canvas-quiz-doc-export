@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { StandardsPickerDialog } from "@/components/StandardsPickerDialog";
+import { AiEngineSelect } from "@/components/AiEngineSelect";
 
 interface Props {
   open: boolean;
@@ -33,6 +34,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
   const [examId, setExamId] = useState<string | null>(null);
   const [selectedStandards, setSelectedStandards] = useState<Set<string>>(new Set());
   const [standardsPickerOpen, setStandardsPickerOpen] = useState(false);
+  const [modelOverride, setModelOverride] = useState<string>("");
 
   const selectedStandardsList = useMemo(() => {
     const result: { code: string; description: string }[] = [];
@@ -67,6 +69,7 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
           question_count: questionCount,
           title: title || undefined,
           selected_standards: selectedStandardsList,
+          ...(modelOverride ? { model_override: modelOverride } : {}),
         },
       });
 
@@ -213,6 +216,8 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
                   ))}
                 </div>
               </div>
+
+              <AiEngineSelect value={modelOverride} onChange={setModelOverride} tier="heavy" />
 
               <Button
                 onClick={handleGenerate}

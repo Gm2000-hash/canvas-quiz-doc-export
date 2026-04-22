@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withLogging } from "../_shared/logger.ts";
+import { resolveModel } from "../_shared/model.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -106,7 +107,7 @@ serve(withLogging("standards-tagger", async (req) => {
       : buildIdahoPrompt(subject || 'ELA', grade || '6-8', standardsListText, keyTermsSection);
 
     const requestBody = {
-      model: 'google/gemini-2.5-flash',
+      model: resolveModel(body, "utility"),
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Tag these quiz questions with standards:\n\n${questionList}` }

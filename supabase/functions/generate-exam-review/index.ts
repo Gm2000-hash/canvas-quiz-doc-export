@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
+import { resolveModel } from "../_shared/model.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -21,7 +22,8 @@ Deno.serve(async (req) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("Unauthorized");
 
-    const { exam_id } = await req.json();
+    const requestBody = await req.json();
+    const { exam_id } = requestBody || {};
     if (!exam_id) throw new Error("Missing exam_id");
 
     // Fetch exam
@@ -75,7 +77,7 @@ Return ONLY valid JSON, no markdown fences.`;
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: resolveModel(requestBody, "heavy"),
         messages: [
           { role: "system", content: "You are an expert educational content creator. Return only valid JSON." },
           { role: "user", content: prompt },

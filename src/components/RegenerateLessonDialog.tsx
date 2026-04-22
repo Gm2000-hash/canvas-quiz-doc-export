@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { syncDisciplineToLibrary } from "@/lib/content-generator";
+import { AiEngineSelect } from "@/components/AiEngineSelect";
 
 interface LessonData {
   id: string;
@@ -44,6 +45,7 @@ export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline,
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("");
   const [regenerateReading, setRegenerateReading] = useState(false);
+  const [modelOverride, setModelOverride] = useState<string>("");
 
   const handleRegenerate = async () => {
     if (!user) return;
@@ -64,6 +66,7 @@ export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline,
 Current objectives: ${lesson.objectives}
 ${additionalContext ? `Teacher instructions: ${additionalContext}` : ""}
 Improve and fill in any missing information. Keep the same general topic but make it better.`,
+          ...(modelOverride ? { model_override: modelOverride } : {}),
         },
       });
 
@@ -302,6 +305,8 @@ Improve and fill in any missing information. Keep the same general topic but mak
               <Switch id="regenReading" checked={regenerateReading} onCheckedChange={setRegenerateReading} />
             </div>
           </div>
+
+          <AiEngineSelect value={modelOverride} onChange={setModelOverride} tier="default" />
 
           {generating && (
             <div className="space-y-2">

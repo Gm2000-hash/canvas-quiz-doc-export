@@ -3,6 +3,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { resolveModel } from "../_shared/model.ts";
 
 const AI_GATEWAY = 'https://ai.gateway.lovable.dev/v1/chat/completions';
 
@@ -68,7 +69,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: resolveModel(null, "utility"),
           messages: [
             {
               role: 'system',
@@ -137,7 +138,7 @@ If the document contains a single topic/reading rather than multiple lessons, cr
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: resolveModel(null, "utility"),
         messages: [
           {
             role: 'system',

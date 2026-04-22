@@ -19,6 +19,7 @@ interface GenerateOptions {
   subject?: string;
   dokLevel?: number | null;
   unitId?: string; // needed for lesson_plan and reading saves
+  modelOverride?: string; // optional AI engine override (model id)
 }
 
 /**
@@ -43,6 +44,7 @@ async function generateForSubstandard(
       framework: options.framework || "NGSS",
       subject: options.subject || "Science",
       ...(options.dokLevel ? { dok_level: options.dokLevel } : {}),
+      ...(options.modelOverride ? { model_override: options.modelOverride } : {}),
     },
   });
 

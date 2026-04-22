@@ -21,6 +21,7 @@ import {
   type ContentType,
 } from "@/lib/content-generator";
 import { useProfileDefaults } from "@/hooks/useProfileDefaults";
+import { AiEngineSelect } from "@/components/AiEngineSelect";
 import { toast } from "sonner";
 
 interface Props {
@@ -70,6 +71,7 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
   const [idahoCategoryFilter, setIdahoCategoryFilter] = useState<string>("essential");
   const [selectedIdahoStandards, setSelectedIdahoStandards] = useState<Set<string>>(new Set());
   const [targetDok, setTargetDok] = useState<string>("any");
+  const [modelOverride, setModelOverride] = useState<string>("");
   const abortRef = useRef(false);
   const latestProgressRef = useRef<GenerationProgress | null>(null);
 
@@ -110,7 +112,7 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
         [{ code: initialStandard.code, description: initialStandard.description }],
         countPerSub,
         (p) => { latestProgressRef.current = p; setProgress(p); },
-        { framework: fw, subject: subj, dokLevel: dokValue, unitId }
+        { framework: fw, subject: subj, dokLevel: dokValue, unitId, modelOverride: modelOverride || undefined }
       );
       setDone(true);
       const total = latestProgressRef.current?.itemsGenerated ?? 0;
@@ -164,7 +166,7 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
     latestProgressRef.current = null;
 
     try {
-      const opts = { unitId };
+      const opts = { unitId, modelOverride: modelOverride || undefined };
       if (target.type === "coreIdea") {
         await generateForCoreIdea(contentType, target.id, countPerSub, handleProgressUpdate, opts);
       } else if (target.type === "discipline") {
@@ -175,6 +177,7 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
           framework: "Idaho",
           subject: target.subject,
           unitId,
+          modelOverride: modelOverride || undefined,
         });
       } else {
         const allCoreIdeas = DISCIPLINES.flatMap(d => d.coreIdeas);
@@ -250,6 +253,11 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
               );
             })}
           </div>
+        )}
+
+        {/* AI Engine selector */}
+        {!generating && !done && (
+          <AiEngineSelect value={modelOverride} onChange={setModelOverride} tier="default" />
         )}
 
         {/* Gap-click config form */}
