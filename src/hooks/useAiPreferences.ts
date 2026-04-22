@@ -35,15 +35,17 @@ const EMPTY_PREFS: AiPreferences = {
   overrides: {},
 };
 
-function normalize(raw: any): AiPreferences {
+function normalize(raw: unknown): AiPreferences {
   if (!raw || typeof raw !== "object") return { ...EMPTY_PREFS };
-  const default_model = typeof raw.default_model === "string" && raw.default_model
-    ? raw.default_model
+  const obj = raw as Record<string, unknown>;
+  const default_model = typeof obj.default_model === "string" && obj.default_model
+    ? obj.default_model
     : DEFAULT_MODEL;
   const overrides: AiPreferences["overrides"] = {};
-  const src = raw.overrides && typeof raw.overrides === "object" ? raw.overrides : {};
+  const src = (obj.overrides && typeof obj.overrides === "object" ? obj.overrides : {}) as Record<string, unknown>;
   for (const tier of ["default", "heavy", "utility"] as ModelTier[]) {
-    if (typeof src[tier] === "string" && src[tier]) overrides[tier] = src[tier];
+    const v = src[tier];
+    if (typeof v === "string" && v) overrides[tier] = v;
   }
   return { default_model, overrides };
 }
