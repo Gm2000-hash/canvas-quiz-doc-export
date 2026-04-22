@@ -26,6 +26,7 @@ import { GenerateEscapeRoomDialog } from "@/components/GenerateEscapeRoomDialog"
 import { RegenerateLessonDialog } from "@/components/RegenerateLessonDialog";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { CurriculumReadingViewer } from "@/components/CurriculumReadingViewer";
+import { UdlPrincipleSection, UdlField, UdlChips } from "@/components/UdlSupportsFields";
 import type { Json } from "@/integrations/supabase/types";
 
 interface Activity {
