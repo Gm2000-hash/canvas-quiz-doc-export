@@ -218,6 +218,7 @@ export default function Home() {
                   onDragStart={(e) => handleDragStart(e, idx)}
                   onDragEnd={handleDragEnd}
                   onDragOver={(e) => handleDragOver(e, idx)}
+                  data-themeable={`home.tile.${card.id}`}
                   className={`group relative bubble-glass ${tint} cursor-grab active:cursor-grabbing ${
                     overIdx === idx && dragIdx !== null && dragIdx !== idx
                       ? "ring-2 ring-primary/50"
@@ -232,7 +233,10 @@ export default function Home() {
                     className="w-full p-6 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-3xl"
                   >
                     <div className="flex items-start gap-4">
-                      <div className="shrink-0 h-16 w-16 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center overflow-hidden shadow-sm border border-white/80">
+                      <div
+                        data-themeable={`home.tile.${card.id}.icon`}
+                        className="shrink-0 h-16 w-16 rounded-2xl bg-white/70 backdrop-blur flex items-center justify-center overflow-hidden shadow-sm border border-white/80"
+                      >
                         {card.image ? (
                           <img
                             src={card.image}
@@ -245,10 +249,16 @@ export default function Home() {
                         )}
                       </div>
                       <div className="min-w-0 flex-1">
-                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors">
+                        <h3
+                          data-themeable={`home.tile.${card.id}.title`}
+                          className="text-lg font-bold text-foreground group-hover:text-primary transition-colors"
+                        >
                           {card.title}
                         </h3>
-                        <p className="text-sm text-muted-foreground mt-1.5 leading-relaxed line-clamp-2">
+                        <p
+                          data-themeable={`home.tile.${card.id}.description`}
+                          className="text-sm text-muted-foreground mt-1.5 leading-relaxed line-clamp-2"
+                        >
                           {card.description}
                         </p>
                       </div>
