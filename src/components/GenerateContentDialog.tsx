@@ -114,7 +114,7 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
         [{ code: initialStandard.code, description: initialStandard.description }],
         countPerSub,
         (p) => { latestProgressRef.current = p; setProgress(p); },
-        { framework: fw, subject: subj, dokLevel: dokValue, unitId, modelOverride: modelOverride || undefined }
+        { framework: fw, subject: subj, dokLevel: dokValue, unitId, modelOverride: modelOverride || undefined, aiPreferences: preferences }
       );
       setDone(true);
       const total = latestProgressRef.current?.itemsGenerated ?? 0;
@@ -168,7 +168,7 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
     latestProgressRef.current = null;
 
     try {
-      const opts = { unitId, modelOverride: modelOverride || undefined };
+      const opts = { unitId, modelOverride: modelOverride || undefined, aiPreferences: preferences };
       if (target.type === "coreIdea") {
         await generateForCoreIdea(contentType, target.id, countPerSub, handleProgressUpdate, opts);
       } else if (target.type === "discipline") {
@@ -180,6 +180,7 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
           subject: target.subject,
           unitId,
           modelOverride: modelOverride || undefined,
+          aiPreferences: preferences,
         });
       } else {
         const allCoreIdeas = DISCIPLINES.flatMap(d => d.coreIdeas);
