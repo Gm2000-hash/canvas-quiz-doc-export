@@ -153,6 +153,7 @@ const LessonPlanEditor = () => {
         vocabulary: (Array.isArray(d.vocabulary) ? d.vocabulary : []) as VocabularyItem[],
         resources: (Array.isArray(d.resources) ? d.resources : []) as ResourceItem[],
         embedded_activities: (Array.isArray(d.embedded_activities) ? d.embedded_activities : []) as EmbeddedActivityRef[],
+        udl_supports: (d.udl_supports && typeof d.udl_supports === "object" && !Array.isArray(d.udl_supports) ? d.udl_supports : {}) as UdlSupports,
       } as LessonPlan);
       setStandards(stdsRes.data || []);
       setLoading(false);
