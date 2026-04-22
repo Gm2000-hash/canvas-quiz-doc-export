@@ -106,7 +106,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       // Parse "{key}|{prop}" e.g. "home.banner|bg" / default to bg
       const [key, prop = "bg"] = c.scope_key.split("|");
       const sel = `[data-themeable="${CSS.escape(key)}"]`;
-      if (prop === "text") rules.push(`${sel}{color:${c.color} !important;}`);
+      if (prop === "opacity") {
+        const v = parseFloat((c.color || "").replace("opacity:", ""));
+        if (!isNaN(v)) rules.push(`${sel}{opacity:${v} !important;}`);
+      }
+      else if (prop === "text") rules.push(`${sel}{color:${c.color} !important;}`);
       else if (prop === "border") rules.push(`${sel}{border-color:${c.color} !important;}`);
       else rules.push(`${sel}{background-color:${c.color} !important;}`);
     });
