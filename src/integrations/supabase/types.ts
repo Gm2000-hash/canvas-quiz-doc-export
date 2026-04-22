@@ -413,6 +413,7 @@ export type Database = {
           resources: Json | null
           sort_order: number | null
           title: string
+          udl_supports: Json
           unit_id: string | null
           updated_at: string
           user_id: string
@@ -433,6 +434,7 @@ export type Database = {
           resources?: Json | null
           sort_order?: number | null
           title: string
+          udl_supports?: Json
           unit_id?: string | null
           updated_at?: string
           user_id: string
@@ -453,6 +455,7 @@ export type Database = {
           resources?: Json | null
           sort_order?: number | null
           title?: string
+          udl_supports?: Json
           unit_id?: string | null
           updated_at?: string
           user_id?: string
