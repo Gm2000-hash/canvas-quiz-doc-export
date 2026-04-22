@@ -429,6 +429,7 @@ const LessonPlanEditor = () => {
             exportLessonToDocx({
               ...lesson,
               standards: standards.map(s => ({ ngss_code: s.ngss_code, ngss_description: s.ngss_description })),
+              udl_supports: lesson.udl_supports,
             });
           }}
         >
