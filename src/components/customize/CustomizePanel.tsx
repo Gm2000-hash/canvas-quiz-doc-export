@@ -487,6 +487,25 @@ function SectionsEditor() {
 }
 
 // ------- helpers -------
+function parseColorValue(v: string): { hex: string; alpha: number } {
+  if (!v) return { hex: "", alpha: 1 };
+  const m = v.match(/hsl\(\s*(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%(?:\s*\/\s*(\d*\.?\d+))?\s*\)/i);
+  if (m) {
+    return { hex: hslToHex(`hsl(${m[1]} ${m[2]}% ${m[3]}%)`), alpha: m[4] !== undefined ? +m[4] : 1 };
+  }
+  if (v.startsWith("#") && (v.length === 7 || v.length === 9)) {
+    const a = v.length === 9 ? parseInt(v.slice(7, 9), 16) / 255 : 1;
+    return { hex: v.slice(0, 7), alpha: a };
+  }
+  return { hex: "", alpha: 1 };
+}
+
+function buildHslWithAlpha(hex: string, alpha: number): string {
+  const hsl = hexToHslCss(hex);
+  if (alpha >= 1) return hsl;
+  return hsl.replace(/\)$/, ` / ${alpha.toFixed(2)})`);
+}
+
 function hslToHex(hslStr: string): string {
   const m = hslStr?.match(/hsl\(\s*(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/i);
   if (!m) return "";
