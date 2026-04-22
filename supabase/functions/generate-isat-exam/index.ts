@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withLogging } from "../_shared/logger.ts";
 import { resolveModel } from "../_shared/model.ts";
+import { withUdl } from "../_shared/udl.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -183,7 +184,7 @@ ${standardsContext}
       body: JSON.stringify({
         model: resolveModel(parsedBody, "heavy"),
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: withUdl(systemPrompt, "ISAT practice exam: vary response formats across the exam per UDL Action & Expression (do not lean only on multiple choice). Use plain language in stems; define technical terms inline; design distractors that target real misconceptions, not language barriers. The 'hint' field doubles as a UDL Representation scaffold — make it concept-focused, not answer-leaking.") },
           {
             role: "user",
             content: `Generate a complete ${clampedCount}-question ISAT practice exam covering ${disciplineLabel}.

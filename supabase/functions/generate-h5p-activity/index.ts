@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withLogging } from "../_shared/logger.ts";
 import { resolveModel } from "../_shared/model.ts";
+import { withUdl } from "../_shared/udl.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -182,7 +183,7 @@ Task: ${instruction}`;
       body: JSON.stringify({
         model: resolveModel(parsedBody, "default"),
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: withUdl(systemPrompt, "H5P activities: use plain, accessible language; define key terms inline within prompts/feedback; where the activity type supports descriptions or feedback, include short alt-text-style descriptions for any visual element; keep difficulty appropriate so the activity scaffolds rather than gates learning (UDL Representation + Action & Expression).") },
           { role: "user", content: userPrompt },
         ],
       }),

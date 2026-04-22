@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.49.1";
 import { resolveModel } from "../_shared/model.ts";
+import { withUdl } from "../_shared/udl.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -79,7 +80,7 @@ Return ONLY valid JSON, no markdown fences.`;
       body: JSON.stringify({
         model: resolveModel(requestBody, "heavy"),
         messages: [
-          { role: "system", content: "You are an expert educational content creator. Return only valid JSON." },
+          { role: "system", content: withUdl("You are an expert educational content creator. Return only valid JSON.", "Exam review materials: study guide sections should each suggest a multi-modal review path (text + visual + practice). Flashcards should include both a verbal cue and a brief visual/example cue. The review_lesson should label each section with the UDL principle it primarily serves (Engagement / Representation / Action & Expression).") },
           { role: "user", content: prompt },
         ],
         temperature: 0.7,

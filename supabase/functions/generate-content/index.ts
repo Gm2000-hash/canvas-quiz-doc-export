@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withLogging } from "../_shared/logger.ts";
 import { resolveModel } from "../_shared/model.ts";
+import { withUdl } from "../_shared/udl.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -258,7 +259,7 @@ serve(withLogging("generate-content", async (req) => {
       body: JSON.stringify({
         model: resolveModel(body, content_type === "reading" || content_type === "lesson_plan" ? "default" : "default"),
         messages: [
-          { role: "system", content: prompt.systemPrompt },
+          { role: "system", content: withUdl(prompt.systemPrompt, content_type === "questions" ? "Question sets: vary response formats across the set (do not produce all multiple-choice). For each question, embed plain-language phrasing, define any technical term inline, and ensure distractors are accessible." : content_type === "lesson_plan" ? "Lesson plans: include explicit UDL choice options for engagement, vocabulary supports under representation, and at least two ways students can demonstrate learning under action & expression." : "Reading: include inline vocabulary callouts (Representation), a 'Try it your way' choice block (Action & Expression), and a Reflect question (Engagement) at the end of the reading paragraphs.") },
           { role: "user", content: prompt.userPrompt },
         ],
         tools: [{
