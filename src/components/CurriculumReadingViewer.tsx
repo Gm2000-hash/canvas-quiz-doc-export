@@ -54,6 +54,15 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
   const [aiTagging, setAiTagging] = useState(false);
   const [standardsPickerOpen, setStandardsPickerOpen] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [docxOptions, setDocxOptions] = useState<Required<ReadingExportOptions>>({
+    includeObjectives: true,
+    includeKeyTerms: true,
+    includeIntro: true,
+    includeExplanation: true,
+    includeClosingUdl: true,
+    includeSourcesPage: true,
+  });
+  const [exportingDocx, setExportingDocx] = useState(false);
 
   const handleDeleteReading = async (lessonId: string) => {
     setDeletingId(lessonId);
