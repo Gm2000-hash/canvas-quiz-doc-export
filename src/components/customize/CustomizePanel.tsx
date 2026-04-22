@@ -100,6 +100,11 @@ export function CustomizePanel() {
         </div>
       );
     }
+    const opacityKey = `${selectedElement}|opacity`;
+    const opacityCur = get("element", opacityKey);
+    // We stash the per-element opacity inside `color` as a string like "opacity:0.6"
+    const opacityVal = parseFloat((opacityCur.color || "").replace("opacity:", "")) || 1;
+
     return (
       <div className="space-y-4">
         <div className="text-xs font-mono bg-muted rounded px-2 py-1 break-all">{selectedElement}</div>
@@ -107,19 +112,23 @@ export function CustomizePanel() {
           const sk = `${selectedElement}|${prop}`;
           const cur = get("element", sk);
           const value = cur.color || "";
+          const { hex, alpha } = parseColorValue(value);
+          const updateColor = (nextHex: string, nextAlpha: number) => {
+            mutate("element", sk, { color: buildHslWithAlpha(nextHex, nextAlpha) });
+          };
           return (
             <div key={prop} className="space-y-1.5">
               <Label className="capitalize">{prop === "bg" ? "Background" : prop === "text" ? "Text" : "Border"}</Label>
               <div className="flex items-center gap-2">
                 <input
                   type="color"
-                  value={hslToHex(value) || "#888888"}
-                  onChange={(e) => mutate("element", sk, { color: hexToHslCss(e.target.value) })}
+                  value={hex || "#888888"}
+                  onChange={(e) => updateColor(e.target.value, alpha)}
                   className="h-9 w-12 rounded border border-border cursor-pointer bg-transparent"
                 />
                 <Input
                   value={value}
-                  placeholder="hsl(0 0% 50%)"
+                  placeholder="hsl(0 0% 50% / 1)"
                   onChange={(e) => mutate("element", sk, { color: e.target.value || null })}
                 />
                 {value && (
@@ -128,9 +137,37 @@ export function CustomizePanel() {
                   </Button>
                 )}
               </div>
+              {value && (
+                <div className="flex items-center gap-2 pl-1">
+                  <span className="text-[10px] text-muted-foreground w-12">Alpha</span>
+                  <Slider
+                    value={[alpha]} min={0} max={1} step={0.05}
+                    onValueChange={([v]) => updateColor(hex || "#888888", v)}
+                    className="flex-1"
+                  />
+                  <span className="text-[10px] text-muted-foreground w-8 text-right">{alpha.toFixed(2)}</span>
+                </div>
+              )}
             </div>
           );
         })}
+        <Separator />
+        <div className="space-y-1.5">
+          <Label>Whole-element opacity</Label>
+          <div className="flex items-center gap-2">
+            <Slider
+              value={[opacityVal]} min={0} max={1} step={0.05}
+              onValueChange={([v]) => mutate("element", opacityKey, { color: `opacity:${v}` })}
+              className="flex-1"
+            />
+            <span className="text-xs text-muted-foreground w-10 text-right">{opacityVal.toFixed(2)}</span>
+            {opacityCur.color && (
+              <Button size="icon" variant="ghost" onClick={() => mutate("element", opacityKey, { color: null })}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
         <Button variant="outline" className="w-full" onClick={() => setSelectedElement(null)}>
           Clear selection
         </Button>
@@ -450,6 +487,25 @@ function SectionsEditor() {
 }
 
 // ------- helpers -------
+function parseColorValue(v: string): { hex: string; alpha: number } {
+  if (!v) return { hex: "", alpha: 1 };
+  const m = v.match(/hsl\(\s*(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%(?:\s*\/\s*(\d*\.?\d+))?\s*\)/i);
+  if (m) {
+    return { hex: hslToHex(`hsl(${m[1]} ${m[2]}% ${m[3]}%)`), alpha: m[4] !== undefined ? +m[4] : 1 };
+  }
+  if (v.startsWith("#") && (v.length === 7 || v.length === 9)) {
+    const a = v.length === 9 ? parseInt(v.slice(7, 9), 16) / 255 : 1;
+    return { hex: v.slice(0, 7), alpha: a };
+  }
+  return { hex: "", alpha: 1 };
+}
+
+function buildHslWithAlpha(hex: string, alpha: number): string {
+  const hsl = hexToHslCss(hex);
+  if (alpha >= 1) return hsl;
+  return hsl.replace(/\)$/, ` / ${alpha.toFixed(2)})`);
+}
+
 function hslToHex(hslStr: string): string {
   const m = hslStr?.match(/hsl\(\s*(\d+(?:\.\d+)?)\s+(\d+(?:\.\d+)?)%\s+(\d+(?:\.\d+)?)%/i);
   if (!m) return "";
