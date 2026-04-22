@@ -26,6 +26,7 @@ interface LessonData {
   notes: string;
   vocabulary: { term: string; definition: string }[];
   resources: { title: string; url: string; type: string }[];
+  udl_supports?: any;
 }
 
 interface Props {
