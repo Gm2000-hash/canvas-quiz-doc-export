@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom, BookOpen, Calculator, Landmark, FileText, GraduationCap } from "lucide-react";
+import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom, BookOpen, Calculator, Landmark, FileText, GraduationCap, ChevronDown, ChevronRight } from "lucide-react";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
 import {
@@ -58,6 +58,7 @@ type GenerateTarget =
   | { type: "coreIdea"; id: string }
   | { type: "discipline"; key: string }
   | { type: "all" }
+  | { type: "ngssSubs"; standards: { code: string; description: string }[] }
   | { type: "idaho"; standards: { code: string; description: string }[]; subject: string };
 
 export default function GenerateContentDialog({ open, onOpenChange, onComplete, initialStandard, defaultContentType = "questions", unitId }: Props) {
@@ -72,6 +73,8 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
   const [idahoGradeFilter, setIdahoGradeFilter] = useState<string>(defaultIdahoFilter);
   const [idahoCategoryFilter, setIdahoCategoryFilter] = useState<string>("essential");
   const [selectedIdahoStandards, setSelectedIdahoStandards] = useState<Set<string>>(new Set());
+  const [selectedNgssSubs, setSelectedNgssSubs] = useState<Set<string>>(new Set());
+  const [expandedCoreIdeas, setExpandedCoreIdeas] = useState<Set<string>>(new Set());
   const [targetDok, setTargetDok] = useState<string>("any");
   const [modelOverride, setModelOverride] = useState<string>("");
   const abortRef = useRef(false);
@@ -161,6 +164,41 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
 
   const clearSelected = () => setSelectedIdahoStandards(new Set());
 
+  const toggleNgssSub = (code: string) => {
+    const next = new Set(selectedNgssSubs);
+    if (next.has(code)) next.delete(code);
+    else next.add(code);
+    setSelectedNgssSubs(next);
+  };
+
+  const toggleCoreIdeaExpanded = (id: string) => {
+    const next = new Set(expandedCoreIdeas);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    setExpandedCoreIdeas(next);
+  };
+
+  const toggleAllInCoreIdea = (coreIdeaId: string, select: boolean) => {
+    const subs = ALL_SUBSTANDARDS[coreIdeaId] || [];
+    const next = new Set(selectedNgssSubs);
+    subs.forEach(s => { if (select) next.add(s.code); else next.delete(s.code); });
+    setSelectedNgssSubs(next);
+  };
+
+  const clearNgssSubs = () => setSelectedNgssSubs(new Set());
+
+  const handleNgssSubsGenerate = () => {
+    const allSubs = Object.values(ALL_SUBSTANDARDS).flat();
+    const standards = allSubs
+      .filter(s => selectedNgssSubs.has(s.code))
+      .map(s => ({ code: s.code, description: s.description }));
+    if (standards.length === 0) {
+      toast.error("Select at least one substandard");
+      return;
+    }
+    handleGenerate({ type: "ngssSubs", standards });
+  };
+
   const handleGenerate = async (target: GenerateTarget) => {
     setGenerating(true);
     setDone(false);
@@ -178,6 +216,14 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
         await generateForStandards(contentType, target.standards, countPerSub, handleProgressUpdate, {
           framework: "Idaho",
           subject: target.subject,
+          unitId,
+          modelOverride: modelOverride || undefined,
+          aiPreferences: preferences,
+        });
+      } else if (target.type === "ngssSubs") {
+        await generateForStandards(contentType, target.standards, countPerSub, handleProgressUpdate, {
+          framework: "NGSS",
+          subject: "Science",
           unitId,
           modelOverride: modelOverride || undefined,
           aiPreferences: preferences,
@@ -441,12 +487,32 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
               </div>
             ) : (
               <div className="space-y-4">
-                <Button variant="default" className="w-full gap-2" onClick={() => handleGenerate({ type: "all" })} disabled={generating}>
-                  <Sparkles className="h-4 w-4" />
-                  Generate All ({Object.values(ALL_SUBSTANDARDS).reduce((s, a) => s + a.length, 0) * countPerSub} {labels.plural})
-                </Button>
+                {selectedNgssSubs.size > 0 ? (
+                  <div className="rounded-lg border border-primary/40 bg-primary/5 p-3 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-medium">
+                        {selectedNgssSubs.size} substandard{selectedNgssSubs.size === 1 ? "" : "s"} selected
+                      </span>
+                      <Button variant="ghost" size="sm" className="h-6 text-[10px] px-2" onClick={clearNgssSubs}>
+                        Clear
+                      </Button>
+                    </div>
+                    <Button className="w-full gap-2" onClick={handleNgssSubsGenerate} disabled={generating}>
+                      <Sparkles className="h-4 w-4" />
+                      Generate {selectedNgssSubs.size * countPerSub} {contentTypeLabel}
+                      ({selectedNgssSubs.size} × {countPerSub})
+                    </Button>
+                  </div>
+                ) : (
+                  <Button variant="default" className="w-full gap-2" onClick={() => handleGenerate({ type: "all" })} disabled={generating}>
+                    <Sparkles className="h-4 w-4" />
+                    Generate All ({Object.values(ALL_SUBSTANDARDS).reduce((s, a) => s + a.length, 0) * countPerSub} {labels.plural})
+                  </Button>
+                )}
 
-                <div className="text-xs text-muted-foreground text-center">— or generate by discipline / core idea —</div>
+                <div className="text-xs text-muted-foreground text-center">
+                  — or generate by discipline, core idea, or pick specific substandards —
+                </div>
 
                 {DISCIPLINES.map(disc => {
                   const Icon = disc.icon;
@@ -463,14 +529,78 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
                           <Sparkles className="h-3 w-3" /> Generate All
                         </Button>
                       </div>
-                      <div className="grid grid-cols-2 gap-1.5">
+                      <div className="space-y-1.5">
                         {disc.coreIdeas.map(ci => {
-                          const count = ALL_SUBSTANDARDS[ci]?.length || 0;
+                          const subs = ALL_SUBSTANDARDS[ci] || [];
+                          const isExpanded = expandedCoreIdeas.has(ci);
+                          const selectedInGroup = subs.filter(s => selectedNgssSubs.has(s.code)).length;
+                          const allSelected = selectedInGroup === subs.length && subs.length > 0;
                           return (
-                            <Button key={ci} variant="ghost" size="sm" className="justify-start text-xs h-8 gap-1.5" onClick={() => handleGenerate({ type: "coreIdea", id: ci })} disabled={generating}>
-                              <Badge variant="outline" className="text-[10px] px-1.5">{ci}</Badge>
-                              <span className="text-muted-foreground">{count} subs</span>
-                            </Button>
+                            <div key={ci} className="rounded-md border border-border">
+                              <div className="flex items-center gap-1 px-2 py-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => toggleCoreIdeaExpanded(ci)}
+                                  className="flex items-center gap-1.5 flex-1 min-w-0 text-left hover:opacity-80"
+                                  aria-expanded={isExpanded}
+                                >
+                                  {isExpanded ? (
+                                    <ChevronDown className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                  ) : (
+                                    <ChevronRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                  )}
+                                  <Badge variant="outline" className="text-[10px] px-1.5">{ci}</Badge>
+                                  <span className="text-[11px] text-muted-foreground truncate">
+                                    {subs.length} subs
+                                    {selectedInGroup > 0 && (
+                                      <span className="ml-1 text-primary font-medium">· {selectedInGroup} selected</span>
+                                    )}
+                                  </span>
+                                </button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-6 text-[10px] px-2"
+                                  onClick={() => handleGenerate({ type: "coreIdea", id: ci })}
+                                  disabled={generating}
+                                >
+                                  Generate all
+                                </Button>
+                              </div>
+                              {isExpanded && (
+                                <div className="border-t border-border px-2 py-1.5 space-y-0.5 bg-muted/30">
+                                  <div className="flex items-center justify-between pb-1">
+                                    <span className="text-[10px] text-muted-foreground">Pick specific PEs</span>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 text-[10px] px-1.5"
+                                      onClick={() => toggleAllInCoreIdea(ci, !allSelected)}
+                                    >
+                                      {allSelected ? "Unselect all" : "Select all"}
+                                    </Button>
+                                  </div>
+                                  {subs.map(s => (
+                                    <label
+                                      key={s.code}
+                                      className="flex items-start gap-2 px-1.5 py-1 rounded hover:bg-accent/50 cursor-pointer"
+                                    >
+                                      <Checkbox
+                                        checked={selectedNgssSubs.has(s.code)}
+                                        onCheckedChange={() => toggleNgssSub(s.code)}
+                                        className="mt-0.5"
+                                      />
+                                      <div className="min-w-0">
+                                        <span className="text-[11px] font-semibold">{s.code}</span>
+                                        <p className="text-[11px] text-muted-foreground leading-snug line-clamp-2">
+                                          {s.description}
+                                        </p>
+                                      </div>
+                                    </label>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           );
                         })}
                       </div>
