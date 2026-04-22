@@ -12,7 +12,7 @@ UDL Guidelines v2.2 (CAST: Engagement, Representation, Action & Expression) are 
 - Exports `UDL_PRINCIPLE_HINTS` for future per-run emphasis pickers.
 
 **Generators that wrap with `withUdl`:**
-- `generate-lesson-plans` — schema extended with `udl_engagement`, `udl_representation`, `udl_action_expression`, `reflection_prompt`.
+- `generate-lesson-plans` — schema uses STRUCTURED `udl_supports` jsonb: `{ engagement: { hook, student_choice[], collaboration, sustain_effort, self_regulation_prompt }, representation: { visual, auditory, text_supports, vocabulary_scaffolds[{term,student_friendly,visual_cue}], big_idea_highlight, background_activation }, action_expression: { response_modes[], physical_action_options, planning_scaffold, progress_checkpoint, flexible_assessment }, reflection_prompt }`. Per-field min-detail rules enforced in prompt. Stored on `lesson_plans.udl_supports` jsonb. Surfaced in `LessonPlanEditor` via "UDL Supports" card (3 colored sub-sections + reflection) using `src/components/UdlSupportsFields.tsx` (UdlPrincipleSection / UdlField / UdlChips). DOCX export renders the full structured block.
 - `generate-curriculum-reading` — reading paragraphs must include inline vocab callouts, a "Try it your way" choice block, and end with a "Reflect:" prompt.
 - `generate-content` — questions/lessons/readings, varied response formats and inline vocab supports.
 - `generate-questions` — varied response formats; plain language; misconception-targeting distractors.
