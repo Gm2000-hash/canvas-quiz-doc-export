@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withLogging } from "../_shared/logger.ts";
 import { resolveModel } from "../_shared/model.ts";
+import { withUdl } from "../_shared/udl.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -104,7 +105,14 @@ ${readingInstructions}`;
 
 3. **Student Connection** — Conclude with concrete examples of how the concept directly affects students' daily lives.
 
-Write engaging, narrative-driven lessons appropriate for ${grade_level} students. Each reading should be substantial in length — detailed paragraphs, not summaries.`;
+Write engaging, narrative-driven lessons appropriate for ${grade_level} students. Each reading should be substantial in length — detailed paragraphs, not summaries.
+
+UDL OUTPUT REQUIREMENTS for this lesson:
+- Inside the reading, weave in inline vocabulary callouts (a parenthetical or em-dash definition the first time a key term appears) — this is UDL Representation.
+- The reading_paragraphs MUST end with a "Try it your way" paragraph offering students 2-3 different ways to engage with the idea (write, draw/diagram, talk it through, build/demonstrate) — this is UDL Action & Expression.
+- The reading_paragraphs MUST also end with a clearly labeled "Reflect:" question that prompts metacognition or relevance — this is UDL Engagement / Self-Regulation.`;
+
+    const wrappedSystemPrompt = withUdl(systemPrompt, "Curriculum reading: bake UDL Engagement, Representation, and Action & Expression directly into the reading text. Surface vocabulary supports inline, give a 'Try it your way' choice block, and end with a reflection prompt.");
 
     const userPrompt = `Create a ${grade_level} science lesson about "${subject_area}".
 
