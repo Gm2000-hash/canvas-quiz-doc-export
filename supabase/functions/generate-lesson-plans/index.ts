@@ -107,7 +107,7 @@ Make these detailed enough that a substitute teacher with no science background 
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash",
+          model: resolveModel(parsedBody, "default"),
           messages,
           tools: [
             {

@@ -182,7 +182,7 @@ Return ONLY valid JSON (no markdown).`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: resolveModel(body, "heavy"),
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
@@ -282,7 +282,7 @@ async function handleRegeneration(opts: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "google/gemini-3-flash-preview",
+      model: resolveModel(opts as any, "heavy"),
       messages: [
         { role: "system", content: `You are an expert ${grade_level} science curriculum designer.` },
         { role: "user", content: `${config.prompt}\n\nContext — Objectives: ${objectives}\n${key_terms ? `Key terms: ${key_terms}` : ""}\n\nExisting lesson content: ${JSON.stringify(existing_lesson).slice(0, 2000)}` },

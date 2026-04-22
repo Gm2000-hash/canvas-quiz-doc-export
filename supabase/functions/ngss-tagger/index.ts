@@ -58,7 +58,8 @@ serve(withLogging("ngss-tagger", async (req) => {
     const body = await req.text();
     console.log('Request body length:', body.length);
     
-    const { questions, keyTermsMap } = JSON.parse(body);
+    const parsedBody = JSON.parse(body);
+    const { questions, keyTermsMap } = parsedBody;
     if (!questions || !Array.isArray(questions)) {
       throw new Error('questions array is required');
     }
@@ -82,7 +83,7 @@ serve(withLogging("ngss-tagger", async (req) => {
     }
 
     const requestBody = {
-      model: 'google/gemini-2.5-flash',
+      model: resolveModel(parsedBody, "utility"),
       messages: [
         {
           role: 'system',

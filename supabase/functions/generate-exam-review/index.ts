@@ -76,7 +76,7 @@ Return ONLY valid JSON, no markdown fences.`;
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: resolveModel({ model_override: (typeof globalThis === "object" ? undefined : undefined) } as any, "heavy"),
         messages: [
           { role: "system", content: "You are an expert educational content creator. Return only valid JSON." },
           { role: "user", content: prompt },

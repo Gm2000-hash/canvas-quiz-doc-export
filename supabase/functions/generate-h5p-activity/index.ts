@@ -180,7 +180,7 @@ Task: ${instruction}`;
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-3-flash-preview",
+        model: resolveModel(parsedBody, "default"),
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
