@@ -191,6 +191,7 @@ const LessonPlanEditor = () => {
       vocabulary: lesson.vocabulary,
       resources: lesson.resources,
       embedded_activities: lesson.embedded_activities,
+      udl_supports: lesson.udl_supports || {},
       updated_at: new Date().toISOString(),
     };
     const { error } = await (supabase.from("lesson_plans") as any).update(updateData).eq("id", lesson.id);
