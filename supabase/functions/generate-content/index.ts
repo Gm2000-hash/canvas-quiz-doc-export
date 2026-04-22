@@ -256,7 +256,7 @@ serve(withLogging("generate-content", async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: resolveModel(opts, "default"),
+        model: resolveModel(body, content_type === "reading" || content_type === "lesson_plan" ? "default" : "default"),
         messages: [
           { role: "system", content: prompt.systemPrompt },
           { role: "user", content: prompt.userPrompt },
