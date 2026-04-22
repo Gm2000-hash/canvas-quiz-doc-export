@@ -260,6 +260,24 @@ export default function PrepopulateStandardsDialog({ open, onOpenChange, onCompl
               </div>
             </div>
 
+            <div className="p-3 rounded-lg border border-card-foreground/10 bg-card flex items-start justify-between gap-3">
+              <div className="space-y-0.5">
+                <Label htmlFor="emphasize-subs" className="text-sm font-medium cursor-pointer">
+                  Emphasize NGSS sub-components
+                </Label>
+                <p className="text-xs text-muted-foreground">
+                  Inject the SEP, DCI, and CCC for each performance expectation into the AI prompt so
+                  every generated lesson explicitly addresses all three dimensions.
+                </p>
+              </div>
+              <Switch
+                id="emphasize-subs"
+                checked={emphasizeSubcomponents}
+                onCheckedChange={setEmphasizeSubcomponents}
+                className="mt-1"
+              />
+            </div>
+
             <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-800">
               <p className="text-xs">
                 ⚠️ This will make {coreIdeas.length} AI calls and may take 5–15 minutes.
