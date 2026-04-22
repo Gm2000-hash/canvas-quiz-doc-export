@@ -701,11 +701,21 @@ const QuestionBank = () => {
               <X className="h-3.5 w-3.5" /> Clear Filters
             </Button>
           )}
+          {selected.size === 0 && questions.some(q => q.standards.length === 0) && (
+            <Button variant="outline" size="sm" className="h-9 gap-1.5 text-xs" onClick={handleBulkAiTag} disabled={bulkTagging} title="AI-tag every question that currently has no standards">
+              {bulkTagging ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Tag className="h-3.5 w-3.5" />}
+              Tag Untagged ({questions.filter(q => q.standards.length === 0).length})
+            </Button>
+          )}
           {selected.size > 0 && (
             <>
               <Button onClick={() => setShowExportDialog(true)} className="gap-2">
                 <FileText className="h-4 w-4" />
                 Create Quiz ({selected.size})
+              </Button>
+              <Button variant="outline" size="sm" className="gap-1.5" onClick={handleBulkAiTag} disabled={bulkTagging}>
+                {bulkTagging ? <Loader2 className="h-4 w-4 animate-spin" /> : <Tag className="h-4 w-4" />}
+                AI Tag Standards ({selected.size})
               </Button>
               <Button
                 variant="destructive"
@@ -1883,6 +1893,14 @@ const QuestionBank = () => {
         open={showISATDialog}
         onOpenChange={setShowISATDialog}
         onComplete={() => setIsatRefreshKey(k => k + 1)}
+      />
+      <QuestionStandardsTagDialog
+        open={tagQuestion !== null}
+        onOpenChange={(v) => { if (!v) setTagQuestion(null); }}
+        question={tagQuestion}
+        onSaved={(qid, standards) => {
+          setQuestions(prev => prev.map(q => q.id === qid ? { ...q, standards } : q));
+        }}
       />
     </div>
   );
