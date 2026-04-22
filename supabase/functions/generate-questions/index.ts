@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withLogging } from "../_shared/logger.ts";
 import { resolveModel } from "../_shared/model.ts";
+import { withUdl } from "../_shared/udl.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -262,7 +263,7 @@ Use the tool provided to return your questions.`;
       body: JSON.stringify({
         model: resolveModel(parsedBody, "default"),
         messages: [
-          { role: 'system', content: systemPrompt },
+          { role: 'system', content: withUdl(systemPrompt, "Question sets: vary response formats across the set (mix MC, multi-step, drag-and-drop, short response where supported). Use plain language; define any technical term inline within the stem; design distractors that target real misconceptions, not language confusion.") },
           {
             role: 'user',
             content: `Generate ${count} ${testName}-style ${subjectContext} questions for this ${frameworkLabel}:\n\nStandard: ${standard_code}\nDescription: ${standard_description}\n\nCreate a diverse mix of question types with varying difficulty levels.`

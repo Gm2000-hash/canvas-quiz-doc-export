@@ -260,7 +260,10 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
 
         {/* AI Engine selector */}
         {!generating && !done && (
-          <AiEngineSelect value={modelOverride} onChange={setModelOverride} tier="default" />
+          <div className="space-y-2">
+            <AiEngineSelect value={modelOverride} onChange={setModelOverride} tier="default" />
+            <div className="flex items-center gap-2 text-xs text-muted-foreground"><span className="inline-flex items-center rounded-full bg-primary/10 text-primary px-2 py-0.5 font-medium">UDL-aligned</span><span>Engagement · Representation · Action & Expression baked in.</span></div>
+          </div>
         )}
 
         {/* Gap-click config form */}

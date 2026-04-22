@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withLogging } from "../_shared/logger.ts";
 import { resolveModel } from "../_shared/model.ts";
+import { withUdl } from "../_shared/udl.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -95,13 +96,13 @@ serve(withLogging("generate-key-terms", async (req) => {
           messages: [
             {
               role: 'system',
-              content: `You are a curriculum expert. For each academic standard, generate 5-10 specific key terms or short phrases that a quiz question aligned to that standard would likely contain. Focus on:
+              content: withUdl(`You are a curriculum expert. For each academic standard, generate 5-10 specific key terms or short phrases that a quiz question aligned to that standard would likely contain. Focus on:
 - Content-specific vocabulary (e.g., "mitosis", "alliteration", "ratio")
 - Concepts and processes unique to that standard
 - Terms that distinguish this standard from similar ones
 - Practical classroom terminology students would encounter
 
-Return ONLY terms that are highly specific to the standard's content. Avoid generic academic terms like "analyze", "explain", "understand".`
+Return ONLY terms that are highly specific to the standard's content. Avoid generic academic terms like "analyze", "explain", "understand".`, "Key terms: prioritize terms that have clear, teachable definitions and concrete visual or example cues — these will later be paired with kid-friendly rephrasings (UDL Representation).")
             },
             {
               role: 'user',

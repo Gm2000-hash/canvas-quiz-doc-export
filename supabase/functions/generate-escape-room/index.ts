@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withLogging } from "../_shared/logger.ts";
 import { resolveModel } from "../_shared/model.ts";
+import { withUdl } from "../_shared/udl.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -119,7 +120,7 @@ CRITICAL INSTRUCTIONS:
       body: JSON.stringify({
         model: resolveModel(parsedBody, "heavy"),
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: withUdl(systemPrompt, "Escape room: each puzzle must offer at least 2 viable solution paths or response modes (UDL Action & Expression) — surface this in the lock_code_explanation. Hints should escalate from concept-cue → vocabulary scaffold → near-answer (UDL Representation). Narrative hooks must explicitly tie to student-relevant stakes (UDL Engagement).") },
           { role: "user", content: userPrompt },
         ],
         tools: [
