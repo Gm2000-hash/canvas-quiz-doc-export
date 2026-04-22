@@ -11,7 +11,18 @@ import { RichTextEditor } from "@/components/RichTextEditor";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical, BookOpenCheck, Puzzle, Download, RefreshCw, Sparkles, Loader2, Heart, Eye, Hand, MessageCircle, X } from "lucide-react";
+import { ArrowLeft, Save, Plus, Trash2, Clock, Target, BookOpen, CheckCircle, Users, StickyNote, GraduationCap, FileDown, Link2, Video, FileText, Gamepad2, Lock, GripVertical, BookOpenCheck, Puzzle, Download, RefreshCw, Sparkles, Loader2, Heart, Eye, Hand, MessageCircle, X, RotateCcw } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { EmbedActivityPicker, type EmbeddedActivity } from "@/components/EmbedActivityPicker";
 import { ActivityPlayer } from "@/components/activities/ActivityPlayer";
 import { ACTIVITY_TYPES, type ActivityType, type ActivityContent } from "@/lib/h5p-types";
@@ -721,14 +732,69 @@ const LessonPlanEditor = () => {
                   Universal Design for Learning — concrete, classroom-ready supports for every learner.
                 </p>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-xl gap-1.5 shrink-0"
-                onClick={() => setUdlTemplateOpen(true)}
-              >
-                <Sparkles className="h-3.5 w-3.5" /> Templates
-              </Button>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl gap-1.5"
+                  onClick={() => setUdlTemplateOpen(true)}
+                >
+                  <Sparkles className="h-3.5 w-3.5" /> Templates
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm" className="rounded-xl gap-1.5">
+                      <RotateCcw className="h-3.5 w-3.5" /> Reset
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Reset UDL Supports?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This restores the empty CAST v2.2 structure (Engagement, Representation, Action & Expression, and Reflection Prompt) and clears every field in this card. Other lesson sections are not affected. This cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          setLesson({
+                            ...lesson,
+                            udl_supports: {
+                              engagement: {
+                                hook: "",
+                                student_choice: [],
+                                collaboration: "",
+                                sustain_effort: "",
+                                self_regulation_prompt: "",
+                              },
+                              representation: {
+                                visual: "",
+                                auditory: "",
+                                text_supports: "",
+                                vocabulary_scaffolds: [],
+                                big_idea_highlight: "",
+                                background_activation: "",
+                              },
+                              action_expression: {
+                                response_modes: [],
+                                physical_action_options: "",
+                                planning_scaffold: "",
+                                progress_checkpoint: "",
+                                flexible_assessment: "",
+                              },
+                              reflection_prompt: "",
+                            },
+                          });
+                          toast({ title: "UDL Supports reset", description: "The structured defaults have been restored." });
+                        }}
+                      >
+                        Reset
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
