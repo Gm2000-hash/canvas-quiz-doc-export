@@ -1,109 +1,50 @@
 
 
-## Deepen the UDL lesson template
+## Add depth + storytelling guarantees to the 5-act reading
 
-**The core problem:** the AI is producing single-sentence UDL sections because (a) the prompt asks for a flat string per principle, and (b) the editor never renders the four UDL fields, so even when the AI returns more depth there's nowhere for it to live — and on regenerate it's silently dropped. We're going to fix all three layers (prompt → DB → editor) so UDL becomes a structured, multi-part section that mirrors the article you uploaded.
+Building on the previously approved 5-act narrative plan, this revision tightens the prompt so every act gives students enough context to actually understand both the science and the human story — no thin or summary-style paragraphs.
 
----
+### What changes
 
-### 1. New structured UDL schema (per lesson)
+**1. Per-act minimum depth requirements**
 
-Replace the four flat strings with a single structured JSON object, `udl_supports`, organized by CAST's three principles and their sub-checkpoints (matches the article's "Multiple modes of representation / action / engagement" framing):
+Rewrite the system + user prompts in `generate-curriculum-reading/index.ts` so each of the five acts has an explicit length floor and a content checklist. The AI will be told:
 
-```text
-udl_supports = {
-  engagement: {
-    hook: "...",                        // recruit interest — authentic, relevant opener
-    student_choice: ["...", "...", ...], // ≥2 concrete choice options (path / partner / product)
-    collaboration: "...",                // pair, group, peer, fieldwork option
-    sustain_effort: "...",               // varied challenge + mastery feedback cue
-    self_regulation_prompt: "..."        // reflection / coping cue mid-lesson
-  },
-  representation: {
-    visual: "...",                       // diagram / chart / slideshow / artifact suggestion
-    auditory: "...",                     // read-aloud / podcast / verbal explanation
-    text_supports: "...",                // outline / summary / study guide / sentence stems
-    vocabulary_scaffolds: [              // beyond main vocab list — kid-friendly rephrase
-      { term: "...", student_friendly: "...", visual_cue: "..." }
-    ],
-    big_idea_highlight: "...",           // single-sentence "what students must walk away with"
-    background_activation: "..."         // hook to prior knowledge
-  },
-  action_expression: {
-    response_modes: ["written", "verbal", "diagram", "build/model", "demonstrate", ...], // ≥2
-    physical_action_options: "...",      // movement / manipulatives / hands-on
-    planning_scaffold: "...",            // organizer cue (e.g., "I've covered the four major topics…")
-    progress_checkpoint: "...",          // mid-task self-check
-    flexible_assessment: "..."           // ≥2 ways to demonstrate mastery
-  },
-  reflection_prompt: "..."               // closing metacognitive prompt
-}
-```
+- **Act 1 — Exposition (2 paragraphs):** Set the scene of the scientific question or natural phenomenon. Establish what was known (and not known) at the time, and why this question mattered to people then. Plant the hook.
+- **Act 2 — Rising action (3-4 paragraphs):** This is the **story-rich** scientist section. Required to include: birth era + place, family/social context, what drew them into science, the obstacles they faced (poverty, prejudice, war, lack of equipment, scientific resistance, personal loss, etc.), the specific problem they became obsessed with, and what daily life in their lab or fieldwork actually looked like. Treat them as a character, not a footnote. Use sensory and biographical detail.
+- **Act 3 — Climax (2-3 paragraphs):** The breakthrough moment — described with narrative tension (the failed attempts, the "aha", the experiment that finally worked). End each climax by explicitly mapping the discovery onto the targeted content standard so students see the connection.
+- **Act 4 — Falling action (3-4 paragraphs):** The deep teaching pass. Re-explain the underlying science thoroughly — mechanisms, vocabulary in context, diagrams referenced in prose, common misconceptions corrected. This is where students "get it" technically.
+- **Act 5 — Denouement (2-3 paragraphs):** Modern, real-world case study (named event, place, year when possible) showing the concept active in the world today. Connect back to the scientist's original question to close the arc.
 
-Key shifts vs. today:
-- **Multi-field per principle** so the AI must produce specifics per CAST checkpoint, not one paragraph.
-- **Arrays of choice options & response modes** force ≥2 concrete options.
-- **Vocabulary scaffolds become objects** (term + student-friendly rephrase + visual cue), aligned to the article's "use materials such as e-books, PowerPoint, podcasts, manipulatives" + "give students organizing cues" + "demonstrate vocally and graphically" passages.
+Total: ~12-16 paragraphs (up from 10-14) so depth isn't sacrificed.
 
-### 2. Database
+**2. Anti-thinness guardrails added to the prompt**
 
-One additive migration:
-- `lesson_plans.udl_supports jsonb default '{}'::jsonb`
+Explicit "do not" rules baked into the system prompt:
 
-No data loss. Existing lessons (we just wiped the table) start with the new shape.
+- No paragraph shorter than ~4 sentences.
+- No vague summary lines like "this was a major discovery" — every claim must be specific (what, where, who, when, why it mattered).
+- No skipping the scientist's hardships, era, or personality — these are required, not optional.
+- No restating the act labels in the output text; the structure is invisible to the reader.
 
-### 3. AI prompt rewrite (`generate-lesson-plans`)
+**3. Storytelling voice instructions**
 
-- Drop the four flat `udl_*` fields from the tool schema.
-- Add a single required `udl_supports` object matching the structure above, with **per-field minimum-detail requirements** (e.g., `student_choice` must have ≥2 items, `response_modes` ≥2 items, `vocabulary_scaffolds` ≥3 items, each prose field 2–4 sentences with concrete classroom-ready language — no placeholders like "differentiate as needed").
-- Add explicit examples in the system prompt grounded in the article's language ("role-play important times in American history", "PowerPoint + podcast + manipulative", "organizing cue: 'I've covered the four major topics'").
-- Apply the same `udl_supports` requirement inside `regenerate-lesson` (same edge function path) so regeneration carries depth through.
+Add a "voice" paragraph to the system prompt: warm, vivid, third-person narrator; use scenes, not bullet points; let the scientist speak (paraphrased dialogue is allowed); ground abstract science in physical, observable detail; aim for the tone of a great middle-grade nonfiction book (think *Hidden Figures Young Readers Edition* or *The Boy Who Harnessed the Wind*).
 
-### 4. Editor surfacing (`LessonPlanEditor.tsx`)
+**4. Same depth applied to regeneration**
 
-New "UDL Supports" card (collapsible, after Differentiation) with three principle sub-sections:
+Update the `intro` and `reading` regeneration prompts in `handleRegeneration` so partial regenerations preserve the same depth standards (Act 1-2 for intro; full 5-act with all checklists for reading).
 
-```text
-🎯 Engagement (the WHY)
-   Hook · Student Choice (chips) · Collaboration · Sustain Effort · Self-Regulation Prompt
+**5. UDL inserts stay, but moved**
 
-👁  Representation (the WHAT)
-   Visual · Auditory · Text Supports · Vocabulary Scaffolds (term/rephrase/cue rows) ·
-   Big Idea Highlight · Background Activation
-
-✋ Action & Expression (the HOW)
-   Response Modes (chips) · Physical Action · Planning Scaffold ·
-   Progress Checkpoint · Flexible Assessment
-
-💭 Closing Reflection Prompt
-```
-
-- All fields editable.
-- Chips for `student_choice` and `response_modes` (add/remove like tags).
-- `vocabulary_scaffolds` is an add/remove row list (same UX pattern as the existing Vocabulary card).
-- Each principle gets its own colored bubble (Engagement = warm yellow, Representation = soft blue, Action & Expression = soft green) so UDL is visually distinct from other lesson sections.
-
-### 5. DOCX export
-
-Update `export-lesson-docx.ts` to render the new `udl_supports` block as a structured section in the exported Word file (one heading per principle, bulleted sub-fields). So when you print/share, the UDL depth comes through.
-
-### 6. Memory update
-
-Update `mem://features/udl-core` and `mem://features/lesson-planner/editor` to reflect the new `udl_supports` schema and the editor's UDL Supports card.
-
----
+Inline vocabulary callouts, the "Try it your way" choice block, and the closing "Reflect:" prompt remain — they're appended *after* the denouement so they don't break the narrative flow.
 
 ### Files changed
 
-**New:**
-- One migration adding `lesson_plans.udl_supports`.
+- `supabase/functions/generate-curriculum-reading/index.ts` — system + user prompt rewrite, regeneration prompt rewrite, paragraph-count guidance bumped.
+- `.lovable/memory/features/lesson-planner/generation.md` — record the per-act depth checklist + storytelling voice rules as the new generation contract.
 
-**Edited:**
-- `supabase/functions/generate-lesson-plans/index.ts` — new structured tool schema + richer prompt.
-- `src/pages/LessonPlanEditor.tsx` — new UDL Supports card, save/load mapping for `udl_supports`.
-- `src/components/RegenerateLessonDialog.tsx` — pass through new shape.
-- `src/lib/export-lesson-docx.ts` — render UDL structured block.
-- `.lovable/memory/features/udl-core.md`, `.lovable/memory/features/lesson-planner/editor.md`.
+### Out of scope
 
-After this lands, regenerate the MS-ESS1 lesson and you should see classroom-ready specifics for every CAST checkpoint, not one-line summaries.
+Same as before: existing readings in the DB are untouched; this affects new and regenerated content only. No DB or client-side changes.
 
