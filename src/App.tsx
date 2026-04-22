@@ -29,7 +29,6 @@ import ISATExamEditor from "./pages/ISATExamEditor";
 import ISATReviewPage from "./pages/ISATReviewPage";
 import QuizBuilder from "./pages/QuizBuilder";
 import QuizAnalytics from "./pages/QuizAnalytics";
-import StressNavigator from "./pages/StressNavigator";
 import PublicActivityPlayer from "./pages/PublicActivityPlayer";
 import NotePage from "./pages/NotePage";
 import NotesHome from "./pages/NotesHome";
@@ -109,7 +108,6 @@ const App = () => (
           <Route path="/isat-exam/:id/review" element={<ISATReviewPage />} />
           <Route path="/shared-reading/:token" element={<SharedReading />} />
           <Route path="/activities/:id/play" element={<PublicActivityPlayer />} />
-          <Route path="/stress-navigator" element={<StressNavigator />} />
 
           {/* Protected — wrapped in AppShell */}
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
