@@ -54,16 +54,6 @@ export function WorkspaceSidebar() {
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { isAdmin } = useProfile();
-  const createNote = useCreateNote();
-
-  const handleNewNote = async () => {
-    try {
-      const note = await createNote.mutateAsync({});
-      navigate(`/notes/${note.id}`);
-    } catch (e: any) {
-      toast.error(e.message ?? "Could not create note");
-    }
-  };
 
   const isActive = (path: string) => {
     if (path === "/") return location.pathname === "/";
@@ -86,41 +76,6 @@ export function WorkspaceSidebar() {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Notes section */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="flex items-center justify-between pr-1">
-            <span className="flex items-center gap-1.5">
-              <StickyNote className="h-3 w-3" />
-              {!collapsed && "Notes"}
-            </span>
-            {!collapsed && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-5 w-5"
-                onClick={handleNewNote}
-                disabled={createNote.isPending}
-                title="New note"
-              >
-                <Plus className="h-3 w-3" />
-              </Button>
-            )}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            {collapsed ? (
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton onClick={() => navigate("/notes")} tooltip="Notes">
-                    <StickyNote className="h-4 w-4" />
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            ) : (
-              <NotesTree />
-            )}
-          </SidebarGroupContent>
-        </SidebarGroup>
-
         {/* Tools section */}
         <SidebarGroup>
           <SidebarGroupLabel>{!collapsed && "Tools"}</SidebarGroupLabel>
