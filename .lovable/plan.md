@@ -1,37 +1,90 @@
 
 
-## Cleanup: remove leftover/unused code
+## Unified AI engine selection — defaulting to Gemini 3 Flash
 
-I audited the whole codebase against the routes wired up in `src/App.tsx` and the imports across pages, components, hooks, and lib files. Here's everything I found that isn't doing anything anymore.
+Building the unified AI engine system as described, with **Gemini 3 Flash Preview** set as the global default everywhere.
 
-### Confirmed orphans — safe to delete
+### What you'll get
 
-These have **zero importers** anywhere in the app:
+A single **AI Settings** panel in your Profile page where you choose:
 
-1. **`src/App.css`** — default Vite scaffold styles (`.logo`, `.read-the-docs`, etc.). Not imported by `main.tsx` or anything else. The real styling lives in `src/index.css`.
-2. **`src/components/HomeBookShelf.tsx`** — old Home page bookshelf widget. Replaced by the current `HomeBookShelf`-free Home layout. Not imported.
-3. **`src/components/NavLink.tsx`** — older nav link component. Superseded by `WorkspaceSidebar` + `AppNavSheet`. Not imported.
-4. **`src/components/GenerateLessonDialog.tsx`** — older single-lesson generator dialog. Lesson generation now happens through `RegenerateLessonDialog` and the unified `GenerateContentDialog`. Not imported.
-5. **`src/components/GenerateQuestionsDialog.tsx`** — older standalone question generator. Replaced by the unified `GenerateContentDialog` (which uses `content-generator.ts`). Not imported.
-6. **`src/components/PushISATEmbedToCanvasDialog.tsx`** — older ISAT-embed push dialog. The active path is `PushISATToCanvasDialog`. Not imported.
-7. **`src/lib/question-generator.ts`** — only consumed by the orphan `GenerateQuestionsDialog`. The active generation pipeline is `src/lib/content-generator.ts`.
+- **Default model**: pre-set to **Gemini 3 Flash Preview** (newest fast model)
+- **Per-task overrides** (optional):
+  - **Heavy tasks** (ISAT exams, escape rooms, full curriculum readings) — suggested: Gemini 2.5 Pro
+  - **Utility tasks** (tagging, key terms, suggestions) — suggested: Gemini 2.5 Flash Lite
 
-### Everything else checked and KEPT
+Inside each generator dialog (Generate Content, ISAT, Escape Room, Regenerate Lesson), a small **"Engine ▾"** selector lets you override per run.
 
-- All edge functions in `supabase/functions/` are still invoked from somewhere in the app.
-- All other lib files (`export-*`, `standards-api`, `ngss-api`, `pdf-*`, `canvas-api`, `question-bank`, `unit-colors`, etc.) are in use.
-- All hooks in `src/hooks/` are in use (including `useDashboardLayout`, `useLtiSession`, `usePageTitle`).
-- All other components — including the recent `CanvasTokenRescue` and reset-token UX — are wired up.
+### Available engines
 
-### What I'll do
+- **Gemini 3 Flash Preview** ← new default
+- Gemini 2.5 Flash, Gemini 2.5 Flash Lite, Gemini 2.5 Pro
+- Gemini 3.1 Pro Preview
+- GPT-5, GPT-5 Mini, GPT-5 Nano, GPT-5.2
 
-- Delete the 7 files listed above.
-- Verify no broken imports remain (TypeScript check via the editor).
-- Leave behavior, routes, and UI completely unchanged — these files were already dead, so removing them only shrinks the bundle and reduces noise when navigating the codebase.
+### Architecture
+
+```text
+┌─ profiles.ai_preferences (jsonb) ────────┐
+│  default_model: "google/gemini-3-flash-preview"
+│  overrides: { heavy: "...", utility: "..." }
+└──────────────────────────────────────────┘
+            │
+            ▼  (read on app load + cached)
+   useAiPreferences() hook
+            │
+            ▼  (sent as `model_override` in request body)
+   ┌────────────────────────────────────────┐
+   │ Every generator edge function:         │
+   │   model = body.model_override          │
+   │        ?? PRESET[task]                 │
+   │        ?? "google/gemini-3-flash-preview"
+   └────────────────────────────────────────┘
+```
+
+### Implementation steps
+
+**1. Database migration**
+- Add `ai_preferences jsonb default '{}'::jsonb` to `profiles` table.
+
+**2. Shared model resolver (edge functions)**
+- New file `supabase/functions/_shared/model.ts`:
+  - `AVAILABLE_MODELS` constant (id, label, tier)
+  - `DEFAULT_MODEL = "google/gemini-3-flash-preview"`
+  - `resolveModel(body, taskType)` helper
+- Replace hard-coded `model:` string in every generator with `resolveModel(...)`.
+
+Functions touched (model line only — no prompt changes):
+`generate-content`, `generate-questions`, `generate-lesson-plans`, `generate-curriculum-reading`, `generate-isat-exam`, `generate-escape-room`, `generate-exam-review`, `generate-h5p-activity`, `generate-key-terms`, `lesson-brainstorm`, `suggest-dok-blooms`, `standards-tagger`, `ngss-tagger`, `parse-import-file`, `import-google-link`.
+
+**3. Frontend wiring**
+- `src/hooks/useAiPreferences.ts` — read/write profile preferences with sensible defaults.
+- `src/components/AiEngineSelect.tsx` — shared dropdown component.
+- `src/components/AiPreferencesCard.tsx` — settings card for Profile page.
+- `src/lib/content-generator.ts` — accept and forward `modelOverride`.
+- Mount engine selector in: `GenerateContentDialog`, `GenerateISATExamDialog`, `GenerateEscapeRoomDialog`, `RegenerateLessonDialog`.
+- Mount `<AiPreferencesCard />` inside `src/pages/Profile.tsx`.
+
+**4. Backwards compatibility**
+- If `ai_preferences` is empty, resolver returns `google/gemini-3-flash-preview` for all tasks.
+- Existing 402/429 toast handling preserved.
+- Image generation models (cover art, question images) untouched.
+
+### Files added / changed
+
+- **New**: `supabase/functions/_shared/model.ts`
+- **New**: `src/hooks/useAiPreferences.ts`
+- **New**: `src/components/AiEngineSelect.tsx`
+- **New**: `src/components/AiPreferencesCard.tsx`
+- **Migration**: add `ai_preferences` column to `profiles`
+- **Edited**: 15 generator edge functions (one-line model swap each)
+- **Edited**: `src/lib/content-generator.ts`
+- **Edited**: `GenerateContentDialog.tsx`, `GenerateISATExamDialog.tsx`, `GenerateEscapeRoomDialog.tsx`, `RegenerateLessonDialog.tsx`
+- **Edited**: `src/pages/Profile.tsx`
 
 ### Out of scope
 
-- No refactors, no renames, no behavior changes.
-- No edge function deletions — all of them are still called.
-- No dependency removals from `package.json` (the recent `react-resizable` / `pdfjs-dist` additions stay; they're actively used).
+- No prompt rewrites — only the `model:` field.
+- No streaming changes.
+- Image-generation models stay on their dedicated image models.
 
