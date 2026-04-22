@@ -11,7 +11,7 @@ import {
 import { useSearchNotes } from "@/hooks/useNotes";
 import {
   FileText, Home, BookOpen, Layers, Puzzle, Library, BookOpenCheck,
-  BarChart3, ClipboardCheck, Brain,
+  BarChart3, ClipboardCheck,
 } from "lucide-react";
 
 interface Props {

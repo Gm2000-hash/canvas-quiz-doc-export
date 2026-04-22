@@ -25,7 +25,6 @@ import {
   LogOut,
   ShieldCheck,
   UserCircle,
-  Brain,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
