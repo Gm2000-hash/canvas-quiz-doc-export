@@ -339,6 +339,68 @@ const QuestionBank = () => {
     }
   };
 
+  /** AI-tag every selected question (or every untagged question if none selected) with NGSS standards. */
+  const handleBulkAiTag = async () => {
+    const targetIds = selected.size > 0
+      ? [...selected]
+      : questions.filter(q => q.standards.length === 0).map(q => q.id);
+
+    if (targetIds.length === 0) {
+      toast.info("Nothing to tag — every question already has standards.");
+      return;
+    }
+    const targets = questions.filter(q => targetIds.includes(q.id));
+    if (targets.length === 0) return;
+
+    setBulkTagging(true);
+    let tagged = 0;
+    let skipped = 0;
+    try {
+      // Process in chunks of 10 to keep the AI request payload small
+      const chunkSize = 10;
+      for (let i = 0; i < targets.length; i += chunkSize) {
+        const chunk = targets.slice(i, i + chunkSize);
+        const { data, error } = await supabase.functions.invoke("standards-tagger", {
+          body: {
+            questions: chunk.map((q, idx) => ({ id: idx, question_text: stripHtml(q.question_text) })),
+            framework: "ngss",
+          },
+        });
+        if (error) throw error;
+
+        const tagsByIdx: Record<number, { code: string; description: string }[]> =
+          (data?.tags || []).reduce((acc: any, t: any) => {
+            acc[t.id] = t.standards || [];
+            return acc;
+          }, {});
+
+        // Persist results
+        await Promise.all(chunk.map(async (q, idx) => {
+          const newTags = tagsByIdx[idx] || [];
+          if (newTags.length === 0) { skipped++; return; }
+          const standards = newTags.map(t => ({ ngss_code: t.code, ngss_description: t.description }));
+          await updateQuestion(q.id, {}, standards);
+          tagged++;
+          // Update local state immediately
+          setQuestions(prev => prev.map(item =>
+            item.id === q.id ? { ...item, standards } : item
+          ));
+        }));
+      }
+      if (tagged === 0) {
+        toast.info("No confident NGSS matches found for the selected questions.");
+      } else if (skipped > 0) {
+        toast.success(`Tagged ${tagged} · ${skipped} skipped (no confident match)`);
+      } else {
+        toast.success(`Tagged ${tagged} question${tagged === 1 ? "" : "s"} with NGSS standards`);
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Bulk AI tagging failed");
+    } finally {
+      setBulkTagging(false);
+    }
+  };
+
   const handleExport = async () => {
     const selectedQuestions = questions.filter(q => selected.has(q.id));
     if (selectedQuestions.length === 0) return;
