@@ -21,6 +21,7 @@ import { toast } from 'sonner';
 import type { CurriculumLesson } from '@/hooks/useCurriculum';
 import { LessonStandardsPicker } from '@/components/LessonStandardsPicker';
 import { exportReadingAsPdf, exportTextbookAsPdf } from '@/lib/export-reading-pdf';
+import { exportReadingAsDocx } from '@/lib/export-reading-docx';
 
 interface CurriculumReadingViewerProps {
   discipline: string;
@@ -449,6 +450,22 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
               </Button>
               <Button variant="outline" size="sm" className="gap-2" onClick={() => lesson && currentLesson !== null && exportReadingAsPdf(lesson, currentLesson)}>
                 <FileDown className="h-3.5 w-3.5" /> Export PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={async () => {
+                  if (!lesson) return;
+                  try {
+                    await exportReadingAsDocx(lesson, lessonStandards);
+                    toast.success('Word document exported');
+                  } catch (err: any) {
+                    toast.error(err?.message || 'Failed to export Word doc');
+                  }
+                }}
+              >
+                <FileDown className="h-3.5 w-3.5" /> Export Word
               </Button>
               <Button variant="outline" size="sm" className="gap-2" onClick={() => exportTextbookAsPdf(lessons, unitMap, title)}>
                 <FileDown className="h-3.5 w-3.5" /> Export Textbook
