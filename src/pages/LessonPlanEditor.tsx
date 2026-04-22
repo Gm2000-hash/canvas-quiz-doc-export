@@ -51,6 +51,38 @@ interface EmbeddedActivityRef {
   activity_type: string;
 }
 
+interface VocabularyScaffold {
+  term: string;
+  student_friendly: string;
+  visual_cue: string;
+}
+
+interface UdlSupports {
+  engagement?: {
+    hook?: string;
+    student_choice?: string[];
+    collaboration?: string;
+    sustain_effort?: string;
+    self_regulation_prompt?: string;
+  };
+  representation?: {
+    visual?: string;
+    auditory?: string;
+    text_supports?: string;
+    vocabulary_scaffolds?: VocabularyScaffold[];
+    big_idea_highlight?: string;
+    background_activation?: string;
+  };
+  action_expression?: {
+    response_modes?: string[];
+    physical_action_options?: string;
+    planning_scaffold?: string;
+    progress_checkpoint?: string;
+    flexible_assessment?: string;
+  };
+  reflection_prompt?: string;
+}
+
 interface LessonPlan {
   id: string;
   unit_id: string | null;
@@ -66,6 +98,7 @@ interface LessonPlan {
   vocabulary: VocabularyItem[];
   resources: ResourceItem[];
   embedded_activities: EmbeddedActivityRef[];
+  udl_supports: UdlSupports;
 }
 
 interface Standard {
