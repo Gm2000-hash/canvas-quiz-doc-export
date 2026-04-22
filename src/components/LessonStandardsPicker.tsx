@@ -193,11 +193,45 @@ export function LessonStandardsPicker({ open, onOpenChange, selected, onSave }: 
           </div>
         </ScrollArea>
 
+        {framework === "ngss" && (
+          <div className="flex items-center justify-between gap-2 rounded-xl border border-card-foreground/10 bg-muted/40 px-3 py-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Layers className="h-4 w-4 text-primary shrink-0" />
+              <div className="min-w-0">
+                <p className="text-xs font-medium leading-tight">NGSS sub-components</p>
+                <p className="text-[10px] text-muted-foreground leading-tight truncate">
+                  {selectedNgssParents.length === 0
+                    ? "Select an NGSS standard above to drill into SEP / DCI / CCC."
+                    : `${selectedDimensionCodes.length} sub-component${selectedDimensionCodes.length === 1 ? "" : "s"} chosen across ${selectedNgssParents.length} PE${selectedNgssParents.length === 1 ? "" : "s"}.`}
+                </p>
+              </div>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 text-xs rounded-lg shrink-0"
+              disabled={selectedNgssParents.length === 0}
+              onClick={() => setDimensionPickerOpen(true)}
+            >
+              {selectedDimensionCodes.length > 0 ? "Edit" : "Choose"}
+            </Button>
+          </div>
+        )}
+
         <div className="flex justify-between items-center">
           <span className="text-xs text-muted-foreground">{localSelected.size} selected</span>
           <Button onClick={handleSave} className="rounded-xl">Save</Button>
         </div>
       </DialogContent>
+
+      <NgssDimensionPicker
+        open={dimensionPickerOpen}
+        onOpenChange={setDimensionPickerOpen}
+        parentCodes={selectedNgssParents}
+        selected={selectedDimensionCodes}
+        onSave={handleDimensionsSave}
+      />
     </Dialog>
   );
 }
