@@ -461,22 +461,62 @@ export function CurriculumReadingViewer({ discipline, title, onClose, initialLes
               <Button variant="outline" size="sm" className="gap-2" onClick={() => lesson && currentLesson !== null && exportReadingAsPdf(lesson, currentLesson)}>
                 <FileDown className="h-3.5 w-3.5" /> Export PDF
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2"
-                onClick={async () => {
-                  if (!lesson) return;
-                  try {
-                    await exportReadingAsDocx(lesson, lessonStandards);
-                    toast.success('Word document exported');
-                  } catch (err: any) {
-                    toast.error(err?.message || 'Failed to export Word doc');
-                  }
-                }}
-              >
-                <FileDown className="h-3.5 w-3.5" /> Export Word
-              </Button>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2" disabled={exportingDocx}>
+                    {exportingDocx ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileDown className="h-3.5 w-3.5" />}
+                    Export Word
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-72 z-[200]" align="end">
+                  <div className="space-y-3">
+                    <div className="space-y-1">
+                      <p className="text-sm font-semibold">Include in Word doc</p>
+                      <p className="text-xs text-muted-foreground">The 5-act reading is always included.</p>
+                    </div>
+                    <div className="space-y-2">
+                      {([
+                        ['includeObjectives', 'Learning objectives'],
+                        ['includeKeyTerms', 'Key terms'],
+                        ['includeIntro', 'Introduction'],
+                        ['includeExplanation', 'Explanation'],
+                        ['includeClosingUdl', 'Closing & UDL prompts'],
+                        ['includeSourcesPage', 'Sources & citations page'],
+                      ] as const).map(([key, label]) => (
+                        <label key={key} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={docxOptions[key]}
+                            onCheckedChange={(v) =>
+                              setDocxOptions(prev => ({ ...prev, [key]: v === true }))
+                            }
+                          />
+                          {label}
+                        </label>
+                      ))}
+                    </div>
+                    <Button
+                      size="sm"
+                      className="w-full gap-2"
+                      disabled={exportingDocx}
+                      onClick={async () => {
+                        if (!lesson) return;
+                        setExportingDocx(true);
+                        try {
+                          await exportReadingAsDocx(lesson, lessonStandards, docxOptions);
+                          toast.success('Word document exported');
+                        } catch (err: any) {
+                          toast.error(err?.message || 'Failed to export Word doc');
+                        } finally {
+                          setExportingDocx(false);
+                        }
+                      }}
+                    >
+                      <FileDown className="h-3.5 w-3.5" />
+                      Export Word
+                    </Button>
+                  </div>
+                </PopoverContent>
+              </Popover>
               <Button variant="outline" size="sm" className="gap-2" onClick={() => exportTextbookAsPdf(lessons, unitMap, title)}>
                 <FileDown className="h-3.5 w-3.5" /> Export Textbook
               </Button>
