@@ -855,6 +855,45 @@ export type Database = {
         }
         Relationships: []
       }
+      theme_customizations: {
+        Row: {
+          color: string | null
+          created_at: string
+          extra: Json
+          id: string
+          scope_key: string
+          scope_type: string
+          updated_at: string
+          user_id: string
+          wallpaper_filters: Json
+          wallpaper_path: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string
+          extra?: Json
+          id?: string
+          scope_key: string
+          scope_type: string
+          updated_at?: string
+          user_id: string
+          wallpaper_filters?: Json
+          wallpaper_path?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string
+          extra?: Json
+          id?: string
+          scope_key?: string
+          scope_type?: string
+          updated_at?: string
+          user_id?: string
+          wallpaper_filters?: Json
+          wallpaper_path?: string | null
+        }
+        Relationships: []
+      }
       units: {
         Row: {
           created_at: string
