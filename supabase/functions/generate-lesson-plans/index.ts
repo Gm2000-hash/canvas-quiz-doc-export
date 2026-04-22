@@ -61,33 +61,53 @@ serve(withLogging("generate-lesson-plans", async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    const baseSystemPrompt = `You are an expert middle school science teacher creating FULLY SCRIPTED, classroom-ready lesson plans aligned to NGSS.
+    const baseSystemPrompt = `You are an expert middle school science teacher creating FULLY SCRIPTED, classroom-ready lesson plans aligned to NGSS and Universal Design for Learning (CAST UDL Guidelines v2.2).
 You must return structured lesson plans using the provided tool.
 Each lesson should be practical, engaging, and age-appropriate for ${gradeLevel || "middle school"} students.
 Focus on ${discipline || "science"} content.
 
 CRITICAL REQUIREMENTS FOR DETAIL:
-- OBJECTIVES: Write EXACTLY 3 specific, measurable learning objectives using Bloom's taxonomy verbs. No more than 3. Include the FULL TEXT of each aligned NGSS performance expectation (not just the code).
-- ACTIVITIES: Include AT LEAST 4 distinct activities per lesson (e.g., warm-up, direct instruction, guided practice, lab/investigation, group work, discussion, assessment, closing). For EVERY activity, provide:
-  1. KEY TALKING POINTS: A bulleted list of the main ideas the teacher should communicate, written as if scripting what to say.
-  2. BACKGROUND INFORMATION: 3-5 sentences of deep content knowledge the teacher needs to understand and convey — include scientific explanations, real-world connections, common misconceptions and how to correct them, and relevant analogies.
-  3. STUDENT ENGAGEMENT: Specific questions to ask, anticipated student responses, and follow-up probes.
-  4. STEP-BY-STEP PROCEDURE: For labs/investigations, include numbered steps. For discussions, include prompts. For group work, include tasks and roles.
-  Each activity description should be 8-15 sentences minimum — think of it as a comprehensive teacher script with embedded content knowledge.
-- MATERIALS: List every specific material with quantities (e.g., "30 copies of Cell Diagram handout", "1 microscope per lab group of 4").
-- ASSESSMENT: Describe specific formative and summative assessment strategies with example questions or rubric criteria.
-- DIFFERENTIATION: Provide specific UDL-tagged accommodations for ELL students, students with IEPs, gifted learners, and struggling readers — tag each support with which UDL principle it serves (Engagement / Representation / Action & Expression).
-- NOTES: Include teacher tips, common misconceptions students may have, and how to address them.
-- RESOURCES: For EVERY lesson, provide at least 3 real, reputable online resources with working URLs. Include a mix of videos (YouTube, Khan Academy, etc.), articles (National Geographic, NASA, Smithsonian, CK-12, etc.), and interactive activities (PhET simulations, BrainPOP, etc.). These should be real URLs that teachers can actually use.
-- VOCABULARY: For EVERY lesson, include AT LEAST 4 key science vocabulary terms with clear, student-friendly definitions. These are critical terms students must understand. Include more terms for vocabulary-heavy lessons.
-- NGSS STANDARDS: For EVERY lesson, you MUST tag it with at least one relevant NGSS Middle School performance expectation (MS-LS, MS-PS, MS-ESS, MS-ETS codes). Include the COMPLETE standard text. This is MANDATORY — no lesson should be returned without at least one NGSS standard.
-- UDL FIELDS (REQUIRED for every lesson):
-  • udl_engagement: a hook/anchor that recruits interest, plus 2+ student CHOICE options (path, partner, product) and one reflection/self-regulation prompt.
-  • udl_representation: at least one visual/diagram alternative, one auditory or read-aloud option, vocabulary scaffolds beyond the main vocab list, and a "key idea highlight" sentence.
-  • udl_action_expression: at least 2 distinct ways students can DEMONSTRATE learning (e.g., write, draw/diagram, verbal explanation, build/model, demonstrate), plus a planning/checkpoint cue.
-  • reflection_prompt: a single, classroom-ready metacognitive prompt students answer at lesson close.
+- OBJECTIVES: Write EXACTLY 3 specific, measurable learning objectives using Bloom's taxonomy verbs. Include the FULL TEXT of each aligned NGSS performance expectation (not just the code).
+- ACTIVITIES: Include AT LEAST 4 distinct activities per lesson. For EVERY activity, provide KEY TALKING POINTS, BACKGROUND INFORMATION (3-5 sentences of deep content knowledge with misconceptions), STUDENT ENGAGEMENT (questions + anticipated responses), and STEP-BY-STEP PROCEDURE. 8-15 sentences minimum per activity.
+- MATERIALS: Specific items with quantities.
+- ASSESSMENT: Specific formative + summative strategies with example items/rubric criteria.
+- DIFFERENTIATION: Specific accommodations for ELL, IEP, gifted, struggling readers — tag each with the UDL principle it serves.
+- NOTES: Teacher tips + common misconceptions + corrections.
+- RESOURCES: At least 3 real working URLs (mix of video, article, activity).
+- VOCABULARY: AT LEAST 4 key terms with student-friendly definitions.
+- NGSS STANDARDS: At least 1 NGSS MS standard per lesson with COMPLETE text. MANDATORY.
 
-Include a variety of activities: direct instruction, labs, group work, discussions, and assessments.`;
+═══════════════════════════════════════════════════════════════
+UDL_SUPPORTS — STRUCTURED, CLASSROOM-READY (REQUIRED)
+═══════════════════════════════════════════════════════════════
+You MUST populate every sub-field of udl_supports with concrete, specific, classroom-ready content. Generic platitudes like "differentiate as needed" or "provide visuals" are FORBIDDEN. Every prose field is 2-4 sentences naming the actual artifact, prompt, or move the teacher will use.
+
+ENGAGEMENT (the WHY of learning):
+  • hook (2-4 sentences): An authentic, relevant opener tied to students' real lives or current events. Name the artifact (image, headline, short clip, story, demo). Example: "Open with a 90-second NASA clip of the Mars rover landing, then ask: 'If we sent YOU to design the next rover, what would worry you most?' Pair-share for 60 seconds before sharing out."
+  • student_choice (ARRAY of ≥3 strings): Concrete CHOICE options across path, partner, or product. Each item is a full sentence describing the option. Example: ["Choose to work solo or with a partner of your choice", "Choose to demonstrate understanding by sketching, writing, or recording a 60-second voice memo", "Choose either the cell-phone case or the bridge as your design challenge context"].
+  • collaboration (2-4 sentences): A specific grouping move with role names or a structured protocol (think-pair-share, jigsaw, gallery walk, fishbowl, expert groups). Name how groups are formed and what each role does.
+  • sustain_effort (2-4 sentences): How challenge is varied (tiered tasks, extension cards, must-do/may-do) AND how mastery-oriented feedback is delivered (specific feedback stems, peer feedback protocol, conferring schedule).
+  • self_regulation_prompt (1-2 sentences): A concrete mid-lesson reflection or coping cue students respond to. Example: "Pause-and-rate: On a 1-3 scale, how confident are you right now? If you're at 1, raise the ✋ card or grab a hint card from the table."
+
+REPRESENTATION (the WHAT of learning):
+  • visual (2-4 sentences): At least one specific visual alternative — diagram, anchor chart, slideshow, model, infographic, video clip with captions. Name what it looks like and what concept it represents.
+  • auditory (2-4 sentences): A specific auditory option — teacher read-aloud, podcast clip, partner read, text-to-speech for the digital handout, recorded mini-lecture. Name the source.
+  • text_supports (2-4 sentences): Specific text scaffolds — outline organizer, sentence stems, summary frame, color-coded notes guide, glossary card. Describe the format students receive.
+  • vocabulary_scaffolds (ARRAY of ≥3 objects): Beyond the main vocabulary list. Each object MUST include: term (the word), student_friendly (a kid-friendly rephrase in plain language, NOT the dictionary definition), visual_cue (a concrete image, gesture, or analogy students can picture). Example: { "term": "tectonic plate", "student_friendly": "huge slabs of Earth's crust that float on hot melted rock and very slowly bump into each other", "visual_cue": "show a cracked hard-boiled egg on the desk; the shell pieces are the plates" }.
+  • big_idea_highlight (1-2 sentences): The single most important takeaway students MUST walk away knowing today, written in plain language as if for a poster.
+  • background_activation (2-4 sentences): A specific move to activate prior knowledge — KWL, quick-write, picture prompt, "What do you already know about ___?" Name the prompt verbatim.
+
+ACTION & EXPRESSION (the HOW of learning):
+  • response_modes (ARRAY of ≥3 strings): The distinct ways students may respond/produce work today. Choose from: written, verbal, sketched/diagram, built/model, demonstrated/role-play, recorded (audio/video), digital (slides/doc), kinesthetic. Example: ["written paragraph in science notebook", "sketched labeled diagram on whiteboard", "recorded 60-second voice memo on Flipgrid"].
+  • physical_action_options (2-4 sentences): A specific movement, manipulative, or hands-on option. Name the materials. Example: "Provide foam tectonic plate cutouts and a felt 'mantle' mat at each table; students physically slide the plates to model convergent, divergent, and transform boundaries."
+  • planning_scaffold (2-4 sentences): A concrete organizer or cue students use to plan their work. Example: "Hand each student a 'My Plan' sticky note with the prompt: 'I will use ___ (text, video, model) to learn ___, and I will show what I know by ___ (writing, drawing, recording).'"
+  • progress_checkpoint (2-4 sentences): A specific mid-task self-check. Example: "Halfway through the lab, students complete a 30-second 'Stop & Self-Check': 'Have I labeled all 3 layers? Did I record temperature readings? If no, fix before continuing.'"
+  • flexible_assessment (2-4 sentences): At least 2 distinct ways students can demonstrate mastery on the lesson goal. Name both. Example: "Option A: Write a 5-sentence CER (Claim, Evidence, Reasoning) paragraph. Option B: Record a 90-second screencast explaining the diagram you built. Both are scored on the same 4-point rubric."
+
+CLOSING REFLECTION:
+  • reflection_prompt (1-2 sentences): A single classroom-ready metacognitive question students answer at lesson close. Example: "What is one idea you understand more clearly now, and one question you still have? Write 2-3 sentences in your science notebook."
+
+NEVER leave any UDL sub-field blank, vague, or under-detailed. If you cannot think of a specific move, invent a plausible classroom-ready one — do not produce one-line summaries.`;
     const systemPrompt = withUdl(baseSystemPrompt);
 
     const userPrompt = `Create ${numLessons} sequential, FULLY SCRIPTED lesson plans for a unit called "${unitTitle}" focused on "${topic}".
@@ -162,12 +182,67 @@ Make these detailed enough that a substitute teacher with no science background 
                             type: "string",
                             description: "REQUIRED. JSON string of NGSS standards array with AT LEAST 1 standard. Each standard has code (string like MS-LS1-1) and description (the FULL COMPLETE text of the performance expectation). EVERY lesson MUST have at least one standard. Example: [{\"code\":\"MS-LS1-1\",\"description\":\"Conduct an investigation to provide evidence that living things are made of cells...\"}]",
                           },
-                          udl_engagement: { type: "string", description: "REQUIRED. Concrete UDL Engagement supports for this lesson: a hook that recruits interest, 2+ student CHOICE options (path, partner, or product), and a self-regulation/reflection cue. Write as a teacher-ready paragraph or bulleted list, 4-8 sentences." },
-                          udl_representation: { type: "string", description: "REQUIRED. Concrete UDL Representation supports: at least one visual/diagram alternative, one auditory/read-aloud option, vocabulary scaffolds (e.g., student-friendly rephrase or visual cue), and a 'big idea highlight' sentence. 4-8 sentences." },
-                          udl_action_expression: { type: "string", description: "REQUIRED. Concrete UDL Action & Expression supports: at least 2 distinct ways students can DEMONSTRATE learning (write, draw, verbal, build/model, demonstrate) plus a planning/checkpoint cue. 4-8 sentences." },
-                          reflection_prompt: { type: "string", description: "REQUIRED. A single classroom-ready metacognitive question students answer at lesson close (e.g., 'What is one thing you understood today and one thing you still wonder about?')." },
+                          udl_supports: {
+                            type: "object",
+                            description: "REQUIRED. Structured UDL (CAST v2.2) supports for this lesson. Every sub-field must be classroom-ready and specific — no platitudes.",
+                            properties: {
+                              engagement: {
+                                type: "object",
+                                properties: {
+                                  hook: { type: "string", description: "2-4 sentences. An authentic, relevant opener naming the artifact (image, clip, demo, headline)." },
+                                  student_choice: { type: "array", items: { type: "string" }, description: "≥3 concrete CHOICE options across path, partner, or product. Each item is a full sentence." },
+                                  collaboration: { type: "string", description: "2-4 sentences. A specific grouping move or protocol (think-pair-share, jigsaw, etc.) with role names." },
+                                  sustain_effort: { type: "string", description: "2-4 sentences. How challenge is varied AND how mastery-oriented feedback is delivered." },
+                                  self_regulation_prompt: { type: "string", description: "1-2 sentences. A concrete mid-lesson reflection or coping cue students respond to." },
+                                },
+                                required: ["hook", "student_choice", "collaboration", "sustain_effort", "self_regulation_prompt"],
+                                additionalProperties: false,
+                              },
+                              representation: {
+                                type: "object",
+                                properties: {
+                                  visual: { type: "string", description: "2-4 sentences. A specific visual alternative (diagram, anchor chart, slideshow, model, video clip)." },
+                                  auditory: { type: "string", description: "2-4 sentences. A specific auditory option (read-aloud, podcast clip, recorded mini-lecture)." },
+                                  text_supports: { type: "string", description: "2-4 sentences. Specific text scaffolds (outline organizer, sentence stems, summary frame)." },
+                                  vocabulary_scaffolds: {
+                                    type: "array",
+                                    description: "≥3 objects, beyond the main vocabulary list. Each has term, student_friendly rephrase, and visual_cue.",
+                                    items: {
+                                      type: "object",
+                                      properties: {
+                                        term: { type: "string" },
+                                        student_friendly: { type: "string", description: "Kid-friendly rephrase in plain language." },
+                                        visual_cue: { type: "string", description: "A concrete image, gesture, or analogy students can picture." },
+                                      },
+                                      required: ["term", "student_friendly", "visual_cue"],
+                                      additionalProperties: false,
+                                    },
+                                  },
+                                  big_idea_highlight: { type: "string", description: "1-2 sentences. The single most important takeaway, written like a poster." },
+                                  background_activation: { type: "string", description: "2-4 sentences. A specific move (KWL, quick-write, picture prompt) with the prompt written verbatim." },
+                                },
+                                required: ["visual", "auditory", "text_supports", "vocabulary_scaffolds", "big_idea_highlight", "background_activation"],
+                                additionalProperties: false,
+                              },
+                              action_expression: {
+                                type: "object",
+                                properties: {
+                                  response_modes: { type: "array", items: { type: "string" }, description: "≥3 distinct ways students may respond/produce work today." },
+                                  physical_action_options: { type: "string", description: "2-4 sentences. A specific movement, manipulative, or hands-on option with materials named." },
+                                  planning_scaffold: { type: "string", description: "2-4 sentences. A concrete organizer or cue students use to plan their work." },
+                                  progress_checkpoint: { type: "string", description: "2-4 sentences. A specific mid-task self-check." },
+                                  flexible_assessment: { type: "string", description: "2-4 sentences. At least 2 distinct ways students can demonstrate mastery." },
+                                },
+                                required: ["response_modes", "physical_action_options", "planning_scaffold", "progress_checkpoint", "flexible_assessment"],
+                                additionalProperties: false,
+                              },
+                              reflection_prompt: { type: "string", description: "1-2 sentences. A single classroom-ready metacognitive question students answer at lesson close." },
+                            },
+                            required: ["engagement", "representation", "action_expression", "reflection_prompt"],
+                            additionalProperties: false,
+                          },
                         },
-                        required: ["title", "duration_minutes", "objectives", "activities", "materials", "assessment", "differentiation", "resources_json", "vocabulary_json", "standards_json", "udl_engagement", "udl_representation", "udl_action_expression", "reflection_prompt"],
+                        required: ["title", "duration_minutes", "objectives", "activities", "materials", "assessment", "differentiation", "resources_json", "vocabulary_json", "standards_json", "udl_supports"],
                         additionalProperties: false,
                       },
                     },

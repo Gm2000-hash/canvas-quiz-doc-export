@@ -7,6 +7,38 @@ interface Activity {
   description: string;
 }
 
+interface VocabScaffold {
+  term: string;
+  student_friendly: string;
+  visual_cue: string;
+}
+
+interface UdlSupports {
+  engagement?: {
+    hook?: string;
+    student_choice?: string[];
+    collaboration?: string;
+    sustain_effort?: string;
+    self_regulation_prompt?: string;
+  };
+  representation?: {
+    visual?: string;
+    auditory?: string;
+    text_supports?: string;
+    vocabulary_scaffolds?: VocabScaffold[];
+    big_idea_highlight?: string;
+    background_activation?: string;
+  };
+  action_expression?: {
+    response_modes?: string[];
+    physical_action_options?: string;
+    planning_scaffold?: string;
+    progress_checkpoint?: string;
+    flexible_assessment?: string;
+  };
+  reflection_prompt?: string;
+}
+
 interface LessonPlan {
   id: string;
   title: string;
@@ -20,6 +52,7 @@ interface LessonPlan {
   notes: string;
   vocabulary?: { term: string; definition: string }[];
   standards?: { ngss_code: string; ngss_description: string }[];
+  udl_supports?: UdlSupports;
 }
 
 interface Unit {
@@ -144,6 +177,93 @@ function buildLessonParagraphs(lesson: LessonPlan, index: number): Paragraph[] {
   if (lesson.notes) {
     paras.push(sectionTitle("Teacher Notes"));
     lesson.notes.split("\n").filter(Boolean).forEach(line => paras.push(bodyText(line)));
+  }
+
+  // UDL Supports
+  const udl = lesson.udl_supports;
+  if (udl && (udl.engagement || udl.representation || udl.action_expression || udl.reflection_prompt)) {
+    paras.push(sectionTitle("UDL Supports (CAST v2.2)"));
+
+    const subHeading = (text: string, color: string) => new Paragraph({
+      spacing: { before: 200, after: 60 },
+      children: [new TextRun({ text, bold: true, size: 22, color })],
+    });
+
+    const labeled = (label: string, value?: string) => {
+      if (!value) return;
+      paras.push(new Paragraph({
+        spacing: { after: 60 },
+        indent: { left: 360 },
+        children: [
+          new TextRun({ text: `${label}: `, bold: true, size: 20 }),
+          new TextRun({ text: value, size: 20 }),
+        ],
+      }));
+    };
+
+    const list = (label: string, items?: string[]) => {
+      if (!items || items.length === 0) return;
+      paras.push(new Paragraph({
+        spacing: { before: 60, after: 20 },
+        indent: { left: 360 },
+        children: [new TextRun({ text: label, bold: true, size: 20 })],
+      }));
+      items.forEach(item => paras.push(new Paragraph({
+        spacing: { after: 20 },
+        indent: { left: 720 },
+        children: [new TextRun({ text: `• ${item}`, size: 20 })],
+      })));
+    };
+
+    if (udl.engagement) {
+      paras.push(subHeading("🎯 Engagement (the WHY)", "B45309"));
+      labeled("Hook", udl.engagement.hook);
+      list("Student Choice", udl.engagement.student_choice);
+      labeled("Collaboration", udl.engagement.collaboration);
+      labeled("Sustain Effort", udl.engagement.sustain_effort);
+      labeled("Self-Regulation Prompt", udl.engagement.self_regulation_prompt);
+    }
+
+    if (udl.representation) {
+      paras.push(subHeading("👁 Representation (the WHAT)", "1D4ED8"));
+      labeled("Visual", udl.representation.visual);
+      labeled("Auditory", udl.representation.auditory);
+      labeled("Text Supports", udl.representation.text_supports);
+      labeled("Big Idea Highlight", udl.representation.big_idea_highlight);
+      labeled("Background Activation", udl.representation.background_activation);
+      if (udl.representation.vocabulary_scaffolds && udl.representation.vocabulary_scaffolds.length > 0) {
+        paras.push(new Paragraph({
+          spacing: { before: 60, after: 20 },
+          indent: { left: 360 },
+          children: [new TextRun({ text: "Vocabulary Scaffolds", bold: true, size: 20 })],
+        }));
+        udl.representation.vocabulary_scaffolds.forEach(vs => {
+          paras.push(new Paragraph({
+            spacing: { after: 20 },
+            indent: { left: 720 },
+            children: [
+              new TextRun({ text: `${vs.term}: `, bold: true, size: 20 }),
+              new TextRun({ text: vs.student_friendly, size: 20 }),
+              new TextRun({ text: ` (cue: ${vs.visual_cue})`, italics: true, size: 18, color: "666666" }),
+            ],
+          }));
+        });
+      }
+    }
+
+    if (udl.action_expression) {
+      paras.push(subHeading("✋ Action & Expression (the HOW)", "15803D"));
+      list("Response Modes", udl.action_expression.response_modes);
+      labeled("Physical Action / Manipulatives", udl.action_expression.physical_action_options);
+      labeled("Planning Scaffold", udl.action_expression.planning_scaffold);
+      labeled("Progress Checkpoint", udl.action_expression.progress_checkpoint);
+      labeled("Flexible Assessment", udl.action_expression.flexible_assessment);
+    }
+
+    if (udl.reflection_prompt) {
+      paras.push(subHeading("💭 Closing Reflection Prompt", "7E22CE"));
+      paras.push(bodyText(udl.reflection_prompt));
+    }
   }
 
   return paras;

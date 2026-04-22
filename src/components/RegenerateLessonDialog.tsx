@@ -26,6 +26,7 @@ interface LessonData {
   notes: string;
   vocabulary: { term: string; definition: string }[];
   resources: { title: string; url: string; type: string }[];
+  udl_supports?: any;
 }
 
 interface Props {
@@ -102,6 +103,7 @@ Improve and fill in any missing information. Keep the same general topic but mak
         notes: newLesson.notes || lesson.notes,
         vocabulary: newLesson.vocabulary || lesson.vocabulary,
         resources: newLesson.resources || lesson.resources,
+        udl_supports: newLesson.udl_supports || lesson.udl_supports || {},
         updated_at: new Date().toISOString(),
       };
 
