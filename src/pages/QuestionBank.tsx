@@ -18,13 +18,15 @@ import { ALL_IDAHO_STANDARDS, ALL_IDAHO_STANDARDS_FLAT } from "@/lib/idaho-stand
 import { exportBankQuizToDocx } from "@/lib/export-bank-quiz";
 import { exportToQTI } from "@/lib/export-qti";
 import { toast } from "sonner";
-import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb, Upload, Hash, Landmark, ClipboardCheck } from "lucide-react";
+import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb, Upload, Hash, Landmark, ClipboardCheck, Tag } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import GenerateISATExamDialog from "@/components/GenerateISATExamDialog";
 import ISATExamList from "@/components/ISATExamList";
 import DokBloomsSuggestionsDialog from "@/components/DokBloomsSuggestionsDialog";
+import { QuestionStandardsTagDialog } from "@/components/QuestionStandardsTagDialog";
+import { supabase } from "@/integrations/supabase/client";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import PushToCanvasDialog from "@/components/PushToCanvasDialog";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
