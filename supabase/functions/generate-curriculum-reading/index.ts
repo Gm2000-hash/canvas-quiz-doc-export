@@ -192,7 +192,7 @@ Return ONLY valid JSON (no markdown).`;
       body: JSON.stringify({
         model: resolveModel(body, "heavy"),
         messages: [
-          { role: "system", content: systemPrompt },
+          { role: "system", content: wrappedSystemPrompt },
           { role: "user", content: userPrompt },
         ],
         tools: [{
@@ -292,7 +292,7 @@ async function handleRegeneration(opts: {
     body: JSON.stringify({
       model: resolveModel(opts as any, "heavy"),
       messages: [
-        { role: "system", content: `You are an expert ${grade_level} science curriculum designer.` },
+        { role: "system", content: withUdl(`You are an expert ${grade_level} science curriculum designer.`, "Section regeneration: keep UDL principles visible in the regenerated content (vocabulary supports, choice/multiple modes, reflection prompts where appropriate).`) },
         { role: "user", content: `${config.prompt}\n\nContext — Objectives: ${objectives}\n${key_terms ? `Key terms: ${key_terms}` : ""}\n\nExisting lesson content: ${JSON.stringify(existing_lesson).slice(0, 2000)}` },
       ],
       tools: [{
