@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import {
   Lightbulb, FileText, BookOpen, Layers,
-  Library, GripVertical, Puzzle, BookOpenCheck,
+  Library, GripVertical, Puzzle, BookOpenCheck, StickyNote,
 } from "lucide-react";
 import { DashboardAnalytics } from "@/components/DashboardAnalytics";
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
@@ -61,6 +61,7 @@ interface DashboardCard {
 }
 
 const ALL_CARDS: DashboardCard[] = [
+  { id: "notes", title: "Notes", description: "Capture ideas and lesson notes — sorted by week, month, and year.", path: "/notes", icon: StickyNote },
   { id: "canvas", title: "Canvas Export", description: "Connect to Canvas LMS and export quizzes as formatted Word documents.", path: "/canvas", icon: FileText, image: sketchCanvas },
   { id: "lesson-planner", title: "Curriculum", description: "Build units, lessons, readings, and pacing guides for your courses.", path: "/lesson-planner", icon: Layers, image: sketchLessonPlanner },
   { id: "question-bank", title: "Question Bank", description: "Browse, search, and manage your library of assessment questions.", path: "/question-bank", icon: BookOpen, image: sketchQuestionBank },
