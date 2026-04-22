@@ -69,7 +69,7 @@ Deno.serve(async (req) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          model: 'google/gemini-2.5-flash',
+          model: resolveModel(null, "utility"),
           messages: [
             {
               role: 'system',
@@ -138,7 +138,7 @@ If the document contains a single topic/reading rather than multiple lessons, cr
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: resolveModel(null, "utility"),
         messages: [
           {
             role: 'system',
