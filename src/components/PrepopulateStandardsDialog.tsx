@@ -49,6 +49,7 @@ export default function PrepopulateStandardsDialog({ open, onOpenChange, onCompl
   const [done, setDone] = useState(false);
   const [steps, setSteps] = useState<GenerationStep[]>([]);
   const [currentIdx, setCurrentIdx] = useState(0);
+  const [emphasizeSubcomponents, setEmphasizeSubcomponents] = useState(true);
   const abortRef = useRef(false);
 
   const showScience = teacherSubjects.length === 0 || teacherSubjects.includes("Science");
