@@ -1,53 +1,35 @@
 
 
-# Embedded Exam Results Analysis & Canvas Score Recording
+## Add a "Reset Canvas Connection" escape hatch
 
-## Problem
+Give you a way to clear a stale Canvas token without opening DevTools, so you can recover when the preview won't load due to a 401.
 
-1. **No visibility into student results**: When ISAT exams and H5P activities are embedded in Canvas, student completion data is recorded in the `activity_completions` table but there's no UI to view it.
-2. **Embed URL bypasses LTI**: The "Embed in Canvas" dialog (`PushISATEmbedToCanvasDialog`) uses a direct URL (`/isat-exam/{id}`) instead of the LTI launch URL, so Canvas can't record grades — even though the LTI grade passback infrastructure already exists.
+### What you'll see
 
-## Plan
+1. On the **Canvas Quiz Exporter** page, the welcome/connect screen will show a small **"Reset Canvas connection"** link under the connect form. Clicking it wipes the stored token from localStorage and reloads the page.
+2. A new **global safety net**: if any page crashes hard because of a stale Canvas token, a tiny floating **"Clear Canvas token & reload"** button appears in the bottom-right corner. It's only rendered when a `canvas_config` exists in localStorage AND a Canvas 401 has been detected this session.
+3. The existing auto-disconnect (listening for `canvas-token-invalid`) stays in place — this is just a manual fallback for when the preview is too broken to reach the in-app Settings sheet.
 
-### 1. Fix Canvas Assignment URLs to Use LTI Launch
+### Technical changes
 
-Update `PushISATEmbedToCanvasDialog.tsx` and `PushActivityToCanvasDialog.tsx` to use the LTI launch URL pattern instead of the direct embed URL. This ensures Canvas initiates a proper LTI 1.3 flow, which enables automatic grade passback when students complete the exam.
+- **`src/components/SettingsForm.tsx`** — In the "no config yet" branch, add a subtle text button below the Connect button: "Reset Canvas connection (clear stored token)". On click: `localStorage.removeItem('canvas_config')` then `location.reload()`.
+- **New `src/components/CanvasTokenRescue.tsx`** — A tiny always-mounted component (added once in `src/App.tsx`) that:
+  - Listens for the existing `canvas-token-invalid` event and also inspects `unhandledrejection` for the Canvas 401 signature.
+  - When triggered, sets local state to show a fixed-position bubble-glass button bottom-right: "Canvas token invalid — Clear & reload".
+  - Click handler removes `canvas_config` from localStorage and reloads.
+  - Renders nothing when no stale token is present.
+- **`src/App.tsx`** — Mount `<CanvasTokenRescue />` once near the root so the rescue button is reachable from any route, even if the current page errored.
 
-- Change the `external_tool_tag_attributes.url` from the direct app URL to the LTI launch URL based on the user's configured LTI platform settings
-- Fall back to the direct embed URL if LTI is not configured, with a warning that grades won't sync
+### Recovery steps for right now
 
-### 2. Add "Embedded Results" Tab to Quiz Analytics
+While I'm adding this, you can unblock the preview immediately:
+1. Open the preview URL in a new tab.
+2. Open DevTools (F12) → **Console** tab.
+3. Paste and run: `localStorage.removeItem('canvas_config'); location.reload();`
+4. Navigate to **Canvas Quiz Exporter** and paste your new token.
 
-Add a third tab to `QuizAnalytics.tsx` — **Embedded Results** — that queries `activity_completions` joined with `lti_sessions` to show:
+### Out of scope
 
-- **Overview cards**: Total completions, unique students, average score, number of distinct activities/exams
-- **Results table**: Student name, activity/exam title, score, max score, percentage, completion date
-- **Score distribution chart**: Same A-F grade distribution as the Canvas tab
-- **Per-exam breakdown**: Group completions by activity ID, show avg/high/low per exam
-
-This requires a new edge function or RPC since `activity_completions` and `lti_sessions` are service-role-only tables.
-
-### 3. Create Edge Function for Fetching Embedded Results
-
-New edge function `get-embedded-results` that:
-- Authenticates the teacher via JWT
-- Joins `activity_completions` with `lti_sessions` (for student names) and cross-references `isat_exams` and `h5p_activities` (for titles)
-- Filters to only show completions for exams/activities owned by the authenticated teacher
-- Returns structured results grouped by activity
-
-### 4. Auto-Submit Score for ISAT Exams in LTI Context
-
-Currently, the ISAT exam player posts scores via LTI on submit (line 228-249 of `ISATExamPlayer.tsx`), which is correct. But verify the flow works end-to-end when the exam is launched via LTI (the `lti_session` param is present). No code change expected here — just validation.
-
-## Technical Details
-
-**Files to create:**
-- `supabase/functions/get-embedded-results/index.ts` — Authenticated edge function to query completions
-
-**Files to modify:**
-- `src/components/PushISATEmbedToCanvasDialog.tsx` — Use LTI launch URL for external tool assignments
-- `src/components/PushActivityToCanvasDialog.tsx` — Same LTI URL fix
-- `src/pages/QuizAnalytics.tsx` — Add "Embedded Results" tab with completions data, charts, and student table
-
-**Database:** No schema changes needed. The `activity_completions` and `lti_sessions` tables already have the required data. The new edge function uses service role to read them.
+- No backend/edge function changes — the 401 originates from Canvas itself, not our code.
+- No change to how tokens are stored (still localStorage, per existing `auth/canvas-credentials` memory).
 
