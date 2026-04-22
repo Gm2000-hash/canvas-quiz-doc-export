@@ -19,6 +19,7 @@ import { useNavigate } from "react-router-dom";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { AvatarPicker, PRESET_AVATARS } from "@/components/AvatarPicker";
 import LtiSettings from "@/components/LtiSettings";
+import { AiPreferencesCard } from "@/components/AiPreferencesCard";
 
 const GRADE_OPTIONS = [
   { value: "6", label: "Grade 6" },
@@ -355,6 +356,9 @@ export default function Profile() {
             )}
           </CardContent>
         </Card>
+
+        {/* AI Engine Settings */}
+        <AiPreferencesCard />
 
         {/* LTI 1.3 Integration */}
         <LtiSettings />
