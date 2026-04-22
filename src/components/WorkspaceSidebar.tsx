@@ -22,14 +22,12 @@ import {
   BookOpenCheck,
   BarChart3,
   GraduationCap,
-  Settings,
   LogOut,
   ShieldCheck,
   StickyNote,
   Plus,
   UserCircle,
   Brain,
-  ClipboardCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
