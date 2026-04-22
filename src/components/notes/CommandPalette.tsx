@@ -30,7 +30,6 @@ const TOOLS = [
   { label: "Quiz Analytics", path: "/quiz-analytics", icon: BarChart3 },
   { label: "Standards Browser", path: "/standards", icon: Library },
   { label: "ISAT Practice", path: "/lesson-planner", icon: ClipboardCheck },
-  { label: "Stress Navigator", path: "/stress-navigator", icon: Brain },
   { label: "All Notes", path: "/notes", icon: FileText },
 ];
 

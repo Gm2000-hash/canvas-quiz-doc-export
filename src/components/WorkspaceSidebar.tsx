@@ -41,7 +41,6 @@ const tools = [
   { label: "Canvas Results", path: "/canvas-results", icon: BarChart3 },
   { label: "Quiz Analytics", path: "/quiz-analytics", icon: BarChart3 },
   { label: "Standards", path: "/standards", icon: Library },
-  { label: "Stress Navigator", path: "/stress-navigator", icon: Brain },
 ];
 
 export function WorkspaceSidebar() {
