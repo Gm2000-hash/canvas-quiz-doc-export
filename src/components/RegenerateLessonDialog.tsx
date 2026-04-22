@@ -84,6 +84,7 @@ export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline,
           additionalContext: `Regenerate this specific lesson: "${lesson.title}". 
 Current objectives: ${lesson.objectives}
 ${additionalContext ? `Teacher instructions: ${additionalContext}` : ""}
+${selectedDimensions.length > 0 ? `\nFOCUS ON THESE NGSS SUB-COMPONENTS — design activities, vocabulary, and assessment so students explicitly engage with each one:\n${formatDimensionsForPrompt(selectedDimensions)}\n` : ""}
 Improve and fill in any missing information. Keep the same general topic but make it better.`,
           ...(modelOverride ? { model_override: modelOverride } : {}),
           ai_preferences: preferences,
