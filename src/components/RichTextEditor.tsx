@@ -8,8 +8,55 @@ import { TextStyle } from '@tiptap/extension-text-style';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { useEffect, useCallback, useRef } from 'react';
+import { TaskList } from '@tiptap/extension-task-list';
+import { TaskItem } from '@tiptap/extension-task-item';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableCell } from '@tiptap/extension-table-cell';
+import { Details } from '@tiptap/extension-details';
+import { DetailsSummary } from '@tiptap/extension-details-summary';
+import { DetailsContent } from '@tiptap/extension-details-content';
+import { Node, mergeAttributes } from '@tiptap/core';
+import { useEffect, useRef } from 'react';
 import { RichTextToolbar } from './RichTextToolbar';
+
+// Notion-style "callout" block — a styled wrapper containing block content
+const Callout = Node.create({
+  name: 'callout',
+  group: 'block',
+  content: 'block+',
+  defining: true,
+  addAttributes() {
+    return {
+      icon: { default: '💡' },
+      tone: { default: 'info' }, // info | warn | success | danger
+    };
+  },
+  parseHTML() {
+    return [{ tag: 'div[data-callout]' }];
+  },
+  renderHTML({ HTMLAttributes }) {
+    const { icon, tone, ...rest } = HTMLAttributes as any;
+    return [
+      'div',
+      mergeAttributes(rest, { 'data-callout': '', 'data-tone': tone, 'data-icon': icon, class: 'tk-callout' }),
+      0,
+    ];
+  },
+  addCommands() {
+    return {
+      setCallout:
+        (attrs: { icon?: string; tone?: string } = {}) =>
+        ({ commands }: any) =>
+          commands.wrapIn(this.name, attrs),
+      unsetCallout:
+        () =>
+        ({ commands }: any) =>
+          commands.lift(this.name),
+    } as any;
+  },
+});
 
 interface RichTextEditorProps {
   content: string;
@@ -55,6 +102,16 @@ export function RichTextEditor({
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
             Link.configure({ openOnClick: false, HTMLAttributes: { class: 'text-primary underline cursor-pointer' } }),
             Image.configure({ inline: true }),
+            TaskList.configure({ HTMLAttributes: { class: 'tk-task-list' } }),
+            TaskItem.configure({ nested: true, HTMLAttributes: { class: 'tk-task-item' } }),
+            Table.configure({ resizable: true, HTMLAttributes: { class: 'tk-table' } }),
+            TableRow,
+            TableHeader,
+            TableCell,
+            Details.configure({ HTMLAttributes: { class: 'tk-details' } }),
+            DetailsSummary,
+            DetailsContent,
+            Callout,
           ]),
       Placeholder.configure({ placeholder }),
     ],
