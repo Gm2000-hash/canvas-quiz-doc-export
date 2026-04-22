@@ -14,22 +14,15 @@ const CanvasExport = () => {
 
   // Auto-detect invalid Canvas tokens (401 from Canvas) and prompt reconnect
   useEffect(() => {
-    const handler = (event: PromiseRejectionEvent | ErrorEvent) => {
-      const msg = (event instanceof PromiseRejectionEvent ? event.reason?.message : event.message) || '';
-      if (typeof msg === 'string' && /Canvas API error \[401\]|Invalid access token/i.test(msg)) {
-        if (config) {
-          setConfig(null);
-          setSettingsOpen(false);
-          toast.error('Your Canvas access token is invalid or expired. Please reconnect.');
-        }
+    const onInvalid = () => {
+      if (config) {
+        setConfig(null);
+        setSettingsOpen(false);
+        toast.error('Your Canvas access token is invalid or expired. Please reconnect.');
       }
     };
-    window.addEventListener('unhandledrejection', handler as EventListener);
-    window.addEventListener('error', handler as EventListener);
-    return () => {
-      window.removeEventListener('unhandledrejection', handler as EventListener);
-      window.removeEventListener('error', handler as EventListener);
-    };
+    window.addEventListener('canvas-token-invalid', onInvalid);
+    return () => window.removeEventListener('canvas-token-invalid', onInvalid);
   }, [config, setConfig]);
 
   return (
