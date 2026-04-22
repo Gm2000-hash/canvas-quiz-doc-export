@@ -38,10 +38,12 @@ interface Props {
   discipline: string;
   gradeLevel: string;
   unitTitle: string;
+  /** NGSS/Idaho standards already attached to this lesson — used to scope sub-component picker. */
+  standards?: { ngss_code: string; ngss_description: string }[];
   onRegenerated: () => void;
 }
 
-export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline, gradeLevel, unitTitle, onRegenerated }: Props) {
+export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline, gradeLevel, unitTitle, standards = [], onRegenerated }: Props) {
   const { user } = useAuth();
   const { toast } = useToast();
   const [additionalContext, setAdditionalContext] = useState("");
@@ -50,7 +52,19 @@ export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline,
   const [statusText, setStatusText] = useState("");
   const [regenerateReading, setRegenerateReading] = useState(false);
   const [modelOverride, setModelOverride] = useState<string>("");
+  const [dimensionPickerOpen, setDimensionPickerOpen] = useState(false);
+  const [selectedDimensionCodes, setSelectedDimensionCodes] = useState<string[]>([]);
   const { preferences } = useAiPreferences();
+
+  // NGSS PE codes attached to this lesson — eligible for sub-component drill-down
+  const ngssParentCodes = useMemo(
+    () => standards.map(s => s.ngss_code).filter(c => !!NGSS_DIMENSIONS[c]),
+    [standards]
+  );
+  const selectedDimensions = useMemo(
+    () => selectedDimensionCodes.map(c => getDimensionByCode(c)).filter(Boolean) as NonNullable<ReturnType<typeof getDimensionByCode>>[],
+    [selectedDimensionCodes]
+  );
 
   const handleRegenerate = async () => {
     if (!user) return;
