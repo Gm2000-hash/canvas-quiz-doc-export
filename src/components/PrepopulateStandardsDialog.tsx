@@ -7,7 +7,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Sparkles, CheckCircle2, AlertCircle, Leaf, Globe, Atom, BookOpen, Calculator, Landmark } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
+import { NGSS_DIMENSIONS, formatDimensionsForPrompt } from "@/lib/ngss-dimensions";
 import { ALL_IDAHO_STANDARDS } from "@/lib/idaho-standards-data";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 
 interface Props {
