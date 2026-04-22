@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Badge } from "@/components/ui/badge";
 import {
   Lightbulb, FileText, BookOpen, Layers,
-  Library, GripVertical, Puzzle, BookOpenCheck,
+  Library, GripVertical, Puzzle, BookOpenCheck, StickyNote,
 } from "lucide-react";
 import { DashboardAnalytics } from "@/components/DashboardAnalytics";
 import sketchCanvas from "@/assets/sketch-canvas-export.png";
