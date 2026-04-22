@@ -21,7 +21,7 @@ type ColorProp = typeof COLOR_PROPS[number];
 
 export function CustomizePanel() {
   const {
-    editMode, panelOpen, setPanelOpen, selectedElement, setSelectedElement,
+    editMode, setEditMode, panelOpen, setPanelOpen, selectedElement, setSelectedElement,
     pageScopeKey, get, mutate, addWidget, hasDraft, saveAll, discardDraft, publicUrl,
   } = useTheme();
   const { user } = useAuth();
@@ -148,7 +148,7 @@ export function CustomizePanel() {
           </div>
           <Button
             variant={editMode ? "default" : "outline"}
-            onClick={() => useTheme().setEditMode(!editMode)}
+            onClick={() => setEditMode(!editMode)}
             type="button"
           >
             {editMode ? "On" : "Off"}

@@ -5,6 +5,10 @@ import { CommandPalette } from "./notes/CommandPalette";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { useEffect } from "react";
+import { ThemeProvider } from "@/components/customize/ThemeProvider";
+import { CustomizeButton } from "@/components/customize/CustomizeButton";
+import { CustomizePanel } from "@/components/customize/CustomizePanel";
+import { PageWidgets } from "@/components/customize/WidgetRenderer";
 
 interface AppShellProps {
   children: ReactNode;
@@ -25,29 +29,39 @@ export function AppShell({ children }: AppShellProps) {
   }, []);
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen flex w-full">
-        <WorkspaceSidebar />
-        <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 border-b border-white/40 bg-white/50 dark:bg-card/40 backdrop-blur-xl flex items-center px-3 gap-2 sticky top-0 z-40">
-            <SidebarTrigger />
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setPaletteOpen(true)}
-              className="ml-auto text-muted-foreground gap-2 rounded-full bg-white/60 hover:bg-white/80 border border-white/60 px-3"
+    <ThemeProvider>
+      <SidebarProvider>
+        <div className="min-h-screen flex w-full wp-host" data-themeable="app.shell">
+          <WorkspaceSidebar />
+          <div className="flex-1 flex flex-col min-w-0">
+            <header
+              data-themeable="app.header"
+              className="h-14 border-b border-border bg-card/80 backdrop-blur-xl flex items-center px-3 gap-2 sticky top-0 z-40"
             >
-              <Search className="h-4 w-4" />
-              <span className="text-sm hidden sm:inline">Search</span>
-              <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded-full border border-border/60 bg-muted/80 px-1.5 font-mono text-[10px]">
-                ⌘K
-              </kbd>
-            </Button>
-          </header>
-          <main className="flex-1 min-w-0 overflow-x-hidden">{children}</main>
+              <SidebarTrigger />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setPaletteOpen(true)}
+                className="ml-auto text-muted-foreground gap-2 rounded-full bg-card/60 hover:bg-card border border-border px-3"
+              >
+                <Search className="h-4 w-4" />
+                <span className="text-sm hidden sm:inline">Search</span>
+                <kbd className="hidden sm:inline-flex h-5 select-none items-center gap-1 rounded-full border border-border bg-muted px-1.5 font-mono text-[10px]">
+                  ⌘K
+                </kbd>
+              </Button>
+            </header>
+            <main className="flex-1 min-w-0 overflow-x-hidden" data-themeable="app.main">
+              <PageWidgets />
+              {children}
+            </main>
+          </div>
         </div>
-      </div>
-      <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
-    </SidebarProvider>
+        <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+        <CustomizeButton />
+        <CustomizePanel />
+      </SidebarProvider>
+    </ThemeProvider>
   );
 }
