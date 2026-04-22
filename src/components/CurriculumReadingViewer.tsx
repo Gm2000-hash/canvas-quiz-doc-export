@@ -21,7 +21,8 @@ import { toast } from 'sonner';
 import type { CurriculumLesson } from '@/hooks/useCurriculum';
 import { LessonStandardsPicker } from '@/components/LessonStandardsPicker';
 import { exportReadingAsPdf, exportTextbookAsPdf } from '@/lib/export-reading-pdf';
-import { exportReadingAsDocx } from '@/lib/export-reading-docx';
+import { exportReadingAsDocx, type ReadingExportOptions } from '@/lib/export-reading-docx';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 
 interface CurriculumReadingViewerProps {
   discipline: string;
