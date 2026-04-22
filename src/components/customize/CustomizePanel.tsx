@@ -42,6 +42,12 @@ export function CustomizePanel() {
   const [generating, setGenerating] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [activeTab, setActiveTab] = useState("wallpaper");
+
+  // Auto-switch to Element tab whenever an element is selected
+  useEffect(() => {
+    if (selectedElement && panelOpen) setActiveTab("element");
+  }, [selectedElement, panelOpen]);
 
   const setFilter = (target: "page" | "global", patch: WallpaperFilters) => {
     mutate(target, target === "page" ? pageScopeKey : "global", prev => ({
@@ -155,7 +161,7 @@ export function CustomizePanel() {
           </Button>
         </div>
 
-        <Tabs defaultValue="wallpaper" className="mt-4">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
           <TabsList className="grid grid-cols-4 w-full">
             <TabsTrigger value="wallpaper"><ImageIcon className="h-4 w-4" /></TabsTrigger>
             <TabsTrigger value="element"><Palette className="h-4 w-4" /></TabsTrigger>
