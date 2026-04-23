@@ -91,6 +91,104 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
     }
   };
 
+  const handleStartEnrich = async (exam: ISATExam) => {
+    setEnrichLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from("isat_exams")
+        .select("questions")
+        .eq("id", exam.id)
+        .single() as any;
+      if (error) throw error;
+      const all = (data?.questions || []) as any[];
+      const remaining = all
+        .map((q: any, i: number) => ({ q, i }))
+        .filter(({ q }) => !q.image_url && !q.media);
+      if (remaining.length === 0) {
+        toast.info("All questions already have an image or manipulative");
+        return;
+      }
+      setEnrichExamId(exam.id);
+      setEnrichExamTitle(exam.title);
+      setEnrichQuestions(all);
+      setEnrichIndex(remaining[0].i);
+      setEnrichDialogOpen(true);
+    } catch {
+      toast.error("Failed to load questions");
+    } finally {
+      setEnrichLoading(false);
+    }
+  };
+
+  const findNextUnenhanced = (questions: any[], fromIdx: number) => {
+    for (let i = fromIdx; i < questions.length; i++) {
+      const q = questions[i];
+      if (!q.image_url && !q.media) return i;
+    }
+    return -1;
+  };
+
+  const handleEnrichApply = async (result: EnhanceResult) => {
+    if (!enrichExamId) return;
+    const updated = enrichQuestions.map((q, i) => {
+      if (i !== enrichIndex) return q;
+      return {
+        ...q,
+        ...(result.image_url ? { image_url: result.image_url } : {}),
+        ...(result.media ? { media: result.media } : {}),
+        ...(result.question_text ? { question_text: result.question_text } : {}),
+        ...(result.answers ? { answers: result.answers } : {}),
+        ...(result.dok_level ? { dok_level: result.dok_level } : {}),
+      };
+    });
+    setEnrichQuestions(updated);
+    try {
+      const { error } = await supabase
+        .from("isat_exams")
+        .update({ questions: updated })
+        .eq("id", enrichExamId) as any;
+      if (error) throw error;
+      toast.success(`Question ${enrichIndex + 1} enhanced`);
+    } catch {
+      toast.error("Failed to save enhancement");
+      return;
+    }
+    const next = findNextUnenhanced(updated, enrichIndex + 1);
+    if (next === -1) {
+      toast.success("All questions enriched!");
+      setEnrichDialogOpen(false);
+      setEnrichExamId(null);
+      loadExams();
+    } else {
+      setEnrichIndex(next);
+    }
+  };
+
+  const handleEnrichSkip = () => {
+    const next = findNextUnenhanced(enrichQuestions, enrichIndex + 1);
+    if (next === -1) {
+      toast.info("No more questions to enrich");
+      setEnrichDialogOpen(false);
+      setEnrichExamId(null);
+    } else {
+      setEnrichIndex(next);
+    }
+  };
+
+  const enrichRemainingCount = enrichQuestions.filter((q) => !q.image_url && !q.media).length;
+  const currentEnrichQuestion: EnhanceQuestion | null =
+    enrichDialogOpen && enrichQuestions[enrichIndex]
+      ? {
+          question_number: enrichIndex + 1,
+          question_type: enrichQuestions[enrichIndex].question_type,
+          question_text: enrichQuestions[enrichIndex].question_text,
+          standard_code: enrichQuestions[enrichIndex].standard_code,
+          standard_description: enrichQuestions[enrichIndex].standard_description,
+          dok_level: enrichQuestions[enrichIndex].dok_level,
+          answers: enrichQuestions[enrichIndex].answers,
+        }
+      : null;
+
   const handleDelete = async () => {
     if (!deleteTarget) return;
     try {
