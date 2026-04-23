@@ -315,21 +315,24 @@ const LessonPlanEditor = () => {
     updateUdlField(principle, field, current.filter((_, i) => i !== idx));
   };
 
-  const addVocabScaffold = () => {
-    const current = lesson?.udl_supports?.representation?.vocabulary_scaffolds || [];
-    updateUdlField("representation", "vocabulary_scaffolds", [...current, { term: "", student_friendly: "", visual_cue: "" }]);
+  const getVocabScaffolds = (): VocabularyScaffold[] =>
+    lesson?.udl_supports?.vocabulary_scaffolds
+    || lesson?.udl_supports?.representation?.vocabulary_scaffolds
+    || [];
+
+  const setVocabScaffolds = (next: VocabularyScaffold[]) => {
+    if (!lesson) return;
+    setLesson({
+      ...lesson,
+      udl_supports: { ...lesson.udl_supports, vocabulary_scaffolds: next },
+    });
   };
 
-  const updateVocabScaffold = (idx: number, field: keyof VocabularyScaffold, value: string) => {
-    const current = lesson?.udl_supports?.representation?.vocabulary_scaffolds || [];
-    const next = current.map((v, i) => i === idx ? { ...v, [field]: value } : v);
-    updateUdlField("representation", "vocabulary_scaffolds", next);
-  };
-
-  const removeVocabScaffold = (idx: number) => {
-    const current = lesson?.udl_supports?.representation?.vocabulary_scaffolds || [];
-    updateUdlField("representation", "vocabulary_scaffolds", current.filter((_, i) => i !== idx));
-  };
+  const addVocabScaffold = () => setVocabScaffolds([...getVocabScaffolds(), { term: "", student_friendly: "", visual_cue: "" }]);
+  const updateVocabScaffold = (idx: number, field: keyof VocabularyScaffold, value: string) =>
+    setVocabScaffolds(getVocabScaffolds().map((v, i) => i === idx ? { ...v, [field]: value } : v));
+  const removeVocabScaffold = (idx: number) =>
+    setVocabScaffolds(getVocabScaffolds().filter((_, i) => i !== idx));
 
 
   const handleStandardsChange = async (selected: { code: string; description: string }[]) => {
