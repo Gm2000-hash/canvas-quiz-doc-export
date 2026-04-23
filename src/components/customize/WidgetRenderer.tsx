@@ -90,6 +90,7 @@ function FloatingWidget({ w }: { w: CustomWidget }) {
   const { editMode, updateWidget, deleteWidget } = useTheme();
   const ref = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<DragMode | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
 
   const x = w.x ?? 80;
   const y = w.y ?? 80;
