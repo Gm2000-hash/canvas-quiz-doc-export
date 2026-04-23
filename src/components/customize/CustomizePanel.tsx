@@ -13,8 +13,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { FILTER_PRESETS } from "@/lib/customization-types";
 import type { CustomWidget, WallpaperFilters } from "@/lib/customization-types";
-import { Upload, Sparkles, Trash2, Palette, Image as ImageIcon, Plus, Type, Heading, Minus, MoveVertical, Link2, Loader2, Save, RotateCcw } from "lucide-react";
+import { Upload, Sparkles, Trash2, Palette, Image as ImageIcon, Plus, Type, Heading, Minus, MoveVertical, Link2, Loader2, Save, RotateCcw, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
+import { CanvasTab } from "./CanvasTab";
 
 const COLOR_PROPS = ["bg", "text", "border"] as const;
 type ColorProp = typeof COLOR_PROPS[number];
@@ -23,6 +24,7 @@ export function CustomizePanel() {
   const {
     editMode, setEditMode, panelOpen, setPanelOpen, selectedElement, setSelectedElement,
     pageScopeKey, get, mutate, addWidget, hasDraft, saveAll, discardDraft, publicUrl,
+    canvasHasDraft, saveCanvas, discardCanvasDraft,
   } = useTheme();
   const { user } = useAuth();
 
@@ -200,10 +202,10 @@ export function CustomizePanel() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
           <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="wallpaper"><ImageIcon className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="element"><Palette className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="widgets"><Plus className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="sections"><Heading className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="wallpaper" title="Wallpaper"><ImageIcon className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="canvas" title="Canvas"><LayoutGrid className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="element" title="Element"><Palette className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="sections" title="Sections"><Heading className="h-4 w-4" /></TabsTrigger>
           </TabsList>
 
           {/* WALLPAPER */}
@@ -287,29 +289,9 @@ export function CustomizePanel() {
             <ElementEditor />
           </TabsContent>
 
-          {/* WIDGETS */}
-          <TabsContent value="widgets" className="mt-4 space-y-2">
-            <p className="text-xs text-muted-foreground mb-2">Add custom blocks to this page.</p>
-            <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "text", content: "New text block" })}>
-              <Type className="h-4 w-4 mr-2" /> Text
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "heading", content: "New heading", level: 2 })}>
-              <Heading className="h-4 w-4 mr-2" /> Heading
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "image", content: "" })}>
-              <ImageIcon className="h-4 w-4 mr-2" /> Image
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "divider" })}>
-              <Minus className="h-4 w-4 mr-2" /> Divider
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "spacer", height: 32 })}>
-              <MoveVertical className="h-4 w-4 mr-2" /> Spacer
-            </Button>
-            <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "embed", content: "" })}>
-              <Link2 className="h-4 w-4 mr-2" /> Embed
-            </Button>
-            <Separator className="my-3" />
-            <WidgetEditList />
+          {/* CANVAS (Canva-style editor) */}
+          <TabsContent value="canvas" className="mt-4">
+            <CanvasTab />
           </TabsContent>
 
           {/* SECTIONS */}
@@ -322,17 +304,18 @@ export function CustomizePanel() {
 
         <div className="flex gap-2">
           <Button onClick={async () => {
-            const r = await saveAll();
-            if (r.ok) toast.success("Saved to your account");
-            else toast.error(r.error || "Save failed");
-          }} disabled={!hasDraft} className="flex-1">
+            const r1 = await saveAll();
+            const r2 = await saveCanvas();
+            if (r1.ok && r2.ok) toast.success("Saved to your account");
+            else toast.error(r1.error || r2.error || "Save failed");
+          }} disabled={!hasDraft && !canvasHasDraft} className="flex-1">
             <Save className="h-4 w-4 mr-1" /> Save
           </Button>
-          <Button variant="outline" onClick={discardDraft} disabled={!hasDraft}>
+          <Button variant="outline" onClick={() => { discardDraft(); discardCanvasDraft(); }} disabled={!hasDraft && !canvasHasDraft}>
             <RotateCcw className="h-4 w-4 mr-1" /> Discard
           </Button>
         </div>
-        {hasDraft && (
+        {(hasDraft || canvasHasDraft) && (
           <p className="text-xs text-muted-foreground mt-2 text-center">
             You have unsaved local changes (preview only).
           </p>

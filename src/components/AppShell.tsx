@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/components/customize/ThemeProvider";
 import { CustomizeButton } from "@/components/customize/CustomizeButton";
 import { CustomizePanel } from "@/components/customize/CustomizePanel";
 import { PageWidgets } from "@/components/customize/WidgetRenderer";
+import { CanvasOverlay } from "@/components/customize/CanvasOverlay";
 
 interface AppShellProps {
   children: ReactNode;
@@ -52,9 +53,10 @@ export function AppShell({ children }: AppShellProps) {
                 </kbd>
               </Button>
             </header>
-            <main className="flex-1 min-w-0 overflow-x-hidden" data-themeable="app.main">
+            <main className="flex-1 min-w-0 overflow-x-hidden relative" data-themeable="app.main">
               <PageWidgets />
               {children}
+              <CanvasOverlay />
             </main>
           </div>
         </div>

@@ -2,7 +2,9 @@ import { createContext, ReactNode, useContext, useEffect, useMemo, useState } fr
 import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useThemeCustomizations } from "@/hooks/useThemeCustomizations";
+import { useCanvasLayout } from "@/hooks/useCanvasLayout";
 import type { CustomWidget } from "@/lib/customization-types";
+import type { CanvasElement } from "@/lib/canvas-types";
 
 type Ctx = ReturnType<typeof useThemeCustomizations> & {
   editMode: boolean;
@@ -18,17 +20,30 @@ type Ctx = ReturnType<typeof useThemeCustomizations> & {
   addWidget: (w: Omit<CustomWidget, "id" | "sort_order">) => void;
   updateWidget: (id: string, patch: Partial<CustomWidget>) => void;
   deleteWidget: (id: string) => void;
+  // ----- Canva-style canvas editor -----
+  canvasElements: CanvasElement[];
+  addCanvasElement: (el: CanvasElement) => void;
+  updateCanvasElement: (id: string, patch: Partial<CanvasElement>) => void;
+  removeCanvasElement: (id: string) => void;
+  reorderCanvasElements: (orderedIds: string[]) => void;
+  selectedWidgetId: string | null;
+  setSelectedWidgetId: (id: string | null) => void;
+  canvasHasDraft: boolean;
+  saveCanvas: () => Promise<{ ok: boolean; error?: string }>;
+  discardCanvasDraft: () => void;
 };
 
 const ThemeCtx = createContext<Ctx | null>(null);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const tc = useThemeCustomizations();
+  const cl = useCanvasLayout();
   const location = useLocation();
   const pageScopeKey = location.pathname;
   const [editMode, setEditMode] = useState(false);
   const [panelOpen, setPanelOpen] = useState(false);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
+  const [selectedWidgetId, setSelectedWidgetId] = useState<string | null>(null);
 
   // Toggle body class for edit mode visuals
   useEffect(() => {
@@ -36,10 +51,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => document.body.classList.remove("tk-edit-mode");
   }, [editMode]);
 
+  // Reset selected canvas widget when route changes
+  useEffect(() => { setSelectedWidgetId(null); }, [location.pathname]);
+
   // Click handler: in edit mode, clicking a [data-themeable] selects it
   useEffect(() => {
     if (!editMode) return;
     const onClick = (e: MouseEvent) => {
+      // Don't intercept clicks on canvas widgets — they have their own selection
+      if ((e.target as HTMLElement).closest(".tk-canvas-widget")) return;
       const target = (e.target as HTMLElement).closest("[data-themeable]") as HTMLElement | null;
       if (!target) return;
       const key = target.getAttribute("data-themeable");
@@ -67,7 +87,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Apply wallpaper + element colors to the document
   useEffect(() => {
     const root = document.documentElement;
-    // Page wallpaper
     const page = tc.get("page", pageScopeKey);
     const global = tc.get("global", "global");
     const wp = page.wallpaper_path ? page : global;
@@ -103,7 +122,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const rules: string[] = [];
     Object.values(tc.all).forEach(c => {
       if (c.scope_type !== "element" || !c.color) return;
-      // Parse "{key}|{prop}" e.g. "home.banner|bg" / default to bg
       const [key, prop = "bg"] = c.scope_key.split("|");
       const sel = `[data-themeable="${CSS.escape(key)}"]`;
       if (prop === "opacity") {
@@ -182,7 +200,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     selectedElement, setSelectedElement, publicUrl,
     getPageWidgets, isSectionHidden, toggleSection,
     addWidget, updateWidget, deleteWidget,
-  }), [tc, editMode, panelOpen, selectedElement]);
+    // canvas
+    canvasElements: cl.elements,
+    addCanvasElement: cl.addElement,
+    updateCanvasElement: cl.updateElement,
+    removeCanvasElement: cl.removeElement,
+    reorderCanvasElements: cl.reorderElements,
+    selectedWidgetId, setSelectedWidgetId,
+    canvasHasDraft: cl.hasDraft,
+    saveCanvas: cl.saveAll,
+    discardCanvasDraft: cl.discardDraft,
+  }), [tc, cl, editMode, panelOpen, selectedElement, selectedWidgetId]);
 
   return <ThemeCtx.Provider value={value}>{children}</ThemeCtx.Provider>;
 }
