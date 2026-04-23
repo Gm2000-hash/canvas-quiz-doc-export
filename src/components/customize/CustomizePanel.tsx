@@ -393,8 +393,12 @@ export function CustomizePanel() {
               <Heading className="h-4 w-4 mr-2" /> Heading
             </Button>
             <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "image", content: "" })}>
-              <ImageIcon className="h-4 w-4 mr-2" /> Image
+              <ImageIcon className="h-4 w-4 mr-2" /> Image (inline)
             </Button>
+            <Separator className="my-2" />
+            <p className="text-[11px] text-muted-foreground">Floating images can be dragged, resized, and rotated anywhere on the page.</p>
+            <FloatingImageUploader />
+            <Separator className="my-2" />
             <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "divider" })}>
               <Minus className="h-4 w-4 mr-2" /> Divider
             </Button>
@@ -407,6 +411,7 @@ export function CustomizePanel() {
             <Separator className="my-3" />
             <WidgetEditList />
           </TabsContent>
+
 
           {/* SECTIONS */}
           <TabsContent value="sections" className="mt-4">
