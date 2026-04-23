@@ -30,7 +30,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import PushToCanvasDialog from "@/components/PushToCanvasDialog";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
-import { PageBanner } from "@/components/PageBanner";
+import { BentoHero } from "@/components/BentoHero";
 import { useNavigate } from "react-router-dom";
 import { MathText } from "@/components/MathText";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
