@@ -386,6 +386,31 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
           config={canvasConfig}
         />
       )}
+
+      <EnhanceQuestionDialog
+        open={enrichDialogOpen}
+        onOpenChange={(v) => {
+          setEnrichDialogOpen(v);
+          if (!v) {
+            setEnrichExamId(null);
+            loadExams();
+          }
+        }}
+        question={currentEnrichQuestion}
+        onApply={handleEnrichApply}
+        headerExtra={
+          enrichDialogOpen ? (
+            <div className="flex items-center justify-between gap-2 pt-1">
+              <p className="text-xs text-muted-foreground">
+                {enrichExamTitle} — Question {enrichIndex + 1} · {enrichRemainingCount} remaining
+              </p>
+              <Button variant="ghost" size="sm" onClick={handleEnrichSkip}>
+                Skip
+              </Button>
+            </div>
+          ) : null
+        }
+      />
     </div>
   );
 }
