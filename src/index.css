@@ -455,12 +455,23 @@ body.tk-edit-mode .tk-widget {
 .tiptap .tk-callout[data-tone="danger"]  { background: hsl(0 75% 55% / 0.12); border-color: hsl(0 75% 50% / 0.4); }
 
 /* ==========================================================
-   MONOCHROME LOCKDOWN
-   The semantic tokens above are already neutral greyscale, so
-   most components render correctly without overrides. This
-   block kills only the things tokens can't reach: backdrop
-   blur, inline tailwind color utilities (bg-blue-500, etc.),
-   gradients, and any saved wallpaper image.
+   PALETTE — Wix-template inspired brand accents.
+   These are real semantic tokens (HSL).
+   ========================================================== */
+:root {
+  --brand-coral:  14 100% 64%;   /* #FF6B47 — primary accent */
+  --brand-lilac:  248 60% 86%;   /* soft purple wash */
+  --brand-peach:  18 95% 90%;    /* warm peach wash */
+  --brand-sky:    220 80% 88%;   /* cool blue wash */
+  --brand-mint:   148 50% 84%;   /* soft mint wash */
+  --brand-ink:    0 0% 8%;       /* near-black */
+}
+
+/* ==========================================================
+   SOFT MONOCHROME LOCKDOWN (legacy)
+   Neutralizes raw Tailwind hue utilities so legacy components
+   stay quiet. Intentional brand classes (.brand-*, .bento-tile--*)
+   bypass this because they don't match the bg-{hue}- prefixes.
    ========================================================== */
 
 /* No backdrop blur anywhere — primary cause of "washed out" feel */
