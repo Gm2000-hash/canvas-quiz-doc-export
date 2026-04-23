@@ -44,9 +44,9 @@ export function CustomizePanel() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState("wallpaper");
 
-  // Auto-switch to Element tab whenever an element is selected
+  // Auto-switch to Element tab whenever an element is selected (unless user is in Layers)
   useEffect(() => {
-    if (selectedElement && panelOpen) setActiveTab("element");
+    if (selectedElement && panelOpen && activeTab !== "layers") setActiveTab("element");
   }, [selectedElement, panelOpen]);
 
   const setFilter = (target: "page" | "global", patch: WallpaperFilters) => {
