@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { useEffect } from "react";
 import { ThemeProvider } from "@/components/customize/ThemeProvider";
+import { CustomizeButton } from "@/components/customize/CustomizeButton";
+import { CustomizePanel } from "@/components/customize/CustomizePanel";
 
 interface AppShellProps {
   children: ReactNode;
