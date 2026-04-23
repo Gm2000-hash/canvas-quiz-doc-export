@@ -38,11 +38,12 @@ interface Props {
   onOpenChange: (open: boolean) => void;
   question: EnhanceQuestion | null;
   onApply: (result: EnhanceResult) => void;
+  headerExtra?: React.ReactNode;
 }
 
 type Format = "diagram" | "drag_and_drop" | "image_hotspots";
 
-export function EnhanceQuestionDialog({ open, onOpenChange, question, onApply }: Props) {
+export function EnhanceQuestionDialog({ open, onOpenChange, question, onApply, headerExtra }: Props) {
   const [format, setFormat] = useState<Format>("diagram");
   const [prompt, setPrompt] = useState("");
   const [suggesting, setSuggesting] = useState(false);
