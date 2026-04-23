@@ -46,9 +46,11 @@ export function useCanvasLayout() {
     return () => { cancelled = true; };
   }, [user]);
 
+  // Migrate legacy widgets from theme_customizations to canvas_layouts (one-time per route).
   useEffect(() => {
-    if (!user) return;
-    if (serverMap[scopeKey]?.length || draftMap[scopeKey]?.length) return;
+    if (!user || loading) return;
+    if ((serverMap[scopeKey]?.length ?? 0) > 0) return;
+    if ((draftMap[scopeKey]?.length ?? 0) > 0) return;
     let cancelled = false;
 
     (async () => {
@@ -59,24 +61,21 @@ export function useCanvasLayout() {
         .eq("scope_type", "page")
         .eq("scope_key", scopeKey)
         .maybeSingle();
-
-      if (cancelled || error) return;
-      const legacyWidgets = ((data?.widgets as CustomWidget[] | null) || []).filter(Boolean);
+      if (cancelled || error || !data) return;
+      const legacyWidgets = ((data.widgets as CustomWidget[] | null) || []).filter(Boolean);
       if (legacyWidgets.length === 0) return;
-
-      const migrated = legacyWidgets.map((widget, index) => migrateLegacyWidget(widget, index));
+      const migrated = legacyWidgets.map((w, i) => migrateLegacyWidget(w, i));
       setDraftMap(prev => {
-        if (prev[scopeKey]?.length) return prev;
+        if ((prev[scopeKey]?.length ?? 0) > 0) return prev;
         const next = { ...prev, [scopeKey]: migrated };
         saveDraft(next);
         return next;
       });
     })();
 
-    return () => {
-      cancelled = true;
-    };
-  }, [user, scopeKey, serverMap, draftMap]);
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id, scopeKey, loading]);
 
   // Merged: draft overrides server
   const elements: CanvasElement[] =
