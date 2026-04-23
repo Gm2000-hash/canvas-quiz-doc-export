@@ -1,98 +1,102 @@
 
 
-## Canva-style Customize Editor
+# Bento-Style Layout Makeover (Wix-Inspired)
 
-You meant **Canva**, not Canvas LMS. Got it — that actually fits better with what you described (free positioning, layers, image filters/crop/flip, drag-to-reorder). Here's the revised plan.
+Restyle the app to match the sleek, editorial monochrome aesthetic of the referenced Wix template — a top "pill" navigation bar, a hero brand tile, an asymmetric "bento grid" of feature tiles with oversized headlines, and one solitary accent tile to break up the monochrome.
 
-### What you'll see
+## Visual Direction (from the template)
 
-A new **Canvas** tab in the Customize panel modeled on Canva's editor:
+- Pure white background, soft `#F2F2F2` tile fills, deep black ink text
+- Pill-shaped nav buttons across the top (rounded-full, grey capsule)
+- Oversized display headline ("Crafting Digital Experiences That Feel Effortless" → "Plan Lessons Your Students Actually Remember")
+- Bento layout: tiles of mixed sizes, generous radius (`rounded-3xl`), tight inner padding
+- Single coral accent tile (the only color on the page) for visual anchor
+- Round avatar floating over the hero tile
+- Section labels small/uppercase (e.g. "About", "Selected Work")
 
-- **Top toolbar**: Insert Image (upload or URL) · Text · Heading · Shape (divider) · Spacer · Embed
-- **Free-positioning overlay** on the current page — every widget becomes a draggable, resizable, rotatable box (Canva-style selection handles: 8 resize dots + rotation handle on top)
-- **Contextual editor** appears in the panel when a widget is selected:
-  - *Image*: Crop · Flip H/V · Rotate · Opacity · Filters (blur, brightness, contrast, saturation, grayscale, sepia) · **Remove Background** (AI) · Replace
-  - *Text/Heading*: font size · alignment · color · bold/italic · background
-- **Layers pane** at bottom of the tab: every widget on the page listed top-to-bottom in z-order, with drag handle (reorder), eye icon (hide), trash (delete), and click-to-select
-- Existing **Wallpaper**, **Element**, **Sections** tabs stay unchanged
+## Plan
 
-### Free positioning (Canva parity)
+### 1. Top Navigation (replace left sidebar on Home)
 
-- Each widget stores `x`, `y`, `width`, `height`, `rotation`, `zIndex`
-- Drag to move, corner handles to resize, top handle to rotate
-- Snap-to-edge guides when dragging near other widgets or page edges
-- Coordinates are page-relative (% of main content area) so they stay correct across viewports
-- Outside edit mode, widgets render in their saved positions but are non-interactive
+- Keep the existing left `WorkspaceSidebar` available but **collapse it by default** on the dashboard so the top nav becomes primary.
+- Add a horizontal **pill nav** in `AppShell`'s header showing: brand chip on the left (`TEACHERKIT / TOOLKIT`), and on the right, pill buttons for: `CURRICULUM`, `QUESTIONS`, `ACTIVITIES`, `STANDARDS`.
+- Pills: `rounded-full bg-neutral-100 px-5 py-2 text-xs font-semibold tracking-wide uppercase`, hover → black bg / white text.
+- Other inner pages keep the current sidebar behavior (no regression).
 
-### Image features
+### 2. Bento Hero on the Dashboard (`src/pages/Home.tsx`)
 
-- **Upload**: file picker → uploads to existing `wallpapers` bucket under `widget-images/{user_id}/`
-- **URL**: paste any public URL
-- **Crop**: modal using `react-easy-crop`; output stored as crop rect, applied via `clip-path` + `object-position`
-- **Flip / Rotate**: stored as `flipH`, `flipV`, `rotation`; applied as one CSS `transform`
-- **Filters**: stored as `{blur, brightness, contrast, saturate, grayscale, sepia}`; joined into one CSS `filter` string
-- **Remove Background**: new edge function `remove-image-background` calls Lovable AI image-edit model with prompt "Remove the background, output a transparent PNG", uploads result, swaps the widget's `src`
-
-### Layers / drag-reorder
-
-- `@dnd-kit/sortable` for the layers list
-- Top of list = front-most (`zIndex` derived from sort order)
-- Drag handle · 32×32 thumbnail · type label · hide · delete
-
-### Persistence (new table)
+Rebuild the dashboard as a 12-column asymmetric grid:
 
 ```text
-canvas_layouts
-├─ id uuid pk
-├─ user_id uuid (RLS: auth.uid())
-├─ scope_key text          -- route path: "/", "/notes", etc.
-├─ elements jsonb          -- array of CanvasElement
-├─ created_at, updated_at
-unique(user_id, scope_key)
+┌─────────────────────────┬─────────────────────┬──────────┐
+│ HERO TILE (cols 1-5)    │ ABOUT TILE (6-9)    │ CORAL    │
+│ • avatar (round)        │ • "About"           │ ACCENT   │
+│ • giant headline        │ • short bio /       │ (10-12)  │
+│ • subhead               │   today's lessons   │ "Today"  │
+│ • [View Curriculum →]   │ [View My Work →]    │ + count  │
+├─────────────────────────┼─────────────────────┴──────────┤
+│ EXPERTISE TILE (1-5)    │ FEATURE PREVIEW TILE (6-12)    │
+│ • "Toolkit" label       │ • Large image / sketch         │
+│ • pill chips:           │ • mini cards collage           │
+│   Curriculum, Q-Bank,   │   (Question Bank, Activities,  │
+│   Activities, Standards │    Reading Library)            │
+│   ...                   │                                │
+└─────────────────────────┴────────────────────────────────┘
 ```
 
-`CanvasElement` shape:
-```ts
-{
-  id, type: "image"|"text"|"heading"|"divider"|"spacer"|"embed",
-  // layout
-  x, y, width, height, rotation, zIndex, hidden?,
-  // text/heading
-  content?, level?, align?, color?, bg?, fontSize?, bold?, italic?,
-  // image
-  src?, opacity?,
-  filters?: { blur, brightness, contrast, saturate, grayscale, sepia },
-  flipH?, flipV?, crop?: { x, y, width, height },
-  // misc
-  height_px?  // spacer
-}
-```
+- **Hero tile**: light grey gradient bg (`bg-gradient-to-br from-neutral-100 to-white`), avatar circle top-left, 4xl–6xl bold display headline, CTA = solid black pill button with arrow icon.
+- **About tile**: white bg, "About" eyebrow, paragraph from teacher profile (subjects + grade levels rendered as a sentence), pill CTA "View My Work" → `/lesson-planner`.
+- **Coral accent tile** (the *only* color on the page): solid `#FF6B47` (Sunkist coral), shows "Today" + today's lesson titles or "No lessons today", plus a download CV-style button → links to most recent lesson.
+- **Expertise tile**: section label "Toolkit", chip list of every tool (each chip navigates), in pill style.
+- **Feature preview tile**: large rounded image (rotating screenshot from `sketchLessonPlanner`/`sketchQuestionBank`), small floating mini-cards over it (the existing sketch icons reused).
 
-RLS: `user_id = auth.uid()` for all four CRUD policies.
+### 3. "Selected Work" / Recent Activity strip
 
-### File changes
+Below the bento, add a horizontal scroll row titled `RECENT WORK` showing the 3 most recent lesson plans or units. Each row:
+- Tiny logo square (initials) + title + subject/grade + year.
+- "View" pill button on the right.
+- Below the row, a wide rounded preview image (use unit cover art if present).
 
-```text
-NEW  src/lib/canvas-types.ts                       — types + defaults
-NEW  src/hooks/useCanvasLayout.ts                  — load/save/mutate per route
-NEW  src/components/customize/CanvasTab.tsx        — toolbar + contextual editor + layers pane
-NEW  src/components/customize/CanvasOverlay.tsx    — free-positioning render layer (replaces PageWidgets)
-NEW  src/components/customize/DraggableWidget.tsx  — resize/rotate/move handles
-NEW  src/components/customize/CropDialog.tsx       — react-easy-crop modal
-NEW  supabase/functions/remove-image-background/index.ts
-EDIT src/components/customize/CustomizePanel.tsx   — replace Widgets tab → Canvas tab
-EDIT src/components/customize/ThemeProvider.tsx    — track selectedWidgetId
-EDIT src/components/AppShell.tsx                   — render <CanvasOverlay/> instead of <PageWidgets/>
-NEW  migration                                     — canvas_layouts table + RLS
-```
+### 4. "What I Do" → "What This App Does"
 
-### Migration of existing widgets
+A 4-column numbered grid (`01.` `02.` `03.` `04.`) with the four pillars:
+1. **Build Curriculum** — Units, lessons, pacing.
+2. **Bank Questions** — NGSS/Idaho-tagged assessments.
+3. **Create Activities** — H5P-style interactives.
+4. **Export to Canvas** — One-click LMS sync.
 
-One-time auto-migration on first open of the new editor: for the current page, any `widgets` from `theme_customizations` get copied into a fresh `canvas_layouts` row (placed in a vertical stack at default sizes). Nothing is deleted — old data stays as a backup.
+Numbers in oversized light grey, headings in bold black, descriptions in muted grey.
 
-### Out of scope for v1 (can add later)
+### 5. Footer "About" Block
 
-- Multi-select / group / align-distribute
-- Undo/redo stack (current schema supports it; UI deferred)
-- Templates / saved layouts library
+Wide rounded grey tile at the bottom: short app mission paragraph + "Learn More" pill → `/profile`.
+
+### 6. Typography & Spacing Pass
+
+In `src/index.css`, add a Wix-style display heading utility (no color changes — stays monochrome):
+- `.display-xl` → `text-5xl md:text-7xl font-extrabold tracking-tight leading-[0.95]`
+- `.eyebrow` → `text-xs uppercase tracking-[0.2em] text-neutral-500 font-semibold`
+- `.pill-btn` → `rounded-full bg-neutral-100 hover:bg-black hover:text-white transition-colors px-5 py-2 text-xs font-semibold uppercase tracking-wide`
+- `.bento-tile` → `rounded-3xl bg-neutral-50 border border-neutral-200 p-6 md:p-8`
+- `.bento-tile--ink` → solid black variant
+- `.bento-tile--coral` → the **single** allowed color tile (`bg-[#FF6B47] text-white`)
+
+### 7. Files to modify
+
+- `src/components/AppShell.tsx` — add top pill nav bar, default-collapse sidebar on `/`.
+- `src/components/WorkspaceSidebar.tsx` — minor: respect collapsed default on home.
+- `src/pages/Home.tsx` — full rebuild into bento layout (keep existing data fetches & drag/drop optional behind a "Customize" toggle — drag handles removed by default for clean look).
+- `src/index.css` — add the utility classes above; no changes to color tokens (monochrome lock stays).
+
+### 8. What stays the same
+
+- Monochrome lockdown remains in force; coral is hard-coded inline only on the single accent tile.
+- All routes, data hooks (`useProfile`, lesson counts, today's lessons), and tile destinations are preserved.
+- All other pages (Curriculum, Question Bank, etc.) get the new top pill nav for free but keep their current layouts in this pass.
+
+### 9. Out of scope (can do in a follow-up)
+
+- Restyling the inside of Curriculum/QuestionBank/Activities pages to match bento.
+- Dark mode variant of the new layout.
+- Animated tile transitions on scroll.
 
