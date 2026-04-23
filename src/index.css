@@ -30,9 +30,9 @@
     --destructive: 8 78% 55%;         /* coral red */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 170 45% 60%;
-    --input: 170 35% 78%;
-    --ring: 200 90% 50%;
+    --border: 175 70% 28%;            /* deep teal — crisp outlines */
+    --input: 175 55% 35%;
+    --ring: 200 95% 40%;
 
     --radius: 0.75rem;
 
@@ -157,11 +157,15 @@
   h1 { letter-spacing: -0.02em; }
   h2, h3 { letter-spacing: -0.015em; }
 
-  /* Force all text to fully-opaque black for maximum readability */
+  /* Force all text to fully-opaque, INK-deep navy/black for max sharpness */
   body, body * {
-    color: hsl(0 0% 0%) !important;
+    color: hsl(220 45% 8%) !important;
     opacity: 1;
+    text-shadow: 0 0 0.5px hsl(220 45% 8% / 0.35);
   }
+  /* Headings get a touch more weight to pop against the tie-dye */
+  h1, h2, h3, h4, h5, h6 { font-weight: 800 !important; letter-spacing: -0.018em; }
+
   /* …except elements sitting on dark/colored fills keep their light text */
   [class*="bg-primary"]:not([class*="bg-primary/"]),
   [class*="bg-primary"]:not([class*="bg-primary/"]) *,
@@ -171,6 +175,13 @@
   [class*="bg-foreground"], [class*="bg-foreground"] *,
   [class*="bg-sidebar-primary"], [class*="bg-sidebar-primary"] * {
     color: hsl(var(--primary-foreground)) !important;
+    text-shadow: none !important;
+  }
+
+  /* Borders: bump to 1.5px and use a deeper teal everywhere for crisp edges */
+  *, *::before, *::after { border-color: hsl(var(--border)) !important; }
+  .border, [class*="border-"]:not([class*="border-0"]):not([class*="border-transparent"]) {
+    border-width: 1.5px;
   }
 }
 
