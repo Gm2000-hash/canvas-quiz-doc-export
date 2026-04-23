@@ -54,15 +54,32 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Reset selected canvas widget when route changes
   useEffect(() => { setSelectedWidgetId(null); }, [location.pathname]);
 
-  // Click handler: in edit mode, clicking a [data-themeable] selects it
+  // Click handler: in edit mode, clicking ANY element auto-tags it with a
+  // stable structural key so it can be themed — no per-page markup needed.
   useEffect(() => {
     if (!editMode) return;
     const onClick = (e: MouseEvent) => {
-      // Don't intercept clicks on canvas widgets — they have their own selection
-      if ((e.target as HTMLElement).closest(".tk-canvas-widget")) return;
-      const target = (e.target as HTMLElement).closest("[data-themeable]") as HTMLElement | null;
-      if (!target) return;
-      const key = target.getAttribute("data-themeable");
+      const tgt = e.target as HTMLElement;
+      // Don't intercept canvas widgets, customize panel itself, or sidebar/header chrome
+      if (tgt.closest(".tk-canvas-widget")) return;
+      if (tgt.closest("[data-tk-ignore]")) return;
+      if (tgt.closest("[role='dialog'], [data-radix-popper-content-wrapper]")) return;
+      // Prefer an explicit data-themeable ancestor if present
+      const explicit = tgt.closest("[data-themeable]") as HTMLElement | null;
+      let key: string | null = null;
+      if (explicit) {
+        key = explicit.getAttribute("data-themeable");
+      } else {
+        // Walk up to the nearest meaningful element (skip pure layout wrappers
+        // when the click landed on text inside a control)
+        const candidate = (tgt.closest(
+          "button, a, input, textarea, select, label, h1, h2, h3, h4, h5, h6, p, li, " +
+          "[role='button'], [role='tab'], [role='menuitem'], [role='option'], " +
+          ".bubble-glass, [class*='card'], [data-radix-collection-item]"
+        ) as HTMLElement | null) || tgt;
+        key = `auto:${pageScopeKey}::${getStructuralPath(candidate)}`;
+        candidate.setAttribute("data-themeable", key);
+      }
       if (!key) return;
       e.preventDefault();
       e.stopPropagation();
@@ -71,7 +88,30 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     };
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
-  }, [editMode]);
+  }, [editMode, pageScopeKey]);
+
+  // Re-apply auto-tags whenever the DOM changes so saved customizations
+  // continue to find their elements after re-renders / route changes.
+  useEffect(() => {
+    const reapply = () => {
+      Object.values(tc.all).forEach(c => {
+        if (c.scope_type !== "element") return;
+        const [key] = c.scope_key.split("|");
+        if (!key.startsWith("auto:")) return;
+        // Only reapply for the current page
+        const prefix = `auto:${pageScopeKey}::`;
+        if (!key.startsWith(prefix)) return;
+        const path = key.slice(prefix.length);
+        if (document.querySelector(`[data-themeable="${CSS.escape(key)}"]`)) return;
+        const el = resolveStructuralPath(path);
+        if (el) el.setAttribute("data-themeable", key);
+      });
+    };
+    reapply();
+    const obs = new MutationObserver(() => reapply());
+    obs.observe(document.body, { childList: true, subtree: true });
+    return () => obs.disconnect();
+  }, [tc.all, pageScopeKey]);
 
   // Resolve wallpaper signed URL cache
   const [urlCache, setUrlCache] = useState<Record<string, string>>({});
