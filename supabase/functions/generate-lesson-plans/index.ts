@@ -101,7 +101,7 @@ Also populate (still required, but secondary to lesson_flow):
   • vocabulary_scaffolds (ARRAY of ≥3 objects): Each object MUST include term, student_friendly (kid-friendly rephrase, NOT a dictionary definition), and visual_cue (a concrete image, gesture, or analogy students can picture). These are what the lesson_flow's "How (UDL): Representation" lines will reference.
   • reflection_prompt (1–2 sentences): A single classroom-ready metacognitive question students answer at lesson close (the Closing phase's "Formative Check" can repeat or expand on it).
 
-DO NOT produce the older granular engagement/representation/action_expression sub-objects — they are deprecated. All of that detail now lives, in narrative order, INSIDE lesson_flow.
+DO NOT produce the older granular engagement/representation/action_expression sub-objects — they are deprecated. All of that detail now lives, in narrative order, INSIDE lesson_flow.`;
     const systemPrompt = withUdl(baseSystemPrompt);
 
     const userPrompt = `Create ${numLessons} sequential, FULLY SCRIPTED lesson plans for a unit called "${unitTitle}" focused on "${topic}".
@@ -178,65 +178,33 @@ Make these detailed enough that a substitute teacher with no science background 
                           },
                           udl_supports: {
                             type: "object",
-                            description: "REQUIRED. Structured UDL (CAST v2.2) supports for this lesson. Every sub-field must be classroom-ready and specific — no platitudes.",
+                            description: "REQUIRED. UDL-aligned lesson supports. The PRIMARY field is lesson_flow — a unified, sequential outline that replaces the old activities/assessment/differentiation/principle subsections.",
                             properties: {
-                              engagement: {
-                                type: "object",
-                                properties: {
-                                  hook: { type: "string", description: "2-4 sentences. An authentic, relevant opener naming the artifact (image, clip, demo, headline)." },
-                                  student_choice: { type: "array", items: { type: "string" }, description: "≥3 concrete CHOICE options across path, partner, or product. Each item is a full sentence." },
-                                  collaboration: { type: "string", description: "2-4 sentences. A specific grouping move or protocol (think-pair-share, jigsaw, etc.) with role names." },
-                                  sustain_effort: { type: "string", description: "2-4 sentences. How challenge is varied AND how mastery-oriented feedback is delivered." },
-                                  self_regulation_prompt: { type: "string", description: "1-2 sentences. A concrete mid-lesson reflection or coping cue students respond to." },
-                                },
-                                required: ["hook", "student_choice", "collaboration", "sustain_effort", "self_regulation_prompt"],
-                                additionalProperties: false,
+                              lesson_flow: {
+                                type: "string",
+                                description: "REQUIRED. PRIMARY DELIVERABLE. A single coherent HTML outline of the lesson, organized into 4–6 phases (Opening / Hook, Background, Core Learning, Practice, Closing). For EACH phase include FOUR labeled bulleted lines using these exact bold labels: 'What:' (concrete activity + minutes + materials), 'How (UDL):' (one line covering Engagement: ... · Representation: ... · Action & Expression: ...), 'Why:' (1–2 sentences pedagogical rationale), 'Formative Check:' (the in-the-moment evidence collected + what to do if students aren't there yet). Use <h3>, <p>, <strong>, <ul>, <li> tags. Substitute-teacher-friendly. No platitudes.",
                               },
-                              representation: {
-                                type: "object",
-                                properties: {
-                                  visual: { type: "string", description: "2-4 sentences. A specific visual alternative (diagram, anchor chart, slideshow, model, video clip)." },
-                                  auditory: { type: "string", description: "2-4 sentences. A specific auditory option (read-aloud, podcast clip, recorded mini-lecture)." },
-                                  text_supports: { type: "string", description: "2-4 sentences. Specific text scaffolds (outline organizer, sentence stems, summary frame)." },
-                                  vocabulary_scaffolds: {
-                                    type: "array",
-                                    description: "≥3 objects, beyond the main vocabulary list. Each has term, student_friendly rephrase, and visual_cue.",
-                                    items: {
-                                      type: "object",
-                                      properties: {
-                                        term: { type: "string" },
-                                        student_friendly: { type: "string", description: "Kid-friendly rephrase in plain language." },
-                                        visual_cue: { type: "string", description: "A concrete image, gesture, or analogy students can picture." },
-                                      },
-                                      required: ["term", "student_friendly", "visual_cue"],
-                                      additionalProperties: false,
-                                    },
+                              vocabulary_scaffolds: {
+                                type: "array",
+                                description: "≥3 objects beyond the main vocabulary list. Each has term, student_friendly rephrase (kid-friendly, not a dictionary definition), and visual_cue (concrete image, gesture, or analogy).",
+                                items: {
+                                  type: "object",
+                                  properties: {
+                                    term: { type: "string" },
+                                    student_friendly: { type: "string", description: "Kid-friendly rephrase in plain language." },
+                                    visual_cue: { type: "string", description: "A concrete image, gesture, or analogy students can picture." },
                                   },
-                                  big_idea_highlight: { type: "string", description: "1-2 sentences. The single most important takeaway, written like a poster." },
-                                  background_activation: { type: "string", description: "2-4 sentences. A specific move (KWL, quick-write, picture prompt) with the prompt written verbatim." },
+                                  required: ["term", "student_friendly", "visual_cue"],
+                                  additionalProperties: false,
                                 },
-                                required: ["visual", "auditory", "text_supports", "vocabulary_scaffolds", "big_idea_highlight", "background_activation"],
-                                additionalProperties: false,
                               },
-                              action_expression: {
-                                type: "object",
-                                properties: {
-                                  response_modes: { type: "array", items: { type: "string" }, description: "≥3 distinct ways students may respond/produce work today." },
-                                  physical_action_options: { type: "string", description: "2-4 sentences. A specific movement, manipulative, or hands-on option with materials named." },
-                                  planning_scaffold: { type: "string", description: "2-4 sentences. A concrete organizer or cue students use to plan their work." },
-                                  progress_checkpoint: { type: "string", description: "2-4 sentences. A specific mid-task self-check." },
-                                  flexible_assessment: { type: "string", description: "2-4 sentences. At least 2 distinct ways students can demonstrate mastery." },
-                                },
-                                required: ["response_modes", "physical_action_options", "planning_scaffold", "progress_checkpoint", "flexible_assessment"],
-                                additionalProperties: false,
-                              },
-                              reflection_prompt: { type: "string", description: "1-2 sentences. A single classroom-ready metacognitive question students answer at lesson close." },
+                              reflection_prompt: { type: "string", description: "1–2 sentences. A single classroom-ready metacognitive question students answer at lesson close." },
                             },
-                            required: ["engagement", "representation", "action_expression", "reflection_prompt"],
+                            required: ["lesson_flow", "vocabulary_scaffolds", "reflection_prompt"],
                             additionalProperties: false,
                           },
                         },
-                        required: ["title", "duration_minutes", "objectives", "activities", "materials", "assessment", "differentiation", "resources_json", "vocabulary_json", "standards_json", "udl_supports"],
+                        required: ["title", "duration_minutes", "objectives", "resources_json", "vocabulary_json", "standards_json", "udl_supports"],
                         additionalProperties: false,
                       },
                     },
