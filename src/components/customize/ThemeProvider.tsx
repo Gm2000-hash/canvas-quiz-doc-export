@@ -242,9 +242,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         const v = parseFloat((c.color || "").replace("opacity:", ""));
         if (!isNaN(v)) rules.push(`${sel}{opacity:${v} !important;}`);
       }
-      else if (prop === "text") rules.push(`${sel}{color:${c.color} !important;}`);
-      else if (prop === "border") rules.push(`${sel}{border-color:${c.color} !important;}`);
-      else rules.push(`${sel}{background-color:${c.color} !important;}`);
+      else if (prop === "text") {
+        // Cascade text color into descendants so nested spans/headings pick it up
+        rules.push(`${sel}, ${sel} *:not(svg):not(path){color:${c.color} !important;}`);
+      }
+      else if (prop === "border") {
+        rules.push(`${sel}{border-color:${c.color} !important;}`);
+      }
+      else {
+        // Background: also clear nested opaque backgrounds so chosen color (incl. alpha) shows through
+        rules.push(`${sel}{background-color:${c.color} !important; background-image:none !important;}`);
+        rules.push(`${sel} > *{background-color:transparent !important; background-image:none !important;}`);
+      }
     });
     style.textContent = rules.join("\n");
   }, [tc.all]);
