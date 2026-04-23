@@ -33,7 +33,7 @@ export function AppShell({ children }: AppShellProps) {
           <div className="flex-1 flex flex-col min-w-0">
             <header
               data-themeable="app.header"
-              className="h-14 border-b border-border bg-card/80 backdrop-blur-xl flex items-center px-3 gap-2 sticky top-0 z-40"
+              className="h-14 border-b border-border bg-card flex items-center px-3 gap-2 sticky top-0 z-40"
             >
               <SidebarTrigger />
               <Button
