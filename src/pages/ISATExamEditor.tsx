@@ -67,6 +67,7 @@ export default function ISATExamEditor() {
   const [dirty, setDirty] = useState(false);
   const [generatingReview, setGeneratingReview] = useState(false);
   const [editorMode, setEditorMode] = useState<"questions" | "review">("questions");
+  const [enhanceTarget, setEnhanceTarget] = useState<number | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -387,18 +388,61 @@ export default function ISATExamEditor() {
                   />
                 </div>
 
-                {/* Media / Image */}
+                {/* Media / Image / Manipulative */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Media / Image</Label>
-                  <AIImageGenerator
-                    questionText={q.question_text}
-                    questionType={q.question_type}
-                    currentImageUrl={q.image_url}
-                    currentMedia={q.media}
-                    onImageGenerated={(url) => updateQuestion(selectedQ, { image_url: url, media: undefined })}
-                    onMediaChange={(media) => updateQuestion(selectedQ, { media })}
-                    onRemoveImage={() => updateQuestion(selectedQ, { image_url: undefined })}
-                  />
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Visual / Manipulative</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 text-xs border-primary/30 text-primary hover:bg-primary/5"
+                      onClick={() => setEnhanceTarget(selectedQ)}
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Enhance with image / manipulative
+                    </Button>
+                  </div>
+                  {q.image_url && !q.media && (
+                    <div className="relative inline-block">
+                      <img src={q.image_url} alt="Question" className="max-h-48 rounded-lg border" />
+                      <Button
+                        variant="destructive" size="icon"
+                        className="absolute top-1 right-1 h-6 w-6"
+                        onClick={() => updateQuestion(selectedQ, { image_url: undefined })}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  )}
+                  {q.media && (
+                    <div className="relative inline-block">
+                      {q.media.type === "h5p" ? (
+                        <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-3 space-y-2 max-w-md">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-primary" />
+                            <span className="text-xs font-medium">
+                              Interactive: {q.media.activity_type === "drag_and_drop" ? "Drag-and-Drop labeling" : "Click-the-part hotspots"}
+                            </span>
+                          </div>
+                          {q.media.url && <img src={q.media.url} alt="Manipulative" className="max-h-40 rounded border bg-white" />}
+                        </div>
+                      ) : q.media.type === "image" ? (
+                        <img src={q.media.url} alt="Question" className="max-h-48 rounded-lg border" />
+                      ) : (
+                        <div className="text-xs text-muted-foreground p-2 border rounded">{q.media.type}: {q.media.url}</div>
+                      )}
+                      <Button
+                        variant="destructive" size="icon"
+                        className="absolute top-1 right-1 h-6 w-6"
+                        onClick={() => updateQuestion(selectedQ, { media: undefined })}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  )}
+                  {!q.image_url && !q.media && (
+                    <p className="text-xs text-muted-foreground italic">No visual attached. Click "Enhance" to add one.</p>
+                  )}
                 </div>
 
                 {/* Hint */}
