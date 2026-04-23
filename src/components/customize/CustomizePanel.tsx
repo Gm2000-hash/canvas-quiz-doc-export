@@ -104,6 +104,11 @@ export function CustomizePanel() {
     const opacityCur = get("element", opacityKey);
     // We stash the per-element opacity inside `color` as a string like "opacity:0.6"
     const opacityVal = parseFloat((opacityCur.color || "").replace("opacity:", "")) || 1;
+    const zKey = `${selectedElement}|zindex`;
+    const zCur = get("element", zKey);
+    // Stored as "zindex:<n>" where n is integer (-50..50). 0 = default.
+    const zVal = parseInt((zCur.color || "").replace("zindex:", ""), 10);
+    const zSafe = Number.isFinite(zVal) ? zVal : 0;
 
     return (
       <div className="space-y-4">
