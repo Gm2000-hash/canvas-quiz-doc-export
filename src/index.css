@@ -157,15 +157,11 @@
   h1 { letter-spacing: -0.02em; }
   h2, h3 { letter-spacing: -0.015em; }
 
-  /* Force all text to fully-opaque, INK-deep navy/black for max sharpness */
+  /* Force all text to fully-opaque black for maximum readability */
   body, body * {
-    color: hsl(220 45% 8%) !important;
+    color: hsl(0 0% 0%) !important;
     opacity: 1;
-    text-shadow: 0 0 0.5px hsl(220 45% 8% / 0.35);
   }
-  /* Headings get a touch more weight to pop against the tie-dye */
-  h1, h2, h3, h4, h5, h6 { font-weight: 800 !important; letter-spacing: -0.018em; }
-
   /* …except elements sitting on dark/colored fills keep their light text */
   [class*="bg-primary"]:not([class*="bg-primary/"]),
   [class*="bg-primary"]:not([class*="bg-primary/"]) *,
@@ -175,14 +171,40 @@
   [class*="bg-foreground"], [class*="bg-foreground"] *,
   [class*="bg-sidebar-primary"], [class*="bg-sidebar-primary"] * {
     color: hsl(var(--primary-foreground)) !important;
+  }
+}
+
+/* ==========================================================
+   TILE/CONTENT SHARPENING — applies only inside <main> so the
+   sidebar is left untouched. Inky text, heavier headings, and
+   crisp 1.5px deep-teal borders on cards & tiles.
+   ========================================================== */
+@layer base {
+  main, main * {
+    color: hsl(220 45% 8%) !important;
+    text-shadow: 0 0 0.5px hsl(220 45% 8% / 0.35);
+  }
+  main h1, main h2, main h3, main h4, main h5, main h6 {
+    font-weight: 800 !important;
+    letter-spacing: -0.018em;
+  }
+  /* Re-assert light text on filled buttons/badges inside main */
+  main [class*="bg-primary"]:not([class*="bg-primary/"]),
+  main [class*="bg-primary"]:not([class*="bg-primary/"]) *,
+  main [class*="bg-accent"]:not([class*="bg-accent/"]),
+  main [class*="bg-accent"]:not([class*="bg-accent/"]) *,
+  main [class*="bg-destructive"], main [class*="bg-destructive"] * {
+    color: hsl(var(--primary-foreground)) !important;
     text-shadow: none !important;
   }
-
-  /* Borders: bump to 1.5px and use a deeper teal everywhere for crisp edges */
-  *, *::before, *::after { border-color: hsl(var(--border)) !important; }
-  .border, [class*="border-"]:not([class*="border-0"]):not([class*="border-transparent"]) {
+  /* Crisp deep-teal borders on tiles & cards inside main */
+  main .bubble-glass,
+  main .bubble-glass-soft,
+  main [class*="border"]:not([class*="border-0"]):not([class*="border-transparent"]) {
+    border-color: hsl(175 70% 28%) !important;
     border-width: 1.5px;
   }
+}
 }
 
 /* ========== Wallpaper layer ========== */
