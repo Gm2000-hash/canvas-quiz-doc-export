@@ -78,36 +78,30 @@ CRITICAL REQUIREMENTS FOR DETAIL:
 - NGSS STANDARDS: At least 1 NGSS MS standard per lesson with COMPLETE text. MANDATORY.
 
 ═══════════════════════════════════════════════════════════════
-UDL_SUPPORTS — STRUCTURED, CLASSROOM-READY (REQUIRED)
+UDL_SUPPORTS — UNIFIED LESSON FLOW (REQUIRED, PRIMARY DELIVERABLE)
 ═══════════════════════════════════════════════════════════════
-You MUST populate every sub-field of udl_supports with concrete, specific, classroom-ready content. Generic platitudes like "differentiate as needed" or "provide visuals" are FORBIDDEN. Every prose field is 2-4 sentences naming the actual artifact, prompt, or move the teacher will use.
+The most important field is udl_supports.lesson_flow — a SINGLE coherent, sequential outline that a substitute teacher with no science background could pick up and teach. It REPLACES the older fragmented "activities + assessment + differentiation + UDL principle" sections.
 
-ENGAGEMENT (the WHY of learning):
-  • hook (2-4 sentences): An authentic, relevant opener tied to students' real lives or current events. Name the artifact (image, headline, short clip, story, demo). Example: "Open with a 90-second NASA clip of the Mars rover landing, then ask: 'If we sent YOU to design the next rover, what would worry you most?' Pair-share for 60 seconds before sharing out."
-  • student_choice (ARRAY of ≥3 strings): Concrete CHOICE options across path, partner, or product. Each item is a full sentence describing the option. Example: ["Choose to work solo or with a partner of your choice", "Choose to demonstrate understanding by sketching, writing, or recording a 60-second voice memo", "Choose either the cell-phone case or the bridge as your design challenge context"].
-  • collaboration (2-4 sentences): A specific grouping move with role names or a structured protocol (think-pair-share, jigsaw, gallery walk, fishbowl, expert groups). Name how groups are formed and what each role does.
-  • sustain_effort (2-4 sentences): How challenge is varied (tiered tasks, extension cards, must-do/may-do) AND how mastery-oriented feedback is delivered (specific feedback stems, peer feedback protocol, conferring schedule).
-  • self_regulation_prompt (1-2 sentences): A concrete mid-lesson reflection or coping cue students respond to. Example: "Pause-and-rate: On a 1-3 scale, how confident are you right now? If you're at 1, raise the ✋ card or grab a hint card from the table."
+Format lesson_flow as plain HTML (use <h3>, <p>, <strong>, <ul>, <li>). Organize the lesson into 4–6 PHASES that add up to the lesson duration, e.g.:
+  • Opening / Hook (5 min)
+  • Background & Vocabulary Activation (10 min)
+  • Core Learning / Investigation (15–20 min)
+  • Practice & Application (10–15 min)
+  • Formative Check & Closing Reflection (5–10 min)
 
-REPRESENTATION (the WHAT of learning):
-  • visual (2-4 sentences): At least one specific visual alternative — diagram, anchor chart, slideshow, model, infographic, video clip with captions. Name what it looks like and what concept it represents.
-  • auditory (2-4 sentences): A specific auditory option — teacher read-aloud, podcast clip, partner read, text-to-speech for the digital handout, recorded mini-lecture. Name the source.
-  • text_supports (2-4 sentences): Specific text scaffolds — outline organizer, sentence stems, summary frame, color-coded notes guide, glossary card. Describe the format students receive.
-  • vocabulary_scaffolds (ARRAY of ≥3 objects): Beyond the main vocabulary list. Each object MUST include: term (the word), student_friendly (a kid-friendly rephrase in plain language, NOT the dictionary definition), visual_cue (a concrete image, gesture, or analogy students can picture). Example: { "term": "tectonic plate", "student_friendly": "huge slabs of Earth's crust that float on hot melted rock and very slowly bump into each other", "visual_cue": "show a cracked hard-boiled egg on the desk; the shell pieces are the plates" }.
-  • big_idea_highlight (1-2 sentences): The single most important takeaway students MUST walk away knowing today, written in plain language as if for a poster.
-  • background_activation (2-4 sentences): A specific move to activate prior knowledge — KWL, quick-write, picture prompt, "What do you already know about ___?" Name the prompt verbatim.
+For EACH phase you MUST include four labeled bullets — exactly these labels, bolded:
+  • <strong>What:</strong> the concrete activity, materials, and the timing in minutes. Name what the teacher says/does first, what students do, and the artifact produced.
+  • <strong>How (UDL):</strong> on ONE line, name the moves for all three UDL principles using the format "Engagement: ... · Representation: ... · Action & Expression: ...". Be specific (e.g. "Engagement: pair-share with student-chosen partner · Representation: anchor chart + read-aloud · Action & Expression: students may write OR sketch OR record a 60-sec voice memo").
+  • <strong>Why:</strong> 1–2 sentences explaining the pedagogical rationale (what misconception it addresses, why this scaffold matters, or which standard it builds toward).
+  • <strong>Formative Check:</strong> the specific in-the-moment evidence the teacher collects (exit slip prompt verbatim, thumbs-meter, observed behavior, 1-question whiteboard check, etc.) AND what the teacher does if students aren't there yet.
 
-ACTION & EXPRESSION (the HOW of learning):
-  • response_modes (ARRAY of ≥3 strings): The distinct ways students may respond/produce work today. Choose from: written, verbal, sketched/diagram, built/model, demonstrated/role-play, recorded (audio/video), digital (slides/doc), kinesthetic. Example: ["written paragraph in science notebook", "sketched labeled diagram on whiteboard", "recorded 60-second voice memo on Flipgrid"].
-  • physical_action_options (2-4 sentences): A specific movement, manipulative, or hands-on option. Name the materials. Example: "Provide foam tectonic plate cutouts and a felt 'mantle' mat at each table; students physically slide the plates to model convergent, divergent, and transform boundaries."
-  • planning_scaffold (2-4 sentences): A concrete organizer or cue students use to plan their work. Example: "Hand each student a 'My Plan' sticky note with the prompt: 'I will use ___ (text, video, model) to learn ___, and I will show what I know by ___ (writing, drawing, recording).'"
-  • progress_checkpoint (2-4 sentences): A specific mid-task self-check. Example: "Halfway through the lab, students complete a 30-second 'Stop & Self-Check': 'Have I labeled all 3 layers? Did I record temperature readings? If no, fix before continuing.'"
-  • flexible_assessment (2-4 sentences): At least 2 distinct ways students can demonstrate mastery on the lesson goal. Name both. Example: "Option A: Write a 5-sentence CER (Claim, Evidence, Reasoning) paragraph. Option B: Record a 90-second screencast explaining the diagram you built. Both are scored on the same 4-point rubric."
+Tone: imperative, concrete, classroom-ready, specific. Forbidden: generic platitudes ("differentiate as needed", "use visuals"), vague timing ("a few minutes"), or skipping any of the four labels in any phase.
 
-CLOSING REFLECTION:
-  • reflection_prompt (1-2 sentences): A single classroom-ready metacognitive question students answer at lesson close. Example: "What is one idea you understand more clearly now, and one question you still have? Write 2-3 sentences in your science notebook."
+Also populate (still required, but secondary to lesson_flow):
+  • vocabulary_scaffolds (ARRAY of ≥3 objects): Each object MUST include term, student_friendly (kid-friendly rephrase, NOT a dictionary definition), and visual_cue (a concrete image, gesture, or analogy students can picture). These are what the lesson_flow's "How (UDL): Representation" lines will reference.
+  • reflection_prompt (1–2 sentences): A single classroom-ready metacognitive question students answer at lesson close (the Closing phase's "Formative Check" can repeat or expand on it).
 
-NEVER leave any UDL sub-field blank, vague, or under-detailed. If you cannot think of a specific move, invent a plausible classroom-ready one — do not produce one-line summaries.`;
+DO NOT produce the older granular engagement/representation/action_expression sub-objects — they are deprecated. All of that detail now lives, in narrative order, INSIDE lesson_flow.
     const systemPrompt = withUdl(baseSystemPrompt);
 
     const userPrompt = `Create ${numLessons} sequential, FULLY SCRIPTED lesson plans for a unit called "${unitTitle}" focused on "${topic}".
