@@ -1,102 +1,74 @@
 
 
-# Bento-Style Layout Makeover (Wix-Inspired)
+# Add Optional Images & Manipulatives to ISAT Practice Exams
 
-Restyle the app to match the sleek, editorial monochrome aesthetic of the referenced Wix template — a top "pill" navigation bar, a hero brand tile, an asymmetric "bento grid" of feature tiles with oversized headlines, and one solitary accent tile to break up the monochrome.
+Make exams text-only by default. Each question gets an "Enhance" action that lets the AI suggest an image prompt (you tweak it), generates a diagram or interactive manipulative, rewrites the stem to reference it, and bumps DoK.
 
-## Visual Direction (from the template)
+---
 
-- Pure white background, soft `#F2F2F2` tile fills, deep black ink text
-- Pill-shaped nav buttons across the top (rounded-full, grey capsule)
-- Oversized display headline ("Crafting Digital Experiences That Feel Effortless" → "Plan Lessons Your Students Actually Remember")
-- Bento layout: tiles of mixed sizes, generous radius (`rounded-3xl`), tight inner padding
-- Single coral accent tile (the only color on the page) for visual anchor
-- Round avatar floating over the hero tile
-- Section labels small/uppercase (e.g. "About", "Selected Work")
+## How it will feel to use
 
-## Plan
+1. **Generate exam** — same as today. Output is text-only (no images).
+2. **In the exam editor**, each question has a new **"Enhance with image / manipulative"** button.
+3. Clicking it opens a dialog with:
+   - **Format picker**: Static diagram · Drag-and-drop labeling · Hotspot click-the-part
+   - **AI-suggested prompt** (auto-drafted from the question + standard) shown in an editable textarea
+   - **"Also rewrite the question to use it & raise DoK"** toggle (on by default)
+   - **Generate** button → preview → **Attach** or **Try again**
+4. Drag-and-drop and hotspot manipulatives get saved as H5P activities and embedded into the question (rendered inline by the player).
+5. **On the ISAT exam list page** (`ISATExamList.tsx`), each exam tile gets a **"Enrich with images"** action to walk through unenhanced questions one-by-one in a wizard.
 
-### 1. Top Navigation (replace left sidebar on Home)
+---
 
-- Keep the existing left `WorkspaceSidebar` available but **collapse it by default** on the dashboard so the top nav becomes primary.
-- Add a horizontal **pill nav** in `AppShell`'s header showing: brand chip on the left (`TEACHERKIT / TOOLKIT`), and on the right, pill buttons for: `CURRICULUM`, `QUESTIONS`, `ACTIVITIES`, `STANDARDS`.
-- Pills: `rounded-full bg-neutral-100 px-5 py-2 text-xs font-semibold tracking-wide uppercase`, hover → black bg / white text.
-- Other inner pages keep the current sidebar behavior (no regression).
+## What changes in the app
 
-### 2. Bento Hero on the Dashboard (`src/pages/Home.tsx`)
+### A. Generation stays text-only
+- `generate-isat-exam` edge function: strip any image instructions from the system prompt; ensure questions are produced **without** `image_url` or `media`.
 
-Rebuild the dashboard as a 12-column asymmetric grid:
+### B. Per-question "Enhance" dialog (editor)
+- New `EnhanceQuestionDialog.tsx` opened from the existing Media/Image slot in `ISATExamEditor.tsx`.
+- Three tabs: **Diagram**, **Drag-and-Drop**, **Hotspots**.
+- "Suggest prompt" calls a new edge function (or a mode flag) that returns a one-paragraph image prompt + (optionally) a rewritten question stem with raised DoK and updated answer choices that explicitly reference the visual.
 
-```text
-┌─────────────────────────┬─────────────────────┬──────────┐
-│ HERO TILE (cols 1-5)    │ ABOUT TILE (6-9)    │ CORAL    │
-│ • avatar (round)        │ • "About"           │ ACCENT   │
-│ • giant headline        │ • short bio /       │ (10-12)  │
-│ • subhead               │   today's lessons   │ "Today"  │
-│ • [View Curriculum →]   │ [View My Work →]    │ + count  │
-├─────────────────────────┼─────────────────────┴──────────┤
-│ EXPERTISE TILE (1-5)    │ FEATURE PREVIEW TILE (6-12)    │
-│ • "Toolkit" label       │ • Large image / sketch         │
-│ • pill chips:           │ • mini cards collage           │
-│   Curriculum, Q-Bank,   │   (Question Bank, Activities,  │
-│   Activities, Standards │    Reading Library)            │
-│   ...                   │                                │
-└─────────────────────────┴────────────────────────────────┘
-```
+### C. Two AI paths
 
-- **Hero tile**: light grey gradient bg (`bg-gradient-to-br from-neutral-100 to-white`), avatar circle top-left, 4xl–6xl bold display headline, CTA = solid black pill button with arrow icon.
-- **About tile**: white bg, "About" eyebrow, paragraph from teacher profile (subjects + grade levels rendered as a sentence), pill CTA "View My Work" → `/lesson-planner`.
-- **Coral accent tile** (the *only* color on the page): solid `#FF6B47` (Sunkist coral), shows "Today" + today's lesson titles or "No lessons today", plus a download CV-style button → links to most recent lesson.
-- **Expertise tile**: section label "Toolkit", chip list of every tool (each chip navigates), in pill style.
-- **Feature preview tile**: large rounded image (rotating screenshot from `sketchLessonPlanner`/`sketchQuestionBank`), small floating mini-cards over it (the existing sketch icons reused).
+**Diagram (already partially built)**
+- Reuse `generate-question-image` edge function. Add a `suggest_only: true` mode that returns a draft prompt without generating, so the dialog can prefill the textarea.
 
-### 3. "Selected Work" / Recent Activity strip
+**Drag-and-Drop labeling & Hotspots (new)**
+- New edge function `enhance-question-manipulative` that:
+  1. Generates the base diagram image (Gemini image model)
+  2. Asks the text model for label positions / hotspot regions and correct answers
+  3. Creates an `h5p_activities` row (`activity_type: 'drag_and_drop'` or `'image_hotspots'`) tied to the user
+  4. Returns `{ activity_id, image_url, suggested_question_text, suggested_answers, dok_level }`
+- Editor stores this on the question as `media: { type: 'h5p', activity_id, url }` (extends the existing `MediaEmbed` shape).
+- `ISATExamPlayer.tsx` gets a small renderer: when `media.type === 'h5p'`, mount the existing `ActivityPlayer` component inline; the H5P activity's score becomes the auto-graded answer.
 
-Below the bento, add a horizontal scroll row titled `RECENT WORK` showing the 3 most recent lesson plans or units. Each row:
-- Tiny logo square (initials) + title + subject/grade + year.
-- "View" pill button on the right.
-- Below the row, a wide rounded preview image (use unit cover art if present).
+### D. DoK & question rewrite
+- When "Also rewrite" is on, the dialog applies AI-returned `question_text`, `answers`, and `dok_level` to the question (capped at 4). User sees a diff-ish preview ("Original / Enhanced") before clicking **Apply**.
 
-### 4. "What I Do" → "What This App Does"
+### E. Bulk enrichment from the list page
+- `ISATExamList.tsx` gets a new "Enrich with images" overflow action per exam.
+- Opens a wizard modal that walks through every question lacking `image_url`/`media`, one at a time, with the same Enhance dialog. Skip / Apply / Quit-and-save.
 
-A 4-column numbered grid (`01.` `02.` `03.` `04.`) with the four pillars:
-1. **Build Curriculum** — Units, lessons, pacing.
-2. **Bank Questions** — NGSS/Idaho-tagged assessments.
-3. **Create Activities** — H5P-style interactives.
-4. **Export to Canvas** — One-click LMS sync.
+### F. Public exam exposure
+- `get_public_exam` SQL function already passes `image_url` and `media` through. Extend it so `media.activity_id` is included so embedded H5P plays for students taking shared/Canvas-launched exams. (Migration: update the function to whitelist `activity_id` inside the media object.)
 
-Numbers in oversized light grey, headings in bold black, descriptions in muted grey.
+---
 
-### 5. Footer "About" Block
+## Technical reference (for implementer)
 
-Wide rounded grey tile at the bottom: short app mission paragraph + "Learn More" pill → `/profile`.
+| Item | Change |
+|---|---|
+| `supabase/functions/generate-isat-exam/index.ts` | Forbid image fields in output schema. |
+| `supabase/functions/generate-question-image/index.ts` | Add `mode: 'suggest_prompt'` returning `{ suggested_prompt }` only. |
+| `supabase/functions/enhance-question-manipulative/index.ts` (new) | Generates image + H5P activity (drag-drop or hotspots), inserts into `h5p_activities`, returns IDs + rewritten stem/answers/DoK. |
+| `src/components/EnhanceQuestionDialog.tsx` (new) | 3-tab dialog, prompt edit, preview, Apply. |
+| `src/pages/ISATExamEditor.tsx` | Replace inline `AIImageGenerator` with "Enhance" button → dialog. |
+| `src/pages/ISATExamPlayer.tsx` | Render `media.type === 'h5p'` via `ActivityPlayer`; pipe its score back into `studentAnswers` for auto-grading. |
+| `src/components/ISATExamList.tsx` | Add "Enrich with images" wizard entry point. |
+| `MediaEmbed` type in `src/lib/h5p-types.ts` | Add `'h5p'` variant with optional `activity_id`. |
+| Migration | Update `public.get_public_exam` to include `media.activity_id` in its whitelist. |
 
-### 6. Typography & Spacing Pass
-
-In `src/index.css`, add a Wix-style display heading utility (no color changes — stays monochrome):
-- `.display-xl` → `text-5xl md:text-7xl font-extrabold tracking-tight leading-[0.95]`
-- `.eyebrow` → `text-xs uppercase tracking-[0.2em] text-neutral-500 font-semibold`
-- `.pill-btn` → `rounded-full bg-neutral-100 hover:bg-black hover:text-white transition-colors px-5 py-2 text-xs font-semibold uppercase tracking-wide`
-- `.bento-tile` → `rounded-3xl bg-neutral-50 border border-neutral-200 p-6 md:p-8`
-- `.bento-tile--ink` → solid black variant
-- `.bento-tile--coral` → the **single** allowed color tile (`bg-[#FF6B47] text-white`)
-
-### 7. Files to modify
-
-- `src/components/AppShell.tsx` — add top pill nav bar, default-collapse sidebar on `/`.
-- `src/components/WorkspaceSidebar.tsx` — minor: respect collapsed default on home.
-- `src/pages/Home.tsx` — full rebuild into bento layout (keep existing data fetches & drag/drop optional behind a "Customize" toggle — drag handles removed by default for clean look).
-- `src/index.css` — add the utility classes above; no changes to color tokens (monochrome lock stays).
-
-### 8. What stays the same
-
-- Monochrome lockdown remains in force; coral is hard-coded inline only on the single accent tile.
-- All routes, data hooks (`useProfile`, lesson counts, today's lessons), and tile destinations are preserved.
-- All other pages (Curriculum, Question Bank, etc.) get the new top pill nav for free but keep their current layouts in this pass.
-
-### 9. Out of scope (can do in a follow-up)
-
-- Restyling the inside of Curriculum/QuestionBank/Activities pages to match bento.
-- Dark mode variant of the new layout.
-- Animated tile transitions on scroll.
+No new tables; H5P activities reuse the existing `h5p_activities` table.
 
