@@ -1,35 +1,38 @@
 import { Link } from "react-router-dom";
-import { ChevronRight, Home } from "lucide-react";
+import { Home } from "lucide-react";
 
 export interface BreadcrumbItem {
   label: string;
   path?: string;
 }
 
+/**
+ * Editorial breadcrumbs — uppercase tracked eyebrow with thin slashes,
+ * matches the bento header system.
+ */
 export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
   return (
-    <nav className="flex items-center gap-1 text-sm min-w-0">
+    <nav className="flex items-center gap-2 text-[11px] uppercase tracking-[0.2em] font-semibold min-w-0 py-3">
       <Link
         to="/"
-        className="shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+        className="shrink-0 text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5"
         aria-label="Home"
       >
-        <Home className="h-3.5 w-3.5" />
+        <Home className="h-3 w-3" />
+        <span className="hidden sm:inline">Home</span>
       </Link>
       {items.map((item, i) => (
-        <span key={i} className="flex items-center gap-1 min-w-0">
-          <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground/60" />
+        <span key={i} className="flex items-center gap-2 min-w-0">
+          <span className="text-muted-foreground/50 select-none">/</span>
           {item.path ? (
             <Link
               to={item.path}
-              className="text-muted-foreground hover:text-foreground transition-colors truncate max-w-[140px]"
+              className="text-muted-foreground hover:text-foreground transition-colors truncate max-w-[160px]"
             >
               {item.label}
             </Link>
           ) : (
-            <span className="text-foreground font-medium truncate max-w-[200px]">
-              {item.label}
-            </span>
+            <span className="text-foreground truncate max-w-[220px]">{item.label}</span>
           )}
         </span>
       ))}
