@@ -24,6 +24,7 @@ import { moveItem } from "@/components/activities/editors/ReorderControls";
 import { ReviewMaterialsEditor } from "@/components/ReviewMaterialsEditor";
 import type { MediaEmbed } from "@/lib/h5p-types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { EnhanceQuestionDialog, type EnhanceResult } from "@/components/EnhanceQuestionDialog";
 
 const QUESTION_TYPES = [
   { value: "multiple_choice_question", label: "Multiple Choice" },
