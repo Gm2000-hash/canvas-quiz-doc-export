@@ -267,7 +267,7 @@ export function CustomizePanel() {
 
   return (
     <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
-      <SheetContent side="right" className="w-[420px] sm:max-w-[420px] overflow-y-auto">
+      <SheetContent side="right" className="w-[420px] sm:max-w-[420px] overflow-y-auto" data-customize-ui>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Palette className="h-5 w-5" /> Customize
