@@ -97,36 +97,51 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // stable structural key so it can be themed — no per-page markup needed.
   useEffect(() => {
     if (!editMode) return;
+
+    const isIgnored = (el: HTMLElement) =>
+      el.closest(".tk-canvas-widget") ||
+      el.closest("[data-tk-ignore]") ||
+      el.closest("[role='dialog'], [data-radix-popper-content-wrapper]");
+
+    // Block native control behaviour (dropdowns opening, links navigating,
+    // forms submitting, etc.) BEFORE the browser/Radix can react.
+    const swallow = (e: Event) => {
+      const tgt = e.target as HTMLElement;
+      if (!tgt || isIgnored(tgt)) return;
+      e.preventDefault();
+      e.stopPropagation();
+    };
+    const blockedEvents = ["pointerdown", "mousedown", "keydown", "submit"] as const;
+    blockedEvents.forEach(ev => document.addEventListener(ev, swallow, true));
+
     const onClick = (e: MouseEvent) => {
       const tgt = e.target as HTMLElement;
-      // Don't intercept canvas widgets, customize panel itself, or sidebar/header chrome
-      if (tgt.closest(".tk-canvas-widget")) return;
-      if (tgt.closest("[data-tk-ignore]")) return;
-      if (tgt.closest("[role='dialog'], [data-radix-popper-content-wrapper]")) return;
+      if (!tgt || isIgnored(tgt)) return;
+      e.preventDefault();
+      e.stopPropagation();
       // Prefer an explicit data-themeable ancestor if present
       const explicit = tgt.closest("[data-themeable]") as HTMLElement | null;
       let key: string | null = null;
       if (explicit) {
         key = explicit.getAttribute("data-themeable");
       } else {
-        // Walk up to the nearest meaningful element (skip pure layout wrappers
-        // when the click landed on text inside a control)
         const candidate = (tgt.closest(
           "button, a, input, textarea, select, label, h1, h2, h3, h4, h5, h6, p, li, " +
           "[role='button'], [role='tab'], [role='menuitem'], [role='option'], " +
+          "[role='combobox'], [role='listbox'], " +
           ".bubble-glass, [class*='card'], [data-radix-collection-item]"
         ) as HTMLElement | null) || tgt;
         key = `auto:${pageScopeKey}::${getStructuralPath(candidate)}`;
         candidate.setAttribute("data-themeable", key);
       }
       if (!key) return;
-      e.preventDefault();
-      e.stopPropagation();
       setSelectedElement(key);
-      // Don't auto-open the panel — user opens it manually via the FAB.
     };
     document.addEventListener("click", onClick, true);
-    return () => document.removeEventListener("click", onClick, true);
+    return () => {
+      document.removeEventListener("click", onClick, true);
+      blockedEvents.forEach(ev => document.removeEventListener(ev, swallow, true));
+    };
   }, [editMode, pageScopeKey]);
 
   // Re-apply auto-tags whenever the DOM changes so saved customizations
