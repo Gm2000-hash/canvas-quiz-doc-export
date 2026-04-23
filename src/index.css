@@ -201,6 +201,14 @@ body.tk-edit-mode [data-themeable]::after {
 }
 body.tk-edit-mode [data-themeable]:hover::after { opacity: 0.85; }
 
+/* Auto-detect: in edit mode, hovering any element in <main> shows a faint
+   outline so users know it can be selected, even before it has a key. */
+body.tk-edit-mode main *:hover:not([data-tk-ignore]):not(.tk-canvas-widget):not(.tk-canvas-widget *) {
+  outline: 1px dashed hsl(var(--ring) / 0.4);
+  outline-offset: 1px;
+  cursor: pointer;
+}
+
 /* Hideable sections + custom widgets */
 .tk-hidden-section { display: none !important; }
 body.tk-edit-mode .tk-hidden-section {
