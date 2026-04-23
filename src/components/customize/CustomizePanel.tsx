@@ -95,11 +95,54 @@ export function CustomizePanel() {
   const ElementEditor = () => {
     if (!selectedElement) {
       return (
-        <div className="text-sm text-muted-foreground p-4 text-center">
-          Click any element on the page to edit its colors.
+        <div className="space-y-3 p-1">
+          <div className="text-sm text-muted-foreground text-center">
+            Click any element on the page to edit it.
+          </div>
+          <p className="text-[11px] text-muted-foreground/80 text-center">
+            Or pick a virtual target:
+          </p>
+          <div className="grid grid-cols-1 gap-1.5">
+            <Button size="sm" variant="outline" onClick={() => setSelectedElement("wallpaper")}>
+              <ImageIcon className="h-4 w-4 mr-2" /> Wallpaper layer
+            </Button>
+          </div>
         </div>
       );
     }
+
+    // Special-case: wallpaper is a virtual element. Surface its filters here so users
+    // can tweak opacity/blur on the wallpaper itself the same way as any element.
+    if (selectedElement === "wallpaper") {
+      const f = activeWp.wallpaper_filters || {};
+      const setF = (patch: WallpaperFilters) => setFilter(wpScope, patch);
+      return (
+        <div className="space-y-4">
+          <div className="text-xs font-mono bg-muted rounded px-2 py-1 break-all">
+            wallpaper · {wpScope === "page" ? `page ${pageScopeKey}` : "global"}
+          </div>
+          {!activeWp.wallpaper_path && (
+            <div className="rounded-md border border-dashed border-border p-3 text-xs text-muted-foreground text-center">
+              No wallpaper set yet. Add one in the Wallpaper tab.
+            </div>
+          )}
+          <FilterSlider label="Opacity" min={0} max={1} step={0.05}
+            value={f.opacity ?? 1} onChange={(v) => setF({ opacity: v })} />
+          <FilterSlider label="Blur" min={0} max={20} step={1} unit="px"
+            value={f.blur ?? 0} onChange={(v) => setF({ blur: v })} />
+          <FilterSlider label="Brightness" min={0} max={2} step={0.05}
+            value={f.brightness ?? 1} onChange={(v) => setF({ brightness: v })} />
+          <FilterSlider label="Contrast" min={0} max={2} step={0.05}
+            value={f.contrast ?? 1} onChange={(v) => setF({ contrast: v })} />
+          <FilterSlider label="Saturation" min={0} max={2} step={0.05}
+            value={f.saturate ?? 1} onChange={(v) => setF({ saturate: v })} />
+          <Button variant="outline" className="w-full" onClick={() => setSelectedElement(null)}>
+            Clear selection
+          </Button>
+        </div>
+      );
+    }
+
     const opacityKey = `${selectedElement}|opacity`;
     const opacityCur = get("element", opacityKey);
     // We stash the per-element opacity inside `color` as a string like "opacity:0.6"
@@ -110,9 +153,20 @@ export function CustomizePanel() {
     const zVal = parseInt((zCur.color || "").replace("zindex:", ""), 10);
     const zSafe = Number.isFinite(zVal) ? zVal : 0;
 
+    const friendlyLabel = selectedElement.startsWith("auto:")
+      ? selectedElement.slice(5).split(">").pop() || selectedElement
+      : selectedElement;
+
     return (
       <div className="space-y-4">
-        <div className="text-xs font-mono bg-muted rounded px-2 py-1 break-all">{selectedElement}</div>
+        <div>
+          <div className="text-xs font-mono bg-muted rounded px-2 py-1 break-all">{friendlyLabel}</div>
+          {selectedElement.startsWith("auto:") && (
+            <p className="text-[10px] text-muted-foreground mt-1 break-all">
+              Auto-targeted. Full path: <span className="font-mono">{selectedElement.slice(5)}</span>
+            </p>
+          )}
+        </div>
         {COLOR_PROPS.map(prop => {
           const sk = `${selectedElement}|${prop}`;
           const cur = get("element", sk);
@@ -213,7 +267,7 @@ export function CustomizePanel() {
 
   return (
     <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
-      <SheetContent side="right" className="w-[420px] sm:max-w-[420px] overflow-y-auto">
+      <SheetContent side="right" className="w-[420px] sm:max-w-[420px] overflow-y-auto" data-customize-ui>
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Palette className="h-5 w-5" /> Customize

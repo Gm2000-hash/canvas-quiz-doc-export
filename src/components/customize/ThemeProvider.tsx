@@ -22,6 +22,57 @@ type Ctx = ReturnType<typeof useThemeCustomizations> & {
 
 const ThemeCtx = createContext<Ctx | null>(null);
 
+// ----- Auto-selector helpers -----
+// Build a stable, reasonably-unique CSS selector for any element so we can target
+// individual things on pages that don't expose [data-themeable] hooks.
+function buildAutoSelector(el: HTMLElement): string | null {
+  if (!el || el === document.body || el === document.documentElement) return null;
+  const parts: string[] = [];
+  let node: HTMLElement | null = el;
+  let depth = 0;
+  while (node && node !== document.body && depth < 5) {
+    const tag = node.tagName.toLowerCase();
+    // Prefer a stable id
+    if (node.id && /^[a-z][\w-]*$/i.test(node.id)) {
+      parts.unshift(`#${node.id}`);
+      break;
+    }
+    // Prefer a data-themeable hook if present on an ancestor
+    const themeable = node.getAttribute("data-themeable");
+    if (themeable) {
+      parts.unshift(`[data-themeable="${cssEscape(themeable)}"]`);
+      break;
+    }
+    // Otherwise use tag + first 2 stable classes + nth-of-type for uniqueness
+    const stableClasses = Array.from(node.classList)
+      .filter(c => /^[a-z][\w-]*$/i.test(c) && !c.includes(":") && c.length < 24)
+      .slice(0, 2);
+    let part = tag + stableClasses.map(c => `.${cssEscape(c)}`).join("");
+    const parent = node.parentElement;
+    if (parent) {
+      const sameTag = Array.from(parent.children).filter(c => c.tagName === node!.tagName);
+      if (sameTag.length > 1) {
+        const idx = sameTag.indexOf(node) + 1;
+        part += `:nth-of-type(${idx})`;
+      }
+    }
+    parts.unshift(part);
+    node = node.parentElement;
+    depth++;
+  }
+  if (parts.length === 0) return null;
+  return "auto:" + parts.join(">");
+}
+
+function cssEscape(s: string): string {
+  // CSS.escape exists in all modern browsers
+  return (typeof CSS !== "undefined" && CSS.escape) ? CSS.escape(s) : s.replace(/[^\w-]/g, "\\$&");
+}
+
+function autoKeyToSelector(autoKey: string): string {
+  return autoKey.replace(/^auto:/, "");
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const tc = useThemeCustomizations();
   const location = useLocation();
@@ -36,13 +87,27 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => document.body.classList.remove("tk-edit-mode");
   }, [editMode]);
 
-  // Click handler: in edit mode, clicking a [data-themeable] selects it
+  // Click handler: in edit mode, clicking any element selects it.
+  // Prefers [data-themeable] when present, otherwise builds a stable auto-selector.
   useEffect(() => {
     if (!editMode) return;
     const onClick = (e: MouseEvent) => {
-      const target = (e.target as HTMLElement).closest("[data-themeable]") as HTMLElement | null;
-      if (!target) return;
-      const key = target.getAttribute("data-themeable");
+      const raw = e.target as HTMLElement | null;
+      if (!raw) return;
+      // Don't intercept clicks inside the customize panel/sheet itself.
+      if (raw.closest("[data-customize-ui]") || raw.closest("[role='dialog']")) return;
+      const themeable = raw.closest("[data-themeable]") as HTMLElement | null;
+      let key: string | null = null;
+      if (themeable && themeable.contains(raw) && themeable !== raw) {
+        // If the user clicked a deeply nested child of a themeable wrapper,
+        // prefer the precise auto-selector so they target the leaf element,
+        // not the whole wrapper.
+        key = buildAutoSelector(raw);
+      } else if (themeable) {
+        key = themeable.getAttribute("data-themeable");
+      } else {
+        key = buildAutoSelector(raw);
+      }
       if (!key) return;
       e.preventDefault();
       e.stopPropagation();
@@ -105,7 +170,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (c.scope_type !== "element" || !c.color) return;
       // Parse "{key}|{prop}" e.g. "home.banner|bg" / default to bg
       const [key, prop = "bg"] = c.scope_key.split("|");
-      const sel = `[data-themeable="${CSS.escape(key)}"]`;
+      // The "wallpaper" virtual element is handled by the wallpaper-filters effect, skip here.
+      if (key === "wallpaper") return;
+      // Build a CSS selector. Auto-keys carry their own selector; named keys map to [data-themeable].
+      const sel = key.startsWith("auto:")
+        ? autoKeyToSelector(key)
+        : `[data-themeable="${cssEscape(key)}"]`;
       if (prop === "opacity") {
         const v = parseFloat((c.color || "").replace("opacity:", ""));
         if (!isNaN(v)) rules.push(`${sel}{opacity:${v} !important;}`);
@@ -132,7 +202,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     }
     const page = tc.get("page", pageScopeKey);
     const rules = (page.hidden_sections || []).map(
-      s => `[data-section="${CSS.escape(s)}"]{display:none !important;}`
+      s => `[data-section="${cssEscape(s)}"]{display:none !important;}`
     );
     style.textContent = rules.join("\n");
   }, [tc.all, pageScopeKey]);

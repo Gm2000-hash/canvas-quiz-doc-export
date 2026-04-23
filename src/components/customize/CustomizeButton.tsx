@@ -10,6 +10,7 @@ export function CustomizeButton() {
       className="fixed bottom-5 right-5 z-[100] rounded-full shadow-lg h-12 w-12 p-0"
       variant={editMode ? "default" : "secondary"}
       title="Customize page"
+      data-customize-ui
     >
       <Palette className="h-5 w-5" />
       {hasDraft && (
