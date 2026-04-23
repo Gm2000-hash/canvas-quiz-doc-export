@@ -6,9 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { useEffect } from "react";
 import { ThemeProvider } from "@/components/customize/ThemeProvider";
-import { CustomizeButton } from "@/components/customize/CustomizeButton";
-import { CustomizePanel } from "@/components/customize/CustomizePanel";
-import { CanvasOverlay } from "@/components/customize/CanvasOverlay";
 
 interface AppShellProps {
   children: ReactNode;
@@ -54,13 +51,10 @@ export function AppShell({ children }: AppShellProps) {
             </header>
             <main className="flex-1 min-w-0 overflow-x-hidden relative" data-themeable="app.main">
               {children}
-              <CanvasOverlay />
             </main>
           </div>
         </div>
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
-        <CustomizeButton />
-        <CustomizePanel />
       </SidebarProvider>
     </ThemeProvider>
   );
