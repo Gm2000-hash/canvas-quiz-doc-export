@@ -333,9 +333,50 @@ REMEMBER: This is a TEXT-ONLY exam. Do NOT reference any image, diagram, figure,
   }
 }));
 
+// Detect references to visuals that don't exist in this text-only exam
+const VISUAL_REGEX = /\b(diagram|illustration|figure|image|picture|photo(?:graph)?|chart|graph(?: shown| above| below)?|model shown|shown (?:above|below|here|in the figure)|see (?:the )?(?:figure|image|diagram|chart|graph)|refer to the (?:figure|image|diagram|chart|graph|illustration))\b/i;
+
+const CHOICE_TYPES = new Set([
+  "multiple_choice_question",
+  "multiple_answers_question",
+  "data_analysis_question",
+  "scenario_question",
+  "investigation_design_question",
+]);
+
+function isQuestionValid(q: any): { valid: boolean; reason?: string } {
+  const text = String(q.question_text || "").trim();
+  if (!text) return { valid: false, reason: "empty stem" };
+  if (VISUAL_REGEX.test(text)) return { valid: false, reason: "references a visual" };
+
+  const type = q.question_type;
+  const a = q.answers;
+
+  if (CHOICE_TYPES.has(type)) {
+    if (!Array.isArray(a) || a.length < 2) return { valid: false, reason: "missing answer options" };
+    const nonEmpty = a.filter((x: any) => String(x?.text || "").trim().length > 0);
+    if (nonEmpty.length < 2) return { valid: false, reason: "answer options blank" };
+    const correct = a.filter((x: any) => (x?.weight ?? 0) >= 100);
+    if (correct.length < 1) return { valid: false, reason: "no correct answer marked" };
+  } else if (type === "drag_and_drop_question" || type === "concept_map_question") {
+    const cats = a?.categories;
+    if (!Array.isArray(cats) || cats.length < 2) return { valid: false, reason: "drag-drop needs 2+ categories" };
+    if (!cats.every((c: any) => Array.isArray(c?.items) && c.items.length > 0 && c.label)) {
+      return { valid: false, reason: "drag-drop categories incomplete" };
+    }
+  } else if (type === "multi_step_question") {
+    if (!Array.isArray(a?.parts) || a.parts.length < 2) return { valid: false, reason: "multi-step needs 2+ parts" };
+  } else if (type === "constructed_response_question") {
+    if (!a?.prompt && !text) return { valid: false, reason: "CR missing prompt" };
+    if (!a?.scoring_rubric) return { valid: false, reason: "CR missing rubric" };
+  }
+
+  return { valid: true };
+}
+
 function processQuestions(raw: any[]): any[] {
-  return raw.map((q: any, idx: number) => {
-    let answers = null;
+  const processed = raw.map((q: any, idx: number) => {
+    let answers: any = null;
     if (q.answers_json) {
       try {
         answers = typeof q.answers_json === "string" ? JSON.parse(q.answers_json) : q.answers_json;
@@ -366,6 +407,22 @@ function processQuestions(raw: any[]): any[] {
       answers,
     };
   });
+
+  // Filter out malformed questions and renumber
+  const valid: any[] = [];
+  const dropped: { n: number; reason: string }[] = [];
+  for (const q of processed) {
+    const check = isQuestionValid(q);
+    if (check.valid) {
+      valid.push(q);
+    } else {
+      dropped.push({ n: q.question_number, reason: check.reason || "unknown" });
+    }
+  }
+  if (dropped.length > 0) {
+    console.warn(`Dropped ${dropped.length} invalid questions:`, JSON.stringify(dropped));
+  }
+  return valid.map((q, i) => ({ ...q, question_number: i + 1 }));
 }
 
 function respondWithQuestions(questions: any[], requested: number) {
