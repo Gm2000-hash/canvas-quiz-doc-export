@@ -301,9 +301,7 @@ body.tk-edit-mode .tk-widget {
   }
 
   .bubble-glass {
-    background: hsl(var(--card) / 0.85);
-    backdrop-filter: saturate(180%) blur(18px);
-    -webkit-backdrop-filter: saturate(180%) blur(18px);
+    background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
     box-shadow: var(--shadow);
     border-radius: var(--radius);
@@ -314,9 +312,7 @@ body.tk-edit-mode .tk-widget {
     box-shadow: var(--shadow-md);
   }
   .bubble-glass-soft {
-    background: hsl(var(--card) / 0.7);
-    backdrop-filter: saturate(180%) blur(14px);
-    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
     border-radius: var(--radius);
   }
