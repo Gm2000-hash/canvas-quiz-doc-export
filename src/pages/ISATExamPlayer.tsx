@@ -18,6 +18,15 @@ import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { ExamSummaryPanel } from "@/components/ExamSummaryPanel";
 import { RichContent } from "@/components/activities/players/RichContent";
 import { MathText } from "@/components/MathText";
+import { ActivityPlayer } from "@/components/activities/ActivityPlayer";
+import type { ActivityType, ActivityContent } from "@/lib/h5p-types";
+
+interface ExamQuestionMedia {
+  url: string;
+  type: string;
+  activity_id?: string;
+  activity_type?: string;
+}
 
 interface ExamQuestion {
   question_number: number;
@@ -31,7 +40,7 @@ interface ExamQuestion {
   hint?: string;
   answers: any;
   image_url?: string;
-  media?: { url: string; type: string };
+  media?: ExamQuestionMedia;
 }
 
 interface ExamData {
