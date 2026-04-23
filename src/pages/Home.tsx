@@ -179,20 +179,38 @@ export default function Home() {
           </h2>
           <p className="mt-6 text-muted-foreground leading-relaxed">{aboutSentence}</p>
 
-          <div className="mt-auto flex items-center justify-between pt-8">
+          <div className="mt-auto flex items-center justify-between pt-8 gap-4 flex-wrap">
             <div className="flex gap-6">
-              <div>
-                <p className="text-3xl font-extrabold leading-none">{unitCount}</p>
-                <p className="eyebrow mt-1">Units</p>
-              </div>
-              <div>
-                <p className="text-3xl font-extrabold leading-none">{lessonCount}</p>
-                <p className="eyebrow mt-1">Lessons</p>
-              </div>
-              <div>
-                <p className="text-3xl font-extrabold leading-none">{questionCount}</p>
-                <p className="eyebrow mt-1">Questions</p>
-              </div>
+              <button
+                onClick={() => navigate("/lesson-planner")}
+                className="text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 rounded-md"
+                aria-label={`View ${unitCount} units`}
+              >
+                <p className="text-3xl font-extrabold leading-none group-hover:underline underline-offset-4 decoration-2">{unitCount}</p>
+                <p className="eyebrow mt-1 inline-flex items-center gap-1">
+                  Units <ArrowUpRight className="h-3 w-3 opacity-60 group-hover:opacity-100" />
+                </p>
+              </button>
+              <button
+                onClick={() => navigate("/lesson-planner")}
+                className="text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 rounded-md"
+                aria-label={`View ${lessonCount} lessons`}
+              >
+                <p className="text-3xl font-extrabold leading-none group-hover:underline underline-offset-4 decoration-2">{lessonCount}</p>
+                <p className="eyebrow mt-1 inline-flex items-center gap-1">
+                  Lessons <ArrowUpRight className="h-3 w-3 opacity-60 group-hover:opacity-100" />
+                </p>
+              </button>
+              <button
+                onClick={() => navigate("/question-bank")}
+                className="text-left group focus:outline-none focus-visible:ring-2 focus-visible:ring-foreground/40 rounded-md"
+                aria-label={`View ${questionCount} questions`}
+              >
+                <p className="text-3xl font-extrabold leading-none group-hover:underline underline-offset-4 decoration-2">{questionCount}</p>
+                <p className="eyebrow mt-1 inline-flex items-center gap-1">
+                  Questions <ArrowUpRight className="h-3 w-3 opacity-60 group-hover:opacity-100" />
+                </p>
+              </button>
             </div>
             <button onClick={() => navigate("/lesson-planner")} className="pill-btn">
               View My Work <ArrowUpRight className="h-3.5 w-3.5" />
