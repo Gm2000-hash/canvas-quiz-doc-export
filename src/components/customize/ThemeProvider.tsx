@@ -198,33 +198,20 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return data.signedUrl;
   };
 
-  // Apply wallpaper + element colors to the document
+  // MONOCHROME LOCKDOWN: never apply a wallpaper image.
   useEffect(() => {
     const root = document.documentElement;
-    const page = tc.get("page", pageScopeKey);
-    const global = tc.get("global", "global");
-    const wp = page.wallpaper_path ? page : global;
-    let cancelled = false;
-    (async () => {
-      const url = await publicUrl(wp.wallpaper_path);
-      if (cancelled) return;
-      if (url) {
-        root.style.setProperty("--wp-image", `url("${url}")`);
-        document.body.classList.add("wp-host");
-      } else {
-        root.style.setProperty("--wp-image", "none");
-      }
-      const f = wp.wallpaper_filters || {};
-      root.style.setProperty("--wp-blur", `${f.blur ?? 0}px`);
-      root.style.setProperty("--wp-brightness", `${f.brightness ?? 1}`);
-      root.style.setProperty("--wp-contrast", `${f.contrast ?? 1}`);
-      root.style.setProperty("--wp-saturate", `${f.saturate ?? 1}`);
-      root.style.setProperty("--wp-opacity", `${f.opacity ?? 1}`);
-    })();
-    return () => { cancelled = true; };
+    root.style.setProperty("--wp-image", "none");
+    root.style.setProperty("--wp-blur", "0px");
+    root.style.setProperty("--wp-brightness", "1");
+    root.style.setProperty("--wp-contrast", "1");
+    root.style.setProperty("--wp-saturate", "1");
+    root.style.setProperty("--wp-opacity", "1");
+    document.body.classList.remove("wp-host");
   }, [tc.all, pageScopeKey]);
 
-  // Apply per-element colors as inline overrides via a stylesheet
+  // MONOCHROME LOCKDOWN: skip emitting any saved per-element color rules.
+  // (index.css forces the entire app to black-on-white.)
   useEffect(() => {
     const styleId = "tk-element-colors";
     let style = document.getElementById(styleId) as HTMLStyleElement | null;
@@ -233,29 +220,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       style.id = styleId;
       document.head.appendChild(style);
     }
-    const rules: string[] = [];
-    Object.values(tc.all).forEach(c => {
-      if (c.scope_type !== "element" || !c.color) return;
-      const [key, prop = "bg"] = c.scope_key.split("|");
-      const sel = `[data-themeable="${CSS.escape(key)}"]`;
-      if (prop === "opacity") {
-        const v = parseFloat((c.color || "").replace("opacity:", ""));
-        if (!isNaN(v)) rules.push(`${sel}{opacity:${v} !important;}`);
-      }
-      else if (prop === "text") {
-        // Cascade text color into descendants so nested spans/headings pick it up
-        rules.push(`${sel}, ${sel} *:not(svg):not(path){color:${c.color} !important;}`);
-      }
-      else if (prop === "border") {
-        rules.push(`${sel}{border-color:${c.color} !important;}`);
-      }
-      else {
-        // Background: also clear nested opaque backgrounds so chosen color (incl. alpha) shows through
-        rules.push(`${sel}{background-color:${c.color} !important; background-image:none !important;}`);
-        rules.push(`${sel} > *{background-color:transparent !important; background-image:none !important;}`);
-      }
-    });
-    style.textContent = rules.join("\n");
+    style.textContent = ""; // intentionally empty during monochrome mode
   }, [tc.all]);
 
   // Apply hidden sections
