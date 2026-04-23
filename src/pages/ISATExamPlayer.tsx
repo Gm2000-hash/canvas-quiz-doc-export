@@ -670,6 +670,9 @@ export default function ISATExamPlayer() {
               {question.media?.url && question.media.type === "audio" && (
                 <audio src={question.media.url} controls className="w-full" preload="metadata" />
               )}
+              {question.media?.type === "h5p" && question.media.activity_id && (
+                <H5PMediaRenderer activityId={question.media.activity_id} fallbackImage={question.media.url} />
+              )}
 
               {/* Hint section — only when hints are enabled */}
               {exam.hints_enabled && question.hint && !submitted && (
