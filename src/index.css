@@ -333,8 +333,21 @@ body.tk-edit-mode .tk-widget {
   .gradient-card-orange,
   .gradient-card-green { background: hsl(var(--card)); }
 
-  .gradient-banner { background: hsl(var(--muted)); }
-}
+  .gradient-banner { background: transparent; }
+
+  /* Editorial inner-page wrapper — generous gutters, max-width, vertical rhythm.
+     Apply to the top-level container of each inner page for the new look. */
+  .editorial-page {
+    @apply px-4 sm:px-8 lg:px-12 py-8 max-w-[1400px] mx-auto w-full space-y-8;
+  }
+  .editorial-section-label {
+    @apply text-[11px] uppercase tracking-[0.22em] font-semibold text-muted-foreground;
+  }
+  /* Quiet card surface that matches the bento aesthetic */
+  .editorial-card {
+    @apply rounded-2xl border border-border bg-card p-5 transition-shadow;
+  }
+  .editorial-card:hover { box-shadow: 0 6px 18px -8px hsl(0 0% 0% / 0.08); }
 
 /* TipTap editor styles */
 .tiptap { outline: none; }
