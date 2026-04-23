@@ -104,6 +104,11 @@ export function CustomizePanel() {
     const opacityCur = get("element", opacityKey);
     // We stash the per-element opacity inside `color` as a string like "opacity:0.6"
     const opacityVal = parseFloat((opacityCur.color || "").replace("opacity:", "")) || 1;
+    const zKey = `${selectedElement}|zindex`;
+    const zCur = get("element", zKey);
+    // Stored as "zindex:<n>" where n is integer (-50..50). 0 = default.
+    const zVal = parseInt((zCur.color || "").replace("zindex:", ""), 10);
+    const zSafe = Number.isFinite(zVal) ? zVal : 0;
 
     return (
       <div className="space-y-4">
@@ -166,6 +171,37 @@ export function CustomizePanel() {
                 <Trash2 className="h-4 w-4" />
               </Button>
             )}
+          </div>
+        </div>
+        <div className="space-y-1.5">
+          <Label>Layer (z-index)</Label>
+          <p className="text-[11px] text-muted-foreground">Negative sends behind, positive brings forward. 0 = default.</p>
+          <div className="flex items-center gap-2">
+            <Slider
+              value={[zSafe]} min={-50} max={50} step={1}
+              onValueChange={([v]) => mutate("element", zKey, { color: v === 0 ? null : `zindex:${v}` })}
+              className="flex-1"
+            />
+            <Input
+              type="number"
+              value={zSafe}
+              onChange={(e) => {
+                const n = parseInt(e.target.value, 10);
+                if (Number.isFinite(n)) mutate("element", zKey, { color: n === 0 ? null : `zindex:${n}` });
+              }}
+              className="w-16 h-9"
+            />
+            {zCur.color && (
+              <Button size="icon" variant="ghost" onClick={() => mutate("element", zKey, { color: null })}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <div className="grid grid-cols-4 gap-1.5 pt-1">
+            <Button size="sm" variant="outline" onClick={() => mutate("element", zKey, { color: "zindex:-10" })}>Back</Button>
+            <Button size="sm" variant="outline" onClick={() => mutate("element", zKey, { color: `zindex:${zSafe - 1}` })}>−1</Button>
+            <Button size="sm" variant="outline" onClick={() => mutate("element", zKey, { color: `zindex:${zSafe + 1}` })}>+1</Button>
+            <Button size="sm" variant="outline" onClick={() => mutate("element", zKey, { color: "zindex:10" })}>Front</Button>
           </div>
         </div>
         <Button variant="outline" className="w-full" onClick={() => setSelectedElement(null)}>

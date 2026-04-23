@@ -110,6 +110,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         const v = parseFloat((c.color || "").replace("opacity:", ""));
         if (!isNaN(v)) rules.push(`${sel}{opacity:${v} !important;}`);
       }
+      else if (prop === "zindex") {
+        const v = parseInt((c.color || "").replace("zindex:", ""), 10);
+        if (Number.isFinite(v)) rules.push(`${sel}{position:relative !important;z-index:${v} !important;}`);
+      }
       else if (prop === "text") rules.push(`${sel}{color:${c.color} !important;}`);
       else if (prop === "border") rules.push(`${sel}{border-color:${c.color} !important;}`);
       else rules.push(`${sel}{background-color:${c.color} !important;}`);
