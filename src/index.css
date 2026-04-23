@@ -481,3 +481,76 @@ body.tk-edit-mode .tk-widget {
 .tiptap .tk-callout[data-tone="warn"]    { background: hsl(38 95% 60% / 0.12); border-color: hsl(38 95% 50% / 0.4); }
 .tiptap .tk-callout[data-tone="success"] { background: hsl(142 70% 45% / 0.12); border-color: hsl(142 70% 40% / 0.4); }
 .tiptap .tk-callout[data-tone="danger"]  { background: hsl(0 75% 55% / 0.12); border-color: hsl(0 75% 50% / 0.4); }
+
+/* ==========================================================
+   GLOBAL DE-TRANSLUCENCY OVERRIDE
+   Force every card / header / dialog / sheet / sidebar / popover
+   to be fully opaque. Strips backdrop-blur app-wide.
+   Excludes: drag overlays, edit-mode handles, PDF text layer,
+   intentional decorative tints (callouts), and modal scrims.
+   ========================================================== */
+
+/* Kill all backdrop blur globally — it's the #1 cause of "washed out" feel */
+*, *::before, *::after {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Force opaque solid fills on common Tailwind translucent bg patterns
+   Selectors target classes ending in /<digit> (e.g. bg-card/80, bg-background/60). */
+[class*="bg-background/"],
+[class*="bg-card/"],
+[class*="bg-popover/"],
+[class*="bg-muted/"],
+[class*="bg-secondary/"],
+[class*="bg-sidebar/"],
+[class*="bg-sidebar-background/"],
+[class*="bg-white/"] {
+  background-color: hsl(var(--card)) !important;
+}
+
+/* Sidebar variants stay on sidebar fill */
+[data-sidebar] [class*="bg-sidebar/"],
+[data-sidebar] [class*="bg-sidebar-background/"],
+[data-sidebar] [class*="bg-background/"],
+aside [class*="bg-background/"] {
+  background-color: hsl(var(--sidebar-background)) !important;
+}
+
+/* Headers & sticky bars */
+header[class*="bg-card/"],
+header[class*="bg-background/"],
+header.glass-header,
+nav[class*="bg-card/"],
+nav[class*="bg-background/"] {
+  background-color: hsl(var(--card)) !important;
+}
+
+/* Radix dialog/sheet/popover/dropdown content panels — opaque */
+[data-radix-popper-content-wrapper] > *,
+[role="dialog"]:not([data-radix-dialog-overlay]),
+[role="menu"],
+[role="listbox"],
+[role="tooltip"] {
+  background-color: hsl(var(--popover)) !important;
+}
+
+/* Bubble glass — already updated above, lock in */
+.bubble-glass, .bubble-glass-soft {
+  background: hsl(var(--card)) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Allow modal scrims, drag-handle ghosts, edit-mode handles, callouts,
+   PDF text layer, and Tiptap callouts to keep their alpha */
+[data-radix-dialog-overlay],
+[data-radix-alert-dialog-overlay],
+.tk-canvas-widget,
+.pdf-links .react-pdf__Page__textContent,
+.pdf-links .textLayer,
+.tiptap .tk-callout,
+body.tk-edit-mode [data-themeable]::after,
+body.tk-edit-mode [data-tk-selected]::before {
+  background-color: revert !important;
+}
