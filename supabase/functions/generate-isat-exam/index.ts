@@ -120,6 +120,26 @@ You are creating a COMPLETE practice exam covering: ${disciplineLabel}.
 
 ${standardsContext}
 
+## ⚠️ NON-NEGOTIABLE QUALITY RULES (failing any rule = invalid question)
+
+1. **TEXT-ONLY EXAM — NO VISUALS EXIST.** This exam is delivered as plain text. NEVER reference images, diagrams, illustrations, figures, charts, photos, pictures, models shown, or "the diagram below/above". If a question needs visual data, describe it ENTIRELY in words inside the question_text (e.g., "A data table shows: Trial 1 = 5g, Trial 2 = 10g..." written out as text).
+
+2. **EVERY QUESTION MUST BE FULLY SELF-CONTAINED.** A student reading ONLY the question_text (and answer options) must have everything they need. No external references, no "as discussed in class", no "using the model provided".
+
+3. **ANSWER OPTIONS ARE REQUIRED FOR ALL CHOICE-BASED TYPES.**
+   - multiple_choice_question: EXACTLY 4 options, EXACTLY ONE with weight 100, others weight 0. Never empty.
+   - multiple_answers_question: EXACTLY 4-5 options, 2-3 with weight 100, rest weight 0. State in the stem: "Select ALL that apply."
+   - data_analysis_question, scenario_question, investigation_design_question (when MC format): same rules as multiple_choice_question.
+   - drag_and_drop_question / concept_map_question: at least 2 categories, each with at least 2 items. Stem must say: "Drag each item into the correct category."
+   - multi_step_question: 2 parts minimum, each part with its own complete prompt and answer structure.
+   - constructed_response_question: include prompt, scoring_rubric, AND sample_response. Stem must tell student what format the answer takes (e.g., "Write 2-3 sentences explaining...").
+
+4. **CLEAR ACTION VERB IN EVERY STEM.** Start or end the question with an explicit instruction: "Which of the following...", "Select the BEST answer.", "Select ALL that apply.", "Drag each... into...", "Write a short response explaining...". Never leave students guessing what to do.
+
+5. **PLAIN, DIRECT LANGUAGE.** Middle-school reading level. Define any technical term inline on first use. One question = one task.
+
+6. **NO META-REFERENCES.** Never write "in the previous question", "see Part A above" outside of multi_step_question, or "your teacher said".
+
 ## QUESTION TYPES TO INCLUDE (distribute across the exam):
 
 1. **Technology-Enhanced Items (TEI)** - Use question types: "multiple_choice_question", "multiple_answers_question", "drag_and_drop_question"
