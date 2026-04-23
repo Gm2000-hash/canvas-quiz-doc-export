@@ -71,6 +71,20 @@ interface VocabularyScaffold {
 }
 
 interface UdlSupports {
+  /**
+   * Unified, sequential lesson outline (rich-text HTML). Replaces the formerly
+   * separate Activities/Assessment/Differentiation/UDL-principle sections.
+   * Written so a substitute teacher can pick it up: each phase explains
+   * What happens, How it serves UDL (Engagement / Representation / Action & Expression),
+   * Why pedagogically, and the Formative Check.
+   */
+  lesson_flow?: string;
+  /** Kept: a structured vocabulary support list (still useful as reference data). */
+  vocabulary_scaffolds?: VocabularyScaffold[];
+  /** Kept: closing metacognitive prompt. */
+  reflection_prompt?: string;
+
+  // ─── Legacy granular fields (read for back-compat, not edited via UI anymore) ─
   engagement?: {
     hook?: string;
     student_choice?: string[];
@@ -93,7 +107,6 @@ interface UdlSupports {
     progress_checkpoint?: string;
     flexible_assessment?: string;
   };
-  reflection_prompt?: string;
 }
 
 interface LessonPlan {
