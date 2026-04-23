@@ -49,6 +49,33 @@ export type Database = {
           },
         ]
       }
+      canvas_layouts: {
+        Row: {
+          created_at: string
+          elements: Json
+          id: string
+          scope_key: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          elements?: Json
+          id?: string
+          scope_key: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          elements?: Json
+          id?: string
+          scope_key?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       curriculum_lesson_standards: {
         Row: {
           id: string
