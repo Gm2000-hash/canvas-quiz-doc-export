@@ -696,11 +696,20 @@ header button, header kbd {
   border-color: #e5e5e5 !important;
 }
 
-/* Customize FAB (bottom-right) — neutral grey */
+/* Customize FAB (bottom-right) — neutral grey, no peach */
+button[data-tk-ignore="true"],
+button[title*="ustomize" i],
 button[aria-label*="ustomize" i] {
   background-color: #f5f5f5 !important;
+  background-image: none !important;
   color: #000000 !important;
-  border-color: #e5e5e5 !important;
+  border: 1px solid #e5e5e5 !important;
+}
+button[data-tk-ignore="true"] svg,
+button[title*="ustomize" i] svg,
+button[aria-label*="ustomize" i] svg {
+  color: #000000 !important;
+  filter: none !important;
 }
 
 /* Strip color from decorative sketch images / icon backplates */
