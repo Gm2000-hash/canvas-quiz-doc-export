@@ -338,8 +338,8 @@ body.tk-edit-mode .tk-widget {
 
 @layer utilities {
   .glass-header {
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    /* No-op: translucency removed app-wide for full opacity */
+    background: hsl(var(--card));
   }
 
   .bubble-glass {
