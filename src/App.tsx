@@ -15,6 +15,7 @@ import QuestionEditor from "./pages/QuestionEditor";
 import LessonPlanner from "./pages/LessonPlanner";
 import UnitDetail from "./pages/UnitDetail";
 import LessonPlanEditor from "./pages/LessonPlanEditor";
+import LessonsBrowser from "./pages/LessonsBrowser";
 import AdminDashboard from "./pages/AdminDashboard";
 import StandardsBrowser from "./pages/StandardsBrowser";
 import CanvasResults from "./pages/CanvasResults";
@@ -118,6 +119,7 @@ const App = () => (
           <Route path="/create-question" element={<ProtectedRoute><QuestionEditor /></ProtectedRoute>} />
           <Route path="/lesson-planner" element={<ProtectedRoute><LessonPlanner /></ProtectedRoute>} />
           <Route path="/units/:id" element={<ProtectedRoute><UnitDetail /></ProtectedRoute>} />
+          <Route path="/lessons" element={<ProtectedRoute><LessonsBrowser /></ProtectedRoute>} />
           <Route path="/lessons/:id" element={<ProtectedRoute><LessonPlanEditor /></ProtectedRoute>} />
           <Route path="/admin" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
           <Route path="/admin/library" element={<AdminRoute><Library /></AdminRoute>} />

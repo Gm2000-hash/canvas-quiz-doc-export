@@ -237,7 +237,7 @@ export default function LessonsBrowser() {
     <div className="min-h-screen bg-white flex flex-col">
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
         <AppNavSheet />
-        <Breadcrumbs items={[{ label: "Lesson Planner", href: "/lesson-planner" }, { label: "Lessons" }]} />
+        <Breadcrumbs items={[{ label: "Lesson Planner", path: "/lesson-planner" }, { label: "Lessons" }]} />
       </header>
 
       <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full space-y-6">
