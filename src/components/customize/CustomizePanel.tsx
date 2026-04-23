@@ -13,8 +13,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { FILTER_PRESETS } from "@/lib/customization-types";
 import type { CustomWidget, WallpaperFilters } from "@/lib/customization-types";
-import { Upload, Sparkles, Trash2, Palette, Image as ImageIcon, Plus, Type, Heading, Minus, MoveVertical, Link2, Loader2, Save, RotateCcw } from "lucide-react";
+import { Upload, Sparkles, Trash2, Palette, Image as ImageIcon, Plus, Type, Heading, Minus, MoveVertical, Link2, Loader2, Save, RotateCcw, LayoutGrid } from "lucide-react";
 import { toast } from "sonner";
+import { CanvasTab } from "./CanvasTab";
 
 const COLOR_PROPS = ["bg", "text", "border"] as const;
 type ColorProp = typeof COLOR_PROPS[number];
@@ -23,6 +24,7 @@ export function CustomizePanel() {
   const {
     editMode, setEditMode, panelOpen, setPanelOpen, selectedElement, setSelectedElement,
     pageScopeKey, get, mutate, addWidget, hasDraft, saveAll, discardDraft, publicUrl,
+    canvasHasDraft, saveCanvas, discardCanvasDraft,
   } = useTheme();
   const { user } = useAuth();
 
@@ -200,10 +202,10 @@ export function CustomizePanel() {
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
           <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="wallpaper"><ImageIcon className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="element"><Palette className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="widgets"><Plus className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="sections"><Heading className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="wallpaper" title="Wallpaper"><ImageIcon className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="canvas" title="Canvas"><LayoutGrid className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="element" title="Element"><Palette className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="sections" title="Sections"><Heading className="h-4 w-4" /></TabsTrigger>
           </TabsList>
 
           {/* WALLPAPER */}
