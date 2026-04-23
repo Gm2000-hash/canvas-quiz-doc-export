@@ -378,6 +378,11 @@ export function CustomizePanel() {
             <ElementEditor />
           </TabsContent>
 
+          {/* LAYERS */}
+          <TabsContent value="layers" className="mt-4">
+            <LayersPanel />
+          </TabsContent>
+
           {/* WIDGETS */}
           <TabsContent value="widgets" className="mt-4 space-y-2">
             <p className="text-xs text-muted-foreground mb-2">Add custom blocks to this page.</p>
