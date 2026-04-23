@@ -1,50 +1,98 @@
 
 
-## Add depth + storytelling guarantees to the 5-act reading
+## Canva-style Customize Editor
 
-Building on the previously approved 5-act narrative plan, this revision tightens the prompt so every act gives students enough context to actually understand both the science and the human story — no thin or summary-style paragraphs.
+You meant **Canva**, not Canvas LMS. Got it — that actually fits better with what you described (free positioning, layers, image filters/crop/flip, drag-to-reorder). Here's the revised plan.
 
-### What changes
+### What you'll see
 
-**1. Per-act minimum depth requirements**
+A new **Canvas** tab in the Customize panel modeled on Canva's editor:
 
-Rewrite the system + user prompts in `generate-curriculum-reading/index.ts` so each of the five acts has an explicit length floor and a content checklist. The AI will be told:
+- **Top toolbar**: Insert Image (upload or URL) · Text · Heading · Shape (divider) · Spacer · Embed
+- **Free-positioning overlay** on the current page — every widget becomes a draggable, resizable, rotatable box (Canva-style selection handles: 8 resize dots + rotation handle on top)
+- **Contextual editor** appears in the panel when a widget is selected:
+  - *Image*: Crop · Flip H/V · Rotate · Opacity · Filters (blur, brightness, contrast, saturation, grayscale, sepia) · **Remove Background** (AI) · Replace
+  - *Text/Heading*: font size · alignment · color · bold/italic · background
+- **Layers pane** at bottom of the tab: every widget on the page listed top-to-bottom in z-order, with drag handle (reorder), eye icon (hide), trash (delete), and click-to-select
+- Existing **Wallpaper**, **Element**, **Sections** tabs stay unchanged
 
-- **Act 1 — Exposition (2 paragraphs):** Set the scene of the scientific question or natural phenomenon. Establish what was known (and not known) at the time, and why this question mattered to people then. Plant the hook.
-- **Act 2 — Rising action (3-4 paragraphs):** This is the **story-rich** scientist section. Required to include: birth era + place, family/social context, what drew them into science, the obstacles they faced (poverty, prejudice, war, lack of equipment, scientific resistance, personal loss, etc.), the specific problem they became obsessed with, and what daily life in their lab or fieldwork actually looked like. Treat them as a character, not a footnote. Use sensory and biographical detail.
-- **Act 3 — Climax (2-3 paragraphs):** The breakthrough moment — described with narrative tension (the failed attempts, the "aha", the experiment that finally worked). End each climax by explicitly mapping the discovery onto the targeted content standard so students see the connection.
-- **Act 4 — Falling action (3-4 paragraphs):** The deep teaching pass. Re-explain the underlying science thoroughly — mechanisms, vocabulary in context, diagrams referenced in prose, common misconceptions corrected. This is where students "get it" technically.
-- **Act 5 — Denouement (2-3 paragraphs):** Modern, real-world case study (named event, place, year when possible) showing the concept active in the world today. Connect back to the scientist's original question to close the arc.
+### Free positioning (Canva parity)
 
-Total: ~12-16 paragraphs (up from 10-14) so depth isn't sacrificed.
+- Each widget stores `x`, `y`, `width`, `height`, `rotation`, `zIndex`
+- Drag to move, corner handles to resize, top handle to rotate
+- Snap-to-edge guides when dragging near other widgets or page edges
+- Coordinates are page-relative (% of main content area) so they stay correct across viewports
+- Outside edit mode, widgets render in their saved positions but are non-interactive
 
-**2. Anti-thinness guardrails added to the prompt**
+### Image features
 
-Explicit "do not" rules baked into the system prompt:
+- **Upload**: file picker → uploads to existing `wallpapers` bucket under `widget-images/{user_id}/`
+- **URL**: paste any public URL
+- **Crop**: modal using `react-easy-crop`; output stored as crop rect, applied via `clip-path` + `object-position`
+- **Flip / Rotate**: stored as `flipH`, `flipV`, `rotation`; applied as one CSS `transform`
+- **Filters**: stored as `{blur, brightness, contrast, saturate, grayscale, sepia}`; joined into one CSS `filter` string
+- **Remove Background**: new edge function `remove-image-background` calls Lovable AI image-edit model with prompt "Remove the background, output a transparent PNG", uploads result, swaps the widget's `src`
 
-- No paragraph shorter than ~4 sentences.
-- No vague summary lines like "this was a major discovery" — every claim must be specific (what, where, who, when, why it mattered).
-- No skipping the scientist's hardships, era, or personality — these are required, not optional.
-- No restating the act labels in the output text; the structure is invisible to the reader.
+### Layers / drag-reorder
 
-**3. Storytelling voice instructions**
+- `@dnd-kit/sortable` for the layers list
+- Top of list = front-most (`zIndex` derived from sort order)
+- Drag handle · 32×32 thumbnail · type label · hide · delete
 
-Add a "voice" paragraph to the system prompt: warm, vivid, third-person narrator; use scenes, not bullet points; let the scientist speak (paraphrased dialogue is allowed); ground abstract science in physical, observable detail; aim for the tone of a great middle-grade nonfiction book (think *Hidden Figures Young Readers Edition* or *The Boy Who Harnessed the Wind*).
+### Persistence (new table)
 
-**4. Same depth applied to regeneration**
+```text
+canvas_layouts
+├─ id uuid pk
+├─ user_id uuid (RLS: auth.uid())
+├─ scope_key text          -- route path: "/", "/notes", etc.
+├─ elements jsonb          -- array of CanvasElement
+├─ created_at, updated_at
+unique(user_id, scope_key)
+```
 
-Update the `intro` and `reading` regeneration prompts in `handleRegeneration` so partial regenerations preserve the same depth standards (Act 1-2 for intro; full 5-act with all checklists for reading).
+`CanvasElement` shape:
+```ts
+{
+  id, type: "image"|"text"|"heading"|"divider"|"spacer"|"embed",
+  // layout
+  x, y, width, height, rotation, zIndex, hidden?,
+  // text/heading
+  content?, level?, align?, color?, bg?, fontSize?, bold?, italic?,
+  // image
+  src?, opacity?,
+  filters?: { blur, brightness, contrast, saturate, grayscale, sepia },
+  flipH?, flipV?, crop?: { x, y, width, height },
+  // misc
+  height_px?  // spacer
+}
+```
 
-**5. UDL inserts stay, but moved**
+RLS: `user_id = auth.uid()` for all four CRUD policies.
 
-Inline vocabulary callouts, the "Try it your way" choice block, and the closing "Reflect:" prompt remain — they're appended *after* the denouement so they don't break the narrative flow.
+### File changes
 
-### Files changed
+```text
+NEW  src/lib/canvas-types.ts                       — types + defaults
+NEW  src/hooks/useCanvasLayout.ts                  — load/save/mutate per route
+NEW  src/components/customize/CanvasTab.tsx        — toolbar + contextual editor + layers pane
+NEW  src/components/customize/CanvasOverlay.tsx    — free-positioning render layer (replaces PageWidgets)
+NEW  src/components/customize/DraggableWidget.tsx  — resize/rotate/move handles
+NEW  src/components/customize/CropDialog.tsx       — react-easy-crop modal
+NEW  supabase/functions/remove-image-background/index.ts
+EDIT src/components/customize/CustomizePanel.tsx   — replace Widgets tab → Canvas tab
+EDIT src/components/customize/ThemeProvider.tsx    — track selectedWidgetId
+EDIT src/components/AppShell.tsx                   — render <CanvasOverlay/> instead of <PageWidgets/>
+NEW  migration                                     — canvas_layouts table + RLS
+```
 
-- `supabase/functions/generate-curriculum-reading/index.ts` — system + user prompt rewrite, regeneration prompt rewrite, paragraph-count guidance bumped.
-- `.lovable/memory/features/lesson-planner/generation.md` — record the per-act depth checklist + storytelling voice rules as the new generation contract.
+### Migration of existing widgets
 
-### Out of scope
+One-time auto-migration on first open of the new editor: for the current page, any `widgets` from `theme_customizations` get copied into a fresh `canvas_layouts` row (placed in a vertical stack at default sizes). Nothing is deleted — old data stays as a backup.
 
-Same as before: existing readings in the DB are untouched; this affects new and regenerated content only. No DB or client-side changes.
+### Out of scope for v1 (can add later)
+
+- Multi-select / group / align-distribute
+- Undo/redo stack (current schema supports it; UI deferred)
+- Templates / saved layouts library
 
