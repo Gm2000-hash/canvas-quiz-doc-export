@@ -508,3 +508,63 @@ body.wp-host::before { display: none !important; content: none !important; }
 [data-radix-dialog-overlay], [data-radix-alert-dialog-overlay] {
   background-color: rgba(0, 0, 0, 0.5) !important;
 }
+
+/* ============================================================
+   BENTO / EDITORIAL UTILITIES (Wix-inspired makeover)
+   Monochrome lock stays in force; the only allowed accent is
+   the .bento-tile--coral class, hard-coded inline.
+   ============================================================ */
+@layer components {
+  .display-xl {
+    @apply text-5xl md:text-7xl font-extrabold tracking-tight leading-[0.95];
+  }
+  .display-lg {
+    @apply text-4xl md:text-5xl font-extrabold tracking-tight leading-[1.0];
+  }
+  .eyebrow {
+    @apply text-[11px] uppercase tracking-[0.22em] font-semibold;
+    color: hsl(0 0% 40%);
+  }
+  .pill-btn {
+    @apply inline-flex items-center gap-2 rounded-full px-5 py-2 text-xs font-semibold uppercase tracking-wide transition-colors;
+    background-color: hsl(0 0% 95%);
+    color: hsl(0 0% 0%);
+  }
+  .pill-btn:hover {
+    background-color: hsl(0 0% 0%) !important;
+    color: hsl(0 0% 100%) !important;
+  }
+  .pill-btn--ink {
+    background-color: hsl(0 0% 0%);
+    color: hsl(0 0% 100%);
+  }
+  .pill-btn--ink:hover {
+    background-color: hsl(0 0% 20%) !important;
+    color: hsl(0 0% 100%) !important;
+  }
+  .bento-tile {
+    @apply rounded-3xl p-6 md:p-8 transition-shadow;
+    background-color: hsl(0 0% 97%);
+    border: 1px solid hsl(0 0% 92%);
+  }
+  .bento-tile:hover {
+    box-shadow: 0 8px 24px -6px hsl(0 0% 0% / 0.08);
+  }
+  .bento-tile--ink {
+    background-color: hsl(0 0% 0%) !important;
+    color: hsl(0 0% 100%) !important;
+    border-color: hsl(0 0% 0%) !important;
+  }
+  .bento-tile--ink * { color: hsl(0 0% 100%) !important; }
+  .bento-tile--white {
+    background-color: hsl(0 0% 100%) !important;
+    border-color: hsl(0 0% 92%) !important;
+  }
+  /* The single allowed color on the page */
+  .bento-tile--coral {
+    background-color: #FF6B47 !important;
+    color: #ffffff !important;
+    border-color: #FF6B47 !important;
+  }
+  .bento-tile--coral * { color: #ffffff !important; }
+}
