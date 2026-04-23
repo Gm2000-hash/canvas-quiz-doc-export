@@ -348,6 +348,7 @@ body.tk-edit-mode .tk-widget {
     @apply rounded-2xl border border-border bg-card p-5 transition-shadow;
   }
   .editorial-card:hover { box-shadow: 0 6px 18px -8px hsl(0 0% 0% / 0.08); }
+}
 
 /* TipTap editor styles */
 .tiptap { outline: none; }
