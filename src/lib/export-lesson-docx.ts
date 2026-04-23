@@ -117,135 +117,98 @@ function buildLessonParagraphs(lesson: LessonPlan, index: number): Paragraph[] {
     });
   }
 
-  // Activities
-  if (lesson.activities.length > 0) {
-    paras.push(sectionTitle("Activities & Timing"));
-    lesson.activities.forEach(act => {
-      paras.push(new Paragraph({
-        spacing: { before: 80, after: 40 },
-        indent: { left: 360 },
-        children: [
-          new TextRun({ text: `${act.name}`, bold: true, size: 22 }),
-          new TextRun({ text: ` (${act.duration} min)`, size: 20, color: "666666" }),
-        ],
-      }));
-      if (act.description) {
+  // ─── PRIMARY: Lesson Flow (UDL-Aligned) ───────────────────────────────
+  const udl = lesson.udl_supports;
+  const hasLessonFlow = !!udl?.lesson_flow && udl.lesson_flow.trim().length > 0;
+
+  if (hasLessonFlow) {
+    paras.push(sectionTitle("Lesson Flow (UDL-Aligned)"));
+    // Strip HTML tags into plain lines while preserving paragraph + list structure.
+    const html = udl!.lesson_flow!;
+    const blocks = html
+      .replace(/<\/(p|h1|h2|h3|h4|li|div)>/gi, "\n")
+      .replace(/<br\s*\/?>(?!\n)/gi, "\n")
+      .replace(/<li[^>]*>/gi, "• ")
+      .replace(/<[^>]+>/g, "")
+      .replace(/&nbsp;/g, " ")
+      .replace(/&amp;/g, "&")
+      .replace(/&lt;/g, "<")
+      .replace(/&gt;/g, ">")
+      .split("\n")
+      .map(s => s.trim())
+      .filter(Boolean);
+    blocks.forEach(line => paras.push(bodyText(line)));
+  } else {
+    // ─── LEGACY FALLBACK: render the older fragmented sections ──────────
+    if (lesson.activities.length > 0) {
+      paras.push(sectionTitle("Activities & Timing"));
+      lesson.activities.forEach(act => {
         paras.push(new Paragraph({
-          indent: { left: 720 },
-          spacing: { after: 60 },
-          children: [new TextRun({ text: act.description, size: 20 })],
+          spacing: { before: 80, after: 40 },
+          indent: { left: 360 },
+          children: [
+            new TextRun({ text: `${act.name}`, bold: true, size: 22 }),
+            new TextRun({ text: ` (${act.duration} min)`, size: 20, color: "666666" }),
+          ],
         }));
-      }
-    });
+        if (act.description) {
+          paras.push(new Paragraph({
+            indent: { left: 720 },
+            spacing: { after: 60 },
+            children: [new TextRun({ text: act.description, size: 20 })],
+          }));
+        }
+      });
+    }
+    if (lesson.assessment) {
+      paras.push(sectionTitle("Assessment"));
+      lesson.assessment.split("\n").filter(Boolean).forEach(line => paras.push(bodyText(line)));
+    }
+    if (lesson.differentiation) {
+      paras.push(sectionTitle("Differentiation"));
+      lesson.differentiation.split("\n").filter(Boolean).forEach(line => paras.push(bodyText(line)));
+    }
   }
 
-  // Materials
+  // Materials (always)
   if (lesson.materials) {
     paras.push(sectionTitle("Materials & Resources"));
     lesson.materials.split("\n").filter(Boolean).forEach(line => paras.push(bodyText(line)));
   }
 
-  // Assessment
-  if (lesson.assessment) {
-    paras.push(sectionTitle("Assessment"));
-    lesson.assessment.split("\n").filter(Boolean).forEach(line => paras.push(bodyText(line)));
-  }
-
-  // Differentiation
-  if (lesson.differentiation) {
-    paras.push(sectionTitle("Differentiation"));
-    lesson.differentiation.split("\n").filter(Boolean).forEach(line => paras.push(bodyText(line)));
-  }
-
-  // Notes
+  // Notes (always)
   if (lesson.notes) {
     paras.push(sectionTitle("Teacher Notes"));
     lesson.notes.split("\n").filter(Boolean).forEach(line => paras.push(bodyText(line)));
   }
 
-  // UDL Supports
-  const udl = lesson.udl_supports;
-  if (udl && (udl.engagement || udl.representation || udl.action_expression || udl.reflection_prompt)) {
-    paras.push(sectionTitle("UDL Supports (CAST v2.2)"));
-
-    const subHeading = (text: string, color: string) => new Paragraph({
-      spacing: { before: 200, after: 60 },
-      children: [new TextRun({ text, bold: true, size: 22, color })],
-    });
-
-    const labeled = (label: string, value?: string) => {
-      if (!value) return;
-      paras.push(new Paragraph({
-        spacing: { after: 60 },
-        indent: { left: 360 },
-        children: [
-          new TextRun({ text: `${label}: `, bold: true, size: 20 }),
-          new TextRun({ text: value, size: 20 }),
-        ],
-      }));
-    };
-
-    const list = (label: string, items?: string[]) => {
-      if (!items || items.length === 0) return;
+  // ─── UDL Reference Details ─────────────────────────────────────────────
+  const scaffolds = udl?.vocabulary_scaffolds || udl?.representation?.vocabulary_scaffolds || [];
+  if (scaffolds.length > 0 || udl?.reflection_prompt) {
+    paras.push(sectionTitle("UDL Reference Details"));
+    if (scaffolds.length > 0) {
       paras.push(new Paragraph({
         spacing: { before: 60, after: 20 },
         indent: { left: 360 },
-        children: [new TextRun({ text: label, bold: true, size: 20 })],
+        children: [new TextRun({ text: "Vocabulary Scaffolds", bold: true, size: 20 })],
       }));
-      items.forEach(item => paras.push(new Paragraph({
-        spacing: { after: 20 },
-        indent: { left: 720 },
-        children: [new TextRun({ text: `• ${item}`, size: 20 })],
-      })));
-    };
-
-    if (udl.engagement) {
-      paras.push(subHeading("🎯 Engagement (the WHY)", "B45309"));
-      labeled("Hook", udl.engagement.hook);
-      list("Student Choice", udl.engagement.student_choice);
-      labeled("Collaboration", udl.engagement.collaboration);
-      labeled("Sustain Effort", udl.engagement.sustain_effort);
-      labeled("Self-Regulation Prompt", udl.engagement.self_regulation_prompt);
-    }
-
-    if (udl.representation) {
-      paras.push(subHeading("👁 Representation (the WHAT)", "1D4ED8"));
-      labeled("Visual", udl.representation.visual);
-      labeled("Auditory", udl.representation.auditory);
-      labeled("Text Supports", udl.representation.text_supports);
-      labeled("Big Idea Highlight", udl.representation.big_idea_highlight);
-      labeled("Background Activation", udl.representation.background_activation);
-      if (udl.representation.vocabulary_scaffolds && udl.representation.vocabulary_scaffolds.length > 0) {
+      scaffolds.forEach(vs => {
         paras.push(new Paragraph({
-          spacing: { before: 60, after: 20 },
-          indent: { left: 360 },
-          children: [new TextRun({ text: "Vocabulary Scaffolds", bold: true, size: 20 })],
+          spacing: { after: 20 },
+          indent: { left: 720 },
+          children: [
+            new TextRun({ text: `${vs.term}: `, bold: true, size: 20 }),
+            new TextRun({ text: vs.student_friendly, size: 20 }),
+            new TextRun({ text: ` (cue: ${vs.visual_cue})`, italics: true, size: 18, color: "666666" }),
+          ],
         }));
-        udl.representation.vocabulary_scaffolds.forEach(vs => {
-          paras.push(new Paragraph({
-            spacing: { after: 20 },
-            indent: { left: 720 },
-            children: [
-              new TextRun({ text: `${vs.term}: `, bold: true, size: 20 }),
-              new TextRun({ text: vs.student_friendly, size: 20 }),
-              new TextRun({ text: ` (cue: ${vs.visual_cue})`, italics: true, size: 18, color: "666666" }),
-            ],
-          }));
-        });
-      }
+      });
     }
-
-    if (udl.action_expression) {
-      paras.push(subHeading("✋ Action & Expression (the HOW)", "15803D"));
-      list("Response Modes", udl.action_expression.response_modes);
-      labeled("Physical Action / Manipulatives", udl.action_expression.physical_action_options);
-      labeled("Planning Scaffold", udl.action_expression.planning_scaffold);
-      labeled("Progress Checkpoint", udl.action_expression.progress_checkpoint);
-      labeled("Flexible Assessment", udl.action_expression.flexible_assessment);
-    }
-
-    if (udl.reflection_prompt) {
-      paras.push(subHeading("💭 Closing Reflection Prompt", "7E22CE"));
+    if (udl?.reflection_prompt) {
+      paras.push(new Paragraph({
+        spacing: { before: 200, after: 60 },
+        children: [new TextRun({ text: "Closing Reflection Prompt", bold: true, size: 22, color: "7E22CE" })],
+      }));
       paras.push(bodyText(udl.reflection_prompt));
     }
   }
