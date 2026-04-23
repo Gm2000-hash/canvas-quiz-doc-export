@@ -14,7 +14,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, Layers, Sparkles, Library, Download, Upload } from "lucide-react";
+import { Plus, Layers, Sparkles, Library, Download, Upload, BookOpen } from "lucide-react";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import PrepopulateStandardsDialog from "@/components/PrepopulateStandardsDialog";
 import { CurriculumEditor } from "@/components/CurriculumEditor";
@@ -250,6 +250,13 @@ const LessonPlanner = () => {
               title: "Generate Curriculum",
               body: "Build a full unit's worth of readings & lessons from one prompt.",
               action: { label: "Open AI", icon: Sparkles, onClick: () => setGenerateOpen(true) },
+            },
+            {
+              variant: "peach",
+              eyebrow: "Browse",
+              title: "All Lessons",
+              body: "Search every lesson by subject, grade, theme, or activities.",
+              action: { label: "Open Lessons", icon: BookOpen, onClick: () => navigate("/lessons") },
             },
             {
               variant: "sky",
