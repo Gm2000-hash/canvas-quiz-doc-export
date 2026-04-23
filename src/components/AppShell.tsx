@@ -51,13 +51,10 @@ export function AppShell({ children }: AppShellProps) {
             </header>
             <main className="flex-1 min-w-0 overflow-x-hidden relative" data-themeable="app.main">
               {children}
-              <CanvasOverlay />
             </main>
           </div>
         </div>
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
-        <CustomizeButton />
-        <CustomizePanel />
       </SidebarProvider>
     </ThemeProvider>
   );
