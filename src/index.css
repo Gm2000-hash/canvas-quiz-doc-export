@@ -598,23 +598,37 @@ body, body * {
   background-image: none !important;
 }
 
-/* Solid dark surfaces stay dark with white text */
-[class*="bg-primary"]:not([class*="bg-primary/"]):not([class*="bg-primary-foreground"]),
-[class*="bg-foreground"]:not([class*="bg-foreground/"]),
-[class*="bg-destructive"]:not([class*="bg-destructive/"]),
-[class*="bg-sidebar-primary"]:not([class*="bg-sidebar-primary/"]) {
+/* Solid dark surfaces stay dark with white text.
+   Use exact-token classes to avoid matching *-foreground variants. */
+.bg-primary, .bg-foreground, .bg-destructive, .bg-sidebar-primary {
   background-color: #000000 !important;
   background-image: none !important;
-}
-[class*="bg-primary"]:not([class*="bg-primary/"]):not([class*="bg-primary-foreground"]),
-[class*="bg-primary"]:not([class*="bg-primary/"]):not([class*="bg-primary-foreground"]) *,
-[class*="bg-foreground"]:not([class*="bg-foreground/"]),
-[class*="bg-foreground"]:not([class*="bg-foreground/"]) *,
-[class*="bg-destructive"]:not([class*="bg-destructive/"]),
-[class*="bg-destructive"]:not([class*="bg-destructive/"]) *,
-[class*="bg-sidebar-primary"]:not([class*="bg-sidebar-primary/"]),
-[class*="bg-sidebar-primary"]:not([class*="bg-sidebar-primary/"]) * {
   color: #ffffff !important;
+}
+.bg-primary *, .bg-foreground *, .bg-destructive *, .bg-sidebar-primary * {
+  color: #ffffff !important;
+}
+
+/* *-foreground tokens are explicitly LIGHT surfaces — keep them white */
+.bg-primary-foreground, .bg-secondary-foreground,
+.bg-card-foreground, .bg-popover-foreground,
+.bg-muted-foreground, .bg-accent-foreground,
+.bg-destructive-foreground, .bg-sidebar-foreground,
+.bg-sidebar-primary-foreground, .bg-sidebar-accent-foreground {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+}
+
+/* Decorative blobs / opacity-suffixed colored bgs (e.g. bg-primary/10,
+   bg-neon-yellow/8, bg-accent/8) — invisible */
+[class*="bg-primary/"], [class*="bg-accent/"], [class*="bg-destructive/"],
+[class*="bg-foreground/"], [class*="bg-secondary/"],
+[class*="bg-neon-pink"], [class*="bg-neon-cyan"], [class*="bg-neon-purple"],
+[class*="bg-neon-orange"], [class*="bg-neon-green"], [class*="bg-neon-yellow"] {
+  background-color: transparent !important;
+  background-image: none !important;
+  opacity: 0 !important;
 }
 
 /* Sidebar: light grey panel, black text */
