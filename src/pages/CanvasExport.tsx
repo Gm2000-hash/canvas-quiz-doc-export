@@ -1,7 +1,7 @@
 import { SettingsForm } from "@/components/SettingsForm";
 import { QuizBrowser } from "@/components/QuizBrowser";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
-import { FileText, Download, Settings } from "lucide-react";
+import { FileText, Settings } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
 import { AppNavSheet } from "@/components/AppNavSheet";
