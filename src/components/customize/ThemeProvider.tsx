@@ -35,6 +35,45 @@ type Ctx = ReturnType<typeof useThemeCustomizations> & {
 
 const ThemeCtx = createContext<Ctx | null>(null);
 
+/** Build a stable structural path for an element scoped to <main>. */
+function getStructuralPath(el: HTMLElement): string {
+  const root = (document.querySelector("[data-themeable='app.main']") as HTMLElement) || document.body;
+  const parts: string[] = [];
+  let cur: HTMLElement | null = el;
+  let depth = 0;
+  while (cur && cur !== root && depth < 12) {
+    const parent: HTMLElement | null = cur.parentElement;
+    if (!parent) break;
+    const siblings = Array.from(parent.children).filter(
+      c => c.tagName === cur!.tagName
+    );
+    const idx = siblings.indexOf(cur);
+    parts.unshift(`${cur.tagName.toLowerCase()}[${idx}]`);
+    cur = parent;
+    depth++;
+  }
+  return parts.join(">");
+}
+
+/** Resolve a structural path back to the live element, if it still exists. */
+function resolveStructuralPath(path: string): HTMLElement | null {
+  const root = (document.querySelector("[data-themeable='app.main']") as HTMLElement) || document.body;
+  const segs = path.split(">").filter(Boolean);
+  let cur: HTMLElement | null = root;
+  for (const seg of segs) {
+    if (!cur) return null;
+    const m = seg.match(/^([a-z0-9-]+)\[(\d+)\]$/i);
+    if (!m) return null;
+    const [, tag, idxStr] = m;
+    const idx = Number(idxStr);
+    const matches = Array.from(cur.children).filter(
+      c => c.tagName.toLowerCase() === tag.toLowerCase()
+    ) as HTMLElement[];
+    cur = matches[idx] || null;
+  }
+  return cur;
+}
+
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const tc = useThemeCustomizations();
   const cl = useCanvasLayout();
