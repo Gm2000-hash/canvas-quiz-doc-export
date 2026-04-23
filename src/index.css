@@ -455,12 +455,23 @@ body.tk-edit-mode .tk-widget {
 .tiptap .tk-callout[data-tone="danger"]  { background: hsl(0 75% 55% / 0.12); border-color: hsl(0 75% 50% / 0.4); }
 
 /* ==========================================================
-   MONOCHROME LOCKDOWN
-   The semantic tokens above are already neutral greyscale, so
-   most components render correctly without overrides. This
-   block kills only the things tokens can't reach: backdrop
-   blur, inline tailwind color utilities (bg-blue-500, etc.),
-   gradients, and any saved wallpaper image.
+   PALETTE — Wix-template inspired brand accents.
+   These are real semantic tokens (HSL).
+   ========================================================== */
+:root {
+  --brand-coral:  14 100% 64%;   /* #FF6B47 — primary accent */
+  --brand-lilac:  248 60% 86%;   /* soft purple wash */
+  --brand-peach:  18 95% 90%;    /* warm peach wash */
+  --brand-sky:    220 80% 88%;   /* cool blue wash */
+  --brand-mint:   148 50% 84%;   /* soft mint wash */
+  --brand-ink:    0 0% 8%;       /* near-black */
+}
+
+/* ==========================================================
+   SOFT MONOCHROME LOCKDOWN (legacy)
+   Neutralizes raw Tailwind hue utilities so legacy components
+   stay quiet. Intentional brand classes (.brand-*, .bento-tile--*)
+   bypass this because they don't match the bg-{hue}- prefixes.
    ========================================================== */
 
 /* No backdrop blur anywhere — primary cause of "washed out" feel */
@@ -574,11 +585,40 @@ body.wp-host::before { display: none !important; content: none !important; }
     background-color: hsl(0 0% 100%) !important;
     border-color: hsl(0 0% 92%) !important;
   }
-  /* The single allowed color on the page */
+  /* PRIMARY accent — coral */
   .bento-tile--coral {
-    background-color: #FF6B47 !important;
+    background-color: hsl(var(--brand-coral)) !important;
     color: #ffffff !important;
-    border-color: #FF6B47 !important;
+    border-color: hsl(var(--brand-coral)) !important;
   }
   .bento-tile--coral * { color: #ffffff !important; }
+
+  /* Soft pastel hero washes — Wix template's signature gradients */
+  .bento-tile--lilac {
+    background-image: linear-gradient(135deg,
+      hsl(var(--brand-lilac)) 0%,
+      hsl(var(--brand-peach)) 100%) !important;
+    border-color: transparent !important;
+    color: hsl(var(--brand-ink)) !important;
+  }
+  .bento-tile--peach {
+    background-image: linear-gradient(135deg,
+      hsl(var(--brand-peach)) 0%,
+      hsl(var(--brand-lilac)) 100%) !important;
+    border-color: transparent !important;
+    color: hsl(var(--brand-ink)) !important;
+  }
+  .bento-tile--sky {
+    background-image: linear-gradient(135deg,
+      hsl(var(--brand-sky)) 0%,
+      hsl(var(--brand-mint)) 100%) !important;
+    border-color: transparent !important;
+    color: hsl(var(--brand-ink)) !important;
+  }
+
+  /* Brand text & background utilities (bypass the hue-lockdown
+     because they're not bg-{hue}- prefixed) */
+  .text-brand-coral { color: hsl(var(--brand-coral)) !important; }
+  .bg-brand-coral   { background-color: hsl(var(--brand-coral)) !important; color: #fff !important; }
+  .ring-brand-coral { --tw-ring-color: hsl(var(--brand-coral)) !important; }
 }
