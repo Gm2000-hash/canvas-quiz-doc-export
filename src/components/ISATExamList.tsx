@@ -46,7 +46,15 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
   const [deleteTarget, setDeleteTarget] = useState<ISATExam | null>(null);
   const [pushTarget, setPushTarget] = useState<ISATExam | null>(null);
   const [pushQuestions, setPushQuestions] = useState<any[]>([]);
-  
+
+  // Bulk enrichment wizard state
+  const [enrichExamId, setEnrichExamId] = useState<string | null>(null);
+  const [enrichExamTitle, setEnrichExamTitle] = useState<string>("");
+  const [enrichQuestions, setEnrichQuestions] = useState<any[]>([]);
+  const [enrichIndex, setEnrichIndex] = useState(0);
+  const [enrichLoading, setEnrichLoading] = useState(false);
+  const [enrichDialogOpen, setEnrichDialogOpen] = useState(false);
+
   const { config: canvasConfig, isConfigured: canvasConnected } = useCanvasConfig();
 
   const loadExams = async () => {
