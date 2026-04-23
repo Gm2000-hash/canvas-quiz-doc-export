@@ -704,10 +704,61 @@ function LayersPanel() {
     mutate("element", `${key}|zindex`, { color: n === 0 ? null : `zindex:${n}` });
   };
 
+  // ----- Drag & drop reordering (Canva-style: top of list = front-most) -----
+  const [dragKey, setDragKey] = useState<string | null>(null);
+  const [dropIdx, setDropIdx] = useState<number | null>(null);
+
+  // Reassign z-indexes based on visual order. Top row = highest z.
+  // Skips the wallpaper virtual row.
+  const applyOrder = (orderedKeys: string[]) => {
+    const real = orderedKeys.filter(k => k !== "wallpaper");
+    const n = real.length;
+    real.forEach((k, i) => {
+      // Top of list (i=0) -> highest z. Spread from +n down to +1.
+      const z = n - i;
+      mutate("element", `${k}|zindex`, { color: `zindex:${z}` });
+    });
+  };
+
+  const onDragStart = (e: React.DragEvent, key: string) => {
+    if (key === "wallpaper") { e.preventDefault(); return; }
+    setDragKey(key);
+    e.dataTransfer.effectAllowed = "move";
+    try { e.dataTransfer.setData("text/plain", key); } catch { /* ignore */ }
+  };
+  const onDragOver = (e: React.DragEvent, idx: number) => {
+    if (!dragKey) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDropIdx(idx);
+  };
+  const onDrop = (e: React.DragEvent, idx: number) => {
+    e.preventDefault();
+    if (!dragKey) return;
+    const fromIdx = rows.findIndex(r => r.key === dragKey);
+    if (fromIdx === -1 || fromIdx === idx) {
+      setDragKey(null); setDropIdx(null); return;
+    }
+    const next = rows.slice();
+    const [moved] = next.splice(fromIdx, 1);
+    // Adjust target index when removing earlier element
+    const insertAt = fromIdx < idx ? idx - 1 : idx;
+    next.splice(insertAt, 0, moved);
+    // Lock wallpaper to the top
+    const wpIdx = next.findIndex(r => r.key === "wallpaper");
+    if (wpIdx > 0) {
+      const [wp] = next.splice(wpIdx, 1);
+      next.unshift(wp);
+    }
+    setRows(next);
+    applyOrder(next.map(r => r.key));
+    setDragKey(null); setDropIdx(null);
+  };
+
   return (
     <div className="space-y-2">
       <p className="text-xs text-muted-foreground">
-        Click a row to select that element. Use ↑/↓ to reorder layers.
+        Drag rows to reorder layers (top = front). Click to select. Use ↑/↓ for fine z-index tweaks.
       </p>
       {rows.length === 0 ? (
         <div className="text-xs text-muted-foreground text-center py-6">
@@ -715,23 +766,38 @@ function LayersPanel() {
         </div>
       ) : (
         <div className="border border-border rounded-lg overflow-hidden divide-y divide-border">
-          {rows.map(row => {
+          {rows.map((row, idx) => {
             const isSel = selectedElement === row.key;
+            const isDragging = dragKey === row.key;
+            const showDropAbove = dropIdx === idx && dragKey && dragKey !== row.key;
             return (
               <div
                 key={row.key}
+                draggable={!row.isVirtual}
+                onDragStart={(e) => onDragStart(e, row.key)}
+                onDragOver={(e) => onDragOver(e, idx)}
+                onDragLeave={() => setDropIdx(prev => prev === idx ? null : prev)}
+                onDrop={(e) => onDrop(e, idx)}
+                onDragEnd={() => { setDragKey(null); setDropIdx(null); }}
                 onMouseEnter={() => setHoverKey(row.key)}
                 onMouseLeave={() => setHoverKey(prev => prev === row.key ? null : prev)}
                 onClick={() => selectAndScroll(row.key)}
-                className={`flex items-center gap-2 px-2 py-1.5 cursor-pointer transition-colors ${
+                className={`flex items-center gap-2 px-2 py-1.5 cursor-pointer transition-colors relative ${
                   isSel ? "bg-primary/10" : "hover:bg-muted/60"
-                }`}
+                } ${isDragging ? "opacity-40" : ""} ${showDropAbove ? "border-t-2 border-t-primary" : ""}`}
               >
-                <Layers className={`h-3.5 w-3.5 shrink-0 ${isSel ? "text-primary" : "text-muted-foreground"}`} />
+                {!row.isVirtual ? (
+                  <GripVertical
+                    className="h-3.5 w-3.5 shrink-0 text-muted-foreground cursor-grab active:cursor-grabbing"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                ) : (
+                  <Layers className={`h-3.5 w-3.5 shrink-0 ${isSel ? "text-primary" : "text-muted-foreground"}`} />
+                )}
                 <div className="min-w-0 flex-1">
                   <div className="text-xs font-medium truncate">{row.label}</div>
                   <div className="text-[10px] text-muted-foreground truncate font-mono">
-                    {row.isVirtual ? "virtual" : row.key}
+                    {row.isVirtual ? "virtual · always behind" : row.key}
                   </div>
                 </div>
                 {!row.isVirtual && (
