@@ -189,11 +189,12 @@ ${standardsContext}
 
 ## IMPORTANT:
 - Questions should be challenging but fair for middle school students
-- Use realistic scientific scenarios and data
+- Use realistic scientific scenarios and data — described ENTIRELY in text, never via images
 - Distractors should reflect common student misconceptions
 - Multi-step questions should build logically
-- Constructed responses should have clear rubric criteria in the scoring_rubric field
-- Every question MUST include a "hint" — a short (1-2 sentence) clue that nudges the student toward the correct concept without giving the answer away`;
+- Constructed responses should have clear rubric criteria in the scoring_rubric field AND a sample_response
+- Every question MUST include a "hint" — a short (1-2 sentence) clue that nudges the student toward the correct concept without giving the answer away
+- Before finalizing each question, re-read it and confirm: (a) no visual is referenced, (b) all answer options are present and non-empty, (c) the student knows exactly what action to take.`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
@@ -209,7 +210,9 @@ ${standardsContext}
             role: "user",
             content: `Generate a complete ${clampedCount}-question ISAT practice exam covering ${disciplineLabel}.
 
-Make this exam realistic and challenging — it should prepare students for the actual ISAT ECA. Include a variety of question types as specified.`,
+Make this exam realistic and challenging — it should prepare students for the actual ISAT ECA. Include a variety of question types as specified.
+
+REMEMBER: This is a TEXT-ONLY exam. Do NOT reference any image, diagram, figure, illustration, chart, photo, or "model shown". If data or a scenario is needed, write it out fully in the question text. Every multiple-choice/select-all question MUST have complete answer options. Every question MUST tell the student exactly what to do.`,
           },
         ],
         tools: [
