@@ -9,7 +9,7 @@
     --background: 170 65% 88%;        /* aqua mist */
     --foreground: 0 0% 0%;
 
-    --card: 18 95% 90%;               /* warm peach */
+    --card: 8 95% 82%;                /* sunkist coral */
     --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
@@ -53,7 +53,7 @@
     --info-foreground: 0 0% 100%;
     --chart-1: 170 80% 38%;           /* turquoise */
     --chart-2: 200 90% 50%;           /* ocean blue */
-    --chart-3: 18 95% 70%;            /* peach */
+    --chart-3: 8 95% 70%;             /* coral */
     --chart-4: 25 95% 60%;            /* tangerine */
     --chart-5: 78 75% 50%;            /* lime */
     --sidebar: 150 55% 85%;
@@ -67,7 +67,7 @@
     --neon-yellow: 45 95% 60%;
     --page-green: 150 55% 88%;
     --page-lime: 150 50% 90%;
-    --page-tangerine: 25 95% 88%;
+    --page-tangerine: 8 95% 85%;
 
     --shadow-2xs: 0 1px 2px 0 hsl(158 50% 20% / 0.06);
     --shadow-xs: 0 1px 3px 0 hsl(158 50% 20% / 0.08);
@@ -204,19 +204,19 @@ body::before {
   z-index: -2;
   pointer-events: none;
   background:
-    radial-gradient(circle at 12% 18%, hsl(18 95% 78% / 0.55) 0%, transparent 35%),
+    radial-gradient(circle at 12% 18%, hsl(8 95% 72% / 0.55) 0%, transparent 35%),
     radial-gradient(circle at 88% 22%, hsl(170 80% 55% / 0.55) 0%, transparent 38%),
     radial-gradient(circle at 78% 82%, hsl(200 90% 60% / 0.50) 0%, transparent 40%),
-    radial-gradient(circle at 18% 86%, hsl(78 75% 60% / 0.50) 0%, transparent 38%),
-    radial-gradient(circle at 50% 50%, hsl(25 95% 70% / 0.40) 0%, transparent 30%),
+    radial-gradient(circle at 18% 86%, hsl(150 60% 60% / 0.50) 0%, transparent 38%),
+    radial-gradient(circle at 50% 50%, hsl(8 95% 68% / 0.40) 0%, transparent 30%),
     conic-gradient(from 30deg at 50% 50%,
       hsl(170 80% 55% / 0.18),
       hsl(200 90% 60% / 0.18),
       hsl(220 75% 55% / 0.18),
-      hsl(78 75% 55% / 0.18),
+      hsl(150 60% 55% / 0.18),
       hsl(45 95% 65% / 0.18),
       hsl(25 95% 65% / 0.18),
-      hsl(18 95% 75% / 0.18),
+      hsl(8 95% 70% / 0.18),
       hsl(170 80% 55% / 0.18));
   background-color: hsl(var(--background));
   background-blend-mode: screen, screen, screen, screen, screen, normal;
@@ -231,7 +231,7 @@ body::after {
   pointer-events: none;
   background:
     repeating-radial-gradient(circle at 22% 28%, transparent 0 38px, hsl(170 80% 55% / 0.06) 38px 42px),
-    repeating-radial-gradient(circle at 78% 72%, transparent 0 46px, hsl(18 95% 70% / 0.06) 46px 50px),
+    repeating-radial-gradient(circle at 78% 72%, transparent 0 46px, hsl(8 95% 70% / 0.06) 46px 50px),
     repeating-radial-gradient(circle at 65% 18%, transparent 0 30px, hsl(200 90% 60% / 0.05) 30px 34px);
   mix-blend-mode: multiply;
 }
