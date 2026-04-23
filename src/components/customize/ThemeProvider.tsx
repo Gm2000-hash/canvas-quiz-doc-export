@@ -123,7 +123,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       e.preventDefault();
       e.stopPropagation();
       setSelectedElement(key);
-      setPanelOpen(true);
+      // Don't auto-open the panel — user opens it manually via the FAB.
     };
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
