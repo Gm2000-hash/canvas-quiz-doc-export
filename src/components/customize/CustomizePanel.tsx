@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { FILTER_PRESETS } from "@/lib/customization-types";
 import type { CustomWidget, WallpaperFilters } from "@/lib/customization-types";
-import { Upload, Sparkles, Trash2, Palette, Image as ImageIcon, Plus, Type, Heading, Minus, MoveVertical, Link2, Loader2, Save, RotateCcw } from "lucide-react";
+import { Upload, Sparkles, Trash2, Palette, Image as ImageIcon, Plus, Type, Heading, Minus, MoveVertical, Link2, Loader2, Save, RotateCcw, Layers, ChevronUp, ChevronDown, Crosshair } from "lucide-react";
 import { toast } from "sonner";
 
 const COLOR_PROPS = ["bg", "text", "border"] as const;
