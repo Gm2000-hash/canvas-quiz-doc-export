@@ -289,11 +289,12 @@ export function CustomizePanel() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-          <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="wallpaper"><ImageIcon className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="element"><Palette className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="widgets"><Plus className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="sections"><Heading className="h-4 w-4" /></TabsTrigger>
+          <TabsList className="grid grid-cols-5 w-full">
+            <TabsTrigger value="wallpaper" title="Wallpaper"><ImageIcon className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="element" title="Element"><Palette className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="layers" title="Layers"><Layers className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="widgets" title="Widgets"><Plus className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="sections" title="Sections"><Heading className="h-4 w-4" /></TabsTrigger>
           </TabsList>
 
           {/* WALLPAPER */}
