@@ -194,6 +194,48 @@
   transition: filter 200ms ease, opacity 200ms ease;
 }
 
+/* ========== Tie-dye swirls ==========
+   Layered radial gradients evoke hand-dyed tropical fabric.
+   Sits behind page content; overlay is fixed so it follows scroll. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 18%, hsl(18 95% 78% / 0.55) 0%, transparent 35%),
+    radial-gradient(circle at 88% 22%, hsl(170 80% 55% / 0.55) 0%, transparent 38%),
+    radial-gradient(circle at 78% 82%, hsl(200 90% 60% / 0.50) 0%, transparent 40%),
+    radial-gradient(circle at 18% 86%, hsl(78 75% 60% / 0.50) 0%, transparent 38%),
+    radial-gradient(circle at 50% 50%, hsl(25 95% 70% / 0.40) 0%, transparent 30%),
+    conic-gradient(from 30deg at 50% 50%,
+      hsl(170 80% 55% / 0.18),
+      hsl(200 90% 60% / 0.18),
+      hsl(220 75% 55% / 0.18),
+      hsl(78 75% 55% / 0.18),
+      hsl(45 95% 65% / 0.18),
+      hsl(25 95% 65% / 0.18),
+      hsl(18 95% 75% / 0.18),
+      hsl(170 80% 55% / 0.18));
+  background-color: hsl(var(--background));
+  background-blend-mode: screen, screen, screen, screen, screen, normal;
+  filter: blur(40px) saturate(1.2);
+}
+/* Subtle swirling concentric rings — the "tie-dye" signature */
+body::after {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-radial-gradient(circle at 22% 28%, transparent 0 38px, hsl(170 80% 55% / 0.06) 38px 42px),
+    repeating-radial-gradient(circle at 78% 72%, transparent 0 46px, hsl(18 95% 70% / 0.06) 46px 50px),
+    repeating-radial-gradient(circle at 65% 18%, transparent 0 30px, hsl(200 90% 60% / 0.05) 30px 34px);
+  mix-blend-mode: multiply;
+}
+
 /* ========== Edit-mode handles ========== */
 [data-themeable] { position: relative; }
 body.tk-edit-mode [data-themeable]:hover {
