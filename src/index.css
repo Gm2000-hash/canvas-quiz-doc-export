@@ -51,23 +51,23 @@
     --warning-foreground: 0 0% 0%;
     --info: 198 75% 50%;
     --info-foreground: 0 0% 100%;
-    --chart-1: 158 65% 38%;           /* jungle green */
-    --chart-2: 198 75% 55%;           /* ocean blue */
-    --chart-3: 22 90% 70%;            /* peach */
-    --chart-4: 168 55% 45%;           /* teal */
-    --chart-5: 45 85% 65%;            /* sunset gold */
-    --sidebar: 158 40% 96%;
+    --chart-1: 170 80% 38%;           /* turquoise */
+    --chart-2: 200 90% 50%;           /* ocean blue */
+    --chart-3: 18 95% 70%;            /* peach */
+    --chart-4: 25 95% 60%;            /* tangerine */
+    --chart-5: 78 75% 50%;            /* lime */
+    --sidebar: 78 65% 82%;
 
     /* Legacy accent palette — mapped to tropical accents */
-    --neon-pink: 22 90% 70%;
-    --neon-cyan: 188 75% 55%;
-    --neon-purple: 198 75% 55%;
-    --neon-orange: 22 95% 65%;
-    --neon-green: 158 65% 45%;
-    --neon-yellow: 45 90% 65%;
-    --page-green: 158 50% 92%;
-    --page-lime: 100 55% 92%;
-    --page-tangerine: 22 80% 92%;
+    --neon-pink: 350 90% 70%;
+    --neon-cyan: 185 80% 55%;
+    --neon-purple: 220 75% 55%;
+    --neon-orange: 25 95% 60%;
+    --neon-green: 145 60% 40%;
+    --neon-yellow: 45 95% 60%;
+    --page-green: 145 50% 88%;
+    --page-lime: 78 65% 88%;
+    --page-tangerine: 25 95% 88%;
 
     --shadow-2xs: 0 1px 2px 0 hsl(158 50% 20% / 0.06);
     --shadow-xs: 0 1px 3px 0 hsl(158 50% 20% / 0.08);
