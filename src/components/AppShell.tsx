@@ -52,7 +52,7 @@ export function AppShell({ children }: AppShellProps) {
                 </kbd>
               </Button>
             </header>
-            <main className="flex-1 min-w-0 overflow-x-hidden relative" data-themeable="app.main">
+            <main className="flex-1 min-w-0 overflow-x-hidden" data-themeable="app.main">
               <PageWidgets />
               {children}
             </main>

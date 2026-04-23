@@ -14,21 +14,12 @@ export type CustomWidget = {
   type: "text" | "heading" | "image" | "divider" | "spacer" | "embed";
   content?: string;       // text/heading content, image URL, embed URL
   level?: 1 | 2 | 3 | 4;  // heading level
-  height?: number;        // spacer height in px (also used as floating height)
+  height?: number;        // spacer height in px
   align?: "left" | "center" | "right";
   color?: string;         // hsl override for the widget text/icon
   bg?: string;            // hsl background color
   width?: string;         // CSS width e.g. "100%", "320px"
   sort_order: number;
-  // ----- Floating / free-positioned widgets (currently used for images) -----
-  floating?: boolean;     // if true, widget is absolutely positioned over the page
-  x?: number;             // px offset from main content's top-left
-  y?: number;
-  w?: number;             // px width when floating
-  h?: number;             // px height when floating
-  rotation?: number;      // degrees
-  z?: number;             // z-index for floating widgets (default 50)
-  locked?: boolean;       // disables drag/resize
 };
 
 export type ScopeType = "global" | "page" | "element";

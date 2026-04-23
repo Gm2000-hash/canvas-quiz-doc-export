@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { FILTER_PRESETS } from "@/lib/customization-types";
 import type { CustomWidget, WallpaperFilters } from "@/lib/customization-types";
-import { Upload, Sparkles, Trash2, Palette, Image as ImageIcon, Plus, Type, Heading, Minus, MoveVertical, Link2, Loader2, Save, RotateCcw, Layers, ChevronUp, ChevronDown, Crosshair, GripVertical } from "lucide-react";
+import { Upload, Sparkles, Trash2, Palette, Image as ImageIcon, Plus, Type, Heading, Minus, MoveVertical, Link2, Loader2, Save, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 
 const COLOR_PROPS = ["bg", "text", "border"] as const;
@@ -44,9 +44,9 @@ export function CustomizePanel() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState("wallpaper");
 
-  // Auto-switch to Element tab whenever an element is selected (unless user is in Layers)
+  // Auto-switch to Element tab whenever an element is selected
   useEffect(() => {
-    if (selectedElement && panelOpen && activeTab !== "layers") setActiveTab("element");
+    if (selectedElement && panelOpen) setActiveTab("element");
   }, [selectedElement, panelOpen]);
 
   const setFilter = (target: "page" | "global", patch: WallpaperFilters) => {
@@ -95,78 +95,19 @@ export function CustomizePanel() {
   const ElementEditor = () => {
     if (!selectedElement) {
       return (
-        <div className="space-y-3 p-1">
-          <div className="text-sm text-muted-foreground text-center">
-            Click any element on the page to edit it.
-          </div>
-          <p className="text-[11px] text-muted-foreground/80 text-center">
-            Or pick a virtual target:
-          </p>
-          <div className="grid grid-cols-1 gap-1.5">
-            <Button size="sm" variant="outline" onClick={() => setSelectedElement("wallpaper")}>
-              <ImageIcon className="h-4 w-4 mr-2" /> Wallpaper layer
-            </Button>
-          </div>
+        <div className="text-sm text-muted-foreground p-4 text-center">
+          Click any element on the page to edit its colors.
         </div>
       );
     }
-
-    // Special-case: wallpaper is a virtual element. Surface its filters here so users
-    // can tweak opacity/blur on the wallpaper itself the same way as any element.
-    if (selectedElement === "wallpaper") {
-      const f = activeWp.wallpaper_filters || {};
-      const setF = (patch: WallpaperFilters) => setFilter(wpScope, patch);
-      return (
-        <div className="space-y-4">
-          <div className="text-xs font-mono bg-muted rounded px-2 py-1 break-all">
-            wallpaper · {wpScope === "page" ? `page ${pageScopeKey}` : "global"}
-          </div>
-          {!activeWp.wallpaper_path && (
-            <div className="rounded-md border border-dashed border-border p-3 text-xs text-muted-foreground text-center">
-              No wallpaper set yet. Add one in the Wallpaper tab.
-            </div>
-          )}
-          <FilterSlider label="Opacity" min={0} max={1} step={0.05}
-            value={f.opacity ?? 1} onChange={(v) => setF({ opacity: v })} />
-          <FilterSlider label="Blur" min={0} max={20} step={1} unit="px"
-            value={f.blur ?? 0} onChange={(v) => setF({ blur: v })} />
-          <FilterSlider label="Brightness" min={0} max={2} step={0.05}
-            value={f.brightness ?? 1} onChange={(v) => setF({ brightness: v })} />
-          <FilterSlider label="Contrast" min={0} max={2} step={0.05}
-            value={f.contrast ?? 1} onChange={(v) => setF({ contrast: v })} />
-          <FilterSlider label="Saturation" min={0} max={2} step={0.05}
-            value={f.saturate ?? 1} onChange={(v) => setF({ saturate: v })} />
-          <Button variant="outline" className="w-full" onClick={() => setSelectedElement(null)}>
-            Clear selection
-          </Button>
-        </div>
-      );
-    }
-
     const opacityKey = `${selectedElement}|opacity`;
     const opacityCur = get("element", opacityKey);
     // We stash the per-element opacity inside `color` as a string like "opacity:0.6"
     const opacityVal = parseFloat((opacityCur.color || "").replace("opacity:", "")) || 1;
-    const zKey = `${selectedElement}|zindex`;
-    const zCur = get("element", zKey);
-    // Stored as "zindex:<n>" where n is integer (-50..50). 0 = default.
-    const zVal = parseInt((zCur.color || "").replace("zindex:", ""), 10);
-    const zSafe = Number.isFinite(zVal) ? zVal : 0;
-
-    const friendlyLabel = selectedElement.startsWith("auto:")
-      ? selectedElement.slice(5).split(">").pop() || selectedElement
-      : selectedElement;
 
     return (
       <div className="space-y-4">
-        <div>
-          <div className="text-xs font-mono bg-muted rounded px-2 py-1 break-all">{friendlyLabel}</div>
-          {selectedElement.startsWith("auto:") && (
-            <p className="text-[10px] text-muted-foreground mt-1 break-all">
-              Auto-targeted. Full path: <span className="font-mono">{selectedElement.slice(5)}</span>
-            </p>
-          )}
-        </div>
+        <div className="text-xs font-mono bg-muted rounded px-2 py-1 break-all">{selectedElement}</div>
         {COLOR_PROPS.map(prop => {
           const sk = `${selectedElement}|${prop}`;
           const cur = get("element", sk);
@@ -227,37 +168,6 @@ export function CustomizePanel() {
             )}
           </div>
         </div>
-        <div className="space-y-1.5">
-          <Label>Layer (z-index)</Label>
-          <p className="text-[11px] text-muted-foreground">Negative sends behind, positive brings forward. 0 = default.</p>
-          <div className="flex items-center gap-2">
-            <Slider
-              value={[zSafe]} min={-50} max={50} step={1}
-              onValueChange={([v]) => mutate("element", zKey, { color: v === 0 ? null : `zindex:${v}` })}
-              className="flex-1"
-            />
-            <Input
-              type="number"
-              value={zSafe}
-              onChange={(e) => {
-                const n = parseInt(e.target.value, 10);
-                if (Number.isFinite(n)) mutate("element", zKey, { color: n === 0 ? null : `zindex:${n}` });
-              }}
-              className="w-16 h-9"
-            />
-            {zCur.color && (
-              <Button size="icon" variant="ghost" onClick={() => mutate("element", zKey, { color: null })}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-          <div className="grid grid-cols-4 gap-1.5 pt-1">
-            <Button size="sm" variant="outline" onClick={() => mutate("element", zKey, { color: "zindex:-10" })}>Back</Button>
-            <Button size="sm" variant="outline" onClick={() => mutate("element", zKey, { color: `zindex:${zSafe - 1}` })}>−1</Button>
-            <Button size="sm" variant="outline" onClick={() => mutate("element", zKey, { color: `zindex:${zSafe + 1}` })}>+1</Button>
-            <Button size="sm" variant="outline" onClick={() => mutate("element", zKey, { color: "zindex:10" })}>Front</Button>
-          </div>
-        </div>
         <Button variant="outline" className="w-full" onClick={() => setSelectedElement(null)}>
           Clear selection
         </Button>
@@ -267,7 +177,7 @@ export function CustomizePanel() {
 
   return (
     <Sheet open={panelOpen} onOpenChange={setPanelOpen}>
-      <SheetContent side="right" className="w-[420px] sm:max-w-[420px] overflow-y-auto" data-customize-ui>
+      <SheetContent side="right" className="w-[420px] sm:max-w-[420px] overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <Palette className="h-5 w-5" /> Customize
@@ -289,12 +199,11 @@ export function CustomizePanel() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-          <TabsList className="grid grid-cols-5 w-full">
-            <TabsTrigger value="wallpaper" title="Wallpaper"><ImageIcon className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="element" title="Element"><Palette className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="layers" title="Layers"><Layers className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="widgets" title="Widgets"><Plus className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="sections" title="Sections"><Heading className="h-4 w-4" /></TabsTrigger>
+          <TabsList className="grid grid-cols-4 w-full">
+            <TabsTrigger value="wallpaper"><ImageIcon className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="element"><Palette className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="widgets"><Plus className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="sections"><Heading className="h-4 w-4" /></TabsTrigger>
           </TabsList>
 
           {/* WALLPAPER */}
@@ -378,11 +287,6 @@ export function CustomizePanel() {
             <ElementEditor />
           </TabsContent>
 
-          {/* LAYERS */}
-          <TabsContent value="layers" className="mt-4">
-            <LayersPanel />
-          </TabsContent>
-
           {/* WIDGETS */}
           <TabsContent value="widgets" className="mt-4 space-y-2">
             <p className="text-xs text-muted-foreground mb-2">Add custom blocks to this page.</p>
@@ -393,12 +297,8 @@ export function CustomizePanel() {
               <Heading className="h-4 w-4 mr-2" /> Heading
             </Button>
             <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "image", content: "" })}>
-              <ImageIcon className="h-4 w-4 mr-2" /> Image (inline)
+              <ImageIcon className="h-4 w-4 mr-2" /> Image
             </Button>
-            <Separator className="my-2" />
-            <p className="text-[11px] text-muted-foreground">Floating images can be dragged, resized, and rotated anywhere on the page.</p>
-            <FloatingImageUploader />
-            <Separator className="my-2" />
             <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "divider" })}>
               <Minus className="h-4 w-4 mr-2" /> Divider
             </Button>
@@ -411,7 +311,6 @@ export function CustomizePanel() {
             <Separator className="my-3" />
             <WidgetEditList />
           </TabsContent>
-
 
           {/* SECTIONS */}
           <TabsContent value="sections" className="mt-4">
@@ -440,98 +339,6 @@ export function CustomizePanel() {
         )}
       </SheetContent>
     </Sheet>
-  );
-}
-
-function FloatingImageUploader() {
-  const { user } = useAuth();
-  const { addWidget } = useTheme();
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [busy, setBusy] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState("");
-
-  const onFile = async (file: File) => {
-    if (!user) { toast.error("Sign in required"); return; }
-    setBusy(true);
-    try {
-      const ext = file.name.split(".").pop() || "png";
-      const path = `${user.id}/floating/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage.from("wallpapers").upload(path, file, { upsert: false });
-      if (error) throw error;
-      const { data } = await supabase.storage.from("wallpapers").createSignedUrl(path, 60 * 60 * 24 * 365);
-      const url = data?.signedUrl;
-      if (!url) throw new Error("Could not get image URL");
-      addWidget({
-        type: "image",
-        content: url,
-        floating: true,
-        x: 120, y: 120, w: 280, h: 200, rotation: 0, z: 50,
-      });
-      toast.success("Image added — drag, resize, or rotate it on the page");
-    } catch (e: any) {
-      toast.error(e.message || "Upload failed");
-    } finally {
-      setBusy(false);
-      if (inputRef.current) inputRef.current.value = "";
-    }
-  };
-
-  const onGenerate = async () => {
-    if (!aiPrompt.trim()) return;
-    setBusy(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-wallpaper", {
-        body: { prompt: aiPrompt },
-      });
-      if (error) throw error;
-      if (!data?.path) throw new Error("Generation returned no path");
-      const { data: urlData } = await supabase.storage.from("wallpapers").createSignedUrl(data.path, 60 * 60 * 24 * 365);
-      const url = urlData?.signedUrl;
-      if (!url) throw new Error("Could not get image URL");
-      addWidget({
-        type: "image",
-        content: url,
-        floating: true,
-        x: 120, y: 120, w: 320, h: 220, rotation: 0, z: 50,
-      });
-      setAiPrompt("");
-      toast.success("Image added");
-    } catch (e: any) {
-      toast.error(e.message || "Generation failed");
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  return (
-    <div className="space-y-2 rounded-md border border-border p-2">
-      <Button
-        variant="outline" className="w-full justify-start"
-        onClick={() => inputRef.current?.click()} disabled={busy}
-      >
-        {busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
-        Upload floating image
-      </Button>
-      <input
-        ref={inputRef} type="file" accept="image/*" hidden
-        onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
-      />
-      <div className="flex gap-1.5">
-        <Input
-          value={aiPrompt}
-          onChange={(e) => setAiPrompt(e.target.value)}
-          placeholder="AI prompt (optional)"
-          className="h-8 text-xs"
-          disabled={busy}
-        />
-        <Button size="sm" variant="outline" onClick={onGenerate} disabled={busy || !aiPrompt.trim()}>
-          <Sparkles className="h-3.5 w-3.5" />
-        </Button>
-      </div>
-      <p className="text-[10px] text-muted-foreground">
-        Tip: in edit mode, drag to move, drag the corner handle to resize (Shift = preserve ratio), use the rotate icon to spin.
-      </p>
-    </div>
   );
 }
 
@@ -677,264 +484,6 @@ function SectionsEditor() {
       </p>
     </div>
   );
-}
-
-// ============ Layers Panel (Canva-style) ============
-type LayerRow = {
-  key: string;          // themeable key OR "wallpaper" OR "auto:..." selector key
-  label: string;        // friendly label
-  rect?: DOMRect;       // for ordering top-down
-  z: number;            // current z-index from store (0 if none)
-  isVirtual?: boolean;  // wallpaper
-};
-
-function LayersPanel() {
-  const { selectedElement, setSelectedElement, get, mutate, panelOpen } = useTheme();
-  const [rows, setRows] = useState<LayerRow[]>([]);
-
-  const readZ = (key: string): number => {
-    const cur = get("element", `${key}|zindex`);
-    const v = parseInt((cur.color || "").replace("zindex:", ""), 10);
-    return Number.isFinite(v) ? v : 0;
-  };
-
-  // Scan the page for themeable elements + wallpaper. Re-scan on DOM mutations.
-  useEffect(() => {
-    if (!panelOpen) return;
-    const scan = () => {
-      const seen = new Map<string, LayerRow>();
-      // Wallpaper as a virtual top-of-list entry
-      seen.set("wallpaper", {
-        key: "wallpaper",
-        label: "Wallpaper",
-        z: 0,
-        isVirtual: true,
-      });
-      // Named [data-themeable] elements
-      document.querySelectorAll<HTMLElement>("[data-themeable]").forEach(el => {
-        if (el.closest("[data-customize-ui]")) return;
-        const key = el.getAttribute("data-themeable") || "";
-        if (!key || seen.has(key)) return;
-        seen.set(key, {
-          key,
-          label: prettifyLabel(key),
-          rect: el.getBoundingClientRect(),
-          z: readZ(key),
-        });
-      });
-      // Sort: wallpaper first, then by visual top position, then alpha
-      const arr = Array.from(seen.values()).sort((a, b) => {
-        if (a.isVirtual) return -1;
-        if (b.isVirtual) return 1;
-        const ay = a.rect?.top ?? 0;
-        const by = b.rect?.top ?? 0;
-        return ay - by || a.label.localeCompare(b.label);
-      });
-      setRows(prev => {
-        // shallow compare to avoid re-renders
-        if (prev.length === arr.length && prev.every((r, i) => r.key === arr[i].key && r.z === arr[i].z)) {
-          return prev;
-        }
-        return arr;
-      });
-    };
-    scan();
-    const obs = new MutationObserver(scan);
-    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-themeable"] });
-    const interval = window.setInterval(scan, 1500);
-    return () => { obs.disconnect(); window.clearInterval(interval); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [panelOpen, get]);
-
-  // Hover highlight overlay
-  const [hoverKey, setHoverKey] = useState<string | null>(null);
-  useEffect(() => {
-    const styleId = "tk-layer-hover";
-    let style = document.getElementById(styleId) as HTMLStyleElement | null;
-    if (!style) {
-      style = document.createElement("style");
-      style.id = styleId;
-      document.head.appendChild(style);
-    }
-    if (!hoverKey || hoverKey === "wallpaper") {
-      style.textContent = "";
-      return;
-    }
-    const sel = hoverKey.startsWith("auto:")
-      ? hoverKey.slice(5)
-      : `[data-themeable="${cssEscapeSafe(hoverKey)}"]`;
-    style.textContent = `${sel}{outline:2px solid hsl(var(--ring)) !important;outline-offset:2px !important;}`;
-  }, [hoverKey]);
-
-  // Selection highlight (persistent while selected)
-  useEffect(() => {
-    const styleId = "tk-layer-selected";
-    let style = document.getElementById(styleId) as HTMLStyleElement | null;
-    if (!style) {
-      style = document.createElement("style");
-      style.id = styleId;
-      document.head.appendChild(style);
-    }
-    if (!selectedElement || selectedElement === "wallpaper") {
-      style.textContent = "";
-      return;
-    }
-    const sel = selectedElement.startsWith("auto:")
-      ? selectedElement.slice(5)
-      : `[data-themeable="${cssEscapeSafe(selectedElement)}"]`;
-    style.textContent = `${sel}{outline:2px dashed hsl(var(--primary)) !important;outline-offset:3px !important;}`;
-    return () => { if (style) style.textContent = ""; };
-  }, [selectedElement]);
-
-  const selectAndScroll = (key: string) => {
-    setSelectedElement(key);
-    if (key === "wallpaper") return;
-    const sel = key.startsWith("auto:") ? key.slice(5) : `[data-themeable="${cssEscapeSafe(key)}"]`;
-    try {
-      const el = document.querySelector<HTMLElement>(sel);
-      el?.scrollIntoView({ behavior: "smooth", block: "center" });
-    } catch { /* invalid selector */ }
-  };
-
-  const setZ = (key: string, n: number) => {
-    if (key === "wallpaper") return;
-    mutate("element", `${key}|zindex`, { color: n === 0 ? null : `zindex:${n}` });
-  };
-
-  // ----- Drag & drop reordering (Canva-style: top of list = front-most) -----
-  const [dragKey, setDragKey] = useState<string | null>(null);
-  const [dropIdx, setDropIdx] = useState<number | null>(null);
-
-  // Reassign z-indexes based on visual order. Top row = highest z.
-  // Skips the wallpaper virtual row.
-  const applyOrder = (orderedKeys: string[]) => {
-    const real = orderedKeys.filter(k => k !== "wallpaper");
-    const n = real.length;
-    real.forEach((k, i) => {
-      // Top of list (i=0) -> highest z. Spread from +n down to +1.
-      const z = n - i;
-      mutate("element", `${k}|zindex`, { color: `zindex:${z}` });
-    });
-  };
-
-  const onDragStart = (e: React.DragEvent, key: string) => {
-    if (key === "wallpaper") { e.preventDefault(); return; }
-    setDragKey(key);
-    e.dataTransfer.effectAllowed = "move";
-    try { e.dataTransfer.setData("text/plain", key); } catch { /* ignore */ }
-  };
-  const onDragOver = (e: React.DragEvent, idx: number) => {
-    if (!dragKey) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    setDropIdx(idx);
-  };
-  const onDrop = (e: React.DragEvent, idx: number) => {
-    e.preventDefault();
-    if (!dragKey) return;
-    const fromIdx = rows.findIndex(r => r.key === dragKey);
-    if (fromIdx === -1 || fromIdx === idx) {
-      setDragKey(null); setDropIdx(null); return;
-    }
-    const next = rows.slice();
-    const [moved] = next.splice(fromIdx, 1);
-    // Adjust target index when removing earlier element
-    const insertAt = fromIdx < idx ? idx - 1 : idx;
-    next.splice(insertAt, 0, moved);
-    // Lock wallpaper to the top
-    const wpIdx = next.findIndex(r => r.key === "wallpaper");
-    if (wpIdx > 0) {
-      const [wp] = next.splice(wpIdx, 1);
-      next.unshift(wp);
-    }
-    setRows(next);
-    applyOrder(next.map(r => r.key));
-    setDragKey(null); setDropIdx(null);
-  };
-
-  return (
-    <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">
-        Drag rows to reorder layers (top = front). Click to select. Use ↑/↓ for fine z-index tweaks.
-      </p>
-      {rows.length === 0 ? (
-        <div className="text-xs text-muted-foreground text-center py-6">
-          No layered elements detected on this page.
-        </div>
-      ) : (
-        <div className="border border-border rounded-lg overflow-hidden divide-y divide-border">
-          {rows.map((row, idx) => {
-            const isSel = selectedElement === row.key;
-            const isDragging = dragKey === row.key;
-            const showDropAbove = dropIdx === idx && dragKey && dragKey !== row.key;
-            return (
-              <div
-                key={row.key}
-                draggable={!row.isVirtual}
-                onDragStart={(e) => onDragStart(e, row.key)}
-                onDragOver={(e) => onDragOver(e, idx)}
-                onDragLeave={() => setDropIdx(prev => prev === idx ? null : prev)}
-                onDrop={(e) => onDrop(e, idx)}
-                onDragEnd={() => { setDragKey(null); setDropIdx(null); }}
-                onMouseEnter={() => setHoverKey(row.key)}
-                onMouseLeave={() => setHoverKey(prev => prev === row.key ? null : prev)}
-                onClick={() => selectAndScroll(row.key)}
-                className={`flex items-center gap-2 px-2 py-1.5 cursor-pointer transition-colors relative ${
-                  isSel ? "bg-primary/10" : "hover:bg-muted/60"
-                } ${isDragging ? "opacity-40" : ""} ${showDropAbove ? "border-t-2 border-t-primary" : ""}`}
-              >
-                {!row.isVirtual ? (
-                  <GripVertical
-                    className="h-3.5 w-3.5 shrink-0 text-muted-foreground cursor-grab active:cursor-grabbing"
-                    onClick={(e) => e.stopPropagation()}
-                  />
-                ) : (
-                  <Layers className={`h-3.5 w-3.5 shrink-0 ${isSel ? "text-primary" : "text-muted-foreground"}`} />
-                )}
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs font-medium truncate">{row.label}</div>
-                  <div className="text-[10px] text-muted-foreground truncate font-mono">
-                    {row.isVirtual ? "virtual · always behind" : row.key}
-                  </div>
-                </div>
-                {!row.isVirtual && (
-                  <>
-                    <span className="text-[10px] tabular-nums text-muted-foreground w-8 text-right">z:{row.z}</span>
-                    <Button
-                      size="icon" variant="ghost" className="h-6 w-6"
-                      onClick={(e) => { e.stopPropagation(); setZ(row.key, row.z + 1); }}
-                      title="Bring forward"
-                    >
-                      <ChevronUp className="h-3.5 w-3.5" />
-                    </Button>
-                    <Button
-                      size="icon" variant="ghost" className="h-6 w-6"
-                      onClick={(e) => { e.stopPropagation(); setZ(row.key, row.z - 1); }}
-                      title="Send backward"
-                    >
-                      <ChevronDown className="h-3.5 w-3.5" />
-                    </Button>
-                  </>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
-      <p className="text-[11px] text-muted-foreground text-center pt-2">
-        For finer control of any element, switch to the <span className="font-medium">Element</span> tab.
-      </p>
-    </div>
-  );
-}
-
-function prettifyLabel(key: string): string {
-  // "home.tile.notes.title" -> "home › tile › notes › title"
-  return key.split(".").join(" › ");
-}
-
-function cssEscapeSafe(s: string): string {
-  return (typeof CSS !== "undefined" && CSS.escape) ? CSS.escape(s) : s.replace(/[^\w-]/g, "\\$&");
 }
 
 // ------- helpers -------
