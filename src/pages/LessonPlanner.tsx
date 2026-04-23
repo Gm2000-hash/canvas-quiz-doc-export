@@ -225,11 +225,40 @@ const LessonPlanner = () => {
       </header>
 
       <main className="flex-1 py-6 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-6 bg-page-green">
-        <PageBanner
-          compact
-          greeting="Lesson Planner"
-          subtitle="Organize units, generate AI lesson plans, and export pacing guides"
-          stats={[{ label: "Units", value: units.length }]}
+        <BentoHero
+          eyebrow="Curriculum"
+          title={<>Plan units that<br/>build on each other.</>}
+          subtitle="Organize lessons, generate AI plans, and export pacing guides — all in one workspace."
+          stats={[
+            { label: "Units", value: units.length },
+            { label: "Disciplines", value: new Set(units.map(u => u.discipline).filter(Boolean)).size },
+          ]}
+          primaryAction={{
+            label: "New Unit",
+            icon: Plus,
+            onClick: () => setCreateOpen(true),
+            variant: "ink",
+          }}
+          secondaryActions={[
+            { label: "Prepopulate", icon: Library, onClick: () => setPrepopulateOpen(true) },
+            { label: "Import File", icon: Upload, onClick: () => setUniversalImportOpen(true) },
+          ]}
+          sideTiles={[
+            {
+              variant: "coral",
+              eyebrow: "AI",
+              title: "Generate Curriculum",
+              body: "Build a full unit's worth of readings & lessons from one prompt.",
+              action: { label: "Open AI", icon: Sparkles, onClick: () => setGenerateOpen(true) },
+            },
+            {
+              variant: "sky",
+              eyebrow: "Imports",
+              title: "NextSteps",
+              body: "Pull career lessons from the NextSteps library.",
+              action: { label: "Browse", icon: Download, onClick: () => setImportNextStepsOpen(true) },
+            },
+          ]}
         />
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">

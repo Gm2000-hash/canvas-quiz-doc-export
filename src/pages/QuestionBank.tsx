@@ -593,11 +593,40 @@ const QuestionBank = () => {
       </header>
 
       <main className="max-w-5xl mx-auto py-6 px-4 sm:px-6 space-y-6 bg-page-green border-warning-foreground border-0">
-        <PageBanner
-          compact
-          greeting="Question Bank"
-          subtitle="Browse, search, and manage your library of assessment questions"
-          stats={[{ label: "Total Questions", value: questions.length }]}
+        <BentoHero
+          eyebrow="Question Bank"
+          title={<>Assessments,<br/>tagged and ready.</>}
+          subtitle="Browse, search, and manage your library of NGSS / Idaho-aligned assessment questions."
+          stats={[
+            { label: "Questions", value: questions.length },
+            { label: "Tagged", value: questions.filter(q => q.standards.length > 0).length },
+            { label: "Untagged", value: questions.filter(q => q.standards.length === 0).length },
+          ]}
+          primaryAction={{
+            label: "Create Question",
+            icon: Plus,
+            onClick: () => setShowCreateDialog(true),
+            variant: "ink",
+          }}
+          secondaryActions={[
+            { label: "Quiz Builder", icon: ClipboardCheck, onClick: () => navigate("/quiz-builder") },
+          ]}
+          sideTiles={[
+            {
+              variant: "coral",
+              eyebrow: "AI",
+              title: "Generate Sample",
+              body: "Spin up new questions for any standard in seconds.",
+              action: { label: "Generate", icon: Sparkles, onClick: () => { setGenerateForStandard(null); setShowGenerateDialog(true); } },
+            },
+            {
+              variant: "lilac",
+              eyebrow: "ISAT",
+              title: "Practice Exams",
+              body: "Build full-length practice tests aligned to ISAT.",
+              action: { label: "Open", icon: ClipboardCheck, onClick: () => setActiveTab("isat") },
+            },
+          ]}
         />
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "questions" | "isat")} className="w-full">
           <TabsList>
