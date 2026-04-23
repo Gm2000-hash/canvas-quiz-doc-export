@@ -57,7 +57,15 @@ serve(withLogging("generate-lesson-plans", async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const { unitTitle, discipline, gradeLevel, topic, numLessons, additionalContext } = JSON.parse(rawBody);
+    let parsedBody: any;
+    try {
+      parsedBody = JSON.parse(rawBody);
+    } catch {
+      return new Response(JSON.stringify({ error: "Invalid JSON body" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { unitTitle, discipline, gradeLevel, topic, numLessons, additionalContext } = parsedBody;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
