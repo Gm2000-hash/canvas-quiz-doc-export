@@ -756,221 +756,56 @@ Closing & Reflection (10 min)
           </CardContent>
         </Card>
 
-        {/* Assessment */}
+        {/* Vocabulary Scaffolds + Closing Reflection (UDL reference details) */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2"><CheckCircle className="h-4 w-4 text-primary" /> Assessment</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RichTextEditor content={lesson.assessment} onChange={v => setLesson({ ...lesson, assessment: v })} placeholder="How will you assess student understanding?" compact />
-          </CardContent>
-        </Card>
-
-        {/* Differentiation */}
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2"><Users className="h-4 w-4 text-primary" /> Differentiation</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <RichTextEditor content={lesson.differentiation} onChange={v => setLesson({ ...lesson, differentiation: v })} placeholder="Accommodations, extensions, ELL support..." compact />
-          </CardContent>
-        </Card>
-
-        {/* UDL Supports */}
-        <Card>
-          <CardHeader className="pb-3">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <CardTitle className="text-sm flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-primary" /> UDL Supports
-                  <Badge variant="secondary" className="text-[10px] ml-1">CAST v2.2</Badge>
-                </CardTitle>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Universal Design for Learning — concrete, classroom-ready supports for every learner.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="rounded-xl gap-1.5"
-                  onClick={() => setUdlTemplateOpen(true)}
-                >
-                  <Sparkles className="h-3.5 w-3.5" /> Templates
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline" size="sm" className="rounded-xl gap-1.5">
-                      <RotateCcw className="h-3.5 w-3.5" /> Reset
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Reset UDL Supports?</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This restores the empty CAST v2.2 structure (Engagement, Representation, Action & Expression, and Reflection Prompt) and clears every field in this card. Other lesson sections are not affected. This cannot be undone.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => {
-                          setLesson({
-                            ...lesson,
-                            udl_supports: {
-                              engagement: {
-                                hook: "",
-                                student_choice: [],
-                                collaboration: "",
-                                sustain_effort: "",
-                                self_regulation_prompt: "",
-                              },
-                              representation: {
-                                visual: "",
-                                auditory: "",
-                                text_supports: "",
-                                vocabulary_scaffolds: [],
-                                big_idea_highlight: "",
-                                background_activation: "",
-                              },
-                              action_expression: {
-                                response_modes: [],
-                                physical_action_options: "",
-                                planning_scaffold: "",
-                                progress_checkpoint: "",
-                                flexible_assessment: "",
-                              },
-                              reflection_prompt: "",
-                            },
-                          });
-                          toast({ title: "UDL Supports reset", description: "The structured defaults have been restored." });
-                        }}
-                      >
-                        Reset
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </div>
-            </div>
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-primary" /> UDL Reference Details
+            </CardTitle>
+            <p className="text-xs text-muted-foreground">
+              Optional supports the lesson flow can reference: kid-friendly term scaffolds and a closing metacognitive prompt.
+            </p>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* ENGAGEMENT */}
-            <UdlPrincipleSection
-              icon={<Heart className="h-4 w-4" />}
-              title="Engagement"
-              subtitle="the WHY of learning"
-              tone="bg-[#fef3c7] border-[#f59e0b]/30"
-            >
-              <UdlField label="Hook" value={lesson.udl_supports?.engagement?.hook || ""}
-                onChange={v => updateUdlField("engagement", "hook", v)}
-                placeholder="An authentic, relevant opener (artifact, clip, story, demo)..." />
-              <UdlChips label="Student Choice" tone="amber"
-                items={lesson.udl_supports?.engagement?.student_choice || []}
-                onAdd={(v) => addChip("engagement", "student_choice", v)}
-                onRemove={(i) => removeChip("engagement", "student_choice", i)}
-                placeholder="Add a choice option (path, partner, product)..." />
-              <UdlField label="Collaboration" value={lesson.udl_supports?.engagement?.collaboration || ""}
-                onChange={v => updateUdlField("engagement", "collaboration", v)}
-                placeholder="Specific grouping move or protocol with role names..." />
-              <UdlField label="Sustain Effort & Mastery Feedback" value={lesson.udl_supports?.engagement?.sustain_effort || ""}
-                onChange={v => updateUdlField("engagement", "sustain_effort", v)}
-                placeholder="How challenge is varied + feedback delivery..." />
-              <UdlField label="Self-Regulation Prompt" value={lesson.udl_supports?.engagement?.self_regulation_prompt || ""}
-                onChange={v => updateUdlField("engagement", "self_regulation_prompt", v)}
-                placeholder="A mid-lesson reflection or coping cue..." />
-            </UdlPrincipleSection>
-
-            {/* REPRESENTATION */}
-            <UdlPrincipleSection
-              icon={<Eye className="h-4 w-4" />}
-              title="Representation"
-              subtitle="the WHAT of learning"
-              tone="bg-[#dbeafe] border-[#3b82f6]/30"
-            >
-              <UdlField label="Visual" value={lesson.udl_supports?.representation?.visual || ""}
-                onChange={v => updateUdlField("representation", "visual", v)}
-                placeholder="Diagram, anchor chart, slideshow, video clip..." />
-              <UdlField label="Auditory" value={lesson.udl_supports?.representation?.auditory || ""}
-                onChange={v => updateUdlField("representation", "auditory", v)}
-                placeholder="Read-aloud, podcast clip, recorded mini-lecture..." />
-              <UdlField label="Text Supports" value={lesson.udl_supports?.representation?.text_supports || ""}
-                onChange={v => updateUdlField("representation", "text_supports", v)}
-                placeholder="Outline organizer, sentence stems, summary frame..." />
-
-              {/* Vocabulary Scaffolds */}
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold text-foreground/80">Vocabulary Scaffolds</Label>
-                {(lesson.udl_supports?.representation?.vocabulary_scaffolds || []).map((vs, idx) => (
-                  <div key={idx} className="flex gap-2 items-start p-2.5 rounded-xl bg-white/70 border border-blue-200">
-                    <div className="flex-1 space-y-1.5">
-                      <Input placeholder="Term" value={vs.term}
-                        onChange={e => updateVocabScaffold(idx, "term", e.target.value)}
-                        className="text-sm h-8 font-medium" />
-                      <Input placeholder="Kid-friendly rephrase..." value={vs.student_friendly}
-                        onChange={e => updateVocabScaffold(idx, "student_friendly", e.target.value)}
-                        className="text-sm h-8" />
-                      <Input placeholder="Visual cue / gesture / analogy..." value={vs.visual_cue}
-                        onChange={e => updateVocabScaffold(idx, "visual_cue", e.target.value)}
-                        className="text-sm h-8" />
-                    </div>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg shrink-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => removeVocabScaffold(idx)}>
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+            {/* Vocabulary Scaffolds */}
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold text-foreground/80">Vocabulary Scaffolds</Label>
+              {(lesson.udl_supports?.vocabulary_scaffolds || lesson.udl_supports?.representation?.vocabulary_scaffolds || []).map((vs, idx) => (
+                <div key={idx} className="flex gap-2 items-start p-2.5 rounded-xl bg-accent/40">
+                  <div className="flex-1 space-y-1.5">
+                    <Input placeholder="Term" value={vs.term}
+                      onChange={e => updateVocabScaffold(idx, "term", e.target.value)}
+                      className="text-sm h-8 font-medium" />
+                    <Input placeholder="Kid-friendly rephrase..." value={vs.student_friendly}
+                      onChange={e => updateVocabScaffold(idx, "student_friendly", e.target.value)}
+                      className="text-sm h-8" />
+                    <Input placeholder="Visual cue / gesture / analogy..." value={vs.visual_cue}
+                      onChange={e => updateVocabScaffold(idx, "visual_cue", e.target.value)}
+                      className="text-sm h-8" />
                   </div>
-                ))}
-                <Button variant="outline" size="sm" className="w-full rounded-xl gap-1.5" onClick={addVocabScaffold}>
-                  <Plus className="h-3.5 w-3.5" /> Add Scaffold
-                </Button>
-              </div>
+                  <Button variant="ghost" size="icon" className="h-7 w-7 rounded-lg shrink-0 text-muted-foreground hover:text-destructive"
+                    onClick={() => removeVocabScaffold(idx)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              ))}
+              <Button variant="outline" size="sm" className="w-full rounded-xl gap-1.5" onClick={addVocabScaffold}>
+                <Plus className="h-3.5 w-3.5" /> Add Scaffold
+              </Button>
+            </div>
 
-              <UdlField label="Big Idea Highlight" value={lesson.udl_supports?.representation?.big_idea_highlight || ""}
-                onChange={v => updateUdlField("representation", "big_idea_highlight", v)}
-                placeholder="The single most important takeaway..." />
-              <UdlField label="Background Activation" value={lesson.udl_supports?.representation?.background_activation || ""}
-                onChange={v => updateUdlField("representation", "background_activation", v)}
-                placeholder="KWL, quick-write, picture prompt — write the prompt verbatim..." />
-            </UdlPrincipleSection>
-
-            {/* ACTION & EXPRESSION */}
-            <UdlPrincipleSection
-              icon={<Hand className="h-4 w-4" />}
-              title="Action & Expression"
-              subtitle="the HOW of learning"
-              tone="bg-[#dcfce7] border-[#22c55e]/30"
-            >
-              <UdlChips label="Response Modes" tone="green"
-                items={lesson.udl_supports?.action_expression?.response_modes || []}
-                onAdd={(v) => addChip("action_expression", "response_modes", v)}
-                onRemove={(i) => removeChip("action_expression", "response_modes", i)}
-                placeholder="written, verbal, sketched, built, recorded..." />
-              <UdlField label="Physical Action / Manipulatives" value={lesson.udl_supports?.action_expression?.physical_action_options || ""}
-                onChange={v => updateUdlField("action_expression", "physical_action_options", v)}
-                placeholder="Movement, manipulatives, hands-on with materials named..." />
-              <UdlField label="Planning Scaffold" value={lesson.udl_supports?.action_expression?.planning_scaffold || ""}
-                onChange={v => updateUdlField("action_expression", "planning_scaffold", v)}
-                placeholder="Concrete organizer or cue students use to plan..." />
-              <UdlField label="Progress Checkpoint" value={lesson.udl_supports?.action_expression?.progress_checkpoint || ""}
-                onChange={v => updateUdlField("action_expression", "progress_checkpoint", v)}
-                placeholder="Mid-task self-check..." />
-              <UdlField label="Flexible Assessment" value={lesson.udl_supports?.action_expression?.flexible_assessment || ""}
-                onChange={v => updateUdlField("action_expression", "flexible_assessment", v)}
-                placeholder="At least 2 distinct ways students can demonstrate mastery..." />
-            </UdlPrincipleSection>
-
-            {/* REFLECTION */}
-            <div className="rounded-xl border border-purple-200 bg-[#f3e8ff] p-3 space-y-2">
+            {/* Closing Reflection */}
+            <div className="rounded-xl border border-border bg-accent/30 p-3 space-y-2">
               <div className="flex items-center gap-2">
-                <MessageCircle className="h-4 w-4 text-purple-700" />
-                <span className="text-sm font-semibold text-purple-900">Closing Reflection Prompt</span>
+                <MessageCircle className="h-4 w-4 text-primary" />
+                <span className="text-sm font-semibold">Closing Reflection Prompt</span>
               </div>
               <Textarea
                 value={lesson.udl_supports?.reflection_prompt || ""}
                 onChange={e => updateReflectionPrompt(e.target.value)}
                 placeholder="A single classroom-ready metacognitive question students answer at lesson close..."
                 rows={2}
-                className="text-sm bg-white/70"
+                className="text-sm bg-background"
               />
             </div>
           </CardContent>
