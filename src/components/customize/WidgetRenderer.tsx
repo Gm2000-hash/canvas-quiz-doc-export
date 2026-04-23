@@ -255,6 +255,19 @@ function FloatingWidget({ w }: { w: CustomWidget }) {
           )}
         </>
       )}
+      {w.type === "image" && w.content && (
+        <ImageCropDialog
+          open={cropOpen}
+          onOpenChange={setCropOpen}
+          imageUrl={w.content}
+          onCropped={(url, nw, nh) => {
+            // Preserve current display width; adjust height to new aspect.
+            const displayW = width;
+            const displayH = Math.round((displayW * nh) / nw);
+            updateWidget(w.id, { content: url, w: displayW, h: displayH });
+          }}
+        />
+      )}
     </div>
   );
 }
