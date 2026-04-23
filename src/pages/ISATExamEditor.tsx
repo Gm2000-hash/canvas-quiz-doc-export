@@ -24,6 +24,7 @@ import { moveItem } from "@/components/activities/editors/ReorderControls";
 import { ReviewMaterialsEditor } from "@/components/ReviewMaterialsEditor";
 import type { MediaEmbed } from "@/lib/h5p-types";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { EnhanceQuestionDialog, type EnhanceResult } from "@/components/EnhanceQuestionDialog";
 
 const QUESTION_TYPES = [
   { value: "multiple_choice_question", label: "Multiple Choice" },
@@ -66,6 +67,7 @@ export default function ISATExamEditor() {
   const [dirty, setDirty] = useState(false);
   const [generatingReview, setGeneratingReview] = useState(false);
   const [editorMode, setEditorMode] = useState<"questions" | "review">("questions");
+  const [enhanceTarget, setEnhanceTarget] = useState<number | null>(null);
 
   useEffect(() => {
     if (!id) return;
@@ -386,18 +388,61 @@ export default function ISATExamEditor() {
                   />
                 </div>
 
-                {/* Media / Image */}
+                {/* Media / Image / Manipulative */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs">Media / Image</Label>
-                  <AIImageGenerator
-                    questionText={q.question_text}
-                    questionType={q.question_type}
-                    currentImageUrl={q.image_url}
-                    currentMedia={q.media}
-                    onImageGenerated={(url) => updateQuestion(selectedQ, { image_url: url, media: undefined })}
-                    onMediaChange={(media) => updateQuestion(selectedQ, { media })}
-                    onRemoveImage={() => updateQuestion(selectedQ, { image_url: undefined })}
-                  />
+                  <div className="flex items-center justify-between">
+                    <Label className="text-xs">Visual / Manipulative</Label>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5 text-xs border-primary/30 text-primary hover:bg-primary/5"
+                      onClick={() => setEnhanceTarget(selectedQ)}
+                    >
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Enhance with image / manipulative
+                    </Button>
+                  </div>
+                  {q.image_url && !q.media && (
+                    <div className="relative inline-block">
+                      <img src={q.image_url} alt="Question" className="max-h-48 rounded-lg border" />
+                      <Button
+                        variant="destructive" size="icon"
+                        className="absolute top-1 right-1 h-6 w-6"
+                        onClick={() => updateQuestion(selectedQ, { image_url: undefined })}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  )}
+                  {q.media && (
+                    <div className="relative inline-block">
+                      {q.media.type === "h5p" ? (
+                        <div className="rounded-lg border-2 border-primary/30 bg-primary/5 p-3 space-y-2 max-w-md">
+                          <div className="flex items-center gap-2">
+                            <Sparkles className="h-4 w-4 text-primary" />
+                            <span className="text-xs font-medium">
+                              Interactive: {q.media.activity_type === "drag_and_drop" ? "Drag-and-Drop labeling" : "Click-the-part hotspots"}
+                            </span>
+                          </div>
+                          {q.media.url && <img src={q.media.url} alt="Manipulative" className="max-h-40 rounded border bg-white" />}
+                        </div>
+                      ) : q.media.type === "image" ? (
+                        <img src={q.media.url} alt="Question" className="max-h-48 rounded-lg border" />
+                      ) : (
+                        <div className="text-xs text-muted-foreground p-2 border rounded">{q.media.type}: {q.media.url}</div>
+                      )}
+                      <Button
+                        variant="destructive" size="icon"
+                        className="absolute top-1 right-1 h-6 w-6"
+                        onClick={() => updateQuestion(selectedQ, { media: undefined })}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  )}
+                  {!q.image_url && !q.media && (
+                    <p className="text-xs text-muted-foreground italic">No visual attached. Click "Enhance" to add one.</p>
+                  )}
                 </div>
 
                 {/* Hint */}
@@ -453,6 +498,24 @@ export default function ISATExamEditor() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <EnhanceQuestionDialog
+        open={enhanceTarget !== null}
+        onOpenChange={(v) => !v && setEnhanceTarget(null)}
+        question={enhanceTarget !== null ? questions[enhanceTarget] : null}
+        onApply={(result: EnhanceResult) => {
+          if (enhanceTarget === null) return;
+          updateQuestion(enhanceTarget, {
+            ...(result.image_url !== undefined ? { image_url: result.image_url } : {}),
+            ...(result.media !== undefined ? { media: result.media } : {}),
+            ...(result.question_text ? { question_text: result.question_text } : {}),
+            ...(result.answers ? { answers: result.answers } : {}),
+            ...(result.dok_level ? { dok_level: result.dok_level } : {}),
+          });
+          setEnhanceTarget(null);
+          toast.success("Question enhanced!");
+        }}
+      />
     </div>
   );
 }
@@ -798,129 +861,3 @@ function MultiStepMCOptions({ part, onUpdate }: { part: any; onUpdate: (u: any) 
   );
 }
 
-/* ────────────────────────────────────────────────── */
-/*  AI Image Generator for questions                  */
-/* ────────────────────────────────────────────────── */
-
-function AIImageGenerator({
-  questionText,
-  questionType,
-  currentImageUrl,
-  currentMedia,
-  onImageGenerated,
-  onMediaChange,
-  onRemoveImage,
-}: {
-  questionText: string;
-  questionType: string;
-  currentImageUrl?: string;
-  currentMedia?: MediaEmbed;
-  onImageGenerated: (url: string) => void;
-  onMediaChange: (media?: MediaEmbed) => void;
-  onRemoveImage: () => void;
-}) {
-  const [prompt, setPrompt] = useState("");
-  const [generating, setGenerating] = useState(false);
-  const [showGenerator, setShowGenerator] = useState(false);
-
-  const handleGenerate = async () => {
-    if (!prompt.trim()) {
-      toast.error("Enter a description for the image");
-      return;
-    }
-    setGenerating(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("generate-question-image", {
-        body: {
-          prompt: prompt.trim(),
-          question_text: questionText,
-          question_type: questionType,
-        },
-      });
-      if (error) throw new Error(error.message || "Generation failed");
-      if (data?.error) throw new Error(data.error);
-      if (!data?.image_url) throw new Error("No image returned");
-
-      onImageGenerated(data.image_url);
-      setPrompt("");
-      setShowGenerator(false);
-      toast.success("Image generated and attached!");
-    } catch (e: any) {
-      toast.error(e.message || "Failed to generate image");
-    } finally {
-      setGenerating(false);
-    }
-  };
-
-  return (
-    <div className="space-y-2">
-      {/* Current image display */}
-      {currentImageUrl && !currentMedia && (
-        <div className="relative inline-block">
-          <img src={currentImageUrl} alt="Question" className="max-h-48 rounded-lg border" />
-          <Button
-            variant="destructive" size="icon"
-            className="absolute top-1 right-1 h-6 w-6"
-            onClick={onRemoveImage}
-          >
-            <X className="h-3.5 w-3.5" />
-          </Button>
-        </div>
-      )}
-
-      {/* Manual media insert */}
-      <MediaInsert
-        media={currentMedia}
-        onChange={onMediaChange}
-      />
-
-      {/* AI generation section */}
-      {!showGenerator ? (
-        <Button
-          variant="outline" size="sm"
-          className="gap-1.5 text-xs border-primary/30 text-primary hover:bg-primary/5"
-          onClick={() => setShowGenerator(true)}
-        >
-          <Sparkles className="h-3.5 w-3.5" />
-          Generate Image with AI
-        </Button>
-      ) : (
-        <div className="rounded-lg border border-primary/30 bg-primary/5 p-3 space-y-2">
-          <div className="flex items-center justify-between">
-            <Label className="text-xs font-medium flex items-center gap-1.5">
-              <Sparkles className="h-3.5 w-3.5 text-primary" />
-              AI Image Generator
-            </Label>
-            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setShowGenerator(false)}>
-              <X className="h-3.5 w-3.5" />
-            </Button>
-          </div>
-          <Input
-            value={prompt}
-            onChange={e => setPrompt(e.target.value)}
-            placeholder="Describe the diagram or illustration, e.g. 'A food web showing producers, primary and secondary consumers'"
-            className="text-sm h-9"
-            disabled={generating}
-            onKeyDown={e => e.key === "Enter" && !generating && handleGenerate()}
-          />
-          <div className="flex items-center gap-2">
-            <Button
-              size="sm" onClick={handleGenerate}
-              disabled={generating || !prompt.trim()}
-              className="gap-1.5 text-xs"
-            >
-              {generating ? (
-                <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Generating...</>
-              ) : (
-                <><Sparkles className="h-3.5 w-3.5" /> Generate</>
-              )}
-            </Button>
-            <span className="text-[10px] text-muted-foreground">
-              AI will create a labeled diagram based on your description
-            </span>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}

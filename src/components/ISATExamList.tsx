@@ -6,11 +6,12 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload, ChevronDown, Copy, Pencil, BookOpen } from "lucide-react";
+import { Loader2, Trash2, Play, CheckCircle2, FileText, Clock, Sparkles, Lightbulb, Upload, ChevronDown, Copy, Pencil, BookOpen, Wand2 } from "lucide-react";
 import { format } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import PushISATToCanvasDialog from "@/components/PushISATToCanvasDialog";
+import { EnhanceQuestionDialog, type EnhanceResult, type EnhanceQuestion } from "@/components/EnhanceQuestionDialog";
 
 
 interface ISATExam {
