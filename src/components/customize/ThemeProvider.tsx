@@ -123,8 +123,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       e.preventDefault();
       e.stopPropagation();
       setSelectedElement(key);
-      // Don't auto-open the panel — user can open it manually via the FAB.
-      // Only bring it forward if it's already open.
+      // Don't auto-open the panel — user opens it manually via the FAB.
+    };
     document.addEventListener("click", onClick, true);
     return () => document.removeEventListener("click", onClick, true);
   }, [editMode, pageScopeKey]);
