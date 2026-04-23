@@ -498,6 +498,24 @@ export default function ISATExamEditor() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <EnhanceQuestionDialog
+        open={enhanceTarget !== null}
+        onOpenChange={(v) => !v && setEnhanceTarget(null)}
+        question={enhanceTarget !== null ? questions[enhanceTarget] : null}
+        onApply={(result: EnhanceResult) => {
+          if (enhanceTarget === null) return;
+          updateQuestion(enhanceTarget, {
+            ...(result.image_url !== undefined ? { image_url: result.image_url } : {}),
+            ...(result.media !== undefined ? { media: result.media } : {}),
+            ...(result.question_text ? { question_text: result.question_text } : {}),
+            ...(result.answers ? { answers: result.answers } : {}),
+            ...(result.dok_level ? { dok_level: result.dok_level } : {}),
+          });
+          setEnhanceTarget(null);
+          toast.success("Question enhanced!");
+        }}
+      />
     </div>
   );
 }
