@@ -560,23 +560,67 @@ const LessonPlanEditor = () => {
           </CardContent>
         </Card>
 
-        {/* Activities & Timing */}
+        {/* Lesson Flow (UDL-Aligned) — single coherent sub-friendly outline */}
         <Card>
           <CardHeader className="pb-3">
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-sm flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Activities & Timing</CardTitle>
-              <span className={`text-xs font-medium ${totalActivityTime > lesson.duration_minutes ? "text-destructive" : "text-muted-foreground"}`}>
-                {totalActivityTime}/{lesson.duration_minutes} min
-              </span>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-primary" /> Lesson Flow (UDL-Aligned)
+                  <Badge variant="secondary" className="text-[10px] ml-1">CAST v2.2</Badge>
+                </CardTitle>
+                <p className="text-xs text-muted-foreground mt-1">
+                  One sequential outline a substitute could pick up and teach. For each phase, capture <strong>What</strong> (activity + minutes), <strong>How</strong> (UDL Engagement / Representation / Action & Expression moves), <strong>Why</strong> (the reason it matters), and a <strong>Formative Check</strong>.
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl gap-1.5"
+                  onClick={() => setUdlTemplateOpen(true)}
+                >
+                  <Sparkles className="h-3.5 w-3.5" /> Templates
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl gap-1.5"
+                  onClick={() => setRegenerateOpen(true)}
+                >
+                  <RefreshCw className="h-3.5 w-3.5" /> Regenerate
+                </Button>
+              </div>
             </div>
           </CardHeader>
-          <ActivityList
-            activities={lesson.activities}
-            onReorder={(acts) => setLesson({ ...lesson, activities: acts })}
-            onUpdate={updateActivity}
-            onRemove={removeActivity}
-            onAdd={addActivity}
-          />
+          <CardContent>
+            <RichTextEditor
+              content={lesson.udl_supports?.lesson_flow || ""}
+              onChange={(v) => setLesson({ ...lesson, udl_supports: { ...lesson.udl_supports, lesson_flow: v } })}
+              placeholder={`Example structure:
+
+Opening / Hook (5 min)
+• What: ...
+• How (UDL): Engagement — ... · Representation — ... · Action & Expression — ...
+• Why: ...
+• Formative Check: ...
+
+Core Learning (15 min)
+• What: ...
+• How (UDL): ...
+• Why: ...
+• Formative Check: ...
+
+Practice & Application (15 min)
+• ...
+
+Closing & Reflection (10 min)
+• ...`}
+            />
+            <p className="text-[11px] text-muted-foreground mt-2">
+              Tip: target <span className="font-medium text-foreground">{lesson.duration_minutes} min</span> total. Use bold phase headers and bullet sub-lines so a sub can scan it during class.
+            </p>
+          </CardContent>
         </Card>
 
         {/* Resources & Links */}
