@@ -57,6 +57,8 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </div>
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+        <CustomizeButton />
+        <CustomizePanel />
       </SidebarProvider>
     </ThemeProvider>
   );
