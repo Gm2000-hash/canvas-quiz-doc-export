@@ -655,3 +655,52 @@ textarea, select, [role="combobox"] {
 /* Links: black, hover underlines */
 a { color: #000000 !important; text-decoration-color: #000000 !important; }
 a:hover { text-decoration: underline !important; }
+
+/* Sidebar menu items — kill mint/green active state */
+[data-sidebar="menu-button"],
+[data-sidebar="menu-button"] *,
+[data-sidebar="menu-sub-button"],
+[data-sidebar="menu-sub-button"] *,
+[data-sidebar="group-label"] {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #000000 !important;
+}
+[data-sidebar="menu-button"][data-active="true"],
+[data-sidebar="menu-button"][aria-current="page"],
+[data-sidebar="menu-button"]:hover,
+[data-sidebar="menu-sub-button"][data-active="true"],
+[data-sidebar="menu-sub-button"]:hover {
+  background-color: #f0f0f0 !important;
+  color: #000000 !important;
+}
+
+/* Header search button + kbd chip */
+header button, header kbd {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #e5e5e5 !important;
+}
+
+/* Customize FAB (bottom-right) — neutral grey */
+button[aria-label*="ustomize" i] {
+  background-color: #f5f5f5 !important;
+  color: #000000 !important;
+  border-color: #e5e5e5 !important;
+}
+
+/* Strip color from decorative sketch images / icon backplates */
+img[src*="sketch-"],
+[data-themeable*=".icon"] img {
+  filter: grayscale(1) contrast(1.05) !important;
+}
+
+/* Sidebar / header SVGs — desaturate any explicit-fill icons */
+[data-sidebar] svg, header svg {
+  filter: grayscale(1) !important;
+}
+
+/* Belt-and-suspenders: any inline gradient/hsl/rgb backgrounds */
+[style*="gradient"], [style*="hsl("], [style*="rgb("] {
+  background-image: none !important;
+}
