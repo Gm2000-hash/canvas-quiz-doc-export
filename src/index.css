@@ -5,78 +5,78 @@
 
 @layer base {
   :root {
-    /* Neutral baseline — color is added per-element via the Customize panel */
-    --background: 0 0% 100%;
-    --foreground: 0 0% 12%;
+    /* Tropical palette — verdant greens, peach, ocean blues */
+    --background: 180 40% 97%;        /* soft seafoam mist */
+    --foreground: 0 0% 0%;            /* pure black text */
 
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 12%;
+    --card: 30 60% 96%;               /* warm peach cream */
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 12%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 0 0% 18%;
+    --primary: 158 65% 32%;           /* deep verdant jungle green */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 0 0% 96%;
-    --secondary-foreground: 0 0% 18%;
+    --secondary: 22 90% 78%;          /* warm peach */
+    --secondary-foreground: 0 0% 0%;
 
-    --muted: 0 0% 96%;
-    --muted-foreground: 0 0% 42%;
+    --muted: 180 35% 92%;             /* pale lagoon */
+    --muted-foreground: 200 25% 25%;
 
-    --accent: 0 0% 92%;
-    --accent-foreground: 0 0% 18%;
+    --accent: 198 75% 55%;            /* tropical ocean blue */
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 65% 50%;
+    --destructive: 4 78% 52%;         /* hibiscus red */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 0 0% 90%;
-    --input: 0 0% 90%;
-    --ring: 0 0% 60%;
+    --border: 158 30% 80%;            /* soft palm-leaf edge */
+    --input: 158 25% 85%;
+    --ring: 158 65% 38%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 99%;
-    --sidebar-foreground: 0 0% 18%;
-    --sidebar-primary: 0 0% 18%;
+    --sidebar-background: 158 40% 96%;
+    --sidebar-foreground: 0 0% 0%;
+    --sidebar-primary: 158 65% 32%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 94%;
-    --sidebar-accent-foreground: 0 0% 18%;
-    --sidebar-border: 0 0% 90%;
-    --sidebar-ring: 0 0% 60%;
+    --sidebar-accent: 22 80% 90%;
+    --sidebar-accent-foreground: 0 0% 0%;
+    --sidebar-border: 158 30% 82%;
+    --sidebar-ring: 198 75% 55%;
 
-    --success: 0 0% 35%;
+    --success: 142 65% 38%;
     --success-foreground: 0 0% 100%;
-    --warning: 0 0% 45%;
-    --warning-foreground: 0 0% 100%;
-    --info: 0 0% 35%;
+    --warning: 36 95% 55%;
+    --warning-foreground: 0 0% 0%;
+    --info: 198 75% 50%;
     --info-foreground: 0 0% 100%;
-    --chart-1: 0 0% 35%;
-    --chart-2: 0 0% 50%;
-    --chart-3: 0 0% 65%;
-    --chart-4: 0 0% 25%;
-    --chart-5: 0 0% 75%;
-    --sidebar: 0 0% 99%;
+    --chart-1: 158 65% 38%;           /* jungle green */
+    --chart-2: 198 75% 55%;           /* ocean blue */
+    --chart-3: 22 90% 70%;            /* peach */
+    --chart-4: 168 55% 45%;           /* teal */
+    --chart-5: 45 85% 65%;            /* sunset gold */
+    --sidebar: 158 40% 96%;
 
-    /* Legacy accent palette — neutralized */
-    --neon-pink: 0 0% 50%;
-    --neon-cyan: 0 0% 50%;
-    --neon-purple: 0 0% 50%;
-    --neon-orange: 0 0% 50%;
-    --neon-green: 0 0% 50%;
-    --neon-yellow: 0 0% 50%;
-    --page-green: 0 0% 96%;
-    --page-lime: 0 0% 96%;
-    --page-tangerine: 0 0% 96%;
+    /* Legacy accent palette — mapped to tropical accents */
+    --neon-pink: 22 90% 70%;
+    --neon-cyan: 188 75% 55%;
+    --neon-purple: 198 75% 55%;
+    --neon-orange: 22 95% 65%;
+    --neon-green: 158 65% 45%;
+    --neon-yellow: 45 90% 65%;
+    --page-green: 158 50% 92%;
+    --page-lime: 100 55% 92%;
+    --page-tangerine: 22 80% 92%;
 
-    --shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.04);
-    --shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.06);
-    --shadow-sm: 0 1px 4px 0 hsl(0 0% 0% / 0.08), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
-    --shadow: 0 2px 8px -2px hsl(0 0% 0% / 0.1), 0 1px 2px 0 hsl(0 0% 0% / 0.04);
-    --shadow-md: 0 4px 16px -4px hsl(0 0% 0% / 0.12), 0 2px 4px -2px hsl(0 0% 0% / 0.06);
-    --shadow-lg: 0 8px 24px -6px hsl(0 0% 0% / 0.14), 0 4px 8px -4px hsl(0 0% 0% / 0.05);
-    --shadow-xl: 0 16px 40px -12px hsl(0 0% 0% / 0.16), 0 4px 12px -4px hsl(0 0% 0% / 0.05);
-    --shadow-2xl: 0 24px 48px -16px hsl(0 0% 0% / 0.2);
+    --shadow-2xs: 0 1px 2px 0 hsl(158 50% 20% / 0.06);
+    --shadow-xs: 0 1px 3px 0 hsl(158 50% 20% / 0.08);
+    --shadow-sm: 0 1px 4px 0 hsl(158 50% 20% / 0.10), 0 1px 2px -1px hsl(158 50% 20% / 0.05);
+    --shadow: 0 2px 8px -2px hsl(158 50% 20% / 0.12), 0 1px 2px 0 hsl(158 50% 20% / 0.05);
+    --shadow-md: 0 4px 16px -4px hsl(158 50% 20% / 0.14), 0 2px 4px -2px hsl(158 50% 20% / 0.07);
+    --shadow-lg: 0 8px 24px -6px hsl(158 50% 20% / 0.16), 0 4px 8px -4px hsl(158 50% 20% / 0.06);
+    --shadow-xl: 0 16px 40px -12px hsl(158 50% 20% / 0.18), 0 4px 12px -4px hsl(158 50% 20% / 0.06);
+    --shadow-2xl: 0 24px 48px -16px hsl(158 50% 20% / 0.22);
     --tracking-normal: -0.011em;
     --spacing: 0.25rem;
 
