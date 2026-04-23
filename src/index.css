@@ -598,23 +598,37 @@ body, body * {
   background-image: none !important;
 }
 
-/* Solid dark surfaces stay dark with white text */
-[class*="bg-primary"]:not([class*="bg-primary/"]):not([class*="bg-primary-foreground"]),
-[class*="bg-foreground"]:not([class*="bg-foreground/"]),
-[class*="bg-destructive"]:not([class*="bg-destructive/"]),
-[class*="bg-sidebar-primary"]:not([class*="bg-sidebar-primary/"]) {
+/* Solid dark surfaces stay dark with white text.
+   Use exact-token classes to avoid matching *-foreground variants. */
+.bg-primary, .bg-foreground, .bg-destructive, .bg-sidebar-primary {
   background-color: #000000 !important;
   background-image: none !important;
-}
-[class*="bg-primary"]:not([class*="bg-primary/"]):not([class*="bg-primary-foreground"]),
-[class*="bg-primary"]:not([class*="bg-primary/"]):not([class*="bg-primary-foreground"]) *,
-[class*="bg-foreground"]:not([class*="bg-foreground/"]),
-[class*="bg-foreground"]:not([class*="bg-foreground/"]) *,
-[class*="bg-destructive"]:not([class*="bg-destructive/"]),
-[class*="bg-destructive"]:not([class*="bg-destructive/"]) *,
-[class*="bg-sidebar-primary"]:not([class*="bg-sidebar-primary/"]),
-[class*="bg-sidebar-primary"]:not([class*="bg-sidebar-primary/"]) * {
   color: #ffffff !important;
+}
+.bg-primary *, .bg-foreground *, .bg-destructive *, .bg-sidebar-primary * {
+  color: #ffffff !important;
+}
+
+/* *-foreground tokens are explicitly LIGHT surfaces — keep them white */
+.bg-primary-foreground, .bg-secondary-foreground,
+.bg-card-foreground, .bg-popover-foreground,
+.bg-muted-foreground, .bg-accent-foreground,
+.bg-destructive-foreground, .bg-sidebar-foreground,
+.bg-sidebar-primary-foreground, .bg-sidebar-accent-foreground {
+  background-color: #ffffff !important;
+  background-image: none !important;
+  color: #000000 !important;
+}
+
+/* Decorative blobs / opacity-suffixed colored bgs (e.g. bg-primary/10,
+   bg-neon-yellow/8, bg-accent/8) — invisible */
+[class*="bg-primary/"], [class*="bg-accent/"], [class*="bg-destructive/"],
+[class*="bg-foreground/"], [class*="bg-secondary/"],
+[class*="bg-neon-pink"], [class*="bg-neon-cyan"], [class*="bg-neon-purple"],
+[class*="bg-neon-orange"], [class*="bg-neon-green"], [class*="bg-neon-yellow"] {
+  background-color: transparent !important;
+  background-image: none !important;
+  opacity: 0 !important;
 }
 
 /* Sidebar: light grey panel, black text */
@@ -655,3 +669,75 @@ textarea, select, [role="combobox"] {
 /* Links: black, hover underlines */
 a { color: #000000 !important; text-decoration-color: #000000 !important; }
 a:hover { text-decoration: underline !important; }
+
+/* Sidebar menu items — kill mint/green active state */
+[data-sidebar="menu-button"],
+[data-sidebar="menu-button"] *,
+[data-sidebar="menu-sub-button"],
+[data-sidebar="menu-sub-button"] *,
+[data-sidebar="group-label"] {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #000000 !important;
+}
+[data-sidebar="menu-button"][data-active="true"],
+[data-sidebar="menu-button"][aria-current="page"],
+[data-sidebar="menu-button"]:hover,
+[data-sidebar="menu-sub-button"][data-active="true"],
+[data-sidebar="menu-sub-button"]:hover {
+  background-color: #f0f0f0 !important;
+  color: #000000 !important;
+}
+
+/* Header search button + kbd chip */
+header button, header kbd {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #e5e5e5 !important;
+}
+
+/* Customize FAB (bottom-right) — neutral grey, no peach */
+button[data-tk-ignore="true"],
+button[title*="ustomize" i],
+button[aria-label*="ustomize" i] {
+  background-color: #f5f5f5 !important;
+  background-image: none !important;
+  color: #000000 !important;
+  border: 1px solid #e5e5e5 !important;
+}
+button[data-tk-ignore="true"] svg,
+button[title*="ustomize" i] svg,
+button[aria-label*="ustomize" i] svg {
+  color: #000000 !important;
+  filter: none !important;
+}
+
+/* Strip color from decorative sketch images / icon backplates */
+img[src*="sketch-"],
+[data-themeable*=".icon"] img {
+  filter: grayscale(1) contrast(1.05) !important;
+}
+
+/* Sidebar / header SVGs — desaturate any explicit-fill icons */
+[data-sidebar] svg, header svg {
+  filter: grayscale(1) !important;
+}
+
+/* Belt-and-suspenders: any inline gradient/hsl/rgb backgrounds */
+[style*="gradient"], [style*="hsl("], [style*="rgb("] {
+  background-image: none !important;
+  background-color: #ffffff !important;
+}
+
+/* Catch-all: any nav containing a Breadcrumbs row -> white */
+nav:has(> a[aria-label="Home"]),
+nav:has(> a[aria-label="Home"]) * {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #000000 !important;
+}
+/* And the parent wrapper that hosts the breadcrumb bar */
+:has(> nav > a[aria-label="Home"]) {
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
