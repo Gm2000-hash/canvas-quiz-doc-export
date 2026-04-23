@@ -209,6 +209,30 @@ body.tk-edit-mode main *:hover:not([data-tk-ignore]):not(.tk-canvas-widget):not(
   cursor: pointer;
 }
 
+/* Persistent highlight for the currently selected element */
+body.tk-edit-mode [data-tk-selected] {
+  outline: 2px solid hsl(var(--primary)) !important;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px hsl(var(--primary) / 0.18) !important;
+  border-radius: 4px;
+  position: relative;
+}
+body.tk-edit-mode [data-tk-selected]::before {
+  content: "Selected";
+  position: absolute;
+  top: -10px; right: -2px;
+  font-size: 10px;
+  font-weight: 600;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  padding: 1px 8px;
+  border-radius: 999px;
+  z-index: 60;
+  pointer-events: none;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: 0.02em;
+}
+
 /* Hideable sections + custom widgets */
 .tk-hidden-section { display: none !important; }
 body.tk-edit-mode .tk-hidden-section {
