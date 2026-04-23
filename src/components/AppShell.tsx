@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { useEffect } from "react";
 import { ThemeProvider } from "@/components/customize/ThemeProvider";
+import { CustomizeButton } from "@/components/customize/CustomizeButton";
+import { CustomizePanel } from "@/components/customize/CustomizePanel";
 
 interface AppShellProps {
   children: ReactNode;
@@ -55,6 +57,8 @@ export function AppShell({ children }: AppShellProps) {
           </div>
         </div>
         <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />
+        <CustomizeButton />
+        <CustomizePanel />
       </SidebarProvider>
     </ThemeProvider>
   );

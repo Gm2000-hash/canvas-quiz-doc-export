@@ -5,45 +5,45 @@
 
 @layer base {
   :root {
-    /* Tropical palette — verdant greens, peach, ocean blues (saturated) */
-    --background: 165 45% 92%;        /* lush seafoam */
-    --foreground: 0 0% 0%;            /* pure black text */
+    /* Tropical palette — sourced from PickyGene Procreate "Tropical" set */
+    --background: 170 65% 88%;        /* aqua mist */
+    --foreground: 0 0% 0%;
 
-    --card: 28 85% 88%;               /* warm peach */
+    --card: 18 95% 90%;               /* warm peach */
     --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    --primary: 158 75% 28%;           /* deep verdant jungle green */
+    --primary: 170 80% 38%;           /* tropical turquoise */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 22 95% 72%;          /* vivid peach */
+    --secondary: 25 95% 65%;          /* tangerine */
     --secondary-foreground: 0 0% 0%;
 
-    --muted: 168 50% 85%;             /* lagoon */
+    --muted: 170 50% 86%;             /* pale lagoon */
     --muted-foreground: 200 35% 20%;
 
-    --accent: 198 85% 48%;            /* tropical ocean blue */
+    --accent: 200 90% 50%;            /* ocean blue */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 4 82% 50%;         /* hibiscus */
+    --destructive: 8 78% 55%;         /* coral red */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 158 45% 60%;            /* palm-leaf edge */
-    --input: 158 35% 78%;
-    --ring: 158 75% 35%;
+    --border: 170 45% 60%;
+    --input: 170 35% 78%;
+    --ring: 200 90% 50%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 158 55% 88%;
+    --sidebar-background: 78 65% 82%;  /* lime sand */
     --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 158 75% 28%;
+    --sidebar-primary: 145 55% 30%;    /* forest */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 22 90% 82%;
+    --sidebar-accent: 18 95% 85%;
     --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 158 45% 65%;
-    --sidebar-ring: 198 85% 48%;
+    --sidebar-border: 78 40% 65%;
+    --sidebar-ring: 200 90% 50%;
 
     --success: 142 65% 38%;
     --success-foreground: 0 0% 100%;
@@ -51,23 +51,23 @@
     --warning-foreground: 0 0% 0%;
     --info: 198 75% 50%;
     --info-foreground: 0 0% 100%;
-    --chart-1: 158 65% 38%;           /* jungle green */
-    --chart-2: 198 75% 55%;           /* ocean blue */
-    --chart-3: 22 90% 70%;            /* peach */
-    --chart-4: 168 55% 45%;           /* teal */
-    --chart-5: 45 85% 65%;            /* sunset gold */
-    --sidebar: 158 40% 96%;
+    --chart-1: 170 80% 38%;           /* turquoise */
+    --chart-2: 200 90% 50%;           /* ocean blue */
+    --chart-3: 18 95% 70%;            /* peach */
+    --chart-4: 25 95% 60%;            /* tangerine */
+    --chart-5: 78 75% 50%;            /* lime */
+    --sidebar: 78 65% 82%;
 
     /* Legacy accent palette — mapped to tropical accents */
-    --neon-pink: 22 90% 70%;
-    --neon-cyan: 188 75% 55%;
-    --neon-purple: 198 75% 55%;
-    --neon-orange: 22 95% 65%;
-    --neon-green: 158 65% 45%;
-    --neon-yellow: 45 90% 65%;
-    --page-green: 158 50% 92%;
-    --page-lime: 100 55% 92%;
-    --page-tangerine: 22 80% 92%;
+    --neon-pink: 350 90% 70%;
+    --neon-cyan: 185 80% 55%;
+    --neon-purple: 220 75% 55%;
+    --neon-orange: 25 95% 60%;
+    --neon-green: 145 60% 40%;
+    --neon-yellow: 45 95% 60%;
+    --page-green: 145 50% 88%;
+    --page-lime: 78 65% 88%;
+    --page-tangerine: 25 95% 88%;
 
     --shadow-2xs: 0 1px 2px 0 hsl(158 50% 20% / 0.06);
     --shadow-xs: 0 1px 3px 0 hsl(158 50% 20% / 0.08);
@@ -192,6 +192,48 @@
           saturate(var(--wp-saturate, 1));
   opacity: var(--wp-opacity, 1);
   transition: filter 200ms ease, opacity 200ms ease;
+}
+
+/* ========== Tie-dye swirls ==========
+   Layered radial gradients evoke hand-dyed tropical fabric.
+   Sits behind page content; overlay is fixed so it follows scroll. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 18%, hsl(18 95% 78% / 0.55) 0%, transparent 35%),
+    radial-gradient(circle at 88% 22%, hsl(170 80% 55% / 0.55) 0%, transparent 38%),
+    radial-gradient(circle at 78% 82%, hsl(200 90% 60% / 0.50) 0%, transparent 40%),
+    radial-gradient(circle at 18% 86%, hsl(78 75% 60% / 0.50) 0%, transparent 38%),
+    radial-gradient(circle at 50% 50%, hsl(25 95% 70% / 0.40) 0%, transparent 30%),
+    conic-gradient(from 30deg at 50% 50%,
+      hsl(170 80% 55% / 0.18),
+      hsl(200 90% 60% / 0.18),
+      hsl(220 75% 55% / 0.18),
+      hsl(78 75% 55% / 0.18),
+      hsl(45 95% 65% / 0.18),
+      hsl(25 95% 65% / 0.18),
+      hsl(18 95% 75% / 0.18),
+      hsl(170 80% 55% / 0.18));
+  background-color: hsl(var(--background));
+  background-blend-mode: screen, screen, screen, screen, screen, normal;
+  filter: blur(40px) saturate(1.2);
+}
+/* Subtle swirling concentric rings — the "tie-dye" signature */
+body::after {
+  content: "";
+  position: fixed;
+  inset: -10%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    repeating-radial-gradient(circle at 22% 28%, transparent 0 38px, hsl(170 80% 55% / 0.06) 38px 42px),
+    repeating-radial-gradient(circle at 78% 72%, transparent 0 46px, hsl(18 95% 70% / 0.06) 46px 50px),
+    repeating-radial-gradient(circle at 65% 18%, transparent 0 30px, hsl(200 90% 60% / 0.05) 30px 34px);
+  mix-blend-mode: multiply;
 }
 
 /* ========== Edit-mode handles ========== */
