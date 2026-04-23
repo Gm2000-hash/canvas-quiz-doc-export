@@ -1,8 +1,9 @@
 import { useTheme } from "./ThemeProvider";
 import { Button } from "@/components/ui/button";
-import { X, Lock, Unlock, RotateCw } from "lucide-react";
+import { X, Lock, Unlock, RotateCw, Crop } from "lucide-react";
 import type { CustomWidget } from "@/lib/customization-types";
 import { useEffect, useRef, useState } from "react";
+import { ImageCropDialog } from "./ImageCropDialog";
 
 function WidgetView({ w }: { w: CustomWidget }) {
   const style: React.CSSProperties = {
@@ -89,6 +90,7 @@ function FloatingWidget({ w }: { w: CustomWidget }) {
   const { editMode, updateWidget, deleteWidget } = useTheme();
   const ref = useRef<HTMLDivElement>(null);
   const [drag, setDrag] = useState<DragMode | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
 
   const x = w.x ?? 80;
   const y = w.y ?? 80;
@@ -225,6 +227,15 @@ function FloatingWidget({ w }: { w: CustomWidget }) {
             >
               <RotateCw className="h-3 w-3" />
             </Button>
+            {w.type === "image" && w.content && (
+              <Button
+                size="icon" variant="ghost" className="h-6 w-6"
+                onClick={() => setCropOpen(true)}
+                title="Crop"
+              >
+                <Crop className="h-3 w-3" />
+              </Button>
+            )}
             <Button
               size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive"
               onClick={() => deleteWidget(w.id)}
@@ -243,6 +254,19 @@ function FloatingWidget({ w }: { w: CustomWidget }) {
             />
           )}
         </>
+      )}
+      {w.type === "image" && w.content && (
+        <ImageCropDialog
+          open={cropOpen}
+          onOpenChange={setCropOpen}
+          imageUrl={w.content}
+          onCropped={(url, nw, nh) => {
+            // Preserve current display width; adjust height to new aspect.
+            const displayW = width;
+            const displayH = Math.round((displayW * nh) / nw);
+            updateWidget(w.id, { content: url, w: displayW, h: displayH });
+          }}
+        />
       )}
     </div>
   );
