@@ -393,8 +393,12 @@ export function CustomizePanel() {
               <Heading className="h-4 w-4 mr-2" /> Heading
             </Button>
             <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "image", content: "" })}>
-              <ImageIcon className="h-4 w-4 mr-2" /> Image
+              <ImageIcon className="h-4 w-4 mr-2" /> Image (inline)
             </Button>
+            <Separator className="my-2" />
+            <p className="text-[11px] text-muted-foreground">Floating images can be dragged, resized, and rotated anywhere on the page.</p>
+            <FloatingImageUploader />
+            <Separator className="my-2" />
             <Button variant="outline" className="w-full justify-start" onClick={() => addWidget({ type: "divider" })}>
               <Minus className="h-4 w-4 mr-2" /> Divider
             </Button>
@@ -407,6 +411,7 @@ export function CustomizePanel() {
             <Separator className="my-3" />
             <WidgetEditList />
           </TabsContent>
+
 
           {/* SECTIONS */}
           <TabsContent value="sections" className="mt-4">
@@ -435,6 +440,98 @@ export function CustomizePanel() {
         )}
       </SheetContent>
     </Sheet>
+  );
+}
+
+function FloatingImageUploader() {
+  const { user } = useAuth();
+  const { addWidget } = useTheme();
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+
+  const onFile = async (file: File) => {
+    if (!user) { toast.error("Sign in required"); return; }
+    setBusy(true);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${user.id}/floating/${crypto.randomUUID()}.${ext}`;
+      const { error } = await supabase.storage.from("wallpapers").upload(path, file, { upsert: false });
+      if (error) throw error;
+      const { data } = await supabase.storage.from("wallpapers").createSignedUrl(path, 60 * 60 * 24 * 365);
+      const url = data?.signedUrl;
+      if (!url) throw new Error("Could not get image URL");
+      addWidget({
+        type: "image",
+        content: url,
+        floating: true,
+        x: 120, y: 120, w: 280, h: 200, rotation: 0, z: 50,
+      });
+      toast.success("Image added — drag, resize, or rotate it on the page");
+    } catch (e: any) {
+      toast.error(e.message || "Upload failed");
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  const onGenerate = async () => {
+    if (!aiPrompt.trim()) return;
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("generate-wallpaper", {
+        body: { prompt: aiPrompt },
+      });
+      if (error) throw error;
+      if (!data?.path) throw new Error("Generation returned no path");
+      const { data: urlData } = await supabase.storage.from("wallpapers").createSignedUrl(data.path, 60 * 60 * 24 * 365);
+      const url = urlData?.signedUrl;
+      if (!url) throw new Error("Could not get image URL");
+      addWidget({
+        type: "image",
+        content: url,
+        floating: true,
+        x: 120, y: 120, w: 320, h: 220, rotation: 0, z: 50,
+      });
+      setAiPrompt("");
+      toast.success("Image added");
+    } catch (e: any) {
+      toast.error(e.message || "Generation failed");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="space-y-2 rounded-md border border-border p-2">
+      <Button
+        variant="outline" className="w-full justify-start"
+        onClick={() => inputRef.current?.click()} disabled={busy}
+      >
+        {busy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
+        Upload floating image
+      </Button>
+      <input
+        ref={inputRef} type="file" accept="image/*" hidden
+        onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+      />
+      <div className="flex gap-1.5">
+        <Input
+          value={aiPrompt}
+          onChange={(e) => setAiPrompt(e.target.value)}
+          placeholder="AI prompt (optional)"
+          className="h-8 text-xs"
+          disabled={busy}
+        />
+        <Button size="sm" variant="outline" onClick={onGenerate} disabled={busy || !aiPrompt.trim()}>
+          <Sparkles className="h-3.5 w-3.5" />
+        </Button>
+      </div>
+      <p className="text-[10px] text-muted-foreground">
+        Tip: in edit mode, drag to move, drag the corner handle to resize (Shift = preserve ratio), use the rotate icon to spin.
+      </p>
+    </div>
   );
 }
 
