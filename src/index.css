@@ -726,4 +726,18 @@ img[src*="sketch-"],
 /* Belt-and-suspenders: any inline gradient/hsl/rgb backgrounds */
 [style*="gradient"], [style*="hsl("], [style*="rgb("] {
   background-image: none !important;
+  background-color: #ffffff !important;
+}
+
+/* Catch-all: any nav containing a Breadcrumbs row -> white */
+nav:has(> a[aria-label="Home"]),
+nav:has(> a[aria-label="Home"]) * {
+  background-color: transparent !important;
+  background-image: none !important;
+  color: #000000 !important;
+}
+/* And the parent wrapper that hosts the breadcrumb bar */
+:has(> nav > a[aria-label="Home"]) {
+  background-color: #ffffff !important;
+  background-image: none !important;
 }
