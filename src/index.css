@@ -5,45 +5,45 @@
 
 @layer base {
   :root {
-    /* Tropical palette — verdant greens, peach, ocean blues (saturated) */
-    --background: 165 45% 92%;        /* lush seafoam */
-    --foreground: 0 0% 0%;            /* pure black text */
+    /* Tropical palette — sourced from PickyGene Procreate "Tropical" set */
+    --background: 170 65% 88%;        /* aqua mist */
+    --foreground: 0 0% 0%;
 
-    --card: 28 85% 88%;               /* warm peach */
+    --card: 18 95% 90%;               /* warm peach */
     --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    --primary: 158 75% 28%;           /* deep verdant jungle green */
+    --primary: 170 80% 38%;           /* tropical turquoise */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 22 95% 72%;          /* vivid peach */
+    --secondary: 25 95% 65%;          /* tangerine */
     --secondary-foreground: 0 0% 0%;
 
-    --muted: 168 50% 85%;             /* lagoon */
+    --muted: 170 50% 86%;             /* pale lagoon */
     --muted-foreground: 200 35% 20%;
 
-    --accent: 198 85% 48%;            /* tropical ocean blue */
+    --accent: 200 90% 50%;            /* ocean blue */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 4 82% 50%;         /* hibiscus */
+    --destructive: 8 78% 55%;         /* coral red */
     --destructive-foreground: 0 0% 100%;
 
-    --border: 158 45% 60%;            /* palm-leaf edge */
-    --input: 158 35% 78%;
-    --ring: 158 75% 35%;
+    --border: 170 45% 60%;
+    --input: 170 35% 78%;
+    --ring: 200 90% 50%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 158 55% 88%;
+    --sidebar-background: 78 65% 82%;  /* lime sand */
     --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 158 75% 28%;
+    --sidebar-primary: 145 55% 30%;    /* forest */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 22 90% 82%;
+    --sidebar-accent: 18 95% 85%;
     --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 158 45% 65%;
-    --sidebar-ring: 198 85% 48%;
+    --sidebar-border: 78 40% 65%;
+    --sidebar-ring: 200 90% 50%;
 
     --success: 142 65% 38%;
     --success-foreground: 0 0% 100%;
