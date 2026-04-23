@@ -6,7 +6,6 @@ import { Slider } from "@/components/ui/slider";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import {
   Image as ImageIcon, Type, Heading as HeadingIcon, Minus, MoveVertical, Link2,
   Trash2, Eye, EyeOff, GripVertical, Upload, FlipHorizontal, FlipVertical,
