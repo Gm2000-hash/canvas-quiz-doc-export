@@ -560,3 +560,98 @@ body.tk-edit-mode [data-tk-selected]::before {
   background-color: hsl(0 0% 100%) !important;
   color: hsl(0 0% 0%) !important;
 }
+
+/* ==========================================================
+   MONOCHROME LOCKDOWN — black text on white, EVERYWHERE.
+   Overrides any saved per-element customizations, wallpapers,
+   tints, gradients, and colored backgrounds.
+   ========================================================== */
+
+/* Kill any saved wallpaper image */
+html, body, body.wp-host {
+  --wp-image: none !important;
+  background-image: none !important;
+}
+body.wp-host::before { display: none !important; content: none !important; }
+
+/* Pure-white app backdrop */
+html, body, #root, main {
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
+
+/* Black text everywhere */
+body, body * {
+  color: #000000 !important;
+  text-shadow: none !important;
+}
+
+/* Tile/card surfaces -> white */
+.bubble-glass, .bubble-glass-soft,
+[class*="bubble-tint-"],
+[class*="gradient-card-"],
+.gradient-banner,
+[class*="bg-card"], [class*="bg-popover"], [class*="bg-muted"],
+[class*="bg-secondary"], [class*="bg-accent"]:not([class*="bg-accent-foreground"]),
+[class*="bg-background"], [class*="bg-white"] {
+  background-color: #ffffff !important;
+  background-image: none !important;
+}
+
+/* Solid dark surfaces stay dark with white text */
+[class*="bg-primary"]:not([class*="bg-primary/"]):not([class*="bg-primary-foreground"]),
+[class*="bg-foreground"]:not([class*="bg-foreground/"]),
+[class*="bg-destructive"]:not([class*="bg-destructive/"]),
+[class*="bg-sidebar-primary"]:not([class*="bg-sidebar-primary/"]) {
+  background-color: #000000 !important;
+  background-image: none !important;
+}
+[class*="bg-primary"]:not([class*="bg-primary/"]):not([class*="bg-primary-foreground"]),
+[class*="bg-primary"]:not([class*="bg-primary/"]):not([class*="bg-primary-foreground"]) *,
+[class*="bg-foreground"]:not([class*="bg-foreground/"]),
+[class*="bg-foreground"]:not([class*="bg-foreground/"]) *,
+[class*="bg-destructive"]:not([class*="bg-destructive/"]),
+[class*="bg-destructive"]:not([class*="bg-destructive/"]) *,
+[class*="bg-sidebar-primary"]:not([class*="bg-sidebar-primary/"]),
+[class*="bg-sidebar-primary"]:not([class*="bg-sidebar-primary/"]) * {
+  color: #ffffff !important;
+}
+
+/* Sidebar: light grey panel, black text */
+aside, [data-sidebar="sidebar"] {
+  background-color: #fafafa !important;
+  background-image: none !important;
+}
+
+/* Borders: neutral grey */
+*, *::before, *::after { border-color: #e5e5e5 !important; }
+
+/* Inputs / form controls — white surface, black text, grey border */
+input:not([type="color"]):not([type="checkbox"]):not([type="radio"]),
+textarea, select, [role="combobox"] {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+  border-color: #d4d4d4 !important;
+}
+
+/* Muted helper text — medium grey, still readable */
+.text-muted-foreground, [class*="text-muted-foreground"] {
+  color: #525252 !important;
+}
+
+/* Modal/popover surfaces white */
+[role="dialog"]:not([data-radix-dialog-overlay]),
+[role="menu"], [role="listbox"], [role="tooltip"],
+[data-radix-popper-content-wrapper] > * {
+  background-color: #ffffff !important;
+  color: #000000 !important;
+}
+
+/* Modal scrim stays dark transparent */
+[data-radix-dialog-overlay], [data-radix-alert-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Links: black, hover underlines */
+a { color: #000000 !important; text-decoration-color: #000000 !important; }
+a:hover { text-decoration: underline !important; }
