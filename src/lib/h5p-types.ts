@@ -51,7 +51,14 @@ export const ACTIVITY_TYPES: ActivityTypeInfo[] = [
 
 export interface FillInBlanksContent { text: string; acceptAlternatives: boolean; }
 export interface DragTheWordsContent { text: string; showInstantFeedback: boolean; }
-export interface MediaEmbed { url: string; type: 'audio' | 'video' | 'image'; }
+export interface MediaEmbed {
+  url: string;
+  type: 'audio' | 'video' | 'image' | 'h5p';
+  /** When type === 'h5p', references an h5p_activities row to mount inline. */
+  activity_id?: string;
+  /** When type === 'h5p', cached activity_type (e.g. 'drag_and_drop', 'image_hotspots') for fast routing. */
+  activity_type?: string;
+}
 export interface AccordionPanel { id: string; title: string; content: string; media?: MediaEmbed; }
 export interface AccordionContent { panels: AccordionPanel[]; }
 export interface TimelineEvent { id: string; date: string; title: string; description: string; imageUrl?: string; media?: MediaEmbed; }

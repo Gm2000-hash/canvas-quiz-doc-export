@@ -25,7 +25,47 @@ serve(async (req) => {
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY not configured");
 
     const body = await req.json();
-    const { prompt, question_text, question_type } = body;
+    const { prompt, question_text, question_type, mode, standard_code, standard_description } = body;
+
+    // ── Mode: suggest_prompt — return a draft image prompt only, no image generation ──
+    if (mode === "suggest_prompt") {
+      if (!question_text || typeof question_text !== "string") {
+        return new Response(JSON.stringify({ error: "question_text is required for suggest_prompt mode" }), {
+          status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      const suggestSystem = `You are a science assessment illustrator. Given a middle-school NGSS test question, draft a SHORT (2-4 sentence) image prompt for an educational diagram that would meaningfully enhance the question — not just decorate it. The diagram should give students a visual data source they can analyze, not restate what the question already says in words. Focus on labeled scientific diagrams, data tables, models, or process illustrations. Avoid cartoons, decoration, or stock photo styles.`;
+      const suggestUser = `Question: "${String(question_text).slice(0, 800)}"
+Question type: ${question_type || "multiple choice"}
+${standard_code ? `Standard: ${standard_code}${standard_description ? ` — ${standard_description}` : ""}` : ""}
+
+Write the image prompt now (just the prompt, no preamble).`;
+
+      const sResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: "google/gemini-2.5-flash",
+          messages: [
+            { role: "system", content: suggestSystem },
+            { role: "user", content: suggestUser },
+          ],
+        }),
+      });
+
+      if (!sResp.ok) {
+        if (sResp.status === 429) return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        if (sResp.status === 402) return new Response(JSON.stringify({ error: "AI credits exhausted. Add funds in Settings > Workspace > Usage." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        throw new Error("Failed to suggest prompt");
+      }
+
+      const sData = await sResp.json();
+      const suggested = sData.choices?.[0]?.message?.content?.trim() || "";
+      return new Response(JSON.stringify({ suggested_prompt: suggested }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     if (!prompt || typeof prompt !== "string" || prompt.length > 2000) {
       return new Response(JSON.stringify({ error: "prompt is required and must be under 2000 characters" }), {
