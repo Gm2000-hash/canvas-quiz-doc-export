@@ -110,12 +110,13 @@ interface Props {
 }
 
 const QUICK_PROMPTS = [
+  "Unpack this standard: explain the science, real-life applications, and misconceptions",
+  "Help me find resources for this lesson",
   "Give me 5 creative checking-for-understanding strategies for this lesson",
   "Suggest a hands-on lab activity for this topic",
   "Create an engaging warm-up/hook for this lesson",
   "Design an exit ticket with 3 questions",
   "Suggest differentiation strategies for struggling readers",
-  "What are common student misconceptions about this topic?",
 ];
 
 export function BrainstormChat({ lessonContext, onCopyToField }: Props) {
