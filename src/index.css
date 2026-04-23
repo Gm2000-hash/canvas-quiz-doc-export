@@ -36,13 +36,13 @@
 
     --radius: 0.75rem;
 
-    --sidebar-background: 78 65% 82%;  /* lime sand */
+    --sidebar-background: 150 55% 85%; /* mint green */
     --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 145 55% 30%;    /* forest */
+    --sidebar-primary: 160 55% 32%;    /* deep mint */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 18 95% 85%;
+    --sidebar-accent: 150 45% 78%;
     --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 78 40% 65%;
+    --sidebar-border: 150 35% 65%;
     --sidebar-ring: 200 90% 50%;
 
     --success: 142 65% 38%;
@@ -56,7 +56,7 @@
     --chart-3: 18 95% 70%;            /* peach */
     --chart-4: 25 95% 60%;            /* tangerine */
     --chart-5: 78 75% 50%;            /* lime */
-    --sidebar: 78 65% 82%;
+    --sidebar: 150 55% 85%;
 
     /* Legacy accent palette — mapped to tropical accents */
     --neon-pink: 350 90% 70%;
@@ -65,8 +65,8 @@
     --neon-orange: 25 95% 60%;
     --neon-green: 145 60% 40%;
     --neon-yellow: 45 95% 60%;
-    --page-green: 145 50% 88%;
-    --page-lime: 78 65% 88%;
+    --page-green: 150 55% 88%;
+    --page-lime: 150 50% 90%;
     --page-tangerine: 25 95% 88%;
 
     --shadow-2xs: 0 1px 2px 0 hsl(158 50% 20% / 0.06);
@@ -553,4 +553,47 @@ nav[class*="bg-background/"] {
 body.tk-edit-mode [data-themeable]::after,
 body.tk-edit-mode [data-tk-selected]::before {
   background-color: revert !important;
+}
+
+/* ==========================================================
+   CUSTOMIZE PANEL — guaranteed opaque + high-contrast text.
+   The right-hand sheet sits over the tie-dye background, so
+   force a solid card fill and pure-black text on every child
+   (inputs, labels, tab triggers, slider numbers, etc.).
+   ========================================================== */
+[data-tk-ignore="true"],
+[data-tk-ignore="true"] [role="tablist"],
+[data-tk-ignore="true"] [role="tabpanel"],
+[data-tk-ignore="true"] .bubble-glass,
+[data-tk-ignore="true"] .bubble-glass-soft {
+  background-color: hsl(var(--card)) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+[data-tk-ignore="true"],
+[data-tk-ignore="true"] *:not(svg):not(path) {
+  color: hsl(0 0% 0%) !important;
+  opacity: 1 !important;
+}
+/* Keep contrast on filled buttons/badges inside the panel */
+[data-tk-ignore="true"] [class*="bg-primary"]:not([class*="bg-primary/"]),
+[data-tk-ignore="true"] [class*="bg-primary"]:not([class*="bg-primary/"]) *,
+[data-tk-ignore="true"] [class*="bg-accent"]:not([class*="bg-accent/"]),
+[data-tk-ignore="true"] [class*="bg-accent"]:not([class*="bg-accent/"]) *,
+[data-tk-ignore="true"] [class*="bg-destructive"],
+[data-tk-ignore="true"] [class*="bg-destructive"] *,
+[data-tk-ignore="true"] [data-state="active"][role="tab"],
+[data-tk-ignore="true"] [data-state="active"][role="tab"] * {
+  color: hsl(var(--primary-foreground)) !important;
+}
+/* Muted helper text — keep readable but slightly softer */
+[data-tk-ignore="true"] .text-muted-foreground {
+  color: hsl(0 0% 25%) !important;
+}
+/* Inputs/textareas inside the panel — solid white surface */
+[data-tk-ignore="true"] input:not([type="color"]):not([type="checkbox"]):not([type="radio"]),
+[data-tk-ignore="true"] textarea,
+[data-tk-ignore="true"] [role="combobox"] {
+  background-color: hsl(0 0% 100%) !important;
+  color: hsl(0 0% 0%) !important;
 }
