@@ -65,7 +65,7 @@ serve(withLogging("generate-lesson-plans", async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-    const { unitTitle, discipline, gradeLevel, topic, numLessons, additionalContext } = parsedBody;
+    const { unitTitle, discipline, gradeLevel, topic, numLessons, additionalContext, focusConcepts, deemphasizeConcepts } = parsedBody;
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -112,8 +112,15 @@ Also populate (still required, but secondary to lesson_flow):
 DO NOT produce the older granular engagement/representation/action_expression sub-objects — they are deprecated. All of that detail now lives, in narrative order, INSIDE lesson_flow.`;
     const systemPrompt = withUdl(baseSystemPrompt);
 
+    const focusBlock = (focusConcepts && String(focusConcepts).trim())
+      ? `\n\n🎯 PRIORITY FOCUS — These key concepts/terms MUST be the centerpiece of the lesson. Build objectives, vocabulary, the Core Learning phase, and the formative check explicitly around them. Reference them by name in lesson_flow:\n${String(focusConcepts).trim()}`
+      : "";
+    const deemphasizeBlock = (deemphasizeConcepts && String(deemphasizeConcepts).trim())
+      ? `\n\n⬇️ DE-EMPHASIZE — Spend minimal time on these topics. Mention only briefly if needed for context; do NOT make them activities, vocabulary, or assessment items:\n${String(deemphasizeConcepts).trim()}`
+      : "";
+
     const userPrompt = `Create ${numLessons} sequential, FULLY SCRIPTED lesson plans for a unit called "${unitTitle}" focused on "${topic}".
-${additionalContext ? `Additional instructions: ${additionalContext}` : ""}
+${additionalContext ? `Additional instructions: ${additionalContext}` : ""}${focusBlock}${deemphasizeBlock}
 
 Each lesson should be 50 minutes with EXACTLY 3 learning objectives and AT LEAST 4 activities. For EVERY activity, write it as if you are scripting what the teacher says and does minute-by-minute. Include:
 - KEY TALKING POINTS as a bulleted list of main ideas to communicate

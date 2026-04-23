@@ -47,6 +47,8 @@ export function RegenerateLessonDialog({ open, onOpenChange, lesson, discipline,
   const { user } = useAuth();
   const { toast } = useToast();
   const [additionalContext, setAdditionalContext] = useState("");
+  const [focusConcepts, setFocusConcepts] = useState("");
+  const [deemphasizeConcepts, setDeemphasizeConcepts] = useState("");
   const [generating, setGenerating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("");
@@ -117,6 +119,8 @@ Current objectives: ${lesson.objectives}
 ${additionalContext ? `Teacher instructions: ${additionalContext}` : ""}
 ${selectedDimensions.length > 0 ? `\nFOCUS ON THESE NGSS SUB-COMPONENTS — design activities, vocabulary, and assessment so students explicitly engage with each one:\n${formatDimensionsForPrompt(selectedDimensions)}\n` : ""}
 Improve and fill in any missing information. Keep the same general topic but make it better.`,
+          focusConcepts: focusConcepts.trim() || undefined,
+          deemphasizeConcepts: deemphasizeConcepts.trim() || undefined,
           ...(modelOverride ? { model_override: modelOverride } : {}),
           ai_preferences: preferences,
         },
@@ -340,6 +344,38 @@ Improve and fill in any missing information. Keep the same general topic but mak
               onChange={e => setAdditionalContext(e.target.value)}
               rows={3}
             />
+          </div>
+
+          <div className="space-y-2 rounded-xl border border-primary/20 bg-primary/5 p-3">
+            <Label className="text-sm flex items-center gap-1.5">
+              🎯 Key Concepts to Emphasize <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+            </Label>
+            <Textarea
+              placeholder="e.g. multicellular vs. unicellular organisms, levels of organization, specialized cells"
+              value={focusConcepts}
+              onChange={e => setFocusConcepts(e.target.value)}
+              rows={2}
+              className="text-sm"
+            />
+            <p className="text-[10px] text-muted-foreground leading-tight">
+              These will become the centerpiece of objectives, vocabulary, and the Core Learning phase.
+            </p>
+          </div>
+
+          <div className="space-y-2 rounded-xl border border-muted-foreground/20 bg-muted/40 p-3">
+            <Label className="text-sm flex items-center gap-1.5">
+              ⬇️ Topics to De-emphasize <span className="text-xs font-normal text-muted-foreground">(optional)</span>
+            </Label>
+            <Textarea
+              placeholder="e.g. microscopes, lab equipment history"
+              value={deemphasizeConcepts}
+              onChange={e => setDeemphasizeConcepts(e.target.value)}
+              rows={2}
+              className="text-sm"
+            />
+            <p className="text-[10px] text-muted-foreground leading-tight">
+              The AI will mention these only briefly, not as activities or assessment items.
+            </p>
           </div>
 
           <div className="space-y-3 border-t border-border pt-3">
