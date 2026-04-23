@@ -1,11 +1,12 @@
 import { SettingsForm } from "@/components/SettingsForm";
 import { QuizBrowser } from "@/components/QuizBrowser";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
-import { FileText } from "lucide-react";
+import { FileText, Settings } from "lucide-react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { BentoHero } from "@/components/BentoHero";
 import { toast } from "sonner";
 
 const CanvasExport = () => {
@@ -66,7 +67,27 @@ const CanvasExport = () => {
             </div>
           </div>
         ) : (
-          <div className="py-6 px-4 sm:px-6 lg:px-8 bg-[#f1f1ea]">
+          <div className="py-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+            <BentoHero
+              eyebrow="Canvas LMS"
+              title={<>Export quizzes to <em className="italic font-light">polished</em> Word docs.</>}
+              subtitle="Browse your Canvas courses, pick a quiz, and download a clean .docx for printing or review — with optional answer keys and standards tagging."
+              primaryAction={{ label: "Open Settings", onClick: () => setSettingsOpen(true), icon: Settings }}
+              sideTiles={[
+                {
+                  variant: "coral",
+                  eyebrow: "Quick export",
+                  title: "One-click .docx",
+                  body: "Pick a quiz tile below to download instantly.",
+                },
+                {
+                  variant: "sky",
+                  eyebrow: "Tip",
+                  title: "Pin favorite courses",
+                  body: "Click the pin icon on any tile to keep it at the top.",
+                },
+              ]}
+            />
             <QuizBrowser config={config!} />
           </div>
         )}

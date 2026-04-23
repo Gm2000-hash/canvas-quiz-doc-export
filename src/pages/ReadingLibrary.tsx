@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { AppNavSheet } from "@/components/AppNavSheet";
-import { PageBanner } from "@/components/PageBanner";
+import { BentoHero } from "@/components/BentoHero";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { PdfFlipbookViewer } from "@/components/PdfFlipbookViewer";
 import { CurriculumReadingViewer } from "@/components/CurriculumReadingViewer";
@@ -255,11 +255,34 @@ export default function ReadingLibrary() {
         <Breadcrumbs items={[{ label: "Reading Library" }]} />
       </header>
 
-      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-6 bg-page-green">
-        <PageBanner
-          greeting="Reading Library"
-          subtitle="Shared curriculum readings and PDF resources"
-          compact
+      <main className="flex-1 py-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-6">
+        <BentoHero
+          eyebrow="Reading Library"
+          title={<>A shelf of <em className="italic font-light">curated</em> readings.</>}
+          subtitle="Curriculum readings, uploaded PDFs, and AI-generated textbooks — all in one place. Share with students via public link or export the whole shelf as a PDF."
+          stats={[
+            { label: "Items", value: books.length },
+            { label: "Subjects", value: subjects.length },
+          ]}
+          primaryAction={{ label: "AI Generate", onClick: () => setGenerateOpen(true), icon: Sparkles }}
+          secondaryActions={[
+            { label: uploading ? "Uploading…" : "Upload PDF", onClick: () => document.getElementById("pdf-upload-input")?.click(), icon: Upload },
+          ]}
+          sideTiles={[
+            {
+              variant: "peach",
+              eyebrow: "AI",
+              title: "Generate a textbook",
+              body: "Auto-build a unit-aligned reading set with images.",
+              action: { label: "Generate", onClick: () => setGenerateOpen(true), icon: Sparkles },
+            },
+            {
+              variant: "coral",
+              eyebrow: "Share",
+              title: "Public links",
+              body: "Click the link icon on any tile to copy a share URL.",
+            },
+          ]}
         />
 
         {/* Toolbar */}

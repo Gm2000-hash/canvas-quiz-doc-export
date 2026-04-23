@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getCourses, getQuizzes, getQuizSubmissions, getEnrollments, type CanvasConfig, type Course, type Quiz, type QuizSubmission, type Enrollment } from "@/lib/canvas-api";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
+import { BentoHero } from "@/components/BentoHero";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -378,6 +379,30 @@ export default function QuizAnalytics() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        <BentoHero
+          eyebrow="Analytics"
+          title={<>Where students <em className="italic font-light">shine</em> and stumble.</>}
+          subtitle="Unified view of ISAT practice exams, Canvas quiz submissions, and embedded H5P activity completions — with standards-level breakdowns."
+          stats={[
+            { label: "ISATs", value: completedIsats.length },
+            { label: "Canvas quizzes", value: canvasQuizData.length },
+            { label: "Embedded results", value: embeddedResults.length },
+          ]}
+          sideTiles={[
+            {
+              variant: "lilac",
+              eyebrow: "ISAT",
+              title: isatOverview ? `${isatOverview.avgScore}% avg` : "No data yet",
+              body: isatOverview ? `${isatOverview.totalExams} exams completed.` : "Complete a practice exam to see analytics.",
+            },
+            {
+              variant: "coral",
+              eyebrow: canvasConnected ? "Canvas" : "Embedded",
+              title: canvasConnected ? "Pull live data" : "Pull embedded data",
+              body: canvasConnected ? "Click 'Load Canvas Data' inside the Canvas tab." : "Click 'Load Results' inside the Embedded tab.",
+            },
+          ]}
+        />
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
