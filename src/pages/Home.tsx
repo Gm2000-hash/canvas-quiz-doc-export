@@ -1,6 +1,6 @@
 import { useMemo, useState, useCallback, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { PageBanner } from "@/components/PageBanner";
+// PageBanner removed from dashboard
 import { useAuth } from "@/hooks/useAuth";
 import { usePageTitle } from "@/hooks/usePageTitle";
 import { useProfile, SUBJECT_OPTIONS } from "@/hooks/useProfile";
