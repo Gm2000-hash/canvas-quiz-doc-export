@@ -206,6 +206,7 @@ export function EnhanceQuestionDialog({ open, onOpenChange, question, onApply, h
           <DialogDescription>
             Add an image, drag-and-drop labels, or clickable hotspots — and optionally rewrite the question to use it.
           </DialogDescription>
+          {headerExtra}
         </DialogHeader>
 
         <ScrollArea className="flex-1 pr-3 -mr-3">
