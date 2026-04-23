@@ -316,6 +316,10 @@ export default function ISATExamList({ onTakeExam, onGenerateNew, refreshKey }: 
                     <Copy className="h-4 w-4 mr-2" />
                     Copy Embed Code
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleStartEnrich(exam)} disabled={enrichLoading}>
+                    <Wand2 className="h-4 w-4 mr-2" />
+                    Enrich with images
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button
