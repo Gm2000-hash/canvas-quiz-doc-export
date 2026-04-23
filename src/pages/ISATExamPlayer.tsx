@@ -749,3 +749,44 @@ export default function ISATExamPlayer() {
     </div>
   );
 }
+
+function H5PMediaRenderer({ activityId, fallbackImage }: { activityId: string; fallbackImage?: string }) {
+  const [activity, setActivity] = useState<{ activity_type: string; content: any } | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("h5p_activities")
+          .select("activity_type, content")
+          .eq("id", activityId)
+          .maybeSingle() as any;
+        if (cancelled) return;
+        if (error || !data) {
+          setActivity(null);
+        } else {
+          setActivity(data);
+        }
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [activityId]);
+
+  if (loading) {
+    return <div className="flex items-center gap-2 text-xs text-muted-foreground"><Loader2 className="h-3 w-3 animate-spin" /> Loading interactive...</div>;
+  }
+  if (!activity) {
+    // Fallback: just show the static image if available
+    return fallbackImage ? <img src={fallbackImage} alt="Question media" className="max-h-64 rounded-lg border" /> : null;
+  }
+  return (
+    <div className="rounded-lg border bg-card p-3">
+      <ActivityPlayer type={activity.activity_type as any} content={activity.content} />
+    </div>
+  );
+}
+
