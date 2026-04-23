@@ -13,7 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { FILTER_PRESETS } from "@/lib/customization-types";
 import type { CustomWidget, WallpaperFilters } from "@/lib/customization-types";
-import { Upload, Sparkles, Trash2, Palette, Image as ImageIcon, Plus, Type, Heading, Minus, MoveVertical, Link2, Loader2, Save, RotateCcw } from "lucide-react";
+import { Upload, Sparkles, Trash2, Palette, Image as ImageIcon, Plus, Type, Heading, Minus, MoveVertical, Link2, Loader2, Save, RotateCcw, Layers, ChevronUp, ChevronDown, Crosshair } from "lucide-react";
 import { toast } from "sonner";
 
 const COLOR_PROPS = ["bg", "text", "border"] as const;
@@ -44,9 +44,9 @@ export function CustomizePanel() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [activeTab, setActiveTab] = useState("wallpaper");
 
-  // Auto-switch to Element tab whenever an element is selected
+  // Auto-switch to Element tab whenever an element is selected (unless user is in Layers)
   useEffect(() => {
-    if (selectedElement && panelOpen) setActiveTab("element");
+    if (selectedElement && panelOpen && activeTab !== "layers") setActiveTab("element");
   }, [selectedElement, panelOpen]);
 
   const setFilter = (target: "page" | "global", patch: WallpaperFilters) => {
@@ -289,11 +289,12 @@ export function CustomizePanel() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-4">
-          <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="wallpaper"><ImageIcon className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="element"><Palette className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="widgets"><Plus className="h-4 w-4" /></TabsTrigger>
-            <TabsTrigger value="sections"><Heading className="h-4 w-4" /></TabsTrigger>
+          <TabsList className="grid grid-cols-5 w-full">
+            <TabsTrigger value="wallpaper" title="Wallpaper"><ImageIcon className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="element" title="Element"><Palette className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="layers" title="Layers"><Layers className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="widgets" title="Widgets"><Plus className="h-4 w-4" /></TabsTrigger>
+            <TabsTrigger value="sections" title="Sections"><Heading className="h-4 w-4" /></TabsTrigger>
           </TabsList>
 
           {/* WALLPAPER */}
@@ -375,6 +376,11 @@ export function CustomizePanel() {
           {/* ELEMENT COLORS */}
           <TabsContent value="element" className="mt-4">
             <ElementEditor />
+          </TabsContent>
+
+          {/* LAYERS */}
+          <TabsContent value="layers" className="mt-4">
+            <LayersPanel />
           </TabsContent>
 
           {/* WIDGETS */}
@@ -574,6 +580,198 @@ function SectionsEditor() {
       </p>
     </div>
   );
+}
+
+// ============ Layers Panel (Canva-style) ============
+type LayerRow = {
+  key: string;          // themeable key OR "wallpaper" OR "auto:..." selector key
+  label: string;        // friendly label
+  rect?: DOMRect;       // for ordering top-down
+  z: number;            // current z-index from store (0 if none)
+  isVirtual?: boolean;  // wallpaper
+};
+
+function LayersPanel() {
+  const { selectedElement, setSelectedElement, get, mutate, panelOpen } = useTheme();
+  const [rows, setRows] = useState<LayerRow[]>([]);
+
+  const readZ = (key: string): number => {
+    const cur = get("element", `${key}|zindex`);
+    const v = parseInt((cur.color || "").replace("zindex:", ""), 10);
+    return Number.isFinite(v) ? v : 0;
+  };
+
+  // Scan the page for themeable elements + wallpaper. Re-scan on DOM mutations.
+  useEffect(() => {
+    if (!panelOpen) return;
+    const scan = () => {
+      const seen = new Map<string, LayerRow>();
+      // Wallpaper as a virtual top-of-list entry
+      seen.set("wallpaper", {
+        key: "wallpaper",
+        label: "Wallpaper",
+        z: 0,
+        isVirtual: true,
+      });
+      // Named [data-themeable] elements
+      document.querySelectorAll<HTMLElement>("[data-themeable]").forEach(el => {
+        if (el.closest("[data-customize-ui]")) return;
+        const key = el.getAttribute("data-themeable") || "";
+        if (!key || seen.has(key)) return;
+        seen.set(key, {
+          key,
+          label: prettifyLabel(key),
+          rect: el.getBoundingClientRect(),
+          z: readZ(key),
+        });
+      });
+      // Sort: wallpaper first, then by visual top position, then alpha
+      const arr = Array.from(seen.values()).sort((a, b) => {
+        if (a.isVirtual) return -1;
+        if (b.isVirtual) return 1;
+        const ay = a.rect?.top ?? 0;
+        const by = b.rect?.top ?? 0;
+        return ay - by || a.label.localeCompare(b.label);
+      });
+      setRows(prev => {
+        // shallow compare to avoid re-renders
+        if (prev.length === arr.length && prev.every((r, i) => r.key === arr[i].key && r.z === arr[i].z)) {
+          return prev;
+        }
+        return arr;
+      });
+    };
+    scan();
+    const obs = new MutationObserver(scan);
+    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-themeable"] });
+    const interval = window.setInterval(scan, 1500);
+    return () => { obs.disconnect(); window.clearInterval(interval); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [panelOpen, get]);
+
+  // Hover highlight overlay
+  const [hoverKey, setHoverKey] = useState<string | null>(null);
+  useEffect(() => {
+    const styleId = "tk-layer-hover";
+    let style = document.getElementById(styleId) as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement("style");
+      style.id = styleId;
+      document.head.appendChild(style);
+    }
+    if (!hoverKey || hoverKey === "wallpaper") {
+      style.textContent = "";
+      return;
+    }
+    const sel = hoverKey.startsWith("auto:")
+      ? hoverKey.slice(5)
+      : `[data-themeable="${cssEscapeSafe(hoverKey)}"]`;
+    style.textContent = `${sel}{outline:2px solid hsl(var(--ring)) !important;outline-offset:2px !important;}`;
+  }, [hoverKey]);
+
+  // Selection highlight (persistent while selected)
+  useEffect(() => {
+    const styleId = "tk-layer-selected";
+    let style = document.getElementById(styleId) as HTMLStyleElement | null;
+    if (!style) {
+      style = document.createElement("style");
+      style.id = styleId;
+      document.head.appendChild(style);
+    }
+    if (!selectedElement || selectedElement === "wallpaper") {
+      style.textContent = "";
+      return;
+    }
+    const sel = selectedElement.startsWith("auto:")
+      ? selectedElement.slice(5)
+      : `[data-themeable="${cssEscapeSafe(selectedElement)}"]`;
+    style.textContent = `${sel}{outline:2px dashed hsl(var(--primary)) !important;outline-offset:3px !important;}`;
+    return () => { if (style) style.textContent = ""; };
+  }, [selectedElement]);
+
+  const selectAndScroll = (key: string) => {
+    setSelectedElement(key);
+    if (key === "wallpaper") return;
+    const sel = key.startsWith("auto:") ? key.slice(5) : `[data-themeable="${cssEscapeSafe(key)}"]`;
+    try {
+      const el = document.querySelector<HTMLElement>(sel);
+      el?.scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch { /* invalid selector */ }
+  };
+
+  const setZ = (key: string, n: number) => {
+    if (key === "wallpaper") return;
+    mutate("element", `${key}|zindex`, { color: n === 0 ? null : `zindex:${n}` });
+  };
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground">
+        Click a row to select that element. Use ↑/↓ to reorder layers.
+      </p>
+      {rows.length === 0 ? (
+        <div className="text-xs text-muted-foreground text-center py-6">
+          No layered elements detected on this page.
+        </div>
+      ) : (
+        <div className="border border-border rounded-lg overflow-hidden divide-y divide-border">
+          {rows.map(row => {
+            const isSel = selectedElement === row.key;
+            return (
+              <div
+                key={row.key}
+                onMouseEnter={() => setHoverKey(row.key)}
+                onMouseLeave={() => setHoverKey(prev => prev === row.key ? null : prev)}
+                onClick={() => selectAndScroll(row.key)}
+                className={`flex items-center gap-2 px-2 py-1.5 cursor-pointer transition-colors ${
+                  isSel ? "bg-primary/10" : "hover:bg-muted/60"
+                }`}
+              >
+                <Layers className={`h-3.5 w-3.5 shrink-0 ${isSel ? "text-primary" : "text-muted-foreground"}`} />
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs font-medium truncate">{row.label}</div>
+                  <div className="text-[10px] text-muted-foreground truncate font-mono">
+                    {row.isVirtual ? "virtual" : row.key}
+                  </div>
+                </div>
+                {!row.isVirtual && (
+                  <>
+                    <span className="text-[10px] tabular-nums text-muted-foreground w-8 text-right">z:{row.z}</span>
+                    <Button
+                      size="icon" variant="ghost" className="h-6 w-6"
+                      onClick={(e) => { e.stopPropagation(); setZ(row.key, row.z + 1); }}
+                      title="Bring forward"
+                    >
+                      <ChevronUp className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="icon" variant="ghost" className="h-6 w-6"
+                      onClick={(e) => { e.stopPropagation(); setZ(row.key, row.z - 1); }}
+                      title="Send backward"
+                    >
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </Button>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+      <p className="text-[11px] text-muted-foreground text-center pt-2">
+        For finer control of any element, switch to the <span className="font-medium">Element</span> tab.
+      </p>
+    </div>
+  );
+}
+
+function prettifyLabel(key: string): string {
+  // "home.tile.notes.title" -> "home › tile › notes › title"
+  return key.split(".").join(" › ");
+}
+
+function cssEscapeSafe(s: string): string {
+  return (typeof CSS !== "undefined" && CSS.escape) ? CSS.escape(s) : s.replace(/[^\w-]/g, "\\$&");
 }
 
 // ------- helpers -------
