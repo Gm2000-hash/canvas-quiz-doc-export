@@ -167,6 +167,26 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return () => obs.disconnect();
   }, [tc.all, pageScopeKey]);
 
+  // Paint a [data-tk-selected] marker on the currently selected element so
+  // CSS can give it a persistent highlight (and clear it from any old one).
+  useEffect(() => {
+    document.querySelectorAll("[data-tk-selected]").forEach(el => {
+      el.removeAttribute("data-tk-selected");
+    });
+    if (!selectedElement) return;
+    const apply = () => {
+      const el = document.querySelector(`[data-themeable="${CSS.escape(selectedElement)}"]`);
+      if (el) el.setAttribute("data-tk-selected", "true");
+    };
+    apply();
+    // Re-apply if React re-renders and strips the attribute
+    const obs = new MutationObserver(() => {
+      if (!document.querySelector("[data-tk-selected]")) apply();
+    });
+    obs.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ["data-themeable"] });
+    return () => obs.disconnect();
+  }, [selectedElement]);
+
   // Resolve wallpaper signed URL cache
   const [urlCache, setUrlCache] = useState<Record<string, string>>({});
   const publicUrl = async (path: string | null | undefined): Promise<string | null> => {
