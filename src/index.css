@@ -585,11 +585,40 @@ body.wp-host::before { display: none !important; content: none !important; }
     background-color: hsl(0 0% 100%) !important;
     border-color: hsl(0 0% 92%) !important;
   }
-  /* The single allowed color on the page */
+  /* PRIMARY accent — coral */
   .bento-tile--coral {
-    background-color: #FF6B47 !important;
+    background-color: hsl(var(--brand-coral)) !important;
     color: #ffffff !important;
-    border-color: #FF6B47 !important;
+    border-color: hsl(var(--brand-coral)) !important;
   }
   .bento-tile--coral * { color: #ffffff !important; }
+
+  /* Soft pastel hero washes — Wix template's signature gradients */
+  .bento-tile--lilac {
+    background-image: linear-gradient(135deg,
+      hsl(var(--brand-lilac)) 0%,
+      hsl(var(--brand-peach)) 100%) !important;
+    border-color: transparent !important;
+    color: hsl(var(--brand-ink)) !important;
+  }
+  .bento-tile--peach {
+    background-image: linear-gradient(135deg,
+      hsl(var(--brand-peach)) 0%,
+      hsl(var(--brand-lilac)) 100%) !important;
+    border-color: transparent !important;
+    color: hsl(var(--brand-ink)) !important;
+  }
+  .bento-tile--sky {
+    background-image: linear-gradient(135deg,
+      hsl(var(--brand-sky)) 0%,
+      hsl(var(--brand-mint)) 100%) !important;
+    border-color: transparent !important;
+    color: hsl(var(--brand-ink)) !important;
+  }
+
+  /* Brand text & background utilities (bypass the hue-lockdown
+     because they're not bg-{hue}- prefixed) */
+  .text-brand-coral { color: hsl(var(--brand-coral)) !important; }
+  .bg-brand-coral   { background-color: hsl(var(--brand-coral)) !important; color: #fff !important; }
+  .ring-brand-coral { --tw-ring-color: hsl(var(--brand-coral)) !important; }
 }
