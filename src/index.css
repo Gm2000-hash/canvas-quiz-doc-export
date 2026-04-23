@@ -5,82 +5,84 @@
 
 @layer base {
   :root {
-    /* Tropical palette — sourced from PickyGene Procreate "Tropical" set */
-    --background: 170 65% 88%;        /* aqua mist */
+    /* MONOCHROME baseline — black/white/grey only.
+       All semantic tokens map to neutral greyscale so no component
+       can introduce color through normal token usage. */
+    --background: 0 0% 100%;
     --foreground: 0 0% 0%;
 
-    --card: 8 95% 82%;                /* sunkist coral */
+    --card: 0 0% 100%;
     --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 0%;
 
-    --primary: 170 80% 38%;           /* tropical turquoise */
+    --primary: 0 0% 0%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 25 95% 65%;          /* tangerine */
+    --secondary: 0 0% 96%;
     --secondary-foreground: 0 0% 0%;
 
-    --muted: 170 50% 86%;             /* pale lagoon */
-    --muted-foreground: 200 35% 20%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 32%;
 
-    --accent: 200 90% 50%;            /* ocean blue */
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 90%;
+    --accent-foreground: 0 0% 0%;
 
-    --destructive: 8 78% 55%;         /* coral red */
+    --destructive: 0 0% 0%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 175 70% 28%;            /* deep teal — crisp outlines */
-    --input: 175 55% 35%;
-    --ring: 200 95% 40%;
+    --border: 0 0% 90%;
+    --input: 0 0% 83%;
+    --ring: 0 0% 50%;
 
     --radius: 0.75rem;
 
-    --sidebar-background: 150 55% 85%; /* mint green */
+    --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 0 0% 0%;
-    --sidebar-primary: 160 55% 32%;    /* deep mint */
+    --sidebar-primary: 0 0% 0%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 150 45% 78%;
+    --sidebar-accent: 0 0% 94%;
     --sidebar-accent-foreground: 0 0% 0%;
-    --sidebar-border: 150 35% 65%;
-    --sidebar-ring: 200 90% 50%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 0 0% 50%;
 
-    --success: 142 65% 38%;
+    --success: 0 0% 25%;
     --success-foreground: 0 0% 100%;
-    --warning: 36 95% 55%;
-    --warning-foreground: 0 0% 0%;
-    --info: 198 75% 50%;
+    --warning: 0 0% 25%;
+    --warning-foreground: 0 0% 100%;
+    --info: 0 0% 25%;
     --info-foreground: 0 0% 100%;
-    --chart-1: 170 80% 38%;           /* turquoise */
-    --chart-2: 200 90% 50%;           /* ocean blue */
-    --chart-3: 8 95% 70%;             /* coral */
-    --chart-4: 25 95% 60%;            /* tangerine */
-    --chart-5: 78 75% 50%;            /* lime */
-    --sidebar: 150 55% 85%;
+    --chart-1: 0 0% 15%;
+    --chart-2: 0 0% 35%;
+    --chart-3: 0 0% 55%;
+    --chart-4: 0 0% 70%;
+    --chart-5: 0 0% 82%;
+    --sidebar: 0 0% 98%;
 
-    /* Legacy accent palette — mapped to tropical accents */
-    --neon-pink: 350 90% 70%;
-    --neon-cyan: 185 80% 55%;
-    --neon-purple: 220 75% 55%;
-    --neon-orange: 25 95% 60%;
-    --neon-green: 145 60% 40%;
-    --neon-yellow: 45 95% 60%;
-    --page-green: 150 55% 88%;
-    --page-lime: 150 50% 90%;
-    --page-tangerine: 8 95% 85%;
+    /* Legacy "neon"/page tints — fully desaturated to greyscale */
+    --neon-pink: 0 0% 60%;
+    --neon-cyan: 0 0% 60%;
+    --neon-purple: 0 0% 60%;
+    --neon-orange: 0 0% 60%;
+    --neon-green: 0 0% 60%;
+    --neon-yellow: 0 0% 60%;
+    --page-green: 0 0% 96%;
+    --page-lime: 0 0% 96%;
+    --page-tangerine: 0 0% 96%;
 
-    --shadow-2xs: 0 1px 2px 0 hsl(158 50% 20% / 0.06);
-    --shadow-xs: 0 1px 3px 0 hsl(158 50% 20% / 0.08);
-    --shadow-sm: 0 1px 4px 0 hsl(158 50% 20% / 0.10), 0 1px 2px -1px hsl(158 50% 20% / 0.05);
-    --shadow: 0 2px 8px -2px hsl(158 50% 20% / 0.12), 0 1px 2px 0 hsl(158 50% 20% / 0.05);
-    --shadow-md: 0 4px 16px -4px hsl(158 50% 20% / 0.14), 0 2px 4px -2px hsl(158 50% 20% / 0.07);
-    --shadow-lg: 0 8px 24px -6px hsl(158 50% 20% / 0.16), 0 4px 8px -4px hsl(158 50% 20% / 0.06);
-    --shadow-xl: 0 16px 40px -12px hsl(158 50% 20% / 0.18), 0 4px 12px -4px hsl(158 50% 20% / 0.06);
-    --shadow-2xl: 0 24px 48px -16px hsl(158 50% 20% / 0.22);
+    --shadow-2xs: 0 1px 2px 0 hsl(0 0% 0% / 0.04);
+    --shadow-xs: 0 1px 3px 0 hsl(0 0% 0% / 0.06);
+    --shadow-sm: 0 1px 4px 0 hsl(0 0% 0% / 0.08), 0 1px 2px -1px hsl(0 0% 0% / 0.04);
+    --shadow: 0 2px 8px -2px hsl(0 0% 0% / 0.10), 0 1px 2px 0 hsl(0 0% 0% / 0.04);
+    --shadow-md: 0 4px 16px -4px hsl(0 0% 0% / 0.12), 0 2px 4px -2px hsl(0 0% 0% / 0.06);
+    --shadow-lg: 0 8px 24px -6px hsl(0 0% 0% / 0.14), 0 4px 8px -4px hsl(0 0% 0% / 0.05);
+    --shadow-xl: 0 16px 40px -12px hsl(0 0% 0% / 0.16), 0 4px 12px -4px hsl(0 0% 0% / 0.05);
+    --shadow-2xl: 0 24px 48px -16px hsl(0 0% 0% / 0.20);
     --tracking-normal: -0.011em;
     --spacing: 0.25rem;
 
-    /* Wallpaper system — set by ThemeProvider per-scope */
+    /* Wallpaper system disabled in monochrome mode */
     --wp-image: none;
     --wp-blur: 0px;
     --wp-brightness: 1;
@@ -157,19 +159,12 @@
   h1 { letter-spacing: -0.02em; }
   h2, h3 { letter-spacing: -0.015em; }
 
-  /* Force all text to fully-opaque black for maximum readability */
-  body, body * {
-    color: hsl(0 0% 0%) !important;
-    opacity: 1;
-  }
-  /* …except elements sitting on dark/colored fills keep their light text */
-  [class*="bg-primary"]:not([class*="bg-primary/"]),
-  [class*="bg-primary"]:not([class*="bg-primary/"]) *,
-  [class*="bg-accent"]:not([class*="bg-accent/"]),
-  [class*="bg-accent"]:not([class*="bg-accent/"]) *,
-  [class*="bg-destructive"], [class*="bg-destructive"] *,
-  [class*="bg-foreground"], [class*="bg-foreground"] *,
-  [class*="bg-sidebar-primary"], [class*="bg-sidebar-primary"] * {
+  /* Elements sitting on dark fills get white text so they remain legible
+     (the monochrome --primary token is solid black). */
+  .bg-primary, .bg-primary *,
+  .bg-foreground, .bg-foreground *,
+  .bg-destructive, .bg-destructive *,
+  .bg-sidebar-primary, .bg-sidebar-primary * {
     color: hsl(var(--primary-foreground)) !important;
   }
 }
@@ -446,298 +441,70 @@ body.tk-edit-mode .tk-widget {
 .tiptap .tk-callout[data-tone="danger"]  { background: hsl(0 75% 55% / 0.12); border-color: hsl(0 75% 50% / 0.4); }
 
 /* ==========================================================
-   GLOBAL DE-TRANSLUCENCY OVERRIDE
-   Force every card / header / dialog / sheet / sidebar / popover
-   to be fully opaque. Strips backdrop-blur app-wide.
-   Excludes: drag overlays, edit-mode handles, PDF text layer,
-   intentional decorative tints (callouts), and modal scrims.
+   MONOCHROME LOCKDOWN
+   The semantic tokens above are already neutral greyscale, so
+   most components render correctly without overrides. This
+   block kills only the things tokens can't reach: backdrop
+   blur, inline tailwind color utilities (bg-blue-500, etc.),
+   gradients, and any saved wallpaper image.
    ========================================================== */
 
-/* Kill all backdrop blur globally — it's the #1 cause of "washed out" feel */
+/* No backdrop blur anywhere — primary cause of "washed out" feel */
 *, *::before, *::after {
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
 
-/* Force opaque solid fills on common Tailwind translucent bg patterns
-   Selectors target classes ending in /<digit> (e.g. bg-card/80, bg-background/60). */
-[class*="bg-background/"],
-[class*="bg-card/"],
-[class*="bg-popover/"],
-[class*="bg-muted/"],
-[class*="bg-secondary/"],
-[class*="bg-sidebar/"],
-[class*="bg-sidebar-background/"],
-[class*="bg-white/"] {
-  background-color: hsl(var(--card)) !important;
-}
-
-/* Sidebar variants stay on sidebar fill */
-[data-sidebar] [class*="bg-sidebar/"],
-[data-sidebar] [class*="bg-sidebar-background/"],
-[data-sidebar] [class*="bg-background/"],
-aside [class*="bg-background/"] {
-  background-color: hsl(var(--sidebar-background)) !important;
-}
-
-/* Headers & sticky bars */
-header[class*="bg-card/"],
-header[class*="bg-background/"],
-header.glass-header,
-nav[class*="bg-card/"],
-nav[class*="bg-background/"] {
-  background-color: hsl(var(--card)) !important;
-}
-
-/* Radix dialog/sheet/popover/dropdown content panels — opaque */
-[data-radix-popper-content-wrapper] > *,
-[role="dialog"]:not([data-radix-dialog-overlay]),
-[role="menu"],
-[role="listbox"],
-[role="tooltip"] {
-  background-color: hsl(var(--popover)) !important;
-}
-
-/* Bubble glass — already updated above, lock in */
-.bubble-glass, .bubble-glass-soft {
-  background: hsl(var(--card)) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-
-/* Allow modal scrims, drag-handle ghosts, edit-mode handles, callouts,
-   PDF text layer, and Tiptap callouts to keep their alpha */
-[data-radix-dialog-overlay],
-[data-radix-alert-dialog-overlay],
-.tk-canvas-widget,
-.pdf-links .react-pdf__Page__textContent,
-.pdf-links .textLayer,
-.tiptap .tk-callout,
-body.tk-edit-mode [data-themeable]::after,
-body.tk-edit-mode [data-tk-selected]::before {
-  background-color: revert !important;
-}
-
-/* ==========================================================
-   CUSTOMIZE PANEL — guaranteed opaque + high-contrast text.
-   The right-hand sheet sits over the tie-dye background, so
-   force a solid card fill and pure-black text on every child
-   (inputs, labels, tab triggers, slider numbers, etc.).
-   ========================================================== */
-[data-tk-ignore="true"],
-[data-tk-ignore="true"] [role="tablist"],
-[data-tk-ignore="true"] [role="tabpanel"],
-[data-tk-ignore="true"] .bubble-glass,
-[data-tk-ignore="true"] .bubble-glass-soft {
-  background-color: hsl(var(--card)) !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
-[data-tk-ignore="true"],
-[data-tk-ignore="true"] *:not(svg):not(path) {
-  color: hsl(0 0% 0%) !important;
-  opacity: 1 !important;
-}
-/* Keep contrast on filled buttons/badges inside the panel */
-[data-tk-ignore="true"] [class*="bg-primary"]:not([class*="bg-primary/"]),
-[data-tk-ignore="true"] [class*="bg-primary"]:not([class*="bg-primary/"]) *,
-[data-tk-ignore="true"] [class*="bg-accent"]:not([class*="bg-accent/"]),
-[data-tk-ignore="true"] [class*="bg-accent"]:not([class*="bg-accent/"]) *,
-[data-tk-ignore="true"] [class*="bg-destructive"],
-[data-tk-ignore="true"] [class*="bg-destructive"] *,
-[data-tk-ignore="true"] [data-state="active"][role="tab"],
-[data-tk-ignore="true"] [data-state="active"][role="tab"] * {
-  color: hsl(var(--primary-foreground)) !important;
-}
-/* Muted helper text — keep readable but slightly softer */
-[data-tk-ignore="true"] .text-muted-foreground {
-  color: hsl(0 0% 25%) !important;
-}
-/* Inputs/textareas inside the panel — solid white surface */
-[data-tk-ignore="true"] input:not([type="color"]):not([type="checkbox"]):not([type="radio"]),
-[data-tk-ignore="true"] textarea,
-[data-tk-ignore="true"] [role="combobox"] {
-  background-color: hsl(0 0% 100%) !important;
-  color: hsl(0 0% 0%) !important;
-}
-
-/* ==========================================================
-   MONOCHROME LOCKDOWN — black text on white, EVERYWHERE.
-   Overrides any saved per-element customizations, wallpapers,
-   tints, gradients, and colored backgrounds.
-   ========================================================== */
-
 /* Kill any saved wallpaper image */
-html, body, body.wp-host {
-  --wp-image: none !important;
-  background-image: none !important;
-}
+html, body, body.wp-host { background-image: none !important; }
 body.wp-host::before { display: none !important; content: none !important; }
 
-/* Pure-white app backdrop */
-html, body, #root, main {
-  background-color: #ffffff !important;
+/* Strip every Tailwind hue utility (bg-blue-500, text-rose-700,
+   border-amber-500/30, etc.). Excludes anything that's actually
+   neutral: white/black/transparent/current/inherit. We match the
+   hue palettes Tailwind ships with. */
+[class*="bg-slate-"], [class*="bg-gray-"], [class*="bg-zinc-"],
+[class*="bg-neutral-"], [class*="bg-stone-"], [class*="bg-red-"],
+[class*="bg-orange-"], [class*="bg-amber-"], [class*="bg-yellow-"],
+[class*="bg-lime-"], [class*="bg-green-"], [class*="bg-emerald-"],
+[class*="bg-teal-"], [class*="bg-cyan-"], [class*="bg-sky-"],
+[class*="bg-blue-"], [class*="bg-indigo-"], [class*="bg-violet-"],
+[class*="bg-purple-"], [class*="bg-fuchsia-"], [class*="bg-pink-"],
+[class*="bg-rose-"] {
+  background-color: hsl(var(--muted)) !important;
   background-image: none !important;
 }
-
-/* Black text everywhere */
-body, body * {
-  color: #000000 !important;
-  text-shadow: none !important;
+[class*="text-slate-"], [class*="text-gray-"], [class*="text-zinc-"],
+[class*="text-neutral-"], [class*="text-stone-"], [class*="text-red-"],
+[class*="text-orange-"], [class*="text-amber-"], [class*="text-yellow-"],
+[class*="text-lime-"], [class*="text-green-"], [class*="text-emerald-"],
+[class*="text-teal-"], [class*="text-cyan-"], [class*="text-sky-"],
+[class*="text-blue-"], [class*="text-indigo-"], [class*="text-violet-"],
+[class*="text-purple-"], [class*="text-fuchsia-"], [class*="text-pink-"],
+[class*="text-rose-"] {
+  color: hsl(var(--foreground)) !important;
+}
+[class*="border-slate-"], [class*="border-gray-"], [class*="border-zinc-"],
+[class*="border-neutral-"], [class*="border-stone-"], [class*="border-red-"],
+[class*="border-orange-"], [class*="border-amber-"], [class*="border-yellow-"],
+[class*="border-lime-"], [class*="border-green-"], [class*="border-emerald-"],
+[class*="border-teal-"], [class*="border-cyan-"], [class*="border-sky-"],
+[class*="border-blue-"], [class*="border-indigo-"], [class*="border-violet-"],
+[class*="border-purple-"], [class*="border-fuchsia-"], [class*="border-pink-"],
+[class*="border-rose-"] {
+  border-color: hsl(var(--border)) !important;
 }
 
-/* Tile/card surfaces -> white */
-.bubble-glass, .bubble-glass-soft,
-[class*="bubble-tint-"],
-[class*="gradient-card-"],
-.gradient-banner,
-[class*="bg-card"], [class*="bg-popover"], [class*="bg-muted"],
-[class*="bg-secondary"], [class*="bg-accent"]:not([class*="bg-accent-foreground"]),
-[class*="bg-background"], [class*="bg-white"] {
-  background-color: #ffffff !important;
-  background-image: none !important;
-}
+/* Strip neon legacy classes too */
+[class*="bg-neon-"]   { background-color: hsl(var(--muted)) !important; }
+[class*="text-neon-"] { color: hsl(var(--foreground)) !important; }
 
-/* Solid dark surfaces stay dark with white text.
-   Use exact-token classes to avoid matching *-foreground variants. */
-.bg-primary, .bg-foreground, .bg-destructive, .bg-sidebar-primary {
-  background-color: #000000 !important;
-  background-image: none !important;
-  color: #ffffff !important;
-}
-.bg-primary *, .bg-foreground *, .bg-destructive *, .bg-sidebar-primary * {
-  color: #ffffff !important;
-}
-
-/* *-foreground tokens are explicitly LIGHT surfaces — keep them white */
-.bg-primary-foreground, .bg-secondary-foreground,
-.bg-card-foreground, .bg-popover-foreground,
-.bg-muted-foreground, .bg-accent-foreground,
-.bg-destructive-foreground, .bg-sidebar-foreground,
-.bg-sidebar-primary-foreground, .bg-sidebar-accent-foreground {
-  background-color: #ffffff !important;
-  background-image: none !important;
-  color: #000000 !important;
-}
-
-/* Decorative blobs / opacity-suffixed colored bgs (e.g. bg-primary/10,
-   bg-neon-yellow/8, bg-accent/8) — invisible */
-[class*="bg-primary/"], [class*="bg-accent/"], [class*="bg-destructive/"],
-[class*="bg-foreground/"], [class*="bg-secondary/"],
-[class*="bg-neon-pink"], [class*="bg-neon-cyan"], [class*="bg-neon-purple"],
-[class*="bg-neon-orange"], [class*="bg-neon-green"], [class*="bg-neon-yellow"] {
-  background-color: transparent !important;
-  background-image: none !important;
-  opacity: 0 !important;
-}
-
-/* Sidebar: light grey panel, black text */
-aside, [data-sidebar="sidebar"] {
-  background-color: #fafafa !important;
-  background-image: none !important;
-}
-
-/* Borders: neutral grey */
-*, *::before, *::after { border-color: #e5e5e5 !important; }
-
-/* Inputs / form controls — white surface, black text, grey border */
-input:not([type="color"]):not([type="checkbox"]):not([type="radio"]),
-textarea, select, [role="combobox"] {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  border-color: #d4d4d4 !important;
-}
-
-/* Muted helper text — medium grey, still readable */
-.text-muted-foreground, [class*="text-muted-foreground"] {
-  color: #525252 !important;
-}
-
-/* Modal/popover surfaces white */
-[role="dialog"]:not([data-radix-dialog-overlay]),
-[role="menu"], [role="listbox"], [role="tooltip"],
-[data-radix-popper-content-wrapper] > * {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-}
-
-/* Modal scrim stays dark transparent */
-[data-radix-dialog-overlay], [data-radix-alert-dialog-overlay] {
-  background-color: rgba(0, 0, 0, 0.5) !important;
-}
-
-/* Links: black, hover underlines */
-a { color: #000000 !important; text-decoration-color: #000000 !important; }
-a:hover { text-decoration: underline !important; }
-
-/* Sidebar menu items — kill mint/green active state */
-[data-sidebar="menu-button"],
-[data-sidebar="menu-button"] *,
-[data-sidebar="menu-sub-button"],
-[data-sidebar="menu-sub-button"] *,
-[data-sidebar="group-label"] {
-  background-color: transparent !important;
-  background-image: none !important;
-  color: #000000 !important;
-}
-[data-sidebar="menu-button"][data-active="true"],
-[data-sidebar="menu-button"][aria-current="page"],
-[data-sidebar="menu-button"]:hover,
-[data-sidebar="menu-sub-button"][data-active="true"],
-[data-sidebar="menu-sub-button"]:hover {
-  background-color: #f0f0f0 !important;
-  color: #000000 !important;
-}
-
-/* Header search button + kbd chip */
-header button, header kbd {
-  background-color: #ffffff !important;
-  color: #000000 !important;
-  border-color: #e5e5e5 !important;
-}
-
-/* Customize FAB (bottom-right) — neutral grey, no peach */
-button[data-tk-ignore="true"],
-button[title*="ustomize" i],
-button[aria-label*="ustomize" i] {
-  background-color: #f5f5f5 !important;
-  background-image: none !important;
-  color: #000000 !important;
-  border: 1px solid #e5e5e5 !important;
-}
-button[data-tk-ignore="true"] svg,
-button[title*="ustomize" i] svg,
-button[aria-label*="ustomize" i] svg {
-  color: #000000 !important;
-  filter: none !important;
-}
-
-/* Strip color from decorative sketch images / icon backplates */
-img[src*="sketch-"],
-[data-themeable*=".icon"] img {
-  filter: grayscale(1) contrast(1.05) !important;
-}
-
-/* Sidebar / header SVGs — desaturate any explicit-fill icons */
-[data-sidebar] svg, header svg {
-  filter: grayscale(1) !important;
-}
-
-/* Belt-and-suspenders: any inline gradient/hsl/rgb backgrounds */
+/* Inline gradient/hsl/rgb backgrounds — neutralize */
 [style*="gradient"], [style*="hsl("], [style*="rgb("] {
   background-image: none !important;
-  background-color: #ffffff !important;
 }
 
-/* Catch-all: any nav containing a Breadcrumbs row -> white */
-nav:has(> a[aria-label="Home"]),
-nav:has(> a[aria-label="Home"]) * {
-  background-color: transparent !important;
-  background-image: none !important;
-  color: #000000 !important;
-}
-/* And the parent wrapper that hosts the breadcrumb bar */
-:has(> nav > a[aria-label="Home"]) {
-  background-color: #ffffff !important;
-  background-image: none !important;
+/* Modal scrim stays a translucent black */
+[data-radix-dialog-overlay], [data-radix-alert-dialog-overlay] {
+  background-color: rgba(0, 0, 0, 0.5) !important;
 }
