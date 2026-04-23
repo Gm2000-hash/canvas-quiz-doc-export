@@ -156,6 +156,22 @@
   html { scroll-behavior: smooth; -webkit-overflow-scrolling: touch; font-size: 16px; }
   h1 { letter-spacing: -0.02em; }
   h2, h3 { letter-spacing: -0.015em; }
+
+  /* Force all text to fully-opaque black for maximum readability */
+  body, body * {
+    color: hsl(0 0% 0%) !important;
+    opacity: 1;
+  }
+  /* …except elements sitting on dark/colored fills keep their light text */
+  [class*="bg-primary"]:not([class*="bg-primary/"]),
+  [class*="bg-primary"]:not([class*="bg-primary/"]) *,
+  [class*="bg-accent"]:not([class*="bg-accent/"]),
+  [class*="bg-accent"]:not([class*="bg-accent/"]) *,
+  [class*="bg-destructive"], [class*="bg-destructive"] *,
+  [class*="bg-foreground"], [class*="bg-foreground"] *,
+  [class*="bg-sidebar-primary"], [class*="bg-sidebar-primary"] * {
+    color: hsl(var(--primary-foreground)) !important;
+  }
 }
 
 /* ========== Wallpaper layer ========== */
