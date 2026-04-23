@@ -227,6 +227,15 @@ function FloatingWidget({ w }: { w: CustomWidget }) {
             >
               <RotateCw className="h-3 w-3" />
             </Button>
+            {w.type === "image" && w.content && (
+              <Button
+                size="icon" variant="ghost" className="h-6 w-6"
+                onClick={() => setCropOpen(true)}
+                title="Crop"
+              >
+                <Crop className="h-3 w-3" />
+              </Button>
+            )}
             <Button
               size="icon" variant="ghost" className="h-6 w-6 text-destructive hover:text-destructive"
               onClick={() => deleteWidget(w.id)}
