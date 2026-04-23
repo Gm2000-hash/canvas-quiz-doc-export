@@ -1,8 +1,9 @@
 import { useTheme } from "./ThemeProvider";
 import { Button } from "@/components/ui/button";
-import { X, Lock, Unlock, RotateCw } from "lucide-react";
+import { X, Lock, Unlock, RotateCw, Crop } from "lucide-react";
 import type { CustomWidget } from "@/lib/customization-types";
 import { useEffect, useRef, useState } from "react";
+import { ImageCropDialog } from "./ImageCropDialog";
 
 function WidgetView({ w }: { w: CustomWidget }) {
   const style: React.CSSProperties = {
