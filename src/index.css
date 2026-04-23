@@ -174,37 +174,7 @@
   }
 }
 
-/* ==========================================================
-   TILE/CONTENT SHARPENING — applies only inside <main> so the
-   sidebar is left untouched. Inky text, heavier headings, and
-   crisp 1.5px deep-teal borders on cards & tiles.
-   ========================================================== */
-@layer base {
-  main, main * {
-    color: hsl(220 45% 8%) !important;
-    text-shadow: 0 0 0.5px hsl(220 45% 8% / 0.35);
-  }
-  main h1, main h2, main h3, main h4, main h5, main h6 {
-    font-weight: 800 !important;
-    letter-spacing: -0.018em;
-  }
-  /* Re-assert light text on filled buttons/badges inside main */
-  main [class*="bg-primary"]:not([class*="bg-primary/"]),
-  main [class*="bg-primary"]:not([class*="bg-primary/"]) *,
-  main [class*="bg-accent"]:not([class*="bg-accent/"]),
-  main [class*="bg-accent"]:not([class*="bg-accent/"]) *,
-  main [class*="bg-destructive"], main [class*="bg-destructive"] * {
-    color: hsl(var(--primary-foreground)) !important;
-    text-shadow: none !important;
-  }
-  /* Crisp deep-teal borders on tiles & cards inside main */
-  main .bubble-glass,
-  main .bubble-glass-soft,
-  main [class*="border"]:not([class*="border-0"]):not([class*="border-transparent"]) {
-    border-color: hsl(175 70% 28%) !important;
-    border-width: 1.5px;
-  }
-}
+/* Tile/content sharpening removed — neutral theme handles contrast naturally. */
 
 /* ========== Wallpaper layer ========== */
 .wp-host { position: relative; isolation: isolate; }
@@ -226,47 +196,8 @@
   transition: filter 200ms ease, opacity 200ms ease;
 }
 
-/* ========== Tie-dye swirls ==========
-   Layered radial gradients evoke hand-dyed tropical fabric.
-   Sits behind page content; overlay is fixed so it follows scroll. */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -2;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 12% 18%, hsl(8 95% 72% / 0.55) 0%, transparent 35%),
-    radial-gradient(circle at 88% 22%, hsl(170 80% 55% / 0.55) 0%, transparent 38%),
-    radial-gradient(circle at 78% 82%, hsl(200 90% 60% / 0.50) 0%, transparent 40%),
-    radial-gradient(circle at 18% 86%, hsl(150 60% 60% / 0.50) 0%, transparent 38%),
-    radial-gradient(circle at 50% 50%, hsl(8 95% 68% / 0.40) 0%, transparent 30%),
-    conic-gradient(from 30deg at 50% 50%,
-      hsl(170 80% 55% / 0.18),
-      hsl(200 90% 60% / 0.18),
-      hsl(220 75% 55% / 0.18),
-      hsl(150 60% 55% / 0.18),
-      hsl(45 95% 65% / 0.18),
-      hsl(25 95% 65% / 0.18),
-      hsl(8 95% 70% / 0.18),
-      hsl(170 80% 55% / 0.18));
-  background-color: hsl(var(--background));
-  background-blend-mode: screen, screen, screen, screen, screen, normal;
-  filter: blur(40px) saturate(1.2);
-}
-/* Subtle swirling concentric rings — the "tie-dye" signature */
-body::after {
-  content: "";
-  position: fixed;
-  inset: -10%;
-  z-index: -1;
-  pointer-events: none;
-  background:
-    repeating-radial-gradient(circle at 22% 28%, transparent 0 38px, hsl(170 80% 55% / 0.06) 38px 42px),
-    repeating-radial-gradient(circle at 78% 72%, transparent 0 46px, hsl(8 95% 70% / 0.06) 46px 50px),
-    repeating-radial-gradient(circle at 65% 18%, transparent 0 30px, hsl(200 90% 60% / 0.05) 30px 34px);
-  mix-blend-mode: multiply;
-}
+/* ========== Tie-dye swirls — REMOVED for neutral theme ========== */
+body::before, body::after { content: none !important; display: none !important; }
 
 /* ========== Edit-mode handles ========== */
 [data-themeable] { position: relative; }

@@ -180,25 +180,17 @@ export default function Home() {
 
   return (
     <div className="py-8 px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto w-full space-y-8 text-card-foreground">
-        {/* Welcome Banner */}
-        <PageBanner
-          greeting={`Good ${new Date().getHours() < 12 ? "morning" : new Date().getHours() < 17 ? "afternoon" : "evening"}${profile?.display_name ? `, ${profile.display_name}` : ""}`}
-          subtitle={new Date().toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric" })}
-        >
-          {/* Today's Lessons */}
-          {todayLessons.length > 0 ? (
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="text-xs font-semibold text-primary uppercase tracking-wider">Today's Lessons:</span>
-              {todayLessons.map(l => (
-                <Badge key={l.id} variant="secondary" className="rounded-lg text-xs">
-                  {l.title}
-                </Badge>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs italic text-sidebar-foreground">No lessons scheduled for today</p>
-          )}
-        </PageBanner>
+        {/* Today's Lessons (banner removed) */}
+        {todayLessons.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Today's Lessons:</span>
+            {todayLessons.map(l => (
+              <Badge key={l.id} variant="secondary" className="rounded-lg text-xs">
+                {l.title}
+              </Badge>
+            ))}
+          </div>
+        )}
 
         {/* Draggable Dashboard Cards */}
         <div>
