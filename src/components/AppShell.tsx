@@ -8,7 +8,6 @@ import { useEffect } from "react";
 import { ThemeProvider } from "@/components/customize/ThemeProvider";
 import { CustomizeButton } from "@/components/customize/CustomizeButton";
 import { CustomizePanel } from "@/components/customize/CustomizePanel";
-import { PageWidgets } from "@/components/customize/WidgetRenderer";
 import { CanvasOverlay } from "@/components/customize/CanvasOverlay";
 
 interface AppShellProps {
@@ -54,7 +53,6 @@ export function AppShell({ children }: AppShellProps) {
               </Button>
             </header>
             <main className="flex-1 min-w-0 overflow-x-hidden relative" data-themeable="app.main">
-              <PageWidgets />
               {children}
               <CanvasOverlay />
             </main>

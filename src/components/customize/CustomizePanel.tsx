@@ -30,7 +30,7 @@ export function CustomizePanel() {
 
   const page = get("page", pageScopeKey);
   const global = get("global", "global");
-  const wpScope: "page" | "global" = page.wallpaper_path ? "page" : "global";
+  const wpScope: "page" | "global" = page.wallpaper_path ? "page" : global.wallpaper_path ? "global" : "page";
   const activeWp = wpScope === "page" ? page : global;
 
   const [wpUrl, setWpUrl] = useState<string | null>(null);
@@ -226,7 +226,7 @@ export function CustomizePanel() {
               <Button variant="outline" onClick={() => fileRef.current?.click()} disabled={uploading}>
                 {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload
               </Button>
-              <Button variant="outline" onClick={() => setWallpaperPath("page", null)}>
+              <Button variant="outline" onClick={() => setWallpaperPath(wpScope, null)}>
                 <Trash2 className="h-4 w-4" /> Clear
               </Button>
               <input

@@ -3,6 +3,7 @@ import { useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import type { CanvasElement } from "@/lib/canvas-types";
+import type { CustomWidget } from "@/lib/customization-types";
 
 const LOCAL_KEY = "tk-canvas-layouts-draft";
 
@@ -44,6 +45,38 @@ export function useCanvasLayout() {
     })();
     return () => { cancelled = true; };
   }, [user]);
+
+  useEffect(() => {
+    if (!user) return;
+    if (serverMap[scopeKey]?.length || draftMap[scopeKey]?.length) return;
+    let cancelled = false;
+
+    (async () => {
+      const { data, error } = await supabase
+        .from("theme_customizations")
+        .select("widgets")
+        .eq("user_id", user.id)
+        .eq("scope_type", "page")
+        .eq("scope_key", scopeKey)
+        .maybeSingle();
+
+      if (cancelled || error) return;
+      const legacyWidgets = ((data?.widgets as CustomWidget[] | null) || []).filter(Boolean);
+      if (legacyWidgets.length === 0) return;
+
+      const migrated = legacyWidgets.map((widget, index) => migrateLegacyWidget(widget, index));
+      setDraftMap(prev => {
+        if (prev[scopeKey]?.length) return prev;
+        const next = { ...prev, [scopeKey]: migrated };
+        saveDraft(next);
+        return next;
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, scopeKey, serverMap, draftMap]);
 
   // Merged: draft overrides server
   const elements: CanvasElement[] =
@@ -124,4 +157,41 @@ export function useCanvasLayout() {
     discardDraft,
     hasDraft,
   };
+}
+
+function migrateLegacyWidget(widget: CustomWidget, index: number): CanvasElement {
+  const base: CanvasElement = {
+    id: widget.id,
+    type: widget.type,
+    x: 10,
+    y: 8 + index * 18,
+    width: parseLegacyWidth(widget.width),
+    height: widget.type === "image" || widget.type === "embed" ? 28 : widget.type === "divider" ? 2 : widget.type === "spacer" ? Math.max(4, (widget.height || 24) / 8) : 10,
+    rotation: 0,
+    zIndex: index + 1,
+  };
+
+  switch (widget.type) {
+    case "image":
+      return { ...base, src: widget.content || "", bg: widget.bg, color: widget.color, opacity: 1 };
+    case "text":
+      return { ...base, content: widget.content || "", align: widget.align, color: widget.color, bg: widget.bg, fontSize: 16 };
+    case "heading":
+      return { ...base, content: widget.content || "Heading", level: widget.level || 2, align: widget.align, color: widget.color, bg: widget.bg, fontSize: 32, bold: true };
+    case "divider":
+      return { ...base, color: widget.color };
+    case "spacer":
+      return { ...base, bg: widget.bg, height_px: widget.height || 24 };
+    case "embed":
+      return { ...base, content: widget.content || "" };
+  }
+}
+
+function parseLegacyWidth(width?: string): number {
+  if (!width) return 40;
+  const pct = width.match(/^(\d+(?:\.\d+)?)%$/);
+  if (pct) return Number(pct[1]);
+  const px = width.match(/^(\d+(?:\.\d+)?)px$/);
+  if (px) return Math.min(90, Math.max(10, Number(px[1]) / 12));
+  return 40;
 }
