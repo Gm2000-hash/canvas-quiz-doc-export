@@ -107,7 +107,7 @@ serve(withLogging("standards-tagger", async (req) => {
       : buildIdahoPrompt(subject || 'ELA', grade || '6-8', standardsListText, keyTermsSection);
 
     const requestBody = {
-      model: resolveModel(body, "utility"),
+      model: resolveModel(body, "default"),
       messages: [
         { role: 'system', content: systemPrompt },
         { role: 'user', content: `Tag these quiz questions with standards:\n\n${questionList}` }
@@ -232,7 +232,9 @@ You may ONLY use standards from this exact list:
 - MS-PS1-1 through MS-PS4-3 (all Middle School Physical Science standards)
 ${keyTermsSection}
 RULES:
-- ONLY use standards from the MS- prefix list. Do NOT use any HS- (high school) standards.
+- ONLY use standards from the MS- prefix list. Do NOT use any HS- (high school) standards under any circumstances. If the only plausible match is a high-school level standard, return an empty array for that question.
+- The input may include answer choices after a \`CHOICES:\` marker — use them as PRIMARY evidence for the content topic, since they often contain the key vocabulary (e.g. "mitochondria", "tectonic plates", "Newton's law") that anchors the standard.
+- If the stem is generic (e.g. "Which of the following…", "All of the above…"), rely heavily on the CHOICES and the KEY TERMS list to infer the standard.
 - **KEYWORD MATCHING from the STANDARD'S LANGUAGE**: Pay close attention to the specific verbs and nouns used in each standard's description. Look for those same words or close synonyms in the content. For example:
   - MS-LS1-2 says "function of an organism" and "subcellular components" → match content mentioning organelles, cell parts, cell function.
   - MS-ESS2-4 says "cycling of water" → match content about water cycle, evaporation, condensation, precipitation.
