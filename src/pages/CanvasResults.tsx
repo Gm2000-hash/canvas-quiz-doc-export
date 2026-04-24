@@ -295,17 +295,21 @@ export default function CanvasResults() {
       if (untagged.length > 0) {
         setAiTagging(true);
         try {
-          const aiQuestions = untagged.map(m => ({
-            id: m.questionId,
-            question_text: m.questionText,
-          }));
+          const qById = new Map(questions.map(q => [q.id, q]));
+          const aiQuestions = untagged.map(m => {
+            const cq = qById.get(m.questionId);
+            return {
+              id: m.questionId,
+              question_text: cq ? buildTaggerText(cq) : m.questionText,
+            };
+          });
 
           // Use the unified standards tagger
           const tagMap = await tagQuestionsWithStandards(
             aiQuestions,
             framework,
-            framework === "idaho" ? tagSubject : undefined,
-            framework === "idaho" ? (grades[0] || undefined) : undefined,
+            framework === "idaho" ? tagSubject : "Science",
+            grades[0] || undefined,
           );
 
           for (const [, stds] of tagMap) {
