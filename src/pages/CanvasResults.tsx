@@ -786,7 +786,7 @@ export default function CanvasResults() {
                   <div key={m.questionId} className="py-3 first:pt-0 last:pb-0">
                     <div className="flex items-start gap-3">
                       <span className="text-xs text-muted-foreground font-mono mt-1 shrink-0">Q{i + 1}</span>
-                      <div className="flex-1 space-y-1.5">
+                      <div className="flex-1 space-y-1.5 min-w-0">
                         <p className="text-sm text-foreground line-clamp-2">{m.questionText}</p>
                         <StandardsPicker
                           standards={m.standards}
@@ -794,6 +794,18 @@ export default function CanvasResults() {
                           framework={framework}
                         />
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-primary"
+                        title="Re-tag this question with AI"
+                        onClick={() => handleRetagOne(m.questionId)}
+                        disabled={retaggingId === m.questionId || aiTagging}
+                      >
+                        {retaggingId === m.questionId
+                          ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          : <Sparkles className="h-3.5 w-3.5" />}
+                      </Button>
                     </div>
                   </div>
                 ))}
