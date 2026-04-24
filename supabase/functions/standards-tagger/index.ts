@@ -259,6 +259,8 @@ ${standardsList}
 ${keyTermsSection}
 RULES:
 - ONLY use standards from the list above. Do NOT invent standard codes.
+- The input may include answer choices after a \`CHOICES:\` marker — use them as PRIMARY evidence for the content topic.
+- If the stem is generic, rely heavily on the CHOICES and the KEY TERMS list to infer the standard.
 - **KEYWORD MATCHING from the STANDARD'S LANGUAGE**: Pay close attention to the specific verbs and nouns used in each standard's description. Look for those same words or close synonyms in the content. The standard's own language should be the PRIMARY basis for matching.
 - Use the KEY TERMS section above as additional strong hints for matching.
 - Try HARD to match every piece of content. Use inference from context clues, synonyms, and related concepts. Strip HTML tags mentally — focus on the actual content words.
