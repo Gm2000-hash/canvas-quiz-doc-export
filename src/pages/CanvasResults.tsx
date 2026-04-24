@@ -412,6 +412,35 @@ export default function CanvasResults() {
     setMappings(prev => prev.map(m => m.questionId === questionId ? { ...m, standards } : m));
   }, []);
 
+  // Re-tag a single question with the AI tagger.
+  const [retaggingId, setRetaggingId] = useState<number | null>(null);
+  const handleRetagOne = useCallback(async (questionId: number) => {
+    const m = mappings.find(x => x.questionId === questionId);
+    if (!m) return;
+    setRetaggingId(questionId);
+    try {
+      const cq = canvasQuestions.find(q => q.id === questionId);
+      const payload = [{ id: questionId, question_text: cq ? buildTaggerText(cq) : m.questionText }];
+      const tagMap = await tagQuestionsWithStandards(
+        payload,
+        framework,
+        framework === "idaho" ? tagSubject : "Science",
+        grades[0] || undefined,
+      );
+      const matched = tagMap.get(questionId) || [];
+      setMappings(prev => prev.map(x => x.questionId === questionId
+        ? { ...x, standards: matched.map(s => ({ code: s.code, desc: s.description, matched_terms: s.matched_terms })) }
+        : x));
+      if (matched.length === 0) toast.info("AI returned no matching standard.");
+      else toast.success(`Re-tagged with ${matched.length} standard${matched.length !== 1 ? 's' : ''}.`);
+    } catch (err: any) {
+      console.error("Single re-tag failed:", err);
+      toast.error("Re-tag failed. Try again shortly.");
+    } finally {
+      setRetaggingId(null);
+    }
+  }, [mappings, canvasQuestions, framework, tagSubject, grades]);
+
   // Build the question-to-standards map from current mappings
   const questionToStandards = useMemo(() => {
     const map = new Map<number, { code: string; desc: string }[]>();
