@@ -366,12 +366,16 @@ export default function CanvasResults() {
         return;
       }
 
-      const aiQuestions = toRetag.map(m => ({ id: m.questionId, question_text: m.questionText }));
+      const qById = new Map(canvasQuestions.map(q => [q.id, q]));
+      const aiQuestions = toRetag.map(m => {
+        const cq = qById.get(m.questionId);
+        return { id: m.questionId, question_text: cq ? buildTaggerText(cq) : m.questionText };
+      });
       const tagMap = await tagQuestionsWithStandards(
         aiQuestions,
         framework,
-        framework === "idaho" ? tagSubject : undefined,
-        framework === "idaho" ? (grades[0] || undefined) : undefined,
+        framework === "idaho" ? tagSubject : "Science",
+        grades[0] || undefined,
       );
 
       let aiTaggedCount = 0;
