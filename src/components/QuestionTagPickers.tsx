@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Search, X, Sparkles, Loader2 } from "lucide-react";
 import { ALL_SUBSTANDARDS, DOK_LEVELS, BLOOMS_LEVELS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS_FLAT, IDAHO_CATEGORY_LABELS } from "@/lib/idaho-standards-data";
-import { tagQuestionsWithNGSS } from "@/lib/ngss-api";
+import { tagQuestionsWithStandards } from "@/lib/standards-api";
 import { toast } from "sonner";
 
 // Combined standards list for searching
@@ -46,7 +46,7 @@ export function StandardsPicker({ standards, onChange, questionText }: Standards
     }
     setSuggesting(true);
     try {
-      const result = await tagQuestionsWithNGSS([{ id: 1, question_text: questionText }]);
+      const result = await tagQuestionsWithStandards([{ id: 1, question_text: questionText }], "ngss");
       const suggested = result.get(1) || [];
       if (suggested.length === 0) {
         toast.info("No NGSS standards matched this question");

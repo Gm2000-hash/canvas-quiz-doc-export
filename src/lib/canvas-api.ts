@@ -5,6 +5,63 @@ export interface CanvasConfig {
   apiToken: string;
 }
 
+// Decode common HTML entities & strip tags. Drops <img>/<iframe>/<style>/<script> contents.
+function stripHtmlForTagger(input: string): string {
+  if (!input) return "";
+  let s = String(input);
+  // Remove script/style/iframe/img blocks entirely
+  s = s.replace(/<(script|style|iframe)[\s\S]*?<\/\1>/gi, " ");
+  s = s.replace(/<img[^>]*>/gi, " ");
+  // Replace <br> and block tags with spaces
+  s = s.replace(/<br\s*\/?>/gi, " ");
+  s = s.replace(/<\/(p|div|li|h[1-6]|tr|td)>/gi, " ");
+  // Strip remaining tags
+  s = s.replace(/<[^>]+>/g, " ");
+  // Decode common entities
+  s = s
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&[a-z]+;/gi, " ");
+  // Collapse whitespace
+  s = s.replace(/\s+/g, " ").trim();
+  return s;
+}
+
+/**
+ * Build a sanitized, enriched payload string for the standards tagger.
+ * Strips HTML, decodes entities, appends answer choices when present.
+ * Caps result at ~1500 chars to keep batch requests within token budget.
+ */
+export function buildTaggerText(question: {
+  question_text: string;
+  question_type?: string;
+  answers?: Array<{ text?: string; html?: string }> | null;
+}): string {
+  const stem = stripHtmlForTagger(question.question_text || "");
+  const type = (question.question_type || "").toLowerCase();
+  const includesChoices = ["multiple_choice_question", "true_false_question", "multiple_answers_question", "matching_question"].some(t => type.includes(t.replace("_question", ""))) || ["multiple_choice_question", "true_false_question", "multiple_answers_question", "matching_question"].includes(type);
+
+  let out = `STEM: ${stem}`;
+  if (includesChoices && Array.isArray(question.answers) && question.answers.length > 0) {
+    const letters = ["A", "B", "C", "D", "E", "F", "G", "H"];
+    const choices = question.answers
+      .slice(0, 8)
+      .map((a, i) => {
+        const txt = stripHtmlForTagger(a?.text || a?.html || "");
+        return txt ? `${letters[i]}) ${txt}` : null;
+      })
+      .filter(Boolean)
+      .join(" ");
+    if (choices) out += `\nCHOICES: ${choices}`;
+  }
+  if (out.length > 1500) out = out.slice(0, 1497) + "...";
+  return out;
+}
+
 export interface CourseTerm {
   id: number;
   name: string;

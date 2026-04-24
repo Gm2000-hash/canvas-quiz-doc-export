@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { SettingsForm } from "@/components/SettingsForm";
-import { getCourses, getQuizzes, getQuizQuestions, getEnrollments, getQuizReport, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from "@/lib/canvas-api";
+import { getCourses, getQuizzes, getQuizQuestions, getEnrollments, getQuizReport, buildTaggerText, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from "@/lib/canvas-api";
 import { getQuestionBank, type QuestionBankItem } from "@/lib/question-bank";
 import { supabase } from "@/integrations/supabase/client";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
@@ -295,17 +295,21 @@ export default function CanvasResults() {
       if (untagged.length > 0) {
         setAiTagging(true);
         try {
-          const aiQuestions = untagged.map(m => ({
-            id: m.questionId,
-            question_text: m.questionText,
-          }));
+          const qById = new Map(questions.map(q => [q.id, q]));
+          const aiQuestions = untagged.map(m => {
+            const cq = qById.get(m.questionId);
+            return {
+              id: m.questionId,
+              question_text: cq ? buildTaggerText(cq) : m.questionText,
+            };
+          });
 
           // Use the unified standards tagger
           const tagMap = await tagQuestionsWithStandards(
             aiQuestions,
             framework,
-            framework === "idaho" ? tagSubject : undefined,
-            framework === "idaho" ? (grades[0] || undefined) : undefined,
+            framework === "idaho" ? tagSubject : "Science",
+            grades[0] || undefined,
           );
 
           for (const [, stds] of tagMap) {
@@ -362,12 +366,16 @@ export default function CanvasResults() {
         return;
       }
 
-      const aiQuestions = toRetag.map(m => ({ id: m.questionId, question_text: m.questionText }));
+      const qById = new Map(canvasQuestions.map(q => [q.id, q]));
+      const aiQuestions = toRetag.map(m => {
+        const cq = qById.get(m.questionId);
+        return { id: m.questionId, question_text: cq ? buildTaggerText(cq) : m.questionText };
+      });
       const tagMap = await tagQuestionsWithStandards(
         aiQuestions,
         framework,
-        framework === "idaho" ? tagSubject : undefined,
-        framework === "idaho" ? (grades[0] || undefined) : undefined,
+        framework === "idaho" ? tagSubject : "Science",
+        grades[0] || undefined,
       );
 
       let aiTaggedCount = 0;
@@ -403,6 +411,35 @@ export default function CanvasResults() {
   const updateMapping = useCallback((questionId: number, standards: { code: string; desc: string }[]) => {
     setMappings(prev => prev.map(m => m.questionId === questionId ? { ...m, standards } : m));
   }, []);
+
+  // Re-tag a single question with the AI tagger.
+  const [retaggingId, setRetaggingId] = useState<number | null>(null);
+  const handleRetagOne = useCallback(async (questionId: number) => {
+    const m = mappings.find(x => x.questionId === questionId);
+    if (!m) return;
+    setRetaggingId(questionId);
+    try {
+      const cq = canvasQuestions.find(q => q.id === questionId);
+      const payload = [{ id: questionId, question_text: cq ? buildTaggerText(cq) : m.questionText }];
+      const tagMap = await tagQuestionsWithStandards(
+        payload,
+        framework,
+        framework === "idaho" ? tagSubject : "Science",
+        grades[0] || undefined,
+      );
+      const matched = tagMap.get(questionId) || [];
+      setMappings(prev => prev.map(x => x.questionId === questionId
+        ? { ...x, standards: matched.map(s => ({ code: s.code, desc: s.description, matched_terms: s.matched_terms })) }
+        : x));
+      if (matched.length === 0) toast.info("AI returned no matching standard.");
+      else toast.success(`Re-tagged with ${matched.length} standard${matched.length !== 1 ? 's' : ''}.`);
+    } catch (err: any) {
+      console.error("Single re-tag failed:", err);
+      toast.error("Re-tag failed. Try again shortly.");
+    } finally {
+      setRetaggingId(null);
+    }
+  }, [mappings, canvasQuestions, framework, tagSubject, grades]);
 
   // Build the question-to-standards map from current mappings
   const questionToStandards = useMemo(() => {
@@ -749,7 +786,7 @@ export default function CanvasResults() {
                   <div key={m.questionId} className="py-3 first:pt-0 last:pb-0">
                     <div className="flex items-start gap-3">
                       <span className="text-xs text-muted-foreground font-mono mt-1 shrink-0">Q{i + 1}</span>
-                      <div className="flex-1 space-y-1.5">
+                      <div className="flex-1 space-y-1.5 min-w-0">
                         <p className="text-sm text-foreground line-clamp-2">{m.questionText}</p>
                         <StandardsPicker
                           standards={m.standards}
@@ -757,6 +794,18 @@ export default function CanvasResults() {
                           framework={framework}
                         />
                       </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-primary"
+                        title="Re-tag this question with AI"
+                        onClick={() => handleRetagOne(m.questionId)}
+                        disabled={retaggingId === m.questionId || aiTagging}
+                      >
+                        {retaggingId === m.questionId
+                          ? <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                          : <Sparkles className="h-3.5 w-3.5" />}
+                      </Button>
                     </div>
                   </div>
                 ))}

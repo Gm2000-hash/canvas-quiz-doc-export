@@ -5,8 +5,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { getCourses, getQuizzes, getQuiz, getQuizQuestions, getAllCourses, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from '@/lib/canvas-api';
+import { getCourses, getQuizzes, getQuiz, getQuizQuestions, getAllCourses, buildTaggerText, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from '@/lib/canvas-api';
 import { tagQuestionsWithStandards, type StandardMatch } from '@/lib/standards-api';
+import { useProfileDefaults } from '@/hooks/useProfileDefaults';
 import { exportQuizToDocx } from '@/lib/export-docx';
 import { saveQuestionsToBank } from '@/lib/question-bank';
 import { toast } from 'sonner';
@@ -85,6 +86,7 @@ function isActiveCourse(course: Course): boolean {
 }
 
 export function QuizBrowser({ config }: QuizBrowserProps) {
+  const { defaultGradeLevel } = useProfileDefaults();
   const [courses, setCourses] = useState<Course[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
@@ -246,9 +248,14 @@ export function QuizBrowser({ config }: QuizBrowserProps) {
       setQuestions(qs);
       const filtered = qs.filter(q => q.question_type !== 'text_only_question');
       if (filtered.length > 0) {
+        // Pull a numeric grade like "7" out of "7th Grade" for the tagger context.
+        const gradeMatch = defaultGradeLevel.match(/(\d+)/);
+        const grade = gradeMatch ? gradeMatch[1] : undefined;
         const tags = await tagQuestionsWithStandards(
-          filtered.map(q => ({ id: q.id, question_text: q.question_text })),
-          'ngss'
+          filtered.map(q => ({ id: q.id, question_text: buildTaggerText(q) })),
+          'ngss',
+          'Science',
+          grade,
         );
         setNgssTags(tags);
       }
