@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { SettingsForm } from "@/components/SettingsForm";
-import { getCourses, getQuizzes, getQuizQuestions, getEnrollments, getQuizReport, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from "@/lib/canvas-api";
+import { getCourses, getQuizzes, getQuizQuestions, getEnrollments, getQuizReport, buildTaggerText, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from "@/lib/canvas-api";
 import { getQuestionBank, type QuestionBankItem } from "@/lib/question-bank";
 import { supabase } from "@/integrations/supabase/client";
 import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
