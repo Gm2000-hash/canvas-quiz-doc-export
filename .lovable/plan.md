@@ -1,74 +1,56 @@
 
 
-# Add Optional Images & Manipulatives to ISAT Practice Exams
+# Improve NGSS tagging for Canvas-imported quizzes
 
-Make exams text-only by default. Each question gets an "Enhance" action that lets the AI suggest an image prompt (you tweak it), generates a diagram or interactive manipulative, rewrites the stem to reference it, and bumps DoK.
+**Root cause:** The same model is used in both flows, but the Canvas path feeds it raw HTML with no answer choices and no subject/grade context, then asks a low-tier model to figure it out. Quality drops accordingly.
 
----
+## Changes
 
-## How it will feel to use
+### 1. Clean Canvas question text before sending to the tagger
+In `src/components/QuizBrowser.tsx` (and the same shape in `src/pages/CanvasResults.tsx`), build a **sanitized, enriched** payload per question:
 
-1. **Generate exam** — same as today. Output is text-only (no images).
-2. **In the exam editor**, each question has a new **"Enhance with image / manipulative"** button.
-3. Clicking it opens a dialog with:
-   - **Format picker**: Static diagram · Drag-and-drop labeling · Hotspot click-the-part
-   - **AI-suggested prompt** (auto-drafted from the question + standard) shown in an editable textarea
-   - **"Also rewrite the question to use it & raise DoK"** toggle (on by default)
-   - **Generate** button → preview → **Attach** or **Try again**
-4. Drag-and-drop and hotspot manipulatives get saved as H5P activities and embedded into the question (rendered inline by the player).
-5. **On the ISAT exam list page** (`ISATExamList.tsx`), each exam tile gets a **"Enrich with images"** action to walk through unenhanced questions one-by-one in a wizard.
+- Strip HTML tags, decode entities, collapse whitespace
+- Drop `<img>`/`<iframe>`/`<style>` content
+- **Append the answer choices** (for `multiple_choice`, `true_false`, `multiple_answers`, `matching`) into the `question_text` we send. Format:
+  ```
+  STEM: <clean stem>
+  CHOICES: A) … B) … C) … D) …
+  ```
+- Cap at ~1500 chars per question to stay within token budget for batches.
 
----
+Add a small helper `buildTaggerText(question)` co-located in `src/lib/canvas-api.ts` so both QuizBrowser and CanvasResults use the exact same logic.
 
-## What changes in the app
+### 2. Pass subject + grade context on the Canvas call
+`tagQuestionsWithStandards(...)` already accepts `subject` and `grade`. The Canvas flow currently passes neither. Pull the teacher's defaults from `useProfileDefaults()` (already used in `CanvasResults.tsx`) and forward them in `QuizBrowser` too. For NGSS-only courses we'll pass `subject: "Science"` and the teacher's default grade — narrows the candidate set.
 
-### A. Generation stays text-only
-- `generate-isat-exam` edge function: strip any image instructions from the system prompt; ensure questions are produced **without** `image_url` or `media`.
+### 3. Bump tagging to the `"default"` model tier
+In `supabase/functions/standards-tagger/index.ts`, change `resolveModel(body, "utility")` → `resolveModel(body, "default")`. This moves Canvas tagging from the cheapest model to Gemini 3 Flash Preview, which handles noisy multi-question inputs much better. Cost impact is modest because tagging runs once per quiz import.
 
-### B. Per-question "Enhance" dialog (editor)
-- New `EnhanceQuestionDialog.tsx` opened from the existing Media/Image slot in `ISATExamEditor.tsx`.
-- Three tabs: **Diagram**, **Drag-and-Drop**, **Hotspots**.
-- "Suggest prompt" calls a new edge function (or a mode flag) that returns a one-paragraph image prompt + (optionally) a rewritten question stem with raised DoK and updated answer choices that explicitly reference the visual.
+### 4. Strengthen the prompt for noisy inputs
+Inside `buildNGSSPrompt(...)`:
+- Add an explicit rule: *"The input may include answer choices after a `CHOICES:` marker — use them as primary evidence for content topic."*
+- Add: *"If the stem is generic (e.g. 'Which of the following…'), rely heavily on the choices and key terms to infer the standard."*
+- Reinforce: *"Never return HS- standards. If the only plausible match is high-school level, return an empty array."*
 
-### C. Two AI paths
+### 5. Retire the old `ngss-tagger` path (low-risk cleanup)
+Switch `src/components/QuestionTagPickers.tsx` from `tagQuestionsWithNGSS` → `tagQuestionsWithStandards(..., "ngss")` so the in-app flow benefits from the same improved prompt + key terms. We keep the `ngss-tagger` edge function deployed for back-compat but stop calling it from the client. (No edge function deletion in this pass.)
 
-**Diagram (already partially built)**
-- Reuse `generate-question-image` edge function. Add a `suggest_only: true` mode that returns a draft prompt without generating, so the dialog can prefill the textarea.
+### 6. Add a one-line "Re-tag with AI" action on the Canvas results screen
+`CanvasResults.tsx` already has retag logic — surface a per-question "Re-tag" button (icon-only) next to weak/missing matches so the teacher can quickly correct outliers without re-running the whole batch. Uses the same improved pipeline.
 
-**Drag-and-Drop labeling & Hotspots (new)**
-- New edge function `enhance-question-manipulative` that:
-  1. Generates the base diagram image (Gemini image model)
-  2. Asks the text model for label positions / hotspot regions and correct answers
-  3. Creates an `h5p_activities` row (`activity_type: 'drag_and_drop'` or `'image_hotspots'`) tied to the user
-  4. Returns `{ activity_id, image_url, suggested_question_text, suggested_answers, dok_level }`
-- Editor stores this on the question as `media: { type: 'h5p', activity_id, url }` (extends the existing `MediaEmbed` shape).
-- `ISATExamPlayer.tsx` gets a small renderer: when `media.type === 'h5p'`, mount the existing `ActivityPlayer` component inline; the H5P activity's score becomes the auto-graded answer.
+## Files touched
 
-### D. DoK & question rewrite
-- When "Also rewrite" is on, the dialog applies AI-returned `question_text`, `answers`, and `dok_level` to the question (capped at 4). User sees a diff-ish preview ("Original / Enhanced") before clicking **Apply**.
+- `src/lib/canvas-api.ts` — add `buildTaggerText()` helper
+- `src/components/QuizBrowser.tsx` — use helper + pass subject/grade
+- `src/pages/CanvasResults.tsx` — use helper + per-question re-tag button
+- `src/components/QuestionTagPickers.tsx` — switch to unified `standards-tagger`
+- `supabase/functions/standards-tagger/index.ts` — bump model tier + prompt tweaks
 
-### E. Bulk enrichment from the list page
-- `ISATExamList.tsx` gets a new "Enrich with images" overflow action per exam.
-- Opens a wizard modal that walks through every question lacking `image_url`/`media`, one at a time, with the same Enhance dialog. Skip / Apply / Quit-and-save.
+No DB migrations. No new edge functions. No new dependencies.
 
-### F. Public exam exposure
-- `get_public_exam` SQL function already passes `image_url` and `media` through. Extend it so `media.activity_id` is included so embedded H5P plays for students taking shared/Canvas-launched exams. (Migration: update the function to whitelist `activity_id` inside the media object.)
+## Expected outcome
 
----
-
-## Technical reference (for implementer)
-
-| Item | Change |
-|---|---|
-| `supabase/functions/generate-isat-exam/index.ts` | Forbid image fields in output schema. |
-| `supabase/functions/generate-question-image/index.ts` | Add `mode: 'suggest_prompt'` returning `{ suggested_prompt }` only. |
-| `supabase/functions/enhance-question-manipulative/index.ts` (new) | Generates image + H5P activity (drag-drop or hotspots), inserts into `h5p_activities`, returns IDs + rewritten stem/answers/DoK. |
-| `src/components/EnhanceQuestionDialog.tsx` (new) | 3-tab dialog, prompt edit, preview, Apply. |
-| `src/pages/ISATExamEditor.tsx` | Replace inline `AIImageGenerator` with "Enhance" button → dialog. |
-| `src/pages/ISATExamPlayer.tsx` | Render `media.type === 'h5p'` via `ActivityPlayer`; pipe its score back into `studentAnswers` for auto-grading. |
-| `src/components/ISATExamList.tsx` | Add "Enrich with images" wizard entry point. |
-| `MediaEmbed` type in `src/lib/h5p-types.ts` | Add `'h5p'` variant with optional `activity_id`. |
-| Migration | Update `public.get_public_exam` to include `media.activity_id` in its whitelist. |
-
-No new tables; H5P activities reuse the existing `h5p_activities` table.
+- Canvas-imported NGSS tags should jump noticeably in accuracy (fewer empty arrays, fewer wrong-domain matches like LS for a PS question).
+- The in-app and Canvas flows finally use the same prompt + key terms, so quality is consistent across the app.
+- Teacher gets a fast manual override on the results screen for the rare miss.
 
