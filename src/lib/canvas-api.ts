@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { requestTokenRefresh } from "./canvas-token-refresh";
 
 export interface CanvasConfig {
   canvasUrl: string;
