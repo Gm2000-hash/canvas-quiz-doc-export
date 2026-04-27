@@ -35,7 +35,7 @@ import { useNavigate } from "react-router-dom";
 import { MathText } from "@/components/MathText";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useProfile } from "@/hooks/useProfile";
-import { StandardsCoverageGrid } from "@/components/StandardsCoverageGrid";
+import { StandardsCoverageGrid, rigorTone } from "@/components/StandardsCoverageGrid";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function stripHtml(html: string): string {
@@ -108,6 +108,15 @@ function getCoreIdeaFromCode(code: string): string | null {
 function getDisciplineForCode(code: string): string | null {
   const parsed = parseStandardCode(code);
   return parsed ? parsed.discipline : null;
+}
+
+/** Tailwind classes for a substandard badge based on count of DoK 3+ questions covering it. */
+function rigorBadgeClass(stdQuestions: { dok_level: number | null }[]): string {
+  const high = stdQuestions.filter(q => (q.dok_level ?? 0) >= 3).length;
+  const tone = rigorTone(high);
+  if (tone === "green") return "bg-success/15 text-success border border-success/30 hover:bg-success/25";
+  if (tone === "yellow") return "bg-warning/15 text-warning border border-warning/30 hover:bg-warning/25";
+  return "bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive/20";
 }
 
 const QuestionBank = () => {
@@ -1120,7 +1129,11 @@ const QuestionBank = () => {
                                         return (
                                           <div key={sub.code}>
                                             <div className="flex items-start gap-2 py-1.5">
-                                              <Badge variant={subQuestions.length > 0 ? "secondary" : "outline"} className="text-xs shrink-0 mt-0.5">
+                                              <Badge
+                                                variant={subQuestions.length > 0 ? "secondary" : "outline"}
+                                                className={`text-xs shrink-0 mt-0.5 ${subQuestions.length > 0 ? rigorBadgeClass(subQuestions) : ""}`}
+                                                title={subQuestions.length > 0 ? `${subQuestions.filter(q => (q.dok_level ?? 0) >= 3).length} of ${subQuestions.length} at DoK 3+` : undefined}
+                                              >
                                                 {sub.code}
                                               </Badge>
                                               <p className="text-xs text-muted-foreground flex-1 break-words">{sub.description}</p>
@@ -1346,7 +1359,11 @@ const QuestionBank = () => {
                                         return (
                                           <div key={code}>
                                             <div className="flex items-start gap-2 py-1.5">
-                                              <Badge variant={stdQuestions.length > 0 ? "secondary" : "outline"} className="text-xs shrink-0 mt-0.5">
+                                              <Badge
+                                                variant={stdQuestions.length > 0 ? "secondary" : "outline"}
+                                                className={`text-xs shrink-0 mt-0.5 ${stdQuestions.length > 0 ? rigorBadgeClass(stdQuestions) : ""}`}
+                                                title={stdQuestions.length > 0 ? `${stdQuestions.filter(q => (q.dok_level ?? 0) >= 3).length} of ${stdQuestions.length} at DoK 3+` : undefined}
+                                              >
                                                 {code}
                                               </Badge>
                                               <p className="text-xs text-muted-foreground flex-1 break-words">{std.description}</p>
