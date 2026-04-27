@@ -27,11 +27,13 @@ interface ValidationStep {
  * Calls the canvas-proxy directly (bypassing canvasRequest's refresh loop)
  * and returns either an error string or null on success.
  */
+type ProxyResult = { ok: true; data: any } | { ok: false; error: string };
+
 async function callProxy(
   cfg: CanvasConfig,
   action: string,
   extra: Record<string, unknown> = {},
-): Promise<{ ok: true; data: any } | { ok: false; error: string }> {
+): Promise<ProxyResult> {
   try {
     const { data: { session } } = await supabase.auth.getSession();
     const accessToken = session?.access_token;
