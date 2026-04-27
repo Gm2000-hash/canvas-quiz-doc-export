@@ -110,6 +110,15 @@ function getDisciplineForCode(code: string): string | null {
   return parsed ? parsed.discipline : null;
 }
 
+/** Tailwind classes for a substandard badge based on count of DoK 3+ questions covering it. */
+function rigorBadgeClass(stdQuestions: { dok_level: number | null }[]): string {
+  const high = stdQuestions.filter(q => (q.dok_level ?? 0) >= 3).length;
+  const tone = rigorTone(high);
+  if (tone === "green") return "bg-success/15 text-success border border-success/30 hover:bg-success/25";
+  if (tone === "yellow") return "bg-warning/15 text-warning border border-warning/30 hover:bg-warning/25";
+  return "bg-destructive/10 text-destructive border border-destructive/30 hover:bg-destructive/20";
+}
+
 const QuestionBank = () => {
   usePageTitle("Question Bank");
   const [questions, setQuestions] = useState<QuestionBankItem[]>([]);
