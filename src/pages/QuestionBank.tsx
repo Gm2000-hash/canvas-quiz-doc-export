@@ -35,7 +35,7 @@ import { useNavigate } from "react-router-dom";
 import { MathText } from "@/components/MathText";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import { useProfile } from "@/hooks/useProfile";
-import { StandardsCoverageGrid } from "@/components/StandardsCoverageGrid";
+import { StandardsCoverageGrid, rigorTone } from "@/components/StandardsCoverageGrid";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 function stripHtml(html: string): string {
