@@ -115,8 +115,9 @@ export function CanvasTokenRefreshDialog() {
     // 1. Authenticate (lightweight — list courses)
     updateStep('auth', { status: 'running', error: undefined });
     const authRes = await callProxy(cfg, 'get_courses');
-    if (!authRes.ok) {
-      updateStep('auth', { status: 'fail', error: authRes.error });
+    if (authRes.ok === false) {
+      const errMsg = authRes.error;
+      updateStep('auth', { status: 'fail', error: errMsg });
       return false;
     }
     updateStep('auth', { status: 'ok' });
@@ -125,10 +126,11 @@ export function CanvasTokenRefreshDialog() {
     if (scope?.courseId) {
       updateStep('course', { status: 'running', error: undefined });
       const courseRes = await callProxy(cfg, 'get_quizzes', { courseId: scope.courseId });
-      if (!courseRes.ok) {
+      if (courseRes.ok === false) {
+        const errMsg = courseRes.error;
         updateStep('course', {
           status: 'fail',
-          error: `${courseRes.error} — your new token may not have access to this course.`,
+          error: `${errMsg} — your new token may not have access to this course.`,
         });
         return false;
       }
@@ -142,10 +144,11 @@ export function CanvasTokenRefreshDialog() {
         courseId: scope.courseId,
         quizId: scope.quizId,
       });
-      if (!quizRes.ok) {
+      if (quizRes.ok === false) {
+        const errMsg = quizRes.error;
         updateStep('quiz', {
           status: 'fail',
-          error: `${quizRes.error} — the new token can't read this quiz.`,
+          error: `${errMsg} — the new token can't read this quiz.`,
         });
         return false;
       }
