@@ -7,27 +7,40 @@ import { useEffect, useState } from "react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { BentoHero } from "@/components/BentoHero";
-import { toast } from "sonner";
+import { CanvasTokenRefreshDialog } from "@/components/CanvasTokenRefreshDialog";
+
 
 const CanvasExport = () => {
   const { config, setConfig, isConfigured } = useCanvasConfig();
   const [settingsOpen, setSettingsOpen] = useState(false);
 
-  // Auto-detect invalid Canvas tokens (401 from Canvas) and prompt reconnect
+  // When the inline refresh dialog persists a new token to localStorage,
+  // sync it back into React state so downstream components see the update.
   useEffect(() => {
-    const onInvalid = () => {
-      if (config) {
-        setConfig(null);
-        setSettingsOpen(false);
-        toast.error('Your Canvas access token is invalid or expired. Please reconnect.');
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'canvas_config' && e.newValue) {
+        try {
+          setConfig(JSON.parse(e.newValue));
+        } catch { /* ignore */ }
       }
     };
-    window.addEventListener('canvas-token-invalid', onInvalid);
-    return () => window.removeEventListener('canvas-token-invalid', onInvalid);
-  }, [config, setConfig]);
+    const onLocalUpdate = () => {
+      try {
+        const raw = localStorage.getItem('canvas_config');
+        if (raw) setConfig(JSON.parse(raw));
+      } catch { /* ignore */ }
+    };
+    window.addEventListener('storage', onStorage);
+    window.addEventListener('canvas-config-updated', onLocalUpdate);
+    return () => {
+      window.removeEventListener('storage', onStorage);
+      window.removeEventListener('canvas-config-updated', onLocalUpdate);
+    };
+  }, [setConfig]);
 
   return (
     <div className="min-h-screen bg-white flex flex-col">
+      <CanvasTokenRefreshDialog />
       <header className="sticky top-0 z-50 h-14 border-b border-border/60 bg-white glass-header flex items-center px-4 gap-4">
         <AppNavSheet showSettings={isConfigured} onOpenSettings={() => setSettingsOpen(true)} />
         <Breadcrumbs items={[{ label: "Canvas Quiz Exporter" }]} />

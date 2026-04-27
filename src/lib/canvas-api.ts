@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { requestTokenRefresh } from "./canvas-token-refresh";
 
 export interface CanvasConfig {
   canvasUrl: string;
@@ -104,7 +105,7 @@ export interface QuizAnswer {
   weight: number;
 }
 
-async function canvasRequest(config: CanvasConfig, action: string, params: Record<string, unknown> = {}) {
+async function canvasRequest(config: CanvasConfig, action: string, params: Record<string, unknown> = {}, _isRetry = false): Promise<any> {
   const { data: { session } } = await supabase.auth.getSession();
   const accessToken = session?.access_token;
 
@@ -138,8 +139,19 @@ async function canvasRequest(config: CanvasConfig, action: string, params: Recor
   }
 
   if (errMsg) {
-    if (/Canvas API error \[401\]|Invalid access token/i.test(errMsg)) {
+    if (/Canvas API error \[401\]|Invalid access token|Revoked access token/i.test(errMsg)) {
+      // Notify any UI listeners (legacy rescue banner, toasts) that the token is bad.
       window.dispatchEvent(new CustomEvent('canvas-token-invalid'));
+
+      if (!_isRetry) {
+        // Pause this request, prompt the user for a fresh token, then retry once.
+        try {
+          const newConfig = await requestTokenRefresh(config);
+          return canvasRequest(newConfig, action, params, true);
+        } catch (refreshErr) {
+          throw refreshErr instanceof Error ? refreshErr : new Error(String(refreshErr));
+        }
+      }
     }
     throw new Error(errMsg);
   }
