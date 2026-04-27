@@ -145,8 +145,15 @@ async function canvasRequest(config: CanvasConfig, action: string, params: Recor
 
       if (!_isRetry) {
         // Pause this request, prompt the user for a fresh token, then retry once.
+        // Forward the original action + course/quiz IDs so the dialog can
+        // confirm the new token actually grants access to *this* resource.
         try {
-          const newConfig = await requestTokenRefresh(config);
+          const scope = {
+            action,
+            courseId: typeof params.courseId === 'number' ? (params.courseId as number) : undefined,
+            quizId: typeof params.quizId === 'number' ? (params.quizId as number) : undefined,
+          };
+          const newConfig = await requestTokenRefresh(config, scope);
           return canvasRequest(newConfig, action, params, true);
         } catch (refreshErr) {
           throw refreshErr instanceof Error ? refreshErr : new Error(String(refreshErr));
