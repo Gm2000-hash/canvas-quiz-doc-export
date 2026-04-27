@@ -8,7 +8,7 @@ import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { BentoHero } from "@/components/BentoHero";
 import { CanvasTokenRefreshDialog } from "@/components/CanvasTokenRefreshDialog";
-import { useCanvasConfig as _useCanvasConfig } from "@/hooks/useCanvasConfig";
+
 
 const CanvasExport = () => {
   const { config, setConfig, isConfigured } = useCanvasConfig();
