@@ -38,15 +38,23 @@ function StandardChip({
   displayCode,
   description,
   count,
+  highDokCount,
   onGapClick,
 }: {
   code: string;
   displayCode: string;
   description: string;
   count: number;
+  highDokCount: number;
   onGapClick?: () => void;
 }) {
-  const isGap = count === 0;
+  const tone = rigorTone(highDokCount);
+  const toneClass =
+    tone === "green"
+      ? "bg-success/15 text-success border border-success/30 hover:bg-success/25 hover:border-success/50"
+      : tone === "yellow"
+        ? "bg-warning/15 text-warning border border-warning/30 hover:bg-warning/25 hover:border-warning/50"
+        : "bg-destructive/10 text-destructive border border-destructive/30 ring-1 ring-destructive/20 hover:bg-destructive/20 hover:ring-destructive/40";
 
   return (
     <Tooltip>
@@ -54,31 +62,24 @@ function StandardChip({
         <button
           type="button"
           onClick={onGapClick ? onGapClick : undefined}
-          className={`
-            px-1.5 py-0.5 rounded text-[10px] font-mono leading-tight transition-colors cursor-pointer
-            ${isGap
-              ? "bg-destructive/10 text-destructive border border-destructive/30 ring-1 ring-destructive/20 hover:bg-destructive/20 hover:ring-destructive/40"
-              : count <= 2
-                ? "bg-warning/15 text-warning border border-warning/30 hover:bg-warning/25 hover:border-warning/50"
-                : "bg-success/15 text-success border border-success/30 hover:bg-success/25 hover:border-success/50"
-            }
-          `}
+          className={`px-1.5 py-0.5 rounded text-[10px] font-mono leading-tight transition-colors cursor-pointer ${toneClass}`}
         >
           {displayCode}
-          {!isGap && <span className="ml-0.5 font-semibold">({count})</span>}
+          {count > 0 && <span className="ml-0.5 font-semibold">({highDokCount}/{count})</span>}
         </button>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-xs">
         <p className="font-semibold text-xs">{code}</p>
         <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs font-medium mt-1">
+          {highDokCount} question{highDokCount !== 1 ? "s" : ""} at DoK 3+ of {count} total
+        </p>
+        <p className="text-[10px] text-muted-foreground">
+          Goal: ≥10 DoK 3+ for green, 4–9 for yellow, ≤3 for red.
+        </p>
         <p className="text-xs font-medium mt-1 text-primary flex items-center gap-1">
           <Sparkles className="h-3 w-3" /> Click to generate questions
         </p>
-        {!isGap && (
-          <p className="text-xs text-muted-foreground">
-            {count} question{count !== 1 ? "s" : ""} already
-          </p>
-        )}
       </TooltipContent>
     </Tooltip>
   );
