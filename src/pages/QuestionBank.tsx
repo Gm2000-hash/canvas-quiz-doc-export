@@ -1129,7 +1129,11 @@ const QuestionBank = () => {
                                         return (
                                           <div key={sub.code}>
                                             <div className="flex items-start gap-2 py-1.5">
-                                              <Badge variant={subQuestions.length > 0 ? "secondary" : "outline"} className="text-xs shrink-0 mt-0.5">
+                                              <Badge
+                                                variant={subQuestions.length > 0 ? "secondary" : "outline"}
+                                                className={`text-xs shrink-0 mt-0.5 ${subQuestions.length > 0 ? rigorBadgeClass(subQuestions) : ""}`}
+                                                title={subQuestions.length > 0 ? `${subQuestions.filter(q => (q.dok_level ?? 0) >= 3).length} of ${subQuestions.length} at DoK 3+` : undefined}
+                                              >
                                                 {sub.code}
                                               </Badge>
                                               <p className="text-xs text-muted-foreground flex-1 break-words">{sub.description}</p>
