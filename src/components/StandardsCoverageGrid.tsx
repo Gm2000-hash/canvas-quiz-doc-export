@@ -192,11 +192,13 @@ function IdahoCoverageSection({
   subject,
   gradeStandards,
   countMap,
+  highDokMap,
   onGapClick,
 }: {
   subject: string;
   gradeStandards: IdahoGradeStandards[];
   countMap: Map<string, number>;
+  highDokMap: Map<string, number>;
   onGapClick?: (target: GapClickTarget) => void;
 }) {
   const allStandards = gradeStandards.flatMap(gs => gs.standards);
