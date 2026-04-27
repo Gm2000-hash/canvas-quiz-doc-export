@@ -239,6 +239,7 @@ function IdahoCoverageSection({
                         displayCode={std.code}
                         description={std.description}
                         count={countMap.get(std.code) || 0}
+                        highDokCount={highDokMap.get(std.code) || 0}
                         onGapClick={onGapClick ? () => onGapClick({ code: std.code, description: std.description, framework: "Idaho", subject }) : undefined}
                       />
                     ))}
