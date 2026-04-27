@@ -255,11 +255,16 @@ function IdahoCoverageSection({
 }
 
 export function StandardsCoverageGrid({ questions, onGapClick, showNGSS = true, activeIdahoSubjects = [] }: StandardsCoverageGridProps) {
-  // Build question count map across all standards
+  // Build question count maps across all standards: total + DoK 3+ only
   const countMap = new Map<string, number>();
+  const highDokMap = new Map<string, number>();
   for (const q of questions) {
+    const isHighDok = (q.dok_level ?? 0) >= 3;
     for (const s of q.standards) {
       countMap.set(s.ngss_code, (countMap.get(s.ngss_code) || 0) + 1);
+      if (isHighDok) {
+        highDokMap.set(s.ngss_code, (highDokMap.get(s.ngss_code) || 0) + 1);
+      }
     }
   }
 
@@ -271,7 +276,7 @@ export function StandardsCoverageGrid({ questions, onGapClick, showNGSS = true, 
 
   return (
     <div className="space-y-4">
-      {showNGSS && <NGSSCoverageSection countMap={countMap} onGapClick={onGapClick} />}
+      {showNGSS && <NGSSCoverageSection countMap={countMap} highDokMap={highDokMap} onGapClick={onGapClick} />}
       {activeIdahoSubjects.map(subj => {
         const gradeStandards = idahoBySubject.get(subj) || [];
         if (gradeStandards.length === 0) return null;
@@ -281,6 +286,7 @@ export function StandardsCoverageGrid({ questions, onGapClick, showNGSS = true, 
             subject={subj}
             gradeStandards={gradeStandards}
             countMap={countMap}
+            highDokMap={highDokMap}
             onGapClick={onGapClick}
           />
         );
