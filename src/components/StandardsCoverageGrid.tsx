@@ -14,10 +14,17 @@ export interface GapClickTarget {
 }
 
 interface StandardsCoverageGridProps {
-  questions: { id: string; standards: { ngss_code: string }[] }[];
+  questions: { id: string; standards: { ngss_code: string }[]; dok_level?: number | null }[];
   onGapClick?: (target: GapClickTarget) => void;
   showNGSS?: boolean;
   activeIdahoSubjects?: string[];
+}
+
+/** Color tone for a standard based on how many DoK 3+ questions cover it. */
+export function rigorTone(highDokCount: number): "red" | "yellow" | "green" {
+  if (highDokCount >= 10) return "green";
+  if (highDokCount >= 4) return "yellow";
+  return "red";
 }
 
 const DISCIPLINES: { key: string; label: string; coreIdeas: string[] }[] = [
