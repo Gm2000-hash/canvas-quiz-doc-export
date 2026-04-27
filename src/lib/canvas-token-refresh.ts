@@ -51,6 +51,8 @@ export function resolveTokenRefresh(newConfig: CanvasConfig) {
   } catch {
     /* ignore */
   }
+  // Notify same-tab listeners (the `storage` event only fires cross-tab).
+  window.dispatchEvent(new CustomEvent('canvas-config-updated'));
   resolver?.(newConfig);
   reset();
 }
