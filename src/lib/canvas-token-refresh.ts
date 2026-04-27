@@ -2,11 +2,12 @@
 // token, and resuming the original request transparently.
 //
 // Flow:
-//   1. canvasRequest() catches a 401 and calls `requestTokenRefresh(currentConfig)`.
+//   1. canvasRequest() catches a 401 and calls `requestTokenRefresh(currentConfig, scope)`.
 //   2. That dispatches a `canvas-token-refresh-request` event picked up by the
 //      <CanvasTokenRefreshDialog/> mounted at the app shell level.
-//   3. The dialog collects a new token from the user, validates it, persists it,
-//      and calls `resolveTokenRefresh(newConfig)` (or `rejectTokenRefresh()`).
+//   3. The dialog collects a new token from the user, validates it (against the
+//      original course/quiz scope when provided), persists it, and calls
+//      `resolveTokenRefresh(newConfig)` (or `rejectTokenRefresh()`).
 //   4. canvasRequest() retries the original call once with the new credentials.
 //
 // All in-flight 401s share a single prompt — concurrent failures wait on the
@@ -17,15 +18,26 @@ import type { CanvasConfig } from './canvas-api';
 export const STORAGE_KEY = 'canvas_config';
 export const REFRESH_REQUEST_EVENT = 'canvas-token-refresh-request';
 
+/** Information about the failing request so the dialog can validate scoped access. */
+export interface RefreshScope {
+  action?: string;
+  courseId?: number;
+  quizId?: number;
+}
+
 let pending: Promise<CanvasConfig> | null = null;
 let resolver: ((cfg: CanvasConfig) => void) | null = null;
 let rejecter: ((err: Error) => void) | null = null;
 
 export interface RefreshRequestDetail {
   currentConfig: CanvasConfig | null;
+  scope: RefreshScope | null;
 }
 
-export function requestTokenRefresh(currentConfig: CanvasConfig | null): Promise<CanvasConfig> {
+export function requestTokenRefresh(
+  currentConfig: CanvasConfig | null,
+  scope: RefreshScope | null = null,
+): Promise<CanvasConfig> {
   if (pending) return pending;
 
   pending = new Promise<CanvasConfig>((resolve, reject) => {
@@ -37,7 +49,7 @@ export function requestTokenRefresh(currentConfig: CanvasConfig | null): Promise
   queueMicrotask(() => {
     window.dispatchEvent(
       new CustomEvent<RefreshRequestDetail>(REFRESH_REQUEST_EVENT, {
-        detail: { currentConfig },
+        detail: { currentConfig, scope },
       })
     );
   });
