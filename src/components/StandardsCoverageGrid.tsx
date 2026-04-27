@@ -127,9 +127,11 @@ function CoverageHeader({
 
 function NGSSCoverageSection({
   countMap,
+  highDokMap,
   onGapClick,
 }: {
   countMap: Map<string, number>;
+  highDokMap: Map<string, number>;
   onGapClick?: (target: GapClickTarget) => void;
 }) {
   const allStandards = Object.values(ALL_SUBSTANDARDS).flat();
