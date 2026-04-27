@@ -172,6 +172,7 @@ function NGSSCoverageSection({
                           displayCode={sub.code.replace("MS-", "")}
                           description={sub.description}
                           count={countMap.get(sub.code) || 0}
+                          highDokCount={highDokMap.get(sub.code) || 0}
                           onGapClick={onGapClick ? () => onGapClick({ code: sub.code, description: sub.description, framework: "NGSS", subject: "Science" }) : undefined}
                         />
                       ))
