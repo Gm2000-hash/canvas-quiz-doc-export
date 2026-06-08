@@ -1,69 +1,96 @@
-## Goal
 
-Make the published app installable on desktop and mobile via the browser's "Install" / "Add to Home Screen" action. No service worker, no offline mode — just a web app manifest plus icons so the app launches in its own standalone window with a proper icon and name.
+## Scope honesty first
 
-This avoids all the pitfalls of full PWAs (stale caches, broken Lovable preview, manifest fields pinned at install time) while giving you the "feels like a real app" result.
+You said "everything export-related," and I want to flag a hard constraint before we commit:
 
-## What gets built
+This app has **10+ exporters**. They split into two groups:
 
-1. **`public/manifest.json`** — Web app manifest with:
-   - `name`: "Teaching Toolkit"
-   - `short_name`: "Toolkit"
-   - `start_url`: "/"
-   - `display`: "standalone" (opens in its own window, no browser chrome)
-   - `background_color` / `theme_color`: matched to the neutral baseline theme (white/near-white)
-   - `icons`: references to 192px and 512px PNG icons (plus a maskable variant for Android)
+**A. Portable** — read directly from Canvas, no app database needed:
+- Canvas quiz → Word (`export-docx.ts`)
+- Canvas quiz → Bank-Quiz Word (`export-bank-quiz.ts`)
+- Canvas quiz → QTI .zip (`export-qti.ts`)
+- Canvas quiz → Mastery Connect CSV (`export-mastery-connect.ts`) — Teacher's Companion already has a partial version
 
-2. **App icons in `public/`** — Generate three PNGs from the existing GraduationCap brand mark:
-   - `icon-192.png` (192×192)
-   - `icon-512.png` (512×512)
-   - `icon-maskable-512.png` (512×512, with safe-zone padding for Android adaptive icons)
-   - `apple-touch-icon.png` (180×180, for iOS home screen)
+**B. Not portable without porting the whole app** — read from this app's database tables (curriculum, lessons, escape rooms, readings, H5P, ISAT exams) that Teacher's Companion doesn't have:
+- `export-curriculum-docx.ts`, `export-lesson-docx.ts`, `export-escape-room-docx.ts`, `export-reading-docx.ts`, `export-reading-pdf.ts`, `export-h5p.ts`
 
-3. **`index.html` updates** — Add inside `<head>`:
-   - `<link rel="manifest" href="/manifest.json">`
-   - `<link rel="apple-touch-icon" href="/apple-touch-icon.png">`
-   - `<meta name="theme-color" content="...">`
-   - `<meta name="apple-mobile-web-app-capable" content="yes">`
-   - `<meta name="apple-mobile-web-app-title" content="Toolkit">`
+Porting Group B = porting ~20 RLS tables, ~15 AI generators, the unit/curriculum editor UI, the reading library, ISAT, etc. That's effectively cloning the whole app into Teacher's Companion — which is a remix, not a port.
 
-That's the entire change. No `vite-plugin-pwa`, no service worker, no caching logic.
+**Recommended scope:** port Group A only (the Canvas-tied exporters). Skip Group B. I'll surface a clear "Coming from your Canvas account" landing page that's honest about the scope.
 
-## How your colleague installs it
+If you actually want Group B too, say so and I'll quote a much larger plan.
 
-After you click **Publish → Update** in the Lovable editor, send them this link:
-`https://canvas-quiz-doc-export.lovable.app`
+---
 
-- **Desktop (Chrome/Edge)**: Install icon appears in the address bar, or three-dot menu → "Install Teaching Toolkit".
-- **Mac Safari**: File → "Add to Dock".
-- **iPhone (Safari)**: Share button → "Add to Home Screen".
-- **Android (Chrome)**: Three-dot menu → "Install app" or "Add to Home screen".
+## What I'll build (Group A)
 
-Once installed, it gets its own icon and opens in a standalone window — no browser tabs, no address bar.
+A new route in Teacher's Companion at **`/_authenticated/canvas-export`** with a sidebar link in the existing nav. It uses the Canvas connection already configured in Teacher's Companion Settings (no new auth UI).
 
-## Important caveats (unchanged from the current setup)
+### UI flow
 
-- **Login still required.** Single-user mode is still on, so the installed app behaves the same as the website — your colleague would still need an account to use it. Installing doesn't bypass auth.
-- **Internet required.** This is not offline mode. It's a wrapper that makes the web app launch like a native app.
-- **Data lives in Lovable Cloud.** Same backend, same RLS rules.
+```text
+/canvas-export
+ ├─ Course picker          (reuses listCanvasCourses server fn — already exists)
+ ├─ Quiz list              (Classic + New Quizzes, merged & paginated)
+ ├─ Quiz detail panel      (question count, type breakdown)
+ └─ Export buttons:
+      ├─ Word (.docx)        ← teacher-friendly format
+      ├─ Word (Bank Quiz)    ← question-bank import format
+      ├─ QTI (.zip)          ← Canvas/Blackboard import
+      └─ Mastery Connect CSV ← standards alignment export
+```
 
-## Future: multi-user workflow (separate, not part of this plan)
+### Server functions (new, in Teacher's Companion's TanStack Start style)
 
-You mentioned possibly opening this up to multiple users later. When you're ready, that's a separate change that would involve:
-- Re-enabling signups (with optional email allow-list or invite codes)
-- Deciding the data-sharing model: do new users see *your* curriculum/notes, get a fresh empty workspace, or share a "team" workspace?
-- Possibly adding role tiers (e.g., owner vs. collaborator) on top of the existing `user_roles` table
-- Updating RLS policies to match whichever sharing model you pick
+Add to `src/lib/canvas.functions.ts`:
+- `listCanvasQuizzes({ courseId })` — lists Classic + New Quizzes side by side
+- `getCanvasQuizQuestions({ courseId, quizId, quizType })` — fetches all questions, handles both Classic (`/quizzes/:id/questions`) and New Quizzes (`/api/quiz/v1/courses/:courseId/quizzes/:id/items`) endpoints with pagination
+- All run **server-side**, so no CORS proxy edge function needed (unlike this app)
 
-I'll leave that for a future request — just flagging the decision points so you can think about them.
+### Exporter library (ported from this app)
 
-## Files touched
+New folder `src/lib/exports/`:
+- `quiz-types.ts` — normalized quiz/question shape (target for both Classic & New Quizzes)
+- `quiz-to-docx.ts` — port of `export-docx.ts`, refactored to take normalized shape
+- `quiz-to-bank-docx.ts` — port of `export-bank-quiz.ts`
+- `quiz-to-qti.ts` — port of `export-qti.ts` (uses `fflate` for zip, already in Teacher's Companion deps)
+- `quiz-to-mastery-csv.ts` — refactor of the existing partial in Teacher's Companion to handle Canvas-fetched data
 
-- `index.html` (edit — add manifest/icon/meta tags in `<head>`)
-- `public/manifest.json` (new)
-- `public/icon-192.png` (new)
-- `public/icon-512.png` (new)
-- `public/icon-maskable-512.png` (new)
-- `public/apple-touch-icon.png` (new)
+All run **client-side** (file download happens in the browser via `file-saver`, already in deps).
 
-No code in `src/` changes. No dependencies added. No backend changes.
+### Components (new)
+
+- `src/components/canvas-export/CourseQuizPicker.tsx` — course dropdown + quiz list
+- `src/components/canvas-export/QuizExportPanel.tsx` — detail panel + 4 export buttons + loading states
+- `src/components/canvas-export/NotConnectedNotice.tsx` — link to Settings if `canvas_token` is missing
+
+### Nav integration
+
+Add a "Canvas Export" link to the existing sidebar in `src/routes/_authenticated/route.tsx` (next to Library / Generate / Analytics).
+
+---
+
+## What does NOT change
+
+- No new database tables (Canvas creds already on `profiles.canvas_token`)
+- No new secrets
+- No new auth flow
+- No Supabase edge functions (TanStack server functions handle Canvas calls)
+- This app (Canvas Quiz Export 2) is **not modified** — only Teacher's Companion gets new code
+
+---
+
+## Effort estimate
+
+- Server fns + types: small
+- 4 exporter ports: medium (the .docx/QTI generators are 200-500 lines each and need their dependencies on this app's data shapes stripped out)
+- UI: small (3 components, 1 route)
+- Total: ~1 build session
+
+---
+
+## What I need from you to start building
+
+Nothing — answers already given. I'll switch to Teacher's Companion App when you approve, and build there. The work happens in that project, not here.
+
+**One thing to confirm:** are you OK with Group B (curriculum/lesson/reading/escape-room/H5P/ISAT exports) staying only in *this* app? If you ever want those in Teacher's Companion, that's a separate, much larger conversation (likely a remix instead of a port).
