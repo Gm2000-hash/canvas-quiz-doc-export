@@ -1,96 +1,87 @@
+# Port AI Generators to Teacher's Companion
 
-## Scope honesty first
+## What we're moving
 
-You said "everything export-related," and I want to flag a hard constraint before we commit:
+Four AI generators from this app:
 
-This app has **10+ exporters**. They split into two groups:
+1. **Question generator** — `generate-questions` edge fn + `CreateQuestionDialog`
+2. **Lesson plan generator** — `generate-lesson-plans` edge fn + `RegenerateLessonDialog`/`PrepopulateStandardsDialog`
+3. **Escape room generator** — `generate-escape-room` edge fn + `GenerateEscapeRoomDialog`
+4. **Reading generator** — `generate-curriculum-reading` edge fn + reading UI
 
-**A. Portable** — read directly from Canvas, no app database needed:
-- Canvas quiz → Word (`export-docx.ts`)
-- Canvas quiz → Bank-Quiz Word (`export-bank-quiz.ts`)
-- Canvas quiz → QTI .zip (`export-qti.ts`)
-- Canvas quiz → Mastery Connect CSV (`export-mastery-connect.ts`) — Teacher's Companion already has a partial version
+All are UDL-wrapped (`withUdl()`), Lovable AI Gateway–backed, and tied to NGSS / Idaho standards.
 
-**B. Not portable without porting the whole app** — read from this app's database tables (curriculum, lessons, escape rooms, readings, H5P, ISAT exams) that Teacher's Companion doesn't have:
-- `export-curriculum-docx.ts`, `export-lesson-docx.ts`, `export-escape-room-docx.ts`, `export-reading-docx.ts`, `export-reading-pdf.ts`, `export-h5p.ts`
+## Same two-step rhythm as the exporter port
 
-Porting Group B = porting ~20 RLS tables, ~15 AI generators, the unit/curriculum editor UI, the reading library, ISAT, etc. That's effectively cloning the whole app into Teacher's Companion — which is a remix, not a port.
+Work happens here first (prep clean, portable artifacts), then the user runs a follow-up prompt in **Teacher's Companion** which uses `cross_project--read_project_file` to pull everything across.
 
-**Recommended scope:** port Group A only (the Canvas-tied exporters). Skip Group B. I'll surface a clear "Coming from your Canvas account" landing page that's honest about the scope.
+## Phase 1 — In THIS project (prep)
 
-If you actually want Group B too, say so and I'll quote a much larger plan.
+### A. Portable `_shared` for edge functions
+Stage clean copies under `supabase/functions/_shared/portable/`:
+- `udl.ts` — already self-contained, copy as-is
+- `model.ts` — resolver, copy as-is
+- `logger.ts` — strip project-specific log table refs, leave console fallback
+- `ai-gateway.ts` — single helper (`callGateway(model, messages, tools?)`) so target app doesn't have to learn our patterns
 
----
+### B. Portable standards data
+- `src/lib/exports-ai/standards-mini.ts` — minimal `{ code, description, key_terms? }` shape only. Strips NGSS/Idaho's full dimension trees so target app can supply its own standard list.
 
-## What I'll build (Group A)
+### C. Edge function clones (target-ready)
+Under `supabase/functions/_portable/`:
+- `generate-questions/index.ts`
+- `generate-lesson-plans/index.ts`
+- `generate-escape-room/index.ts`
+- `generate-curriculum-reading/index.ts`
 
-A new route in Teacher's Companion at **`/_authenticated/canvas-export`** with a sidebar link in the existing nav. It uses the Canvas connection already configured in Teacher's Companion Settings (no new auth UI).
+Changes vs the originals:
+- Drop direct DB writes — return generated payload only. Target app decides where to persist.
+- Replace `ALL_SUBSTANDARDS` lookups with caller-supplied standards array.
+- Keep `withUdl()` wrapping and `resolveModel(body, tier)` resolution.
+- Standard CORS + JWT verify + LOVABLE_API_KEY check.
 
-### UI flow
+### D. Portable types + client
+`src/lib/exports-ai/`:
+- `types.ts` — `PortableStandard`, `GenerateQuestionsInput/Output`, `GenerateLessonInput/Output`, `GenerateEscapeRoomInput/Output`, `GenerateReadingInput/Output`
+- `client.ts` — thin `supabase.functions.invoke()` wrappers, returns typed results
+- `index.ts` — barrel
+- `README.md` — porting guide + how to drop the edge fns in, plus required secrets (`LOVABLE_API_KEY` only)
 
-```text
-/canvas-export
- ├─ Course picker          (reuses listCanvasCourses server fn — already exists)
- ├─ Quiz list              (Classic + New Quizzes, merged & paginated)
- ├─ Quiz detail panel      (question count, type breakdown)
- └─ Export buttons:
-      ├─ Word (.docx)        ← teacher-friendly format
-      ├─ Word (Bank Quiz)    ← question-bank import format
-      ├─ QTI (.zip)          ← Canvas/Blackboard import
-      └─ Mastery Connect CSV ← standards alignment export
-```
+### E. Starter UI components (framework-agnostic shadcn)
+`src/lib/exports-ai/ui/`:
+- `GenerateQuestionsDialog.tsx`
+- `GenerateLessonDialog.tsx`
+- `GenerateEscapeRoomDialog.tsx`
+- `GenerateReadingDialog.tsx`
 
-### Server functions (new, in Teacher's Companion's TanStack Start style)
+These are simplified versions: standards picker is a prop (target app supplies its own picker since their standards data may differ), model select is optional. No app-specific imports — only `@/components/ui/*` from shadcn, which both apps share.
 
-Add to `src/lib/canvas.functions.ts`:
-- `listCanvasQuizzes({ courseId })` — lists Classic + New Quizzes side by side
-- `getCanvasQuizQuestions({ courseId, quizId, quizType })` — fetches all questions, handles both Classic (`/quizzes/:id/questions`) and New Quizzes (`/api/quiz/v1/courses/:courseId/quizzes/:id/items`) endpoints with pagination
-- All run **server-side**, so no CORS proxy edge function needed (unlike this app)
+## Phase 2 — Follow-up prompt for Teacher's Companion
 
-### Exporter library (ported from this app)
+You paste a single prompt over in Teacher's Companion. That agent will:
+1. `cross_project--read_project_file` every file under `src/lib/exports-ai/`, `supabase/functions/_portable/`, and `supabase/functions/_shared/portable/` from this project
+2. Copy edge functions to `supabase/functions/{generate-questions,generate-lesson-plans,generate-escape-room,generate-curriculum-reading}/`
+3. Copy `_shared/portable/*` into its own `_shared/`
+4. Copy the lib + UI components into the target codebase
+5. Add a route (likely `/_authenticated/ai-generate` next to `/canvas-export`) with tabs for each generator
+6. Wire its existing standards source to the `standards` prop
 
-New folder `src/lib/exports/`:
-- `quiz-types.ts` — normalized quiz/question shape (target for both Classic & New Quizzes)
-- `quiz-to-docx.ts` — port of `export-docx.ts`, refactored to take normalized shape
-- `quiz-to-bank-docx.ts` — port of `export-bank-quiz.ts`
-- `quiz-to-qti.ts` — port of `export-qti.ts` (uses `fflate` for zip, already in Teacher's Companion deps)
-- `quiz-to-mastery-csv.ts` — refactor of the existing partial in Teacher's Companion to handle Canvas-fetched data
+## What's NOT in scope
 
-All run **client-side** (file download happens in the browser via `file-saver`, already in deps).
+- We are not porting standards data itself. Each app keeps its own. (NGSS data is ~2 MB and project-specific.)
+- We are not porting persistence (DB inserts). The dialogs return generated content via callback; target app decides what to do with it.
+- We are not porting NGSS-specific tagger functions (`ngss-tagger`, `standards-tagger`) — those depend on full NGSS data. Can be a follow-up.
+- We are not touching the originals in this project. They keep working.
 
-### Components (new)
+## Technical notes
 
-- `src/components/canvas-export/CourseQuizPicker.tsx` — course dropdown + quiz list
-- `src/components/canvas-export/QuizExportPanel.tsx` — detail panel + 4 export buttons + loading states
-- `src/components/canvas-export/NotConnectedNotice.tsx` — link to Settings if `canvas_token` is missing
+- Edge fns stay JWT-verified (default). Only secret needed in target: `LOVABLE_API_KEY` (already set there).
+- All generators use `resolveModel(body, tier)` with `"heavy"` for lessons/escape rooms, `"default"` for questions, `"utility"` for short helpers — preserved exactly.
+- UI components accept `onGenerated(result)` callback rather than writing to Supabase directly.
+- Total new files in this project: ~20. No edits to existing files.
 
-### Nav integration
+## Effort
 
-Add a "Canvas Export" link to the existing sidebar in `src/routes/_authenticated/route.tsx` (next to Library / Generate / Analytics).
+One session here for the prep. One session in Teacher's Companion to wire it up.
 
----
-
-## What does NOT change
-
-- No new database tables (Canvas creds already on `profiles.canvas_token`)
-- No new secrets
-- No new auth flow
-- No Supabase edge functions (TanStack server functions handle Canvas calls)
-- This app (Canvas Quiz Export 2) is **not modified** — only Teacher's Companion gets new code
-
----
-
-## Effort estimate
-
-- Server fns + types: small
-- 4 exporter ports: medium (the .docx/QTI generators are 200-500 lines each and need their dependencies on this app's data shapes stripped out)
-- UI: small (3 components, 1 route)
-- Total: ~1 build session
-
----
-
-## What I need from you to start building
-
-Nothing — answers already given. I'll switch to Teacher's Companion App when you approve, and build there. The work happens in that project, not here.
-
-**One thing to confirm:** are you OK with Group B (curriculum/lesson/reading/escape-room/H5P/ISAT exports) staying only in *this* app? If you ever want those in Teacher's Companion, that's a separate, much larger conversation (likely a remix instead of a port).
+Approve and I'll start Phase 1.
