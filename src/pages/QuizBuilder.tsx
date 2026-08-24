@@ -302,6 +302,19 @@ export default function QuizBuilder() {
 
   const totalPoints = selectedQuestions.reduce((sum, q) => sum + (settings.pointsPerQuestion ?? q.points_possible ?? 1), 0);
 
+  const handlePushToCanvas = () => {
+    if (selectedIds.length === 0) {
+      toast.warning("Add at least one question to push a quiz.");
+      return;
+    }
+    if (!canvasConnected || !canvasConfig) {
+      toast.warning("Connect Canvas first to push quizzes.");
+      navigate("/canvas");
+      return;
+    }
+    setShowPush(true);
+  };
+
   const QUESTION_TYPES: Record<string, string> = {
     multiple_choice_question: "Multiple Choice",
     multiple_answers_question: "Select All",
