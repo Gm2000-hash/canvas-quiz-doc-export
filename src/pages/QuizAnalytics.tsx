@@ -285,9 +285,10 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
         high,
         low,
         points: d.quiz.points_possible,
+        isDeepLinked: !!deepQuizId && String(d.quiz.id) === deepQuizId,
       };
-    });
-  }, [canvasQuizData]);
+    }).sort((a, b) => Number(b.isDeepLinked) - Number(a.isDeepLinked));
+  }, [canvasQuizData, deepQuizId]);
 
   const canvasDistribution = useMemo(() => {
     const buckets = [
