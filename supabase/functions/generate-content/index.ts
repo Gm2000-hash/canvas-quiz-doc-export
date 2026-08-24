@@ -323,11 +323,26 @@ async function callGateway(
   return { result, finishReason, errorResponse: null };
 }
 
+/** Tolerant JSON parse: handles double-encoded and over-escaped strings from the model. */
+function parseAnswersJson(raw: string): any {
+  const attempts = [raw, raw.replace(/\\\\n/g, "\\n").replace(/\\n/g, " "), raw.replace(/\\+/g, "\\")];
+  for (const candidate of attempts) {
+    try {
+      let parsed = JSON.parse(candidate);
+      if (typeof parsed === "string") parsed = JSON.parse(parsed);
+      return parsed;
+    } catch { /* try next */ }
+  }
+  console.error("Failed to parse answers_json:", String(raw).substring(0, 300));
+  return [];
+}
+
 function normalizeQuestion(q: any) {
   let answers = q.answers;
   if (q.answers_json) {
-    try { answers = JSON.parse(q.answers_json); } catch { answers = []; }
+    answers = parseAnswersJson(String(q.answers_json));
   }
+
   if (Array.isArray(answers)) {
     answers = answers.map((a: any) => ({ text: a.text, weight: a.weight ?? (a.correct ? 100 : 0) }));
   }
