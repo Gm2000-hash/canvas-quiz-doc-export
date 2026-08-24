@@ -394,8 +394,9 @@ Use the tool provided to return your questions. Return EXACTLY the number of que
     const MAX_ATTEMPTS = 3;
     const requested = Math.max(1, Number(count) || 1);
     const questions: any[] = [];
+    let aborted = false;
 
-    while (questions.length < requested) {
+    while (questions.length < requested && !aborted) {
       const target = Math.min(BATCH_SIZE, requested - questions.length);
       let batchCount = 0;
 
@@ -405,7 +406,7 @@ Use the tool provided to return your questions. Return EXACTLY the number of que
           questions.map((q) => q.question_text).filter(Boolean),
         );
         if (errorResponse) {
-          if (questions.length > 0) { batchCount = target; break; }
+          if (questions.length > 0) { aborted = true; break; }
           return errorResponse;
         }
         for (const q of got) {
@@ -420,6 +421,7 @@ Use the tool provided to return your questions. Return EXACTLY the number of que
         break;
       }
     }
+
 
     if (questions.length === 0) throw new Error('No questions could be generated');
 
