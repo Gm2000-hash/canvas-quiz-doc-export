@@ -193,15 +193,15 @@ If the document contains a single topic/reading rather than multiple lessons, cr
         messages: [
           {
             role: 'system',
-            content: `You are a document parser for an educational lesson planning app. Extract structured lesson plan content from the text. Return a JSON array of lesson objects with: "title", "objectives", "activities", "materials", "assessment", "notes", "duration_minutes". Always return valid JSON array.`
+            content: systemPrompt ?? `You are a document parser for an educational lesson planning app. Extract structured lesson plan content from the text. Return a JSON array of lesson objects with: "title", "objectives", "activities", "materials", "assessment", "notes", "duration_minutes". Always return valid JSON array.`
           },
           {
             role: 'user',
-            content: `Parse this text document and extract lesson plan content. Return ONLY a valid JSON array.\n\nContent:\n${textContent.slice(0, 30000)}`
+            content: `${userPrompt}\n\nContent:\n${textContent.slice(0, 120000)}`
           }
         ],
         temperature: 0.2,
-        max_tokens: 8000,
+        max_tokens: mode === 'questions' ? 16000 : 8000,
       }),
     });
 
@@ -216,7 +216,7 @@ If the document contains a single topic/reading rather than multiple lessons, cr
     const jsonMatch = content.match(/\[[\s\S]*\]/);
     
     if (jsonMatch) {
-      return new Response(JSON.stringify({ lessons: JSON.parse(jsonMatch[0]), source: file.name }), {
+      return new Response(JSON.stringify({ [resultKey]: JSON.parse(jsonMatch[0]), source: file.name }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
