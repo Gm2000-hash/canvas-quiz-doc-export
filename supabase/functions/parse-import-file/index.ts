@@ -7,6 +7,40 @@ import { resolveModel } from "../_shared/model.ts";
 
 const AI_GATEWAY = 'https://ai.gateway.lovable.dev/v1/chat/completions';
 
+// Max upload size accepted by this function (raised so large quiz documents work)
+const MAX_FILE_BYTES = 25 * 1024 * 1024;
+
+/**
+ * Base64-encode an ArrayBuffer in chunks.
+ * Spreading a whole Uint8Array into String.fromCharCode overflows the JS call
+ * stack ("Maximum call stack size exceeded") on files larger than ~100KB.
+ */
+function toBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  const CHUNK = 0x8000; // 32KB per chunk keeps the argument list small
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + CHUNK)) as unknown as number[]);
+  }
+  return btoa(binary);
+}
+
+const QUESTION_SYSTEM_PROMPT = `You are a quiz parser for an educational assessment app. Extract every assessment question from the provided document.
+
+Return ONLY a valid JSON array. Each question object must have:
+- "question_text": string (the full question stem, plain text or simple HTML)
+- "question_type": one of "multiple_choice_question", "true_false_question", "multiple_answers_question", "short_answer_question", "essay_question", "matching_question", "numerical_question"
+- "points_possible": number (default 1)
+- "answers": array of { "text": string, "weight": number } — weight 100 for correct answers, 0 for incorrect. Empty array for essay/short answer questions when no key is given.
+- "dok_level": number 1-4 (your best estimate of Depth of Knowledge)
+- "blooms_level": one of "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"
+
+Rules:
+- Preserve the original wording of questions and options; do not invent new questions.
+- Keep math/science notation as KaTeX ($...$) or HTML <sup>/<sub>.
+- If a correct answer is not indicated, still list the options with weight 0.
+- Return every question you find, in document order.`;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -48,6 +82,22 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (file.size > MAX_FILE_BYTES) {
+      return new Response(JSON.stringify({ error: `File must be under ${Math.round(MAX_FILE_BYTES / (1024 * 1024))}MB` }), {
+        status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // "lessons" (default) extracts lesson plans, "questions" extracts quiz questions
+    const mode = (formData.get('mode') as string | null) === 'questions' ? 'questions' : 'lessons';
+    const resultKey = mode === 'questions' ? 'questions' : 'lessons';
+    const systemPrompt = mode === 'questions'
+      ? QUESTION_SYSTEM_PROMPT
+      : null;
+    const userPrompt = mode === 'questions'
+      ? 'Extract every assessment question from this document. Return ONLY a valid JSON array.'
+      : 'Parse this document and extract lesson plan content. Return ONLY a valid JSON array.';
+
     // Read file content as text for supported types
     const fileName = file.name.toLowerCase();
     let textContent = '';
@@ -55,9 +105,10 @@ Deno.serve(async (req) => {
     if (fileName.endsWith('.txt') || fileName.endsWith('.md') || fileName.endsWith('.csv')) {
       textContent = await file.text();
     } else {
-      // For binary files (.docx, .xlsx, .pptx, .pdf), read as base64
+      // For binary files (.docx, .xlsx, .pptx, .pdf), read as base64 in chunks
       const buffer = await file.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      const base64 = toBase64(buffer);
+      
       
       // Use AI to extract and structure the content
       const mimeType = file.type || 'application/octet-stream';
@@ -73,7 +124,7 @@ Deno.serve(async (req) => {
           messages: [
             {
               role: 'system',
-              content: `You are a document parser for an educational lesson planning app. Extract structured lesson plan content from the uploaded document. Return a JSON array of lesson objects. Each lesson should have:
+              content: systemPrompt ?? `You are a document parser for an educational lesson planning app. Extract structured lesson plan content from the uploaded document. Return a JSON array of lesson objects. Each lesson should have:
 - "title": string (lesson title)
 - "objectives": string (learning objectives, separated by newlines)
 - "activities": string (lesson activities description)
@@ -96,13 +147,13 @@ If the document contains a single topic/reading rather than multiple lessons, cr
                 },
                 {
                   type: 'text',
-                  text: `Parse this document and extract lesson plan content. Return ONLY a valid JSON array.`
+                  text: userPrompt
                 }
               ]
             }
           ],
           temperature: 0.2,
-          max_tokens: 8000,
+          max_tokens: mode === 'questions' ? 16000 : 8000,
         }),
       });
 
@@ -120,7 +171,7 @@ If the document contains a single topic/reading rather than multiple lessons, cr
       // Extract JSON from response (may be wrapped in markdown code block)
       const jsonMatch = content.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
-        return new Response(JSON.stringify({ lessons: JSON.parse(jsonMatch[0]), source: file.name }), {
+        return new Response(JSON.stringify({ [resultKey]: JSON.parse(jsonMatch[0]), source: file.name }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
@@ -142,15 +193,15 @@ If the document contains a single topic/reading rather than multiple lessons, cr
         messages: [
           {
             role: 'system',
-            content: `You are a document parser for an educational lesson planning app. Extract structured lesson plan content from the text. Return a JSON array of lesson objects with: "title", "objectives", "activities", "materials", "assessment", "notes", "duration_minutes". Always return valid JSON array.`
+            content: systemPrompt ?? `You are a document parser for an educational lesson planning app. Extract structured lesson plan content from the text. Return a JSON array of lesson objects with: "title", "objectives", "activities", "materials", "assessment", "notes", "duration_minutes". Always return valid JSON array.`
           },
           {
             role: 'user',
-            content: `Parse this text document and extract lesson plan content. Return ONLY a valid JSON array.\n\nContent:\n${textContent.slice(0, 30000)}`
+            content: `${userPrompt}\n\nContent:\n${textContent.slice(0, 120000)}`
           }
         ],
         temperature: 0.2,
-        max_tokens: 8000,
+        max_tokens: mode === 'questions' ? 16000 : 8000,
       }),
     });
 
@@ -165,7 +216,7 @@ If the document contains a single topic/reading rather than multiple lessons, cr
     const jsonMatch = content.match(/\[[\s\S]*\]/);
     
     if (jsonMatch) {
-      return new Response(JSON.stringify({ lessons: JSON.parse(jsonMatch[0]), source: file.name }), {
+      return new Response(JSON.stringify({ [resultKey]: JSON.parse(jsonMatch[0]), source: file.name }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }

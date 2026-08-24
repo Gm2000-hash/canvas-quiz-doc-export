@@ -71,8 +71,8 @@ export function UniversalImportDialog({ open, onOpenChange, units, onImported }:
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (file.size > 10 * 1024 * 1024) {
-      setError("File must be under 10MB");
+    if (file.size > 25 * 1024 * 1024) {
+      setError("File must be under 25MB");
       return;
     }
 
@@ -244,7 +244,7 @@ export function UniversalImportDialog({ open, onOpenChange, units, onImported }:
                   <>
                     <FileText className="h-10 w-10 text-muted-foreground/50" />
                     <p className="text-sm font-medium text-foreground">Click to select a file</p>
-                    <p className="text-xs text-muted-foreground">Max 10MB</p>
+                    <p className="text-xs text-muted-foreground">Max 25MB</p>
                   </>
                 )}
               </div>

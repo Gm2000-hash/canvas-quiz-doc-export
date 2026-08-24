@@ -21,6 +21,7 @@ import { toast } from "sonner";
 import { Loader2, Search, Trash2, FlaskConical, BookOpen, ArrowLeft, FileText, Pencil, X, List, LayoutGrid, Leaf, Globe, Atom, ChevronRight, ChevronDown, Wand2, BarChart3, PieChart as PieChartIcon, Plus, Sparkles, Lightbulb, Upload, Hash, Landmark, ClipboardCheck, Tag } from "lucide-react";
 import { AppNavSheet } from "@/components/AppNavSheet";
 import CreateQuestionDialog from "@/components/CreateQuestionDialog";
+import ImportQuizFileDialog from "@/components/ImportQuizFileDialog";
 import GenerateContentDialog from "@/components/GenerateContentDialog";
 import GenerateISATExamDialog from "@/components/GenerateISATExamDialog";
 import ISATExamList from "@/components/ISATExamList";
@@ -132,6 +133,7 @@ const QuestionBank = () => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [showExportDialog, setShowExportDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showImportQuiz, setShowImportQuiz] = useState(false);
   const [showGenerateDialog, setShowGenerateDialog] = useState(false);
   const [singleDeleteTarget, setSingleDeleteTarget] = useState<{ id: string; text: string } | null>(null);
   const [generateForStandard, setGenerateForStandard] = useState<{ code: string; description: string; framework: "NGSS" | "Idaho"; subject: string } | null>(null);
@@ -618,6 +620,7 @@ const QuestionBank = () => {
             variant: "ink",
           }}
           secondaryActions={[
+            { label: "Import Quiz File", icon: Upload, onClick: () => setShowImportQuiz(true) },
             { label: "Quiz Builder", icon: ClipboardCheck, onClick: () => navigate("/quiz-builder") },
           ]}
           sideTiles={[
@@ -670,7 +673,11 @@ const QuestionBank = () => {
             <Button size="sm" variant="outline" onClick={() => { setGenerateForStandard(null); setShowGenerateDialog(true); }} className="gap-1.5 border-2 border-card-foreground">
               <Sparkles className="h-4 w-4" /> Generate Sample Questions
             </Button>
+            <Button size="sm" variant="outline" onClick={() => setShowImportQuiz(true)} className="gap-1.5 border-2 border-card-foreground">
+              <Upload className="h-4 w-4" /> Import Quiz File
+            </Button>
             <Button size="sm" variant="outline" onClick={() => navigate("/quiz-builder")} className="gap-1.5 border-2 border-card-foreground">
+
               <ClipboardCheck className="h-4 w-4" /> Quiz Builder
             </Button>
             <Button variant={viewMode === "grouped" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grouped")} className="gap-1.5 border-card-foreground border-2">
@@ -1828,6 +1835,12 @@ const QuestionBank = () => {
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
         onCreated={loadQuestions}
+      />
+      <ImportQuizFileDialog
+        open={showImportQuiz}
+        onOpenChange={setShowImportQuiz}
+        onImported={loadQuestions}
+        onQuizCreated={() => navigate("/quiz-builder")}
       />
       <GenerateContentDialog
         open={showGenerateDialog}
