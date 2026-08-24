@@ -583,7 +583,23 @@ export default function CanvasResults({ embedded = false }: { embedded?: boolean
     });
   }, [studentScores, questionToStandards]);
 
+  // Publish the student × standard matrix so the Analytics tab can render its mastery grid.
+  useEffect(() => {
+    if (step !== "report" || studentStandardMatrix.length === 0 || allStandards.length === 0) return;
+    saveMasterySnapshot({
+      quizTitle: quizzes.find(q => String(q.id) === selectedQuiz)?.title || "Canvas quiz",
+      courseName: courses.find(c => String(c.id) === selectedCourse)?.name || "",
+      capturedAt: new Date().toISOString(),
+      standards: allStandards,
+      students: studentStandardMatrix.map(s => ({
+        studentName: s.studentName,
+        scores: Object.fromEntries(s.stdScores),
+      })),
+    });
+  }, [step, studentStandardMatrix, allStandards, quizzes, courses, selectedQuiz, selectedCourse]);
+
   const mappedCount = mappings.filter(m => m.standards.length > 0).length;
+
 
   if (!config) {
     return (
