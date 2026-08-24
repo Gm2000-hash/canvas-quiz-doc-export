@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withLogging } from "../_shared/logger.ts";
 import { resolveModel } from "../_shared/model.ts";
 import { withUdl } from "../_shared/udl.ts";
+import { ExactQuestionCountError, QuestionGenerationError, generateExactQuestions } from "../_shared/exact-question-generation.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -368,24 +369,11 @@ Use the tool provided to return your questions. Return EXACTLY the number of que
       console.log('AI gateway status:', response.status);
 
       if (!response.ok) {
-        if (response.status === 429) {
-          return {
-            questions: [],
-            errorResponse: new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again shortly.' }), {
-              status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            }),
-          };
-        }
-        if (response.status === 402) {
-          return {
-            questions: [],
-            errorResponse: new Response(JSON.stringify({ error: 'AI credits exhausted. Please add credits in workspace settings.' }), {
-              status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            }),
-          };
-        }
-        console.error('AI gateway error:', responseText.substring(0, 500));
-        throw new Error(`AI gateway error [${response.status}]`);
+        let gatewayMessage = `AI gateway error [${response.status}]`;
+        try { gatewayMessage = JSON.parse(responseText)?.message ?? JSON.parse(responseText)?.error ?? gatewayMessage; } catch { /* retain status */ }
+        console.error('AI gateway error:', response.status, responseText.substring(0, 500));
+        const retryAfter = Number(response.headers.get('Retry-After')) || undefined;
+        throw new QuestionGenerationError(gatewayMessage, response.status, retryAfter);
       }
 
       const raw = JSON.parse(responseText);
@@ -409,44 +397,29 @@ Use the tool provided to return your questions. Return EXACTLY the number of que
       return { questions: got.filter((q: any) => q?.question_text).map(normalize), errorResponse: null };
     };
 
-    const BATCH_SIZE = 5;
-    const MAX_ATTEMPTS = 3;
-    const requested = Math.max(1, Number(count) || 1);
-    const questions: any[] = [];
-    let aborted = false;
-
-    while (questions.length < requested && !aborted) {
-      const target = Math.min(BATCH_SIZE, requested - questions.length);
-      let batchCount = 0;
-
-      for (let attempt = 0; attempt < MAX_ATTEMPTS && batchCount < target; attempt++) {
-        const { questions: got, errorResponse } = await runBatch(
-          target - batchCount,
-          questions.map((q) => q.question_text).filter(Boolean),
-        );
-        if (errorResponse) {
-          if (questions.length > 0) { aborted = true; break; }
-          return errorResponse;
+    const requested = Math.min(50, Math.max(1, Math.floor(Number(count) || 1)));
+    const { questions, diagnostics } = await generateExactQuestions<any>({
+      requested,
+      getStem: (question) => question.question_text,
+      validate: (question) => {
+        if (!String(question?.question_text ?? '').trim()) return { valid: false, reason: 'empty stem' };
+        if (!String(question?.question_type ?? '').trim()) return { valid: false, reason: 'missing question type' };
+        if (question.question_type === 'multiple_choice_question' || question.question_type === 'multiple_answers_question') {
+          if (!Array.isArray(question.answers) || question.answers.length < 2) return { valid: false, reason: 'missing answer options' };
+          if (question.answers.some((answer: any) => !String(answer?.text ?? '').trim())) return { valid: false, reason: 'blank answer option' };
+          if (!question.answers.some((answer: any) => Number(answer?.weight) > 0)) return { valid: false, reason: 'no correct answer' };
+        } else if (!question.answers || (Array.isArray(question.answers) && question.answers.length === 0)) {
+          return { valid: false, reason: 'missing answer structure' };
         }
-        for (const q of got) {
-          if (batchCount >= target) break;
-          questions.push(q);
-          batchCount++;
-        }
-      }
+        return { valid: true };
+      },
+      generateBatch: async (need, excludeStems) => {
+        const result = await runBatch(need, excludeStems);
+        return result.questions;
+      },
+    });
 
-      if (batchCount === 0) {
-        console.error('No questions produced in this batch; stopping early.');
-        break;
-      }
-    }
-
-
-    if (questions.length === 0) throw new Error('No questions could be generated');
-
-    console.log(`Generated ${questions.length} of ${requested} requested questions for ${standard_code}`);
-
-    return new Response(JSON.stringify({ questions, standard_code, requested, returned: questions.length }), {
+    return new Response(JSON.stringify({ questions, standard_code, requested, generated: questions.length, diagnostics }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
@@ -454,8 +427,14 @@ Use the tool provided to return your questions. Return EXACTLY the number of que
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     console.error('generate-questions error:', message);
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500,
+    const status = error instanceof QuestionGenerationError
+      ? error.status
+      : error instanceof ExactQuestionCountError ? 422 : 500;
+    return new Response(JSON.stringify({
+      error: message,
+      ...(error instanceof ExactQuestionCountError ? { diagnostics: error.diagnostics } : {}),
+    }), {
+      status,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }

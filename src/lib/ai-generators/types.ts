@@ -68,6 +68,8 @@ export interface GeneratedQuestion {
 export interface GenerateQuestionsOutput {
   questions: GeneratedQuestion[];
   standard_code: string;
+  requested: number;
+  generated: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

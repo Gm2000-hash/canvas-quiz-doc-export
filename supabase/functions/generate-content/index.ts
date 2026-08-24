@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withLogging } from "../_shared/logger.ts";
 import { resolveModel } from "../_shared/model.ts";
 import { withUdl } from "../_shared/udl.ts";
+import { ExactQuestionCountError, QuestionGenerationError, generateExactQuestions } from "../_shared/exact-question-generation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -266,25 +267,11 @@ async function callGateway(
   });
 
   if (!response.ok) {
-    if (response.status === 429) {
-      return {
-        result: null, finishReason: null,
-        errorResponse: new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }),
-      };
-    }
-    if (response.status === 402) {
-      return {
-        result: null, finishReason: null,
-        errorResponse: new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }),
-      };
-    }
     const t = await response.text();
     console.error("AI error:", response.status, t.substring(0, 500));
-    throw new Error(`AI gateway error [${response.status}]`);
+    let gatewayMessage = `AI gateway error [${response.status}]`;
+    try { gatewayMessage = JSON.parse(t)?.message ?? JSON.parse(t)?.error ?? gatewayMessage; } catch { /* retain status */ }
+    throw new QuestionGenerationError(gatewayMessage, response.status, Number(response.headers.get("Retry-After")) || undefined);
   }
 
   const data = await response.json();
@@ -369,8 +356,18 @@ function normalizeQuestion(q: any) {
 }
 
 
-const QUESTION_BATCH_SIZE = 5;
-const MAX_QUESTION_ATTEMPTS = 3;
+function validateQuestion(q: any): { valid: boolean; reason?: string } {
+  if (!String(q?.question_text ?? "").trim()) return { valid: false, reason: "empty stem" };
+  if (!String(q?.question_type ?? "").trim()) return { valid: false, reason: "missing question type" };
+  if (q.question_type === "multiple_choice_question" || q.question_type === "multiple_answers_question") {
+    if (!Array.isArray(q.answers) || q.answers.length < 2) return { valid: false, reason: "missing answer options" };
+    if (q.answers.some((answer: any) => !String(answer?.text ?? "").trim())) return { valid: false, reason: "blank answer option" };
+    if (!q.answers.some((answer: any) => Number(answer?.weight) > 0)) return { valid: false, reason: "no correct answer" };
+  } else if (!q.answers || (Array.isArray(q.answers) && q.answers.length === 0)) {
+    return { valid: false, reason: "missing answer structure" };
+  }
+  return { valid: true };
+}
 
 serve(withLogging("generate-content", async (req) => {
 
@@ -402,57 +399,35 @@ serve(withLogging("generate-content", async (req) => {
 
     // ─── Questions: chunked generation with top-up loop ───────────────
     if (content_type === "questions") {
-      const requested = Math.max(1, Number(count) || 1);
-      const collected: any[] = [];
-      let batchStart = 0;
-
-      while (collected.length < requested) {
-        const remainingTotal = requested - collected.length;
-        const target = Math.min(QUESTION_BATCH_SIZE, remainingTotal);
-        let batchCollected = 0;
-
-        for (let attempt = 0; attempt < MAX_QUESTION_ATTEMPTS && batchCollected < target; attempt++) {
-          const need = target - batchCollected;
+      const requested = Math.min(50, Math.max(1, Math.floor(Number(count) || 1)));
+      const { questions, diagnostics } = await generateExactQuestions<any>({
+        requested,
+        getStem: (question) => question.question_text,
+        validate: validateQuestion,
+        generateBatch: async (need, excludeStems, attempt) => {
           const prompt = buildQuestionPrompt({
             standard_code, standard_description, subject, framework, dok_level,
             count: need,
-            exclude_stems: collected.map((q: any) => q.question_text).filter(Boolean),
+            exclude_stems: excludeStems,
           });
-
           const { result, finishReason, errorResponse } = await callGateway(
             LOVABLE_API_KEY, body, prompt, content_type,
           );
           if (errorResponse) {
-            if (collected.length > 0) break;
-            return errorResponse;
+            const payload = await errorResponse.clone().json().catch(() => ({ error: "AI generation failed" }));
+            throw new QuestionGenerationError(payload.error ?? "AI generation failed", errorResponse.status);
           }
-
           const got = Array.isArray(result?.questions) ? result.questions : [];
           console.log(
-            `Questions batch (need ${need}) returned ${got.length}` +
+            `Questions attempt ${attempt} (need ${need}) returned ${got.length}` +
             (finishReason ? ` [finish_reason: ${finishReason}]` : ""),
           );
-          for (const q of got) {
-            if (batchCollected >= target) break;
-            if (!q?.question_text) continue;
-            collected.push(normalizeQuestion(q));
-            batchCollected++;
-          }
-        }
-
-        if (batchCollected === 0) {
-          console.error(`No questions produced for batch starting at ${batchStart}; stopping.`);
-          break;
-        }
-        batchStart += batchCollected;
-      }
-
-      if (collected.length === 0) throw new Error("Failed to parse AI response");
-
-      console.log(`Generated ${collected.length} of ${requested} requested questions for ${standard_code}`);
+          return got.map(normalizeQuestion);
+        },
+      });
 
       return new Response(
-        JSON.stringify({ questions: collected, requested, returned: collected.length }),
+        JSON.stringify({ questions, requested, generated: questions.length, diagnostics }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -478,8 +453,14 @@ serve(withLogging("generate-content", async (req) => {
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     console.error("generate-content error:", message);
-    return new Response(JSON.stringify({ error: message }), {
-      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    const status = e instanceof QuestionGenerationError
+      ? e.status
+      : e instanceof ExactQuestionCountError ? 422 : 500;
+    return new Response(JSON.stringify({
+      error: message,
+      ...(e instanceof ExactQuestionCountError ? { diagnostics: e.diagnostics } : {}),
+    }), {
+      status, headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
 }));

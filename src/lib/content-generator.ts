@@ -58,7 +58,11 @@ async function generateForSubstandard(
   if (data?.error) return { saved: 0, error: data.error };
 
   if (contentType === "questions") {
-    return saveQuestions(data, user.id, code, description, options);
+    const requested = Math.max(1, Math.floor(count));
+    if (!Array.isArray(data?.questions) || data.questions.length !== requested || data?.generated !== requested) {
+      return { saved: 0, error: `Generated ${data?.questions?.length ?? 0} of ${requested} questions. Nothing was saved; please try again.` };
+    }
+    return saveQuestions(data, user.id, code, description, options, requested);
   } else if (contentType === "lesson_plan") {
     return saveLessonPlans(data, user.id, code, description, options);
   } else {
@@ -67,27 +71,20 @@ async function generateForSubstandard(
 }
 
 async function saveQuestions(
-  data: any, userId: string, code: string, description: string, options: GenerateOptions
-): Promise<{ saved: number }> {
-  const questions = data?.questions || [];
-  let saved = 0;
-
-  for (const q of questions) {
-    try {
-      let answers = q.answers;
-      if (Array.isArray(answers)) {
-        answers = answers.map((a: any, i: number) => ({
-          id: Date.now() + i,
-          text: a.text || "",
-          weight: a.weight ?? (a.correct ? 100 : 0),
-        }));
-      }
-
-      const sourceLabel = options.framework === "Idaho" ? `Idaho ${options.subject}` : "NGSS Science";
-
-      const { data: inserted, error: insertError } = await supabase
-        .from("question_bank")
-        .insert({
+  data: any, userId: string, code: string, description: string, options: GenerateOptions, requested: number
+): Promise<{ saved: number; error?: string }> {
+  const questions = data.questions as any[];
+  const sourceLabel = options.framework === "Idaho" ? `Idaho ${options.subject}` : "NGSS Science";
+  const rows = questions.map((q, questionIndex) => {
+    let answers = q.answers;
+    if (Array.isArray(answers)) {
+      answers = answers.map((a: any, answerIndex: number) => ({
+        id: Date.now() + questionIndex * 100 + answerIndex,
+        text: a.text || "",
+        weight: a.weight ?? (a.correct ? 100 : 0),
+      }));
+    }
+    return {
           user_id: userId,
           question_text: q.question_text,
           question_type: q.question_type,
@@ -97,25 +94,32 @@ async function saveQuestions(
           blooms_level: q.blooms_level || "Remember",
           source_course: `AI Generated (${sourceLabel})`,
           source_quiz: `ISAT Sample - ${code}`,
-        })
-        .select("id")
-        .single();
+    };
+  });
 
-      if (insertError) { console.error("Failed to save question:", insertError); continue; }
-
-      if (inserted) {
-        await supabase.from("question_bank_standards").insert({
-          question_bank_id: inserted.id,
-          ngss_code: code,
-          ngss_description: description,
-        });
-        saved++;
-      }
-    } catch (e) {
-      console.error("Error saving generated question:", e);
-    }
+  const { data: inserted, error: insertError } = await supabase
+    .from("question_bank")
+    .insert(rows)
+    .select("id");
+  if (insertError || !inserted || inserted.length !== requested) {
+    console.error("Question batch save failed:", insertError, { requested, inserted: inserted?.length ?? 0 });
+    if (inserted?.length) await supabase.from("question_bank").delete().in("id", inserted.map((row) => row.id));
+    return { saved: 0, error: `Generated ${requested}, but saved ${inserted?.length ?? 0}. The incomplete save was rolled back.` };
   }
-  return { saved };
+
+  const standardRows = inserted.map((row) => ({
+    question_bank_id: row.id,
+    ngss_code: code,
+    ngss_description: description,
+  }));
+  const { error: standardsError } = await supabase.from("question_bank_standards").insert(standardRows);
+  if (standardsError) {
+    console.error("Question standards batch save failed:", standardsError);
+    await supabase.from("question_bank").delete().in("id", inserted.map((row) => row.id));
+    return { saved: 0, error: `Generated ${requested}, but standards could not be saved. The incomplete save was rolled back.` };
+  }
+  console.log("Question save diagnostics:", { requested, generated: questions.length, saved: inserted.length });
+  return { saved: inserted.length };
 }
 
 async function saveLessonPlans(
