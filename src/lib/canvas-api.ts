@@ -192,7 +192,10 @@ export interface CreateQuizParams {
   time_limit?: number | null;
   shuffle_answers?: boolean;
   published?: boolean;
+  one_question_at_a_time?: boolean;
+  cant_go_back?: boolean;
 }
+
 
 export async function createCanvasQuiz(config: CanvasConfig, courseId: number, quizData: CreateQuizParams): Promise<Quiz> {
   return canvasRequest(config, 'create_quiz', { courseId, quizData });
@@ -204,7 +207,13 @@ export interface CreateQuizQuestionParams {
   question_type: string;
   points_possible: number;
   answers?: any[];
+  position?: number;
+  correct_comments_html?: string;
+  incorrect_comments_html?: string;
+  neutral_comments_html?: string;
+  matching_answer_incorrect_matches?: string;
 }
+
 
 export async function createCanvasQuizQuestion(
   config: CanvasConfig,
