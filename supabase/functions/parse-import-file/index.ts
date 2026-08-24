@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
           messages: [
             {
               role: 'system',
-              content: `You are a document parser for an educational lesson planning app. Extract structured lesson plan content from the uploaded document. Return a JSON array of lesson objects. Each lesson should have:
+              content: systemPrompt ?? `You are a document parser for an educational lesson planning app. Extract structured lesson plan content from the uploaded document. Return a JSON array of lesson objects. Each lesson should have:
 - "title": string (lesson title)
 - "objectives": string (learning objectives, separated by newlines)
 - "activities": string (lesson activities description)
@@ -147,13 +147,13 @@ If the document contains a single topic/reading rather than multiple lessons, cr
                 },
                 {
                   type: 'text',
-                  text: `Parse this document and extract lesson plan content. Return ONLY a valid JSON array.`
+                  text: userPrompt
                 }
               ]
             }
           ],
           temperature: 0.2,
-          max_tokens: 8000,
+          max_tokens: mode === 'questions' ? 16000 : 8000,
         }),
       });
 
@@ -171,7 +171,7 @@ If the document contains a single topic/reading rather than multiple lessons, cr
       // Extract JSON from response (may be wrapped in markdown code block)
       const jsonMatch = content.match(/\[[\s\S]*\]/);
       if (jsonMatch) {
-        return new Response(JSON.stringify({ lessons: JSON.parse(jsonMatch[0]), source: file.name }), {
+        return new Response(JSON.stringify({ [resultKey]: JSON.parse(jsonMatch[0]), source: file.name }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
       }
