@@ -165,7 +165,7 @@ function StandardsPicker({ standards, onChange, framework }: { standards: { code
 
 // ── Main Component ──
 
-export default function CanvasResults() {
+export default function CanvasResults({ embedded = false }: { embedded?: boolean } = {}) {
   const { config, setConfig } = useCanvasConfig();
   const { defaultFramework, subjects, grades } = useProfileDefaults();
   const [courses, setCourses] = useState<Course[]>([]);
@@ -565,9 +565,9 @@ export default function CanvasResults() {
 
   if (!config) {
     return (
-      <div className="min-h-screen bg-background">
-        <PageBanner greeting="Canvas Results" subtitle="Pull student quiz results and analyze performance by standard." />
-        <div className="max-w-xl mx-auto p-6">
+      <div className={embedded ? "" : "min-h-screen bg-background"}>
+        {!embedded && <PageBanner greeting="Canvas Results" subtitle="Pull student quiz results and analyze performance by standard." />}
+        <div className={embedded ? "max-w-xl" : "max-w-xl mx-auto p-6"}>
           <SettingsForm config={null} onSave={setConfig} onDisconnect={() => setConfig(null)} />
         </div>
       </div>
@@ -575,14 +575,16 @@ export default function CanvasResults() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <PageBanner greeting="Canvas Results" subtitle="Pull student quiz results and analyze performance by standard." />
+    <div className={embedded ? "" : "min-h-screen bg-background"}>
+      {!embedded && <PageBanner greeting="Canvas Results" subtitle="Pull student quiz results and analyze performance by standard." />}
 
-      <div className="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+      <div className={embedded ? "space-y-6" : "max-w-7xl mx-auto p-4 sm:p-6 space-y-6"}>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" asChild>
-            <Link to="/"><ArrowLeft className="h-4 w-4 mr-1" /> Home</Link>
-          </Button>
+          {!embedded && (
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/"><ArrowLeft className="h-4 w-4 mr-1" /> Home</Link>
+            </Button>
+          )}
           {step === "mapping" && (
             <Button variant="ghost" size="sm" onClick={() => setStep("select")}>
               <ArrowLeft className="h-4 w-4 mr-1" /> Back to Quiz Selection

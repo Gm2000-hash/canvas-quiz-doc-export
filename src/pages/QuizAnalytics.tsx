@@ -404,7 +404,7 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
               body: canvasConnected ? "Click 'Load Canvas Data' inside the Canvas tab." : "Click 'Load Results' inside the Embedded tab.",
             },
           ]}
-        />
+        />}
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
