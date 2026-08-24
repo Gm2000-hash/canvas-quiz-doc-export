@@ -319,6 +319,7 @@ export async function generateForStandards(
     current: null,
     errors: [],
     itemsGenerated: 0,
+    itemsRequested: 0,
     contentType,
   };
 
@@ -334,9 +335,11 @@ export async function generateForStandards(
       progress.errors.push(`${sub.code}: ${result.error}`);
     }
     progress.itemsGenerated += result.saved;
+    progress.itemsRequested += contentType === "questions" ? countPerStandard : result.saved;
     progress.completed++;
     progress.current = null;
     onProgress({ ...progress });
+
 
     if (progress.completed < progress.total) {
       await new Promise(r => setTimeout(r, 1000));
