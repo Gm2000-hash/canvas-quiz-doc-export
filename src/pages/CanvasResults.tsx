@@ -9,6 +9,8 @@ import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS_FLAT } from "@/lib/idaho-standards-data";
 import { useProfileDefaults } from "@/hooks/useProfileDefaults";
 import { tagQuestionsWithStandards } from "@/lib/standards-api";
+import { saveMasterySnapshot } from "@/lib/standards-mastery";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -583,7 +585,23 @@ export default function CanvasResults({ embedded = false }: { embedded?: boolean
     });
   }, [studentScores, questionToStandards]);
 
+  // Publish the student × standard matrix so the Analytics tab can render its mastery grid.
+  useEffect(() => {
+    if (step !== "report" || studentStandardMatrix.length === 0 || allStandards.length === 0) return;
+    saveMasterySnapshot({
+      quizTitle: quizzes.find(q => String(q.id) === selectedQuiz)?.title || "Canvas quiz",
+      courseName: courses.find(c => String(c.id) === selectedCourse)?.name || "",
+      capturedAt: new Date().toISOString(),
+      standards: allStandards,
+      students: studentStandardMatrix.map(s => ({
+        studentName: s.studentName,
+        scores: Object.fromEntries(s.stdScores),
+      })),
+    });
+  }, [step, studentStandardMatrix, allStandards, quizzes, courses, selectedQuiz, selectedCourse]);
+
   const mappedCount = mappings.filter(m => m.standards.length > 0).length;
+
 
   if (!config) {
     return (
