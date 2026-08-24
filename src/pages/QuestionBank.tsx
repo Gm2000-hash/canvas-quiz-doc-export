@@ -1535,10 +1535,15 @@ const QuestionBank = () => {
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setShowExportDialog(false)}>Cancel</Button>
+            <Button variant="secondary" onClick={handlePushToCanvas} disabled={exporting || selected.size === 0} className="gap-2">
+              <Upload className="h-4 w-4" />
+              Push to Canvas
+            </Button>
             <Button variant="secondary" onClick={handleExportQTI} disabled={exporting || !quizTitle.trim()} className="gap-2">
               {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
               Mastery Connect (QTI)
             </Button>
+
             <Button onClick={handleExport} disabled={exporting || !quizTitle.trim()} className="gap-2">
               {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
               Word Document
