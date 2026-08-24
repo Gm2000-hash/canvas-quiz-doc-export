@@ -618,6 +618,7 @@ const QuestionBank = () => {
             variant: "ink",
           }}
           secondaryActions={[
+            { label: "Import Quiz File", icon: Upload, onClick: () => setShowImportQuiz(true) },
             { label: "Quiz Builder", icon: ClipboardCheck, onClick: () => navigate("/quiz-builder") },
           ]}
           sideTiles={[
