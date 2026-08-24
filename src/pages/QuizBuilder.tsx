@@ -302,6 +302,19 @@ export default function QuizBuilder() {
 
   const totalPoints = selectedQuestions.reduce((sum, q) => sum + (settings.pointsPerQuestion ?? q.points_possible ?? 1), 0);
 
+  const handlePushToCanvas = () => {
+    if (selectedIds.length === 0) {
+      toast.warning("Add at least one question to push a quiz.");
+      return;
+    }
+    if (!canvasConnected || !canvasConfig) {
+      toast.warning("Connect Canvas first to push quizzes.");
+      navigate("/canvas");
+      return;
+    }
+    setShowPush(true);
+  };
+
   const QUESTION_TYPES: Record<string, string> = {
     multiple_choice_question: "Multiple Choice",
     multiple_answers_question: "Select All",
@@ -333,6 +346,9 @@ export default function QuizBuilder() {
               { label: "Preview" },
             ]} />
             <div className="ml-auto flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handlePushToCanvas} className="gap-1.5">
+                <Upload className="h-4 w-4" /> Push to Canvas ({selectedQuestions.length})
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setPreviewMode(false)} className="gap-1.5">
                 <EyeOff className="h-4 w-4" /> Exit Preview
               </Button>
@@ -426,23 +442,9 @@ export default function QuizBuilder() {
                 <Download className="h-4 w-4" /> Export Word
               </Button>
             )}
-            {selectedIds.length > 0 && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (!canvasConnected || !canvasConfig) {
-                    toast.error("Connect Canvas first to export this quiz");
-                    navigate("/canvas");
-                    return;
-                  }
-                  setShowPush(true);
-                }}
-                className="gap-1.5"
-              >
-                <Upload className="h-4 w-4" /> Push to Canvas
-              </Button>
-            )}
+            <Button size="sm" variant="outline" onClick={handlePushToCanvas} className="gap-1.5">
+              <Upload className="h-4 w-4" /> Push to Canvas ({selectedIds.length})
+            </Button>
 
           </div>
         </div>
