@@ -225,6 +225,26 @@ export default function CanvasResults({ embedded = false }: { embedded?: boolean
     }
   }, [config, selectedCourse]);
 
+  // ── Deep link: ?courseId=&quizId= preselects the pushed quiz run ──
+  const deepCourseId = searchParams.get("courseId");
+  const deepQuizId = searchParams.get("quizId");
+  const appliedCourseRef = useRef(false);
+  const appliedQuizRef = useRef(false);
+
+  useEffect(() => {
+    if (deepCourseId && !appliedCourseRef.current) {
+      appliedCourseRef.current = true;
+      setSelectedCourse(deepCourseId);
+    }
+  }, [deepCourseId]);
+
+  useEffect(() => {
+    if (deepQuizId && !appliedQuizRef.current && quizzes.some(q => String(q.id) === deepQuizId)) {
+      appliedQuizRef.current = true;
+      setSelectedQuiz(deepQuizId);
+    }
+  }, [deepQuizId, quizzes]);
+
   // Step 1: Pull data from Canvas
   const handlePullResults = async () => {
     if (!config || !selectedCourse || !selectedQuiz) return;
