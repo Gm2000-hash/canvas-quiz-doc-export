@@ -101,11 +101,22 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
   const navigate = useNavigate();
   const { user } = useAuth();
   const { config: canvasConfig, isConfigured: canvasConnected } = useCanvasConfig();
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const deepCourseId = searchParams.get("courseId");
   const deepQuizId = searchParams.get("quizId");
   const [innerTab, setInnerTab] = useState<string>(deepQuizId || deepCourseId ? "canvas" : "isat");
   const autoLoadedRef = useRef(false);
+
+  const goToResults = () => {
+    if (embedded) {
+      const params = new URLSearchParams(searchParams);
+      params.set("tab", "results");
+      setSearchParams(params, { replace: true });
+    } else {
+      navigate("/canvas?tab=results");
+    }
+  };
+
 
   // ISAT data
   const [isatExams, setIsatExams] = useState<ISATExam[]>([]);
