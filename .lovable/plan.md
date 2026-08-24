@@ -1,87 +1,35 @@
-# Port AI Generators to Teacher's Companion
+# Fix: question generator returns fewer questions than requested
 
-## What we're moving
+Asking for 10 questions often yields only 2. The requested count is passed correctly all the way to the AI call, so the shortfall happens in the AI response itself: the model is asked once for the whole set with no minimum enforced, no size limits declared, and no check that what came back matches the request. Long tool-call payloads (each question carries a JSON answers string) also get cut off mid-array, and whatever partial set arrives is saved silently.
 
-Four AI generators from this app:
+## What will change
 
-1. **Question generator** — `generate-questions` edge fn + `CreateQuestionDialog`
-2. **Lesson plan generator** — `generate-lesson-plans` edge fn + `RegenerateLessonDialog`/`PrepopulateStandardsDialog`
-3. **Escape room generator** — `generate-escape-room` edge fn + `GenerateEscapeRoomDialog`
-4. **Reading generator** — `generate-curriculum-reading` edge fn + reading UI
+1. **Enforce the count in the request**
+   - Add `minItems`/`maxItems` equal to the requested count on the `questions` array schema.
+   - State the exact count as a hard requirement in both the system and user prompt ("Return exactly N questions — no fewer").
 
-All are UDL-wrapped (`withUdl()`), Lovable AI Gateway–backed, and tied to NGSS / Idaho standards.
+2. **Top-up loop instead of one shot**
+   - After the first call, if fewer than N questions came back, make follow-up calls asking only for the remaining number, passing the already-generated stems so the model does not repeat them.
+   - Cap at 3 total attempts, then return whatever was collected.
 
-## Same two-step rhythm as the exporter port
+3. **Batch large requests**
+   - Requests over 5 questions are split into chunks of 5 and generated sequentially, which keeps each response well inside the response-size limit that currently truncates the array.
 
-Work happens here first (prep clean, portable artifacts), then the user runs a follow-up prompt in **Teacher's Companion** which uses `cross_project--read_project_file` to pull everything across.
+4. **Detect and log truncation**
+   - Log the response `finish_reason`; when it is `length`, treat that batch as incomplete and let the top-up loop refill it.
 
-## Phase 1 — In THIS project (prep)
+5. **Surface shortfalls in the UI**
+   - The generator response includes `requested` and `returned` counts.
+   - When fewer questions than requested were saved, the progress/summary toast says so ("Saved 8 of 10 — try again to fill the rest") instead of silently reporting success.
 
-### A. Portable `_shared` for edge functions
-Stage clean copies under `supabase/functions/_shared/portable/`:
-- `udl.ts` — already self-contained, copy as-is
-- `model.ts` — resolver, copy as-is
-- `logger.ts` — strip project-specific log table refs, leave console fallback
-- `ai-gateway.ts` — single helper (`callGateway(model, messages, tools?)`) so target app doesn't have to learn our patterns
+## Technical details
 
-### B. Portable standards data
-- `src/lib/exports-ai/standards-mini.ts` — minimal `{ code, description, key_terms? }` shape only. Strips NGSS/Idaho's full dimension trees so target app can supply its own standard list.
+- `supabase/functions/generate-content/index.ts` — `buildQuestionPrompt` gains explicit count language and `minItems`/`maxItems`; the question path gets a chunk + top-up loop around the gateway call with `finish_reason` logging, and returns `{ questions, requested, returned }`.
+- `supabase/functions/generate-questions/index.ts` — the same count enforcement, chunking, and top-up loop, since the portable generator library calls this function.
+- `src/lib/content-generator.ts` — `saveQuestions` returns the requested vs saved counts so callers can report a shortfall.
+- `src/components/GenerateContentDialog.tsx` — progress summary reports partial results.
+- Model choice and existing UDL prompt wrapping stay unchanged.
 
-### C. Edge function clones (target-ready)
-Under `supabase/functions/_portable/`:
-- `generate-questions/index.ts`
-- `generate-lesson-plans/index.ts`
-- `generate-escape-room/index.ts`
-- `generate-curriculum-reading/index.ts`
+## Verification
 
-Changes vs the originals:
-- Drop direct DB writes — return generated payload only. Target app decides where to persist.
-- Replace `ALL_SUBSTANDARDS` lookups with caller-supplied standards array.
-- Keep `withUdl()` wrapping and `resolveModel(body, tier)` resolution.
-- Standard CORS + JWT verify + LOVABLE_API_KEY check.
-
-### D. Portable types + client
-`src/lib/exports-ai/`:
-- `types.ts` — `PortableStandard`, `GenerateQuestionsInput/Output`, `GenerateLessonInput/Output`, `GenerateEscapeRoomInput/Output`, `GenerateReadingInput/Output`
-- `client.ts` — thin `supabase.functions.invoke()` wrappers, returns typed results
-- `index.ts` — barrel
-- `README.md` — porting guide + how to drop the edge fns in, plus required secrets (`LOVABLE_API_KEY` only)
-
-### E. Starter UI components (framework-agnostic shadcn)
-`src/lib/exports-ai/ui/`:
-- `GenerateQuestionsDialog.tsx`
-- `GenerateLessonDialog.tsx`
-- `GenerateEscapeRoomDialog.tsx`
-- `GenerateReadingDialog.tsx`
-
-These are simplified versions: standards picker is a prop (target app supplies its own picker since their standards data may differ), model select is optional. No app-specific imports — only `@/components/ui/*` from shadcn, which both apps share.
-
-## Phase 2 — Follow-up prompt for Teacher's Companion
-
-You paste a single prompt over in Teacher's Companion. That agent will:
-1. `cross_project--read_project_file` every file under `src/lib/exports-ai/`, `supabase/functions/_portable/`, and `supabase/functions/_shared/portable/` from this project
-2. Copy edge functions to `supabase/functions/{generate-questions,generate-lesson-plans,generate-escape-room,generate-curriculum-reading}/`
-3. Copy `_shared/portable/*` into its own `_shared/`
-4. Copy the lib + UI components into the target codebase
-5. Add a route (likely `/_authenticated/ai-generate` next to `/canvas-export`) with tabs for each generator
-6. Wire its existing standards source to the `standards` prop
-
-## What's NOT in scope
-
-- We are not porting standards data itself. Each app keeps its own. (NGSS data is ~2 MB and project-specific.)
-- We are not porting persistence (DB inserts). The dialogs return generated content via callback; target app decides what to do with it.
-- We are not porting NGSS-specific tagger functions (`ngss-tagger`, `standards-tagger`) — those depend on full NGSS data. Can be a follow-up.
-- We are not touching the originals in this project. They keep working.
-
-## Technical notes
-
-- Edge fns stay JWT-verified (default). Only secret needed in target: `LOVABLE_API_KEY` (already set there).
-- All generators use `resolveModel(body, tier)` with `"heavy"` for lessons/escape rooms, `"default"` for questions, `"utility"` for short helpers — preserved exactly.
-- UI components accept `onGenerated(result)` callback rather than writing to Supabase directly.
-- Total new files in this project: ~20. No edits to existing files.
-
-## Effort
-
-One session here for the prep. One session in Teacher's Companion to wire it up.
-
-Approve and I'll start Phase 1.
+Generate 10 questions for one standard and confirm 10 land in the bank; check the edge function logs for the per-batch counts and any `finish_reason: length` entries.
