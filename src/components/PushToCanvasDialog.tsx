@@ -8,6 +8,7 @@ import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getCourses, createCanvasQuiz, createCanvasQuizQuestion, type CanvasConfig, type Course } from "@/lib/canvas-api";
 import { mapQuestionToCanvas } from "@/lib/canvas-question-mapper";
+import { saveLastCanvasPush, type CanvasPushTarget } from "@/lib/canvas-last-push";
 import type { QuestionBankItem } from "@/lib/question-bank";
 import { toast } from "sonner";
 import { Loader2, Upload, CheckCircle, Info } from "lucide-react";
@@ -105,6 +106,7 @@ export default function PushToCanvasDialog({ open, onOpenChange, questions, conf
       let completed = 0;
       const courseIds = Array.from(selectedCourseIds);
       const description = defaults?.instructions || defaults?.description || undefined;
+      const targets: CanvasPushTarget[] = [];
 
       for (const courseId of courseIds) {
         const quiz = await createCanvasQuiz(config, Number(courseId), {
@@ -117,11 +119,26 @@ export default function PushToCanvasDialog({ open, onOpenChange, questions, conf
           one_question_at_a_time: oneAtATime,
         });
 
+        targets.push({
+          courseId,
+          courseName: courses.find(c => String(c.id) === courseId)?.name,
+          quizId: String(quiz.id),
+        });
+
         for (let i = 0; i < mapped.length; i++) {
           await createCanvasQuizQuestion(config, Number(courseId), quiz.id, mapped[i].payload);
           completed++;
           setProgress(completed);
         }
+      }
+
+      if (targets.length > 0) {
+        saveLastCanvasPush({
+          quizTitle: quizTitle.trim(),
+          questionCount: questions.length,
+          pushedAt: new Date().toISOString(),
+          targets,
+        });
       }
 
       setDone(true);

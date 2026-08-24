@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { supabase } from "@/integrations/supabase/client";
@@ -101,6 +101,11 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
   const navigate = useNavigate();
   const { user } = useAuth();
   const { config: canvasConfig, isConfigured: canvasConnected } = useCanvasConfig();
+  const [searchParams] = useSearchParams();
+  const deepCourseId = searchParams.get("courseId");
+  const deepQuizId = searchParams.get("quizId");
+  const [innerTab, setInnerTab] = useState<string>(deepQuizId || deepCourseId ? "canvas" : "isat");
+  const autoLoadedRef = useRef(false);
 
   // ISAT data
   const [isatExams, setIsatExams] = useState<ISATExam[]>([]);
@@ -146,6 +151,14 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
     })();
   }, [canvasConnected, canvasConfig, fetchedCanvasCourses]);
 
+  // ── Deep link: ?courseId=&quizId= focuses the pushed quiz run ──
+  useEffect(() => {
+    if (!deepCourseId) return;
+    if (courses.some(c => String(c.id) === deepCourseId)) {
+      setSelectedCourseId(deepCourseId);
+    }
+  }, [deepCourseId, courses]);
+
   const loadCanvasData = async () => {
     if (!canvasConfig) return;
     setLoadingCanvas(true);
@@ -180,6 +193,14 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
       setLoadingCanvas(false);
     }
   };
+
+  // Auto-pull Canvas data once when arriving from a "last push" deep link.
+  useEffect(() => {
+    if (!deepCourseId || autoLoadedRef.current) return;
+    if (!canvasConfig || selectedCourseId !== deepCourseId) return;
+    autoLoadedRef.current = true;
+    loadCanvasData();
+  }, [deepCourseId, canvasConfig, selectedCourseId]);
 
   // ── ISAT Analytics ──
 
@@ -280,9 +301,10 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
         high,
         low,
         points: d.quiz.points_possible,
+        isDeepLinked: !!deepQuizId && String(d.quiz.id) === deepQuizId,
       };
-    });
-  }, [canvasQuizData]);
+    }).sort((a, b) => Number(b.isDeepLinked) - Number(a.isDeepLinked));
+  }, [canvasQuizData, deepQuizId]);
 
   const canvasDistribution = useMemo(() => {
     const buckets = [
@@ -410,7 +432,7 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <Tabs defaultValue="isat">
+          <Tabs value={innerTab} onValueChange={setInnerTab}>
             <TabsList className="mb-4">
               <TabsTrigger value="isat" className="gap-1.5">
                 <Target className="h-4 w-4" /> ISAT Practice
@@ -807,8 +829,8 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {canvasQuizSummary.map((q, i) => (
-                                  <TableRow key={i}>
+                        {canvasQuizSummary.map((q, i) => (
+                                  <TableRow key={i} className={q.isDeepLinked ? "bg-primary/10" : undefined}>
                                     <TableCell className="font-medium max-w-[180px] truncate">{q.quiz}</TableCell>
                                     <TableCell className="text-sm max-w-[140px] truncate">{q.course}</TableCell>
                                     <TableCell>{q.submissions}</TableCell>

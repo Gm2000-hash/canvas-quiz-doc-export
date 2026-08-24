@@ -1,6 +1,7 @@
 import { SettingsForm } from "@/components/SettingsForm";
 import { QuizBrowser } from "@/components/QuizBrowser";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
+import { LastCanvasPushCard } from "@/components/LastCanvasPushCard";
 import { FileText } from "lucide-react";
 import { useEffect } from "react";
 
@@ -39,7 +40,10 @@ const CanvasExport = ({ embedded = false }: CanvasExportProps = {}) => {
 
   if (!isConfigured) {
     return (
-      <div className={embedded ? "py-6" : "flex items-center justify-center min-h-[60vh]"}>
+      <div className={embedded ? "py-6 space-y-6" : "min-h-[60vh] py-6 space-y-6"}>
+        <div className="max-w-2xl mx-auto px-4">
+          <LastCanvasPushCard />
+        </div>
         <div className="max-w-sm w-full mx-auto px-4 space-y-6">
           <div className="text-center space-y-2">
             <div className="mx-auto h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
@@ -56,7 +60,12 @@ const CanvasExport = ({ embedded = false }: CanvasExportProps = {}) => {
     );
   }
 
-  return <QuizBrowser config={config!} />;
+  return (
+    <div className="space-y-6">
+      <LastCanvasPushCard />
+      <QuizBrowser config={config!} />
+    </div>
+  );
 };
 
 export default CanvasExport;

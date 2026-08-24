@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { SettingsForm } from "@/components/SettingsForm";
 import { getCourses, getQuizzes, getQuizQuestions, getEnrollments, getQuizReport, buildTaggerText, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from "@/lib/canvas-api";
@@ -167,6 +168,7 @@ function StandardsPicker({ standards, onChange, framework }: { standards: { code
 
 export default function CanvasResults({ embedded = false }: { embedded?: boolean } = {}) {
   const { config, setConfig } = useCanvasConfig();
+  const [searchParams] = useSearchParams();
   const { defaultFramework, subjects, grades } = useProfileDefaults();
   const [courses, setCourses] = useState<Course[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
@@ -223,6 +225,26 @@ export default function CanvasResults({ embedded = false }: { embedded?: boolean
       getQuizzes(config, Number(selectedCourse)).then(setQuizzes).catch(() => toast.error("Failed to load quizzes")).finally(() => setLoadingQuizzes(false));
     }
   }, [config, selectedCourse]);
+
+  // ── Deep link: ?courseId=&quizId= preselects the pushed quiz run ──
+  const deepCourseId = searchParams.get("courseId");
+  const deepQuizId = searchParams.get("quizId");
+  const appliedCourseRef = useRef(false);
+  const appliedQuizRef = useRef(false);
+
+  useEffect(() => {
+    if (deepCourseId && !appliedCourseRef.current) {
+      appliedCourseRef.current = true;
+      setSelectedCourse(deepCourseId);
+    }
+  }, [deepCourseId]);
+
+  useEffect(() => {
+    if (deepQuizId && !appliedQuizRef.current && quizzes.some(q => String(q.id) === deepQuizId)) {
+      appliedQuizRef.current = true;
+      setSelectedQuiz(deepQuizId);
+    }
+  }, [deepQuizId, quizzes]);
 
   // Step 1: Pull data from Canvas
   const handlePullResults = async () => {
