@@ -442,6 +442,18 @@ const QuestionBank = () => {
     }
   };
 
+  const handlePushToCanvas = () => {
+    if (selected.size === 0) return;
+    if (!canvasConnected || !canvasConfig) {
+      toast.warning("Connect Canvas first to push quizzes.");
+      navigate("/canvas");
+      return;
+    }
+    setShowExportDialog(false);
+    setShowPushToCanvas(true);
+  };
+
+
   // Build discipline → coreIdea → questions hierarchy
   // HS standards are grouped under their MS counterpart core idea
   const buildHierarchy = () => {
