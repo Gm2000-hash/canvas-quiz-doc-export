@@ -121,8 +121,16 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
       );
       setDone(true);
       const total = latestProgressRef.current?.itemsGenerated ?? 0;
-      toast.success(`Generated ${total} ${total !== 1 ? labels.plural : labels.singular} for ${initialStandard.code}!`);
+      const asked = latestProgressRef.current?.itemsRequested ?? 0;
+      if (asked > total) {
+        toast.warning(
+          `Saved ${total} of ${asked} ${labels.plural} for ${initialStandard.code} — run it again to fill the rest.`,
+        );
+      } else {
+        toast.success(`Generated ${total} ${total !== 1 ? labels.plural : labels.singular} for ${initialStandard.code}!`);
+      }
       onComplete();
+
     } catch (e: any) {
       toast.error(e.message || "Generation failed");
     } finally {
