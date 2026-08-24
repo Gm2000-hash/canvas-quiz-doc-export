@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,61 +7,39 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getCourses, createCanvasQuiz, createCanvasQuizQuestion, type CanvasConfig, type Course } from "@/lib/canvas-api";
+import { mapQuestionToCanvas } from "@/lib/canvas-question-mapper";
 import type { QuestionBankItem } from "@/lib/question-bank";
 import { toast } from "sonner";
-import { Loader2, Upload, CheckCircle } from "lucide-react";
+import { Loader2, Upload, CheckCircle, Info } from "lucide-react";
+
+export interface PushQuizDefaults {
+  title?: string;
+  /** Rendered as the Canvas quiz description / instructions. */
+  description?: string;
+  instructions?: string;
+  timeLimitMinutes?: number | null;
+  pointsPerQuestion?: number | null;
+  shuffleAnswers?: boolean;
+  showOneAtATime?: boolean;
+}
 
 interface PushToCanvasDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   questions: QuestionBankItem[];
   config: CanvasConfig;
+  defaults?: PushQuizDefaults;
 }
 
-function stripHtml(html: string): string {
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  return div.textContent || div.innerText || "";
-}
-
-/** Map our question_type to Canvas quiz question types */
-function mapQuestionType(type: string): string {
-  const map: Record<string, string> = {
-    multiple_choice_question: "multiple_choice_question",
-    multiple_answers_question: "multiple_answers_question",
-    true_false_question: "true_false_question",
-    short_answer_question: "short_answer_question",
-    essay_question: "essay_question",
-    matching_question: "matching_question",
-    fill_in_multiple_blanks_question: "fill_in_multiple_blanks_question",
-  };
-  return map[type] || "essay_question";
-}
-
-function buildCanvasAnswers(q: QuestionBankItem) {
-  if (!q.answers || q.answers.length === 0) return undefined;
-
-  if (q.question_type === "matching_question") {
-    return q.answers.map((a: any) => ({
-      answer_match_left: a.left || a.text || "",
-      answer_match_right: a.right || "",
-    }));
-  }
-
-  return q.answers.map((a: any) => ({
-    answer_text: stripHtml(a.text || a.html || ""),
-    answer_weight: a.weight ?? 0,
-  }));
-}
-
-export default function PushToCanvasDialog({ open, onOpenChange, questions, config }: PushToCanvasDialogProps) {
+export default function PushToCanvasDialog({ open, onOpenChange, questions, config, defaults }: PushToCanvasDialogProps) {
   const [courses, setCourses] = useState<Course[]>([]);
   const [loadingCourses, setLoadingCourses] = useState(false);
   const [selectedCourseIds, setSelectedCourseIds] = useState<Set<string>>(new Set());
-  const [quizTitle, setQuizTitle] = useState("Quiz from Question Bank");
+  const [quizTitle, setQuizTitle] = useState(defaults?.title || "Quiz from Question Bank");
   const [quizType, setQuizType] = useState<string>("assignment");
   const [publishImmediately, setPublishImmediately] = useState(false);
-  const [shuffleAnswers, setShuffleAnswers] = useState(true);
+  const [shuffleAnswers, setShuffleAnswers] = useState(defaults?.shuffleAnswers ?? true);
+  const [oneAtATime, setOneAtATime] = useState(defaults?.showOneAtATime ?? false);
   const [pushing, setPushing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
@@ -77,8 +55,28 @@ export default function PushToCanvasDialog({ open, onOpenChange, questions, conf
     if (open) {
       setDone(false);
       setProgress(0);
+      if (defaults?.title) setQuizTitle(defaults.title);
+      if (defaults?.shuffleAnswers !== undefined) setShuffleAnswers(defaults.shuffleAnswers);
+      if (defaults?.showOneAtATime !== undefined) setOneAtATime(defaults.showOneAtATime);
     }
   }, [open, config]);
+
+  // Pre-compute the Canvas payloads so conversion notes can be shown up front.
+  const mapped = useMemo(
+    () =>
+      questions.map((q, i) =>
+        mapQuestionToCanvas(q, {
+          position: i + 1,
+          pointsOverride: defaults?.pointsPerQuestion ?? null,
+        })
+      ),
+    [questions, defaults?.pointsPerQuestion]
+  );
+
+  const conversionNotes = useMemo(
+    () => Array.from(new Set(mapped.map(m => m.note).filter(Boolean) as string[])),
+    [mapped]
+  );
 
   const toggleCourse = (id: string) => {
     setSelectedCourseIds(prev => {
@@ -106,24 +104,21 @@ export default function PushToCanvasDialog({ open, onOpenChange, questions, conf
     try {
       let completed = 0;
       const courseIds = Array.from(selectedCourseIds);
+      const description = defaults?.instructions || defaults?.description || undefined;
 
       for (const courseId of courseIds) {
         const quiz = await createCanvasQuiz(config, Number(courseId), {
           title: quizTitle.trim(),
+          description,
           quiz_type: quizType as any,
           shuffle_answers: shuffleAnswers,
           published: publishImmediately,
+          time_limit: defaults?.timeLimitMinutes ?? null,
+          one_question_at_a_time: oneAtATime,
         });
 
-        for (let i = 0; i < questions.length; i++) {
-          const q = questions[i];
-          await createCanvasQuizQuestion(config, Number(courseId), quiz.id, {
-            question_name: `Question ${i + 1}`,
-            question_text: q.question_text,
-            question_type: mapQuestionType(q.question_type),
-            points_possible: q.points_possible,
-            answers: buildCanvasAnswers(q),
-          });
+        for (let i = 0; i < mapped.length; i++) {
+          await createCanvasQuizQuestion(config, Number(courseId), quiz.id, mapped[i].payload);
           completed++;
           setProgress(completed);
         }
@@ -140,7 +135,7 @@ export default function PushToCanvasDialog({ open, onOpenChange, questions, conf
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Push to Canvas</DialogTitle>
           <DialogDescription>
@@ -211,9 +206,25 @@ export default function PushToCanvasDialog({ open, onOpenChange, questions, conf
               </div>
 
               <div className="flex items-center justify-between">
+                <Label htmlFor="oneAtATime">One Question at a Time</Label>
+                <Switch id="oneAtATime" checked={oneAtATime} onCheckedChange={setOneAtATime} />
+              </div>
+
+              <div className="flex items-center justify-between">
                 <Label htmlFor="publish">Publish Immediately</Label>
                 <Switch id="publish" checked={publishImmediately} onCheckedChange={setPublishImmediately} />
               </div>
+
+              {conversionNotes.length > 0 && (
+                <div className="rounded-md border border-border bg-muted/40 p-3 space-y-1.5">
+                  <p className="flex items-center gap-1.5 text-xs font-semibold text-foreground">
+                    <Info className="h-3.5 w-3.5" /> Formatting notes
+                  </p>
+                  <ul className="list-disc pl-4 space-y-1 text-xs text-muted-foreground">
+                    {conversionNotes.map(note => <li key={note}>{note}</li>)}
+                  </ul>
+                </div>
+              )}
             </div>
 
             {pushing && (
