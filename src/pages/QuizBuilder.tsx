@@ -433,7 +433,7 @@ export default function QuizBuilder() {
                 onClick={() => {
                   if (!canvasConnected || !canvasConfig) {
                     toast.error("Connect Canvas first to export this quiz");
-                    navigate("/canvas-export");
+                    navigate("/canvas");
                     return;
                   }
                   setShowPush(true);
@@ -761,6 +761,15 @@ export default function QuizBuilder() {
           onOpenChange={setShowPush}
           questions={selectedQuestions}
           config={canvasConfig}
+          defaults={{
+            title: quizTitle,
+            description: quizDescription,
+            instructions: settings.instructions || quizDescription,
+            timeLimitMinutes: settings.timeLimitMinutes,
+            pointsPerQuestion: settings.pointsPerQuestion,
+            shuffleAnswers: settings.shuffleOnExport,
+            showOneAtATime: settings.showOneAtATime,
+          }}
         />
       )}
     </div>
