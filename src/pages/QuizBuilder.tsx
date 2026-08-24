@@ -442,23 +442,9 @@ export default function QuizBuilder() {
                 <Download className="h-4 w-4" /> Export Word
               </Button>
             )}
-            {selectedIds.length > 0 && (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => {
-                  if (!canvasConnected || !canvasConfig) {
-                    toast.error("Connect Canvas first to export this quiz");
-                    navigate("/canvas");
-                    return;
-                  }
-                  setShowPush(true);
-                }}
-                className="gap-1.5"
-              >
-                <Upload className="h-4 w-4" /> Push to Canvas
-              </Button>
-            )}
+            <Button size="sm" variant="outline" onClick={handlePushToCanvas} className="gap-1.5">
+              <Upload className="h-4 w-4" /> Push to Canvas ({selectedIds.length})
+            </Button>
 
           </div>
         </div>
