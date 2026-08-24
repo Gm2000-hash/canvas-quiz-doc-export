@@ -80,7 +80,9 @@ export default function GenerateISATExamDialog({ open, onOpenChange, onComplete 
       if (data?.error) throw new Error(data.error);
 
       const questions = data?.questions || [];
-      if (questions.length === 0) throw new Error("No questions generated");
+      if (questions.length !== questionCount || data?.generated !== questionCount) {
+        throw new Error(`Generated ${questions.length} of ${questionCount} questions. The incomplete exam was not saved; please try again.`);
+      }
 
       const totalPoints = questions.reduce((sum: number, q: any) => sum + (q.points_possible || 1), 0);
 

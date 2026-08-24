@@ -49,7 +49,13 @@ export function generateQuestions(
   supabase: SupabaseFunctionsClient,
   input: GenerateQuestionsInput,
 ): Promise<GenerateQuestionsOutput> {
-  return invoke<GenerateQuestionsOutput>(supabase, "generate-questions", input);
+  const requested = Math.max(1, Math.floor(input.count ?? 10));
+  return invoke<GenerateQuestionsOutput>(supabase, "generate-questions", input).then((result) => {
+    if (result.questions.length !== requested || result.generated !== requested) {
+      throw new Error(`Generated ${result.questions.length} of ${requested} questions. Nothing was saved; please try again.`);
+    }
+    return result;
+  });
 }
 
 export function generateLessons(
