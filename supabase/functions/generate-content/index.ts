@@ -337,6 +337,17 @@ function parseAnswersJson(raw: string): any {
   return [];
 }
 
+/** Tolerant field reads — models label answer text/correctness inconsistently. */
+function answerText(a: any): string {
+  if (typeof a === "string") return a;
+  return a?.text ?? a?.answer ?? a?.answer_text ?? a?.option ?? a?.label ?? a?.value ?? "";
+}
+function answerWeight(a: any): number {
+  if (typeof a !== "object" || a === null) return 0;
+  if (typeof a.weight === "number") return a.weight;
+  return (a.correct ?? a.is_correct ?? a.isCorrect) ? 100 : 0;
+}
+
 function normalizeQuestion(q: any) {
   let answers = q.answers;
   if (q.answers_json) {
@@ -344,14 +355,15 @@ function normalizeQuestion(q: any) {
   }
 
   if (Array.isArray(answers)) {
-    answers = answers.map((a: any) => ({ text: a.text, weight: a.weight ?? (a.correct ? 100 : 0) }));
+    answers = answers.map((a: any) => ({ text: answerText(a), weight: answerWeight(a) }));
   }
   if (answers?.options && Array.isArray(answers.options)) {
-    answers = answers.options.map((o: any) => ({ text: o.text, weight: o.correct ? 100 : 0 }));
+    answers = answers.options.map((o: any) => ({ text: answerText(o), weight: answerWeight(o) }));
   }
   const { answers_json, ...rest } = q;
   return { ...rest, answers };
 }
+
 
 const QUESTION_BATCH_SIZE = 5;
 const MAX_QUESTION_ATTEMPTS = 3;
