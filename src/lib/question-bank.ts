@@ -281,7 +281,7 @@ export async function backfillDokAndBlooms(): Promise<number> {
 
     const { error: updateError } = await supabase
       .from("question_bank")
-      .update(updates)
+      .update(updates as never)
       .eq("id", q.id);
 
     if (!updateError) updated++;
@@ -304,7 +304,7 @@ export async function updateQuestion(
   if (updates.blooms_level !== undefined) dbUpdates.blooms_level = updates.blooms_level;
 
   if (Object.keys(dbUpdates).length > 0) {
-    const { error } = await supabase.from("question_bank").update(dbUpdates).eq("id", id);
+    const { error } = await supabase.from("question_bank").update(dbUpdates as never).eq("id", id);
     if (error) throw error;
   }
 
