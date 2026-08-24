@@ -194,6 +194,14 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
     }
   };
 
+  // Auto-pull Canvas data once when arriving from a "last push" deep link.
+  useEffect(() => {
+    if (!deepCourseId || autoLoadedRef.current) return;
+    if (!canvasConfig || selectedCourseId !== deepCourseId) return;
+    autoLoadedRef.current = true;
+    loadCanvasData();
+  }, [deepCourseId, canvasConfig, selectedCourseId]);
+
   // ── ISAT Analytics ──
 
   const completedIsats = useMemo(() => isatExams.filter(e => e.completed_at && e.score != null), [isatExams]);
