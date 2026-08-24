@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { SettingsForm } from "@/components/SettingsForm";
 import { getCourses, getQuizzes, getQuizQuestions, getEnrollments, getQuizReport, buildTaggerText, type CanvasConfig, type Course, type Quiz, type QuizQuestion } from "@/lib/canvas-api";
