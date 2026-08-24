@@ -256,12 +256,41 @@ export default function CanvasResults({ embedded = false }: { embedded?: boolean
     setMappings([]);
 
     try {
-      const [reportData, questions, enrollmentData, bank] = await Promise.all([
+      const [reportRes, questionsRes, enrollmentRes, bankRes] = await Promise.allSettled([
         getQuizReport(config, Number(selectedCourse), Number(selectedQuiz)),
         getQuizQuestions(config, Number(selectedCourse), Number(selectedQuiz)),
         getEnrollments(config, Number(selectedCourse)),
         getQuestionBank(),
       ]);
+
+      const isForbidden = (e: unknown) => /\[403\]|not authorized|unauthorized/i.test(String((e as any)?.message || e));
+
+      if (reportRes.status === "rejected") {
+        toast.error(
+          isForbidden(reportRes.reason)
+            ? "Canvas denied access to this quiz report. Your token needs Teacher/TA permissions in this course."
+            : (reportRes.reason?.message || "Failed to load the quiz report."),
+        );
+        setLoading(false);
+        return;
+      }
+      if (questionsRes.status === "rejected") {
+        toast.error(
+          isForbidden(questionsRes.reason)
+            ? "Canvas denied access to this quiz's questions. Check your token permissions for this course."
+            : (questionsRes.reason?.message || "Failed to load quiz questions."),
+        );
+        setLoading(false);
+        return;
+      }
+
+      const reportData = reportRes.value;
+      const questions = questionsRes.value;
+      const bank = bankRes.status === "fulfilled" ? bankRes.value : [];
+      const enrollmentData = enrollmentRes.status === "fulfilled" ? enrollmentRes.value : [];
+      if (enrollmentRes.status === "rejected") {
+        toast.warning("Couldn't load the course roster (permission denied). Student names may show as IDs.");
+      }
 
       if (reportData.pending) {
         toast.info("Report is still generating. Please try again in a minute.");
@@ -277,6 +306,7 @@ export default function CanvasResults({ embedded = false }: { embedded?: boolean
         enrollMap.set(e.user_id, e.user?.name || e.user?.sortable_name || `Student ${e.user_id}`);
       }
       setEnrollments(enrollMap);
+
 
       // Build a text-based lookup for fallback matching (strip HTML & normalize)
       const bankByText = new Map<string, QuestionBankItem>();
