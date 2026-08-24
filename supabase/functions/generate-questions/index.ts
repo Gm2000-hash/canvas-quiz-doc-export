@@ -268,25 +268,34 @@ Use the tool provided to return your questions. Return EXACTLY the number of que
       return [];
     };
 
+    /** Tolerant field reads — models label answer text/correctness inconsistently. */
+    const answerText = (a: any): string =>
+      typeof a === 'string' ? a : (a?.text ?? a?.answer ?? a?.answer_text ?? a?.option ?? a?.label ?? a?.value ?? '');
+    const answerWeight = (a: any): number => {
+      if (typeof a !== 'object' || a === null) return 0;
+      if (typeof a.weight === 'number') return a.weight;
+      return (a.correct ?? a.is_correct ?? a.isCorrect) ? 100 : 0;
+    };
+
     const normalize = (q: any) => {
       let answers = q.answers;
       if (q.answers_json) {
         answers = parseAnswersJson(String(q.answers_json));
       }
 
-
       if ((q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') && Array.isArray(answers)) {
-        answers = answers.map((a: any) => ({ text: a.text, weight: a.weight ?? (a.correct ? 100 : 0) }));
+        answers = answers.map((a: any) => ({ text: answerText(a), weight: answerWeight(a) }));
       }
       if (answers?.options && Array.isArray(answers.options)) {
         if (q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') {
-          answers = answers.options.map((o: any) => ({ text: o.text, weight: o.correct ? 100 : 0 }));
+          answers = answers.options.map((o: any) => ({ text: answerText(o), weight: answerWeight(o) }));
         }
       }
 
       const { answers_json, ...rest } = q;
       return { ...rest, answers };
     };
+
 
     /** One gateway call asking for exactly `need` questions. */
     const runBatch = async (
