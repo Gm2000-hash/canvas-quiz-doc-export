@@ -8,6 +8,8 @@ import { getCourses, getQuizzes, getQuizSubmissions, getEnrollments, type Canvas
 import { AppNavSheet } from "@/components/AppNavSheet";
 import { Breadcrumbs } from "@/components/Breadcrumbs";
 import { BentoHero } from "@/components/BentoHero";
+import { StandardsMasteryMatrix } from "@/components/StandardsMasteryMatrix";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
