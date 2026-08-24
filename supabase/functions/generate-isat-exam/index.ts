@@ -3,6 +3,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { withLogging } from "../_shared/logger.ts";
 import { resolveModel } from "../_shared/model.ts";
 import { withUdl } from "../_shared/udl.ts";
+import { ExactQuestionCountError, QuestionGenerationError, generateExactQuestions } from "../_shared/exact-question-generation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -77,8 +78,8 @@ serve(withLogging("generate-isat-exam", async (req) => {
       });
     }
 
-    const { grade_level, question_count = 35, title, selected_standards } = parsedBody;
-    const clampedCount = Math.min(Math.max(question_count, 15), 60);
+    const { grade_level, question_count = 35, selected_standards } = parsedBody;
+    const requestedCount = Math.min(50, Math.max(1, Math.floor(Number(question_count) || 1)));
 
     // Build standards context from either selected_standards or legacy grade_level
     let standardsContext: string;
@@ -99,14 +100,14 @@ serve(withLogging("generate-isat-exam", async (req) => {
 
       standardsContext = `The exam must cover EXACTLY these ${selected_standards.length} NGSS standards:\n${standardsList}\n\nDistribute questions across all listed standards as evenly as possible.`;
 
-      console.log(`Generating ${clampedCount}-question ISAT exam for ${selected_standards.length} specific standards (${disciplineLabel})`);
+      console.log(`Generating ${requestedCount}-question ISAT exam for ${selected_standards.length} specific standards (${disciplineLabel})`);
     } else if (grade_level && GRADE_STANDARDS[grade_level]) {
       // Legacy flow: grade level
       const gradeConfig = GRADE_STANDARDS[grade_level];
       disciplineLabel = gradeConfig.label;
       standardsContext = `The exam must cover ALL ${gradeConfig.label} NGSS standards (core ideas: ${gradeConfig.coreIdeas.join(", ")}) with questions distributed across them.`;
 
-      console.log(`Generating ${clampedCount}-question ISAT exam for ${grade_level} grade (${gradeConfig.label})`);
+      console.log(`Generating ${requestedCount}-question ISAT exam for ${grade_level} grade (${gradeConfig.label})`);
     } else {
       return new Response(
         JSON.stringify({ error: "Must provide either selected_standards or a valid grade_level." }),
@@ -179,11 +180,8 @@ ${standardsContext}
 ## DISTRIBUTION RULES:
 - Mix DOK levels: ~25% DOK 1, ~40% DOK 2, ~25% DOK 3, ~10% DOK 4
 - Mix Bloom's levels appropriately
-- At least 3 constructed response questions
-- At least 2 investigation design questions
-- At least 3 data analysis questions
-- At least 3 scenario-based questions
-- At least 2 concept mapping questions
+- For exams of 15 or more questions: include at least 3 constructed response, 2 investigation design, 3 data analysis, 3 scenario-based, and 2 concept mapping questions
+- For shorter exams, use the same proportions without requiring more special item types than the total permits
 - Remaining questions should be TEI (MC, select-all, drag-and-drop)
 - Each question must specify which standard it assesses
 
@@ -196,37 +194,22 @@ ${standardsContext}
 - Every question MUST include a "hint" — a short (1-2 sentence) clue that nudges the student toward the correct concept without giving the answer away
 - Before finalizing each question, re-read it and confirm: (a) no visual is referenced, (b) all answer options are present and non-empty, (c) the student knows exactly what action to take.`;
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: resolveModel(parsedBody, "heavy"),
-        messages: [
-          { role: "system", content: withUdl(systemPrompt, "ISAT practice exam: vary response formats across the exam per UDL Action & Expression (do not lean only on multiple choice). Use plain language in stems; define technical terms inline; design distractors that target real misconceptions, not language barriers. The 'hint' field doubles as a UDL Representation scaffold — make it concept-focused, not answer-leaking.") },
-          {
-            role: "user",
-            content: `Generate a complete ${clampedCount}-question ISAT practice exam covering ${disciplineLabel}.
-
-Make this exam realistic and challenging — it should prepare students for the actual ISAT ECA. Include a variety of question types as specified.
-
-REMEMBER: This is a TEXT-ONLY exam. Do NOT reference any image, diagram, figure, illustration, chart, photo, or "model shown". If data or a scenario is needed, write it out fully in the question text. Every multiple-choice/select-all question MUST have complete answer options. Every question MUST tell the student exactly what to do.`,
-          },
-        ],
-        tools: [
-          {
-            type: "function",
-            function: {
-              name: "return_exam",
-              description: "Return the complete ISAT practice exam",
-              parameters: {
-                type: "object",
-                properties: {
-                  questions: {
-                    type: "array",
-                    items: {
+    const generateBatch = async (need: number, excludeStems: string[], attempt: number): Promise<any[]> => {
+      const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: resolveModel(parsedBody, "heavy"),
+          messages: [
+            { role: "system", content: withUdl(systemPrompt, "ISAT practice exam: vary response formats across the exam per UDL Action & Expression (do not lean only on multiple choice). Use plain language in stems; define technical terms inline; design distractors that target real misconceptions, not language barriers. The 'hint' field doubles as a UDL Representation scaffold — make it concept-focused, not answer-leaking.") },
+            { role: "user", content: `Generate exactly ${need} additional ISAT practice question${need === 1 ? "" : "s"} covering ${disciplineLabel}. This is attempt ${attempt}. Return exactly ${need}, no fewer. Keep the set text-only and self-contained.${excludeStems.length ? `\n\nDo not repeat or paraphrase these stems:\n${excludeStems.map((stem) => `- ${stem.slice(0, 180)}`).join("\n")}` : ""}` },
+          ],
+          tools: [{ type: "function", function: {
+            name: "return_exam",
+            description: "Return the requested ISAT practice questions",
+            parameters: {
+              type: "object",
+              properties: { questions: { type: "array", minItems: need, maxItems: need, items: {
                       type: "object",
                       properties: {
                         question_number: { type: "number", description: "Sequential question number" },
@@ -264,71 +247,53 @@ REMEMBER: This is a TEXT-ONLY exam. Do NOT reference any image, diagram, figure,
                         },
                       },
                       required: ["question_number", "question_type", "question_text", "standard_code", "points_possible", "dok_level", "blooms_level", "hint", "answers_json"],
-                    },
-                  },
-                },
-                required: ["questions"],
-              },
+                    } } }, required: ["questions"], additionalProperties: false,
             },
-          },
-        ],
-        tool_choice: { type: "function", function: { name: "return_exam" } },
-      }),
+          } }],
+          tool_choice: { type: "function", function: { name: "return_exam" } },
+        }),
+      });
+      const responseText = await response.text();
+      if (!response.ok) {
+        let gatewayMessage = `AI gateway error [${response.status}]`;
+        try { gatewayMessage = JSON.parse(responseText)?.message ?? JSON.parse(responseText)?.error ?? gatewayMessage; } catch { /* retain status */ }
+        throw new QuestionGenerationError(gatewayMessage, response.status, Number(response.headers.get("Retry-After")) || undefined);
+      }
+      const data = JSON.parse(responseText);
+      const finishReason = data.choices?.[0]?.finish_reason ?? null;
+      const argumentsText = data.choices?.[0]?.message?.tool_calls?.[0]?.function?.arguments;
+      if (!argumentsText) {
+        console.warn(`ISAT attempt ${attempt} returned no tool call [finish_reason: ${finishReason}]`);
+        return [];
+      }
+      try {
+        const parsed = JSON.parse(argumentsText);
+        const raw = Array.isArray(parsed?.questions) ? parsed.questions : [];
+        console.log(`ISAT attempt ${attempt}: requested ${need}, raw ${raw.length} [finish_reason: ${finishReason}]`);
+        return processQuestions(raw, false);
+      } catch (error) {
+        console.warn(`ISAT attempt ${attempt} parse failed:`, error instanceof Error ? error.message : error);
+        return [];
+      }
+    };
+
+    const { questions: exactQuestions, diagnostics } = await generateExactQuestions<any>({
+      requested: requestedCount,
+      getStem: (question) => question.question_text,
+      validate: isQuestionValid,
+      generateBatch,
     });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limit exceeded. Please try again in a moment." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits in Settings." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const text = await response.text();
-      console.error("AI gateway error:", response.status, text.substring(0, 500));
-      throw new Error(`AI gateway error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-
-    if (!toolCall?.function?.arguments) {
-      const content = data.choices?.[0]?.message?.content || "";
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
-      if (jsonMatch) {
-        try {
-          const parsed = JSON.parse(jsonMatch[1]);
-          if (parsed.questions) {
-            const questions = processQuestions(parsed.questions);
-            return respondWithQuestions(questions, clampedCount);
-          }
-        } catch { /* fall through */ }
-      }
-      throw new Error("No exam returned from AI");
-    }
-
-    let parsed;
-    try {
-      parsed = JSON.parse(toolCall.function.arguments);
-    } catch {
-      const cleaned = toolCall.function.arguments
-        .replace(/,\s*}/g, "}")
-        .replace(/,\s*]/g, "]");
-      parsed = JSON.parse(cleaned);
-    }
-
-    const questions = processQuestions(parsed.questions || []);
-    console.log(`Generated ${questions.length}-question ISAT exam covering ${disciplineLabel}`);
-
-    return respondWithQuestions(questions, clampedCount);
+    const questions = exactQuestions.map((question, index) => ({ ...question, question_number: index + 1 }));
+    console.log(`Generated exact ${questions.length}-question ISAT exam covering ${disciplineLabel}`);
+    return respondWithQuestions(questions, requestedCount, diagnostics);
   } catch (e) {
     console.error("generate-isat-exam error:", e);
+    const status = e instanceof QuestionGenerationError
+      ? e.status
+      : e instanceof ExactQuestionCountError ? 422 : 500;
     return new Response(
-      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error" }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      JSON.stringify({ error: e instanceof Error ? e.message : "Unknown error", ...(e instanceof ExactQuestionCountError ? { diagnostics: e.diagnostics } : {}) }),
+      { status, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
 }));
@@ -374,7 +339,7 @@ function isQuestionValid(q: any): { valid: boolean; reason?: string } {
   return { valid: true };
 }
 
-function processQuestions(raw: any[]): any[] {
+function processQuestions(raw: any[], filterInvalid = true): any[] {
   const processed = raw.map((q: any, idx: number) => {
     let answers: any = null;
     if (q.answers_json) {
@@ -408,6 +373,7 @@ function processQuestions(raw: any[]): any[] {
     };
   });
 
+  if (!filterInvalid) return processed;
   // Filter out malformed questions and renumber
   const valid: any[] = [];
   const dropped: { n: number; reason: string }[] = [];
@@ -425,9 +391,9 @@ function processQuestions(raw: any[]): any[] {
   return valid.map((q, i) => ({ ...q, question_number: i + 1 }));
 }
 
-function respondWithQuestions(questions: any[], requested: number) {
+function respondWithQuestions(questions: any[], requested: number, diagnostics: unknown) {
   return new Response(
-    JSON.stringify({ questions, question_count: questions.length }),
+    JSON.stringify({ questions, question_count: questions.length, requested, generated: questions.length, diagnostics }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } },
   );
 }
