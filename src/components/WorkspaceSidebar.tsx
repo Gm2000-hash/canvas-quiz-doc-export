@@ -37,8 +37,8 @@ const tools = [
   { label: "Activities", path: "/activities", icon: Puzzle },
   { label: "Reading Library", path: "/reading-library", icon: BookOpenCheck },
   { label: "Canvas Export", path: "/canvas", icon: FileText },
-  { label: "Canvas Results", path: "/canvas-results", icon: BarChart3 },
-  { label: "Quiz Analytics", path: "/quiz-analytics", icon: BarChart3 },
+  { label: "Canvas Results", path: "/canvas?tab=results", icon: BarChart3 },
+  { label: "Quiz Analytics", path: "/canvas?tab=analytics", icon: BarChart3 },
   { label: "Standards", path: "/standards", icon: Library },
 ];
 
