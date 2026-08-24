@@ -848,7 +848,10 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
                   )}
                 </>
               )}
+
+              <StandardsMasteryMatrix onGoToResults={goToResults} />
             </TabsContent>
+
 
             {/* ─── Embedded Results Tab ─── */}
             <TabsContent value="embedded" className="space-y-6">
