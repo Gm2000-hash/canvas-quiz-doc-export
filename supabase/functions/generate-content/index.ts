@@ -71,7 +71,11 @@ function buildQuestionPrompt(opts: any) {
             points_possible: { type: "number" },
             dok_level: { type: "number" },
             blooms_level: { type: "string" },
-            answers_json: { type: "string" },
+            answers_json: {
+              type: "string",
+              description: 'Valid JSON string of the answer data. For multiple choice / multiple answers use exactly: [{"text":"...","weight":100},{"text":"...","weight":0}] — every option MUST have a non-empty "text". For multi-step: {"parts":[{"label":"Part A","prompt":"...","options":[{"text":"...","correct":true}]}]}. For drag-and-drop: {"categories":[{"label":"...","items":["item1","item2"]}]}. Do not double-escape the JSON.',
+            },
+
           },
           required: ["question_type", "question_text", "points_possible", "dok_level", "blooms_level", "answers_json"],
         },
