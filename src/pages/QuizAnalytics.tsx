@@ -101,6 +101,11 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
   const navigate = useNavigate();
   const { user } = useAuth();
   const { config: canvasConfig, isConfigured: canvasConnected } = useCanvasConfig();
+  const [searchParams] = useSearchParams();
+  const deepCourseId = searchParams.get("courseId");
+  const deepQuizId = searchParams.get("quizId");
+  const [innerTab, setInnerTab] = useState<string>(deepQuizId || deepCourseId ? "canvas" : "isat");
+  const autoLoadedRef = useRef(false);
 
   // ISAT data
   const [isatExams, setIsatExams] = useState<ISATExam[]>([]);
@@ -807,8 +812,8 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
                                 </TableRow>
                               </TableHeader>
                               <TableBody>
-                                {canvasQuizSummary.map((q, i) => (
-                                  <TableRow key={i}>
+                        {canvasQuizSummary.map((q, i) => (
+                                  <TableRow key={i} className={q.isDeepLinked ? "bg-primary/10" : undefined}>
                                     <TableCell className="font-medium max-w-[180px] truncate">{q.quiz}</TableCell>
                                     <TableCell className="text-sm max-w-[140px] truncate">{q.course}</TableCell>
                                     <TableCell>{q.submissions}</TableCell>
