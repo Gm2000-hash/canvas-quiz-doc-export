@@ -82,6 +82,22 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (file.size > MAX_FILE_BYTES) {
+      return new Response(JSON.stringify({ error: `File must be under ${Math.round(MAX_FILE_BYTES / (1024 * 1024))}MB` }), {
+        status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    // "lessons" (default) extracts lesson plans, "questions" extracts quiz questions
+    const mode = (formData.get('mode') as string | null) === 'questions' ? 'questions' : 'lessons';
+    const resultKey = mode === 'questions' ? 'questions' : 'lessons';
+    const systemPrompt = mode === 'questions'
+      ? QUESTION_SYSTEM_PROMPT
+      : null;
+    const userPrompt = mode === 'questions'
+      ? 'Extract every assessment question from this document. Return ONLY a valid JSON array.'
+      : 'Parse this document and extract lesson plan content. Return ONLY a valid JSON array.';
+
     // Read file content as text for supported types
     const fileName = file.name.toLowerCase();
     let textContent = '';
@@ -89,9 +105,10 @@ Deno.serve(async (req) => {
     if (fileName.endsWith('.txt') || fileName.endsWith('.md') || fileName.endsWith('.csv')) {
       textContent = await file.text();
     } else {
-      // For binary files (.docx, .xlsx, .pptx, .pdf), read as base64
+      // For binary files (.docx, .xlsx, .pptx, .pdf), read as base64 in chunks
       const buffer = await file.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+      const base64 = toBase64(buffer);
+      
       
       // Use AI to extract and structure the content
       const mimeType = file.type || 'application/octet-stream';
