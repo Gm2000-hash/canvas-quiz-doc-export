@@ -252,117 +252,204 @@ ${dok_level
 - For drag-and-drop, categories should be clearly distinct
 ${formattingInstructions}
 
-Use the tool provided to return your questions.`;
+Use the tool provided to return your questions. Return EXACTLY the number of questions requested — no fewer. Keep each question concise so the whole set fits in one response.`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: resolveModel(parsedBody, "default"),
-        messages: [
-          { role: 'system', content: withUdl(systemPrompt, "Question sets: vary response formats across the set (mix MC, multi-step, drag-and-drop, short response where supported). Use plain language; define any technical term inline within the stem; design distractors that target real misconceptions, not language confusion.") },
-          {
-            role: 'user',
-            content: `Generate ${count} ${testName}-style ${subjectContext} questions for this ${frameworkLabel}:\n\nStandard: ${standard_code}\nDescription: ${standard_description}\n\nCreate a diverse mix of question types with varying difficulty levels.`
-          }
-        ],
-        tools: [
-          {
-            type: 'function',
-            function: {
-              name: 'return_questions',
-              description: 'Return generated ISAT-style questions',
-              parameters: {
-                type: 'object',
-                properties: {
-                  questions: {
-                    type: 'array',
-                    items: {
-                      type: 'object',
-                      properties: {
-                        question_type: {
-                          type: 'string',
-                          description: 'One of: multiple_choice_question, multiple_answers_question, multi_step_question, drag_and_drop_question'
-                        },
-                        question_text: { type: 'string', description: 'The main question stem or scenario' },
-                        points_possible: { type: 'number', description: 'Point value, typically 1-3' },
-                        dok_level: { type: 'number', description: 'DOK level 1-4' },
-                        blooms_level: { type: 'string', description: 'One of: Remember, Understand, Apply, Analyze, Evaluate, Create' },
-                        answers_json: {
-                          type: 'string',
-                          description: 'JSON string of answer data. For MC/multi-answer: [{"text":"...","weight":100},{"text":"...","weight":0}]. For multi-step: {"parts":[{"label":"Part A","prompt":"...","type":"multiple_choice","options":[{"text":"...","correct":true}]}]}. For drag-drop: {"categories":[{"label":"...","items":["item1","item2"]}]}.',
-                        }
-                      },
-                      required: ['question_type', 'question_text', 'points_possible', 'dok_level', 'blooms_level', 'answers_json']
-                    }
-                  }
-                },
-                required: ['questions'],
-                additionalProperties: false
-              }
-            }
-          }
-        ],
-        tool_choice: { type: 'function', function: { name: 'return_questions' } }
-      }),
-    });
-
-    const responseText = await response.text();
-    console.log('AI gateway status:', response.status);
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again shortly.' }), {
-          status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
+    /** Tolerant JSON parse: handles double-encoded and over-escaped strings from the model. */
+    const parseAnswersJson = (raw: string): any => {
+      const attempts = [raw, raw.replace(/\\\\n/g, "\\n").replace(/\\n/g, " "), raw.replace(/\\+/g, "\\")];
+      for (const candidate of attempts) {
+        try {
+          let parsed = JSON.parse(candidate);
+          if (typeof parsed === "string") parsed = JSON.parse(parsed);
+          return parsed;
+        } catch { /* try next */ }
       }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: 'AI credits exhausted. Please add credits in workspace settings.' }), {
-          status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        });
-      }
-      console.error('AI gateway error:', responseText.substring(0, 500));
-      throw new Error(`AI gateway error [${response.status}]`);
-    }
+      console.error('Failed to parse answers_json:', String(raw).substring(0, 300));
+      return [];
+    };
 
-    const result = JSON.parse(responseText);
-    const toolCall = result.choices?.[0]?.message?.tool_calls?.[0];
-    if (!toolCall) throw new Error('No tool call response from AI');
+    /** Tolerant field reads — models label answer text/correctness inconsistently. */
+    const answerText = (a: any): string =>
+      typeof a === 'string' ? a : (a?.text ?? a?.answer ?? a?.answer_text ?? a?.option ?? a?.label ?? a?.value ?? '');
+    const answerWeight = (a: any): number => {
+      if (typeof a !== 'object' || a === null) return 0;
+      if (typeof a.weight === 'number') return a.weight;
+      return (a.correct ?? a.is_correct ?? a.isCorrect) ? 100 : 0;
+    };
 
-    const parsed = JSON.parse(toolCall.function.arguments);
-
-    const questions = (parsed.questions || []).map((q: any) => {
+    const normalize = (q: any) => {
       let answers = q.answers;
       if (q.answers_json) {
-        try {
-          answers = JSON.parse(q.answers_json);
-        } catch (e) {
-          console.error('Failed to parse answers_json:', q.answers_json?.substring?.(0, 200));
-          answers = [];
-        }
+        answers = parseAnswersJson(String(q.answers_json));
       }
 
       if ((q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') && Array.isArray(answers)) {
-        answers = answers.map((a: any) => ({ text: a.text, weight: a.weight ?? (a.correct ? 100 : 0) }));
+        answers = answers.map((a: any) => ({ text: answerText(a), weight: answerWeight(a) }));
       }
       if (answers?.options && Array.isArray(answers.options)) {
         if (q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') {
-          answers = answers.options.map((o: any) => ({ text: o.text, weight: o.correct ? 100 : 0 }));
+          answers = answers.options.map((o: any) => ({ text: answerText(o), weight: answerWeight(o) }));
         }
       }
 
       const { answers_json, ...rest } = q;
       return { ...rest, answers };
-    });
+    };
 
-    console.log(`Generated ${questions.length} questions for ${standard_code}`);
 
-    return new Response(JSON.stringify({ questions, standard_code }), {
+    /** One gateway call asking for exactly `need` questions. */
+    const runBatch = async (
+      need: number,
+      excludeStems: string[],
+    ): Promise<{ questions: any[]; errorResponse: Response | null }> => {
+      const excludeBlock = excludeStems.length
+        ? `\n\nDo NOT repeat or paraphrase these already-generated questions:\n${excludeStems.map((s) => `- ${String(s).slice(0, 160)}`).join('\n')}`
+        : '';
+
+      const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: resolveModel(parsedBody, "default"),
+          messages: [
+            { role: 'system', content: withUdl(systemPrompt, "Question sets: vary response formats across the set (mix MC, multi-step, drag-and-drop, short response where supported). Use plain language; define any technical term inline within the stem; design distractors that target real misconceptions, not language confusion.") },
+            {
+              role: 'user',
+              content: `Generate exactly ${need} ${testName}-style ${subjectContext} question${need === 1 ? '' : 's'} for this ${frameworkLabel}:\n\nStandard: ${standard_code}\nDescription: ${standard_description}\n\nCreate a diverse mix of question types with varying difficulty levels. Return all ${need} — do not stop early.${excludeBlock}`
+            }
+          ],
+          tools: [
+            {
+              type: 'function',
+              function: {
+                name: 'return_questions',
+                description: 'Return generated ISAT-style questions',
+                parameters: {
+                  type: 'object',
+                  properties: {
+                    questions: {
+                      type: 'array',
+                      minItems: need,
+                      maxItems: need,
+                      items: {
+                        type: 'object',
+                        properties: {
+                          question_type: {
+                            type: 'string',
+                            description: 'One of: multiple_choice_question, multiple_answers_question, multi_step_question, drag_and_drop_question'
+                          },
+                          question_text: { type: 'string', description: 'The main question stem or scenario' },
+                          points_possible: { type: 'number', description: 'Point value, typically 1-3' },
+                          dok_level: { type: 'number', description: 'DOK level 1-4' },
+                          blooms_level: { type: 'string', description: 'One of: Remember, Understand, Apply, Analyze, Evaluate, Create' },
+                          answers_json: {
+                            type: 'string',
+                            description: 'JSON string of answer data. For MC/multi-answer: [{"text":"...","weight":100},{"text":"...","weight":0}]. For multi-step: {"parts":[{"label":"Part A","prompt":"...","type":"multiple_choice","options":[{"text":"...","correct":true}]}]}. For drag-drop: {"categories":[{"label":"...","items":["item1","item2"]}]}.',
+                          }
+                        },
+                        required: ['question_type', 'question_text', 'points_possible', 'dok_level', 'blooms_level', 'answers_json']
+                      }
+                    }
+                  },
+                  required: ['questions'],
+                  additionalProperties: false
+                }
+              }
+            }
+          ],
+          tool_choice: { type: 'function', function: { name: 'return_questions' } }
+        }),
+      });
+
+      const responseText = await response.text();
+      console.log('AI gateway status:', response.status);
+
+      if (!response.ok) {
+        if (response.status === 429) {
+          return {
+            questions: [],
+            errorResponse: new Response(JSON.stringify({ error: 'Rate limit exceeded. Please try again shortly.' }), {
+              status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            }),
+          };
+        }
+        if (response.status === 402) {
+          return {
+            questions: [],
+            errorResponse: new Response(JSON.stringify({ error: 'AI credits exhausted. Please add credits in workspace settings.' }), {
+              status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            }),
+          };
+        }
+        console.error('AI gateway error:', responseText.substring(0, 500));
+        throw new Error(`AI gateway error [${response.status}]`);
+      }
+
+      const raw = JSON.parse(responseText);
+      const finishReason = raw.choices?.[0]?.finish_reason ?? null;
+      const toolCall = raw.choices?.[0]?.message?.tool_calls?.[0];
+      if (!toolCall) {
+        console.error('No tool call response from AI', finishReason ? `[finish_reason: ${finishReason}]` : '');
+        return { questions: [], errorResponse: null };
+      }
+
+      let parsed: any = null;
+      try {
+        parsed = JSON.parse(toolCall.function.arguments);
+      } catch (e) {
+        console.error('Failed to parse tool arguments', (e as Error).message, finishReason ? `[finish_reason: ${finishReason}]` : '');
+        return { questions: [], errorResponse: null };
+      }
+
+      const got = Array.isArray(parsed?.questions) ? parsed.questions : [];
+      console.log(`Batch (need ${need}) returned ${got.length}${finishReason ? ` [finish_reason: ${finishReason}]` : ''}`);
+      return { questions: got.filter((q: any) => q?.question_text).map(normalize), errorResponse: null };
+    };
+
+    const BATCH_SIZE = 5;
+    const MAX_ATTEMPTS = 3;
+    const requested = Math.max(1, Number(count) || 1);
+    const questions: any[] = [];
+    let aborted = false;
+
+    while (questions.length < requested && !aborted) {
+      const target = Math.min(BATCH_SIZE, requested - questions.length);
+      let batchCount = 0;
+
+      for (let attempt = 0; attempt < MAX_ATTEMPTS && batchCount < target; attempt++) {
+        const { questions: got, errorResponse } = await runBatch(
+          target - batchCount,
+          questions.map((q) => q.question_text).filter(Boolean),
+        );
+        if (errorResponse) {
+          if (questions.length > 0) { aborted = true; break; }
+          return errorResponse;
+        }
+        for (const q of got) {
+          if (batchCount >= target) break;
+          questions.push(q);
+          batchCount++;
+        }
+      }
+
+      if (batchCount === 0) {
+        console.error('No questions produced in this batch; stopping early.');
+        break;
+      }
+    }
+
+
+    if (questions.length === 0) throw new Error('No questions could be generated');
+
+    console.log(`Generated ${questions.length} of ${requested} requested questions for ${standard_code}`);
+
+    return new Response(JSON.stringify({ questions, standard_code, requested, returned: questions.length }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
+
 
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

@@ -47,15 +47,22 @@ function buildQuestionPrompt(opts: any) {
     ? `- Generate ALL questions at DOK Level ${dok_level}\n- Match Bloom's taxonomy levels appropriate for DOK ${dok_level}`
     : `- Include a range of DOK levels (1-3)\n- Vary Bloom's taxonomy levels`;
 
-  const systemPrompt = `You are an expert ${gradeRange} ${subjectContext} assessment writer specializing in ${testName}-aligned questions.\n\nCreate a MIX of these question types:\n${questionTypes}\n\nGuidelines:\n- Questions should be grade-appropriate (${gradeRange})\n${dokInstruction}\n- Use real-world scenarios when possible`;
+  const systemPrompt = `You are an expert ${gradeRange} ${subjectContext} assessment writer specializing in ${testName}-aligned questions.\n\nCreate a MIX of these question types:\n${questionTypes}\n\nHARD REQUIREMENT: return EXACTLY ${count} question${count === 1 ? "" : "s"} in the questions array — no fewer. Keep each question concise so the whole set fits in one response.\n\nGuidelines:\n- Questions should be grade-appropriate (${gradeRange})\n${dokInstruction}\n- Use real-world scenarios when possible`;
 
-  const userPrompt = `Generate ${count} ${testName}-style ${subjectContext} questions for this ${frameworkLabel}:\n\nStandard: ${standard_code}\nDescription: ${standard_description}`;
+  const exclude: string[] = Array.isArray(opts.exclude_stems) ? opts.exclude_stems : [];
+  const excludeBlock = exclude.length
+    ? `\n\nDo NOT repeat or paraphrase these already-generated questions:\n${exclude.map((s: string) => `- ${String(s).slice(0, 160)}`).join("\n")}`
+    : "";
+
+  const userPrompt = `Generate exactly ${count} ${testName}-style ${subjectContext} question${count === 1 ? "" : "s"} for this ${frameworkLabel}:\n\nStandard: ${standard_code}\nDescription: ${standard_description}\n\nReturn all ${count} question${count === 1 ? "" : "s"} — do not stop early.${excludeBlock}`;
 
   const schema = {
     type: "object",
     properties: {
       questions: {
         type: "array",
+        minItems: count,
+        maxItems: count,
         items: {
           type: "object",
           properties: {
@@ -64,7 +71,11 @@ function buildQuestionPrompt(opts: any) {
             points_possible: { type: "number" },
             dok_level: { type: "number" },
             blooms_level: { type: "string" },
-            answers_json: { type: "string" },
+            answers_json: {
+              type: "string",
+              description: 'Valid JSON string of the answer data. For multiple choice / multiple answers use exactly: [{"text":"...","weight":100},{"text":"...","weight":0}] — every option MUST have a non-empty "text". For multi-step: {"parts":[{"label":"Part A","prompt":"...","options":[{"text":"...","correct":true}]}]}. For drag-and-drop: {"categories":[{"label":"...","items":["item1","item2"]}]}. Do not double-escape the JSON.',
+            },
+
           },
           required: ["question_type", "question_text", "points_possible", "dok_level", "blooms_level", "answers_json"],
         },
@@ -76,6 +87,7 @@ function buildQuestionPrompt(opts: any) {
 
   return { systemPrompt, userPrompt, schema, toolName: "return_questions" };
 }
+
 
 // ─── Lesson plan generation prompt & schema ────────────────────────────
 function buildLessonPrompt(opts: any) {
@@ -209,7 +221,159 @@ Also include: 3-5 learning objectives, 8-12 key vocabulary terms with definition
   return { systemPrompt, userPrompt, schema, toolName: "return_readings" };
 }
 
+function udlHint(content_type: string) {
+  return content_type === "questions"
+    ? "Question sets: vary response formats across the set (do not produce all multiple-choice). For each question, embed plain-language phrasing, define any technical term inline, and ensure distractors are accessible."
+    : content_type === "lesson_plan"
+    ? "Lesson plans: include explicit UDL choice options for engagement, vocabulary supports under representation, and at least two ways students can demonstrate learning under action & expression."
+    : "Reading: include inline vocabulary callouts (Representation), a 'Try it your way' choice block (Action & Expression), and a Reflect question (Engagement) at the end of the reading paragraphs.";
+}
+
+interface GatewayCallResult {
+  result: any | null;
+  finishReason: string | null;
+  errorResponse: Response | null;
+}
+
+async function callGateway(
+  apiKey: string,
+  body: any,
+  prompt: { systemPrompt: string; userPrompt: string; schema: unknown; toolName: string },
+  content_type: string,
+): Promise<GatewayCallResult> {
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: resolveModel(body, "default"),
+      messages: [
+        { role: "system", content: withUdl(prompt.systemPrompt, udlHint(content_type)) },
+        { role: "user", content: prompt.userPrompt },
+      ],
+      tools: [{
+        type: "function",
+        function: {
+          name: prompt.toolName,
+          description: `Return generated ${content_type}`,
+          parameters: prompt.schema,
+        },
+      }],
+      tool_choice: { type: "function", function: { name: prompt.toolName } },
+    }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 429) {
+      return {
+        result: null, finishReason: null,
+        errorResponse: new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }),
+      };
+    }
+    if (response.status === 402) {
+      return {
+        result: null, finishReason: null,
+        errorResponse: new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }),
+      };
+    }
+    const t = await response.text();
+    console.error("AI error:", response.status, t.substring(0, 500));
+    throw new Error(`AI gateway error [${response.status}]`);
+  }
+
+  const data = await response.json();
+  const finishReason = data.choices?.[0]?.finish_reason ?? null;
+  if (finishReason && finishReason !== "stop" && finishReason !== "tool_calls") {
+    console.warn(`AI finish_reason: ${finishReason} — response may be truncated`);
+  }
+
+  let result: any = null;
+
+  // Shape 1: tool_calls (expected)
+  const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+  if (toolCall?.function?.arguments) {
+    try {
+      const raw = toolCall.function.arguments;
+      result = JSON.parse(typeof raw === "string" ? raw : JSON.stringify(raw));
+    } catch (e) {
+      console.error("Failed to parse tool_call arguments:", (e as Error).message, String(toolCall.function.arguments).substring(0, 500));
+    }
+  }
+
+  // Shape 2: plain message content (fallback)
+  if (!result) {
+    const raw = data.choices?.[0]?.message?.content || "";
+    if (raw) {
+      try {
+        const cleaned = raw.replace(/```json\n?|```/g, "").trim();
+        const matched = cleaned.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+        if (matched) result = JSON.parse(matched[0]);
+      } catch (e) {
+        console.error("Failed to parse content fallback:", (e as Error).message, raw.substring(0, 500));
+      }
+    }
+  }
+
+  if (!result) {
+    console.error("Could not extract JSON from AI response:", JSON.stringify(data).substring(0, 1000));
+  }
+
+  return { result, finishReason, errorResponse: null };
+}
+
+/** Tolerant JSON parse: handles double-encoded and over-escaped strings from the model. */
+function parseAnswersJson(raw: string): any {
+  const attempts = [raw, raw.replace(/\\\\n/g, "\\n").replace(/\\n/g, " "), raw.replace(/\\+/g, "\\")];
+  for (const candidate of attempts) {
+    try {
+      let parsed = JSON.parse(candidate);
+      if (typeof parsed === "string") parsed = JSON.parse(parsed);
+      return parsed;
+    } catch { /* try next */ }
+  }
+  console.error("Failed to parse answers_json:", String(raw).substring(0, 300));
+  return [];
+}
+
+/** Tolerant field reads — models label answer text/correctness inconsistently. */
+function answerText(a: any): string {
+  if (typeof a === "string") return a;
+  return a?.text ?? a?.answer ?? a?.answer_text ?? a?.option ?? a?.label ?? a?.value ?? "";
+}
+function answerWeight(a: any): number {
+  if (typeof a !== "object" || a === null) return 0;
+  if (typeof a.weight === "number") return a.weight;
+  return (a.correct ?? a.is_correct ?? a.isCorrect) ? 100 : 0;
+}
+
+function normalizeQuestion(q: any) {
+  let answers = q.answers;
+  if (q.answers_json) {
+    answers = parseAnswersJson(String(q.answers_json));
+  }
+
+  if (Array.isArray(answers)) {
+    answers = answers.map((a: any) => ({ text: answerText(a), weight: answerWeight(a) }));
+  }
+  if (answers?.options && Array.isArray(answers.options)) {
+    answers = answers.options.map((o: any) => ({ text: answerText(o), weight: answerWeight(o) }));
+  }
+  const { answers_json, ...rest } = q;
+  return { ...rest, answers };
+}
+
+
+const QUESTION_BATCH_SIZE = 5;
+const MAX_QUESTION_ATTEMPTS = 3;
+
 serve(withLogging("generate-content", async (req) => {
+
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
@@ -236,118 +400,81 @@ serve(withLogging("generate-content", async (req) => {
       throw new Error("content_type, standard_code, and standard_description are required");
     }
 
-    const opts = { standard_code, standard_description, count, subject, framework, dok_level };
-    let prompt;
+    // ─── Questions: chunked generation with top-up loop ───────────────
     if (content_type === "questions") {
-      prompt = buildQuestionPrompt(opts);
-    } else if (content_type === "lesson_plan") {
-      prompt = buildLessonPrompt(opts);
-    } else if (content_type === "reading") {
-      prompt = buildReadingPrompt(opts);
-    } else {
-      throw new Error(`Unknown content_type: ${content_type}`);
+      const requested = Math.max(1, Number(count) || 1);
+      const collected: any[] = [];
+      let batchStart = 0;
+
+      while (collected.length < requested) {
+        const remainingTotal = requested - collected.length;
+        const target = Math.min(QUESTION_BATCH_SIZE, remainingTotal);
+        let batchCollected = 0;
+
+        for (let attempt = 0; attempt < MAX_QUESTION_ATTEMPTS && batchCollected < target; attempt++) {
+          const need = target - batchCollected;
+          const prompt = buildQuestionPrompt({
+            standard_code, standard_description, subject, framework, dok_level,
+            count: need,
+            exclude_stems: collected.map((q: any) => q.question_text).filter(Boolean),
+          });
+
+          const { result, finishReason, errorResponse } = await callGateway(
+            LOVABLE_API_KEY, body, prompt, content_type,
+          );
+          if (errorResponse) {
+            if (collected.length > 0) break;
+            return errorResponse;
+          }
+
+          const got = Array.isArray(result?.questions) ? result.questions : [];
+          console.log(
+            `Questions batch (need ${need}) returned ${got.length}` +
+            (finishReason ? ` [finish_reason: ${finishReason}]` : ""),
+          );
+          for (const q of got) {
+            if (batchCollected >= target) break;
+            if (!q?.question_text) continue;
+            collected.push(normalizeQuestion(q));
+            batchCollected++;
+          }
+        }
+
+        if (batchCollected === 0) {
+          console.error(`No questions produced for batch starting at ${batchStart}; stopping.`);
+          break;
+        }
+        batchStart += batchCollected;
+      }
+
+      if (collected.length === 0) throw new Error("Failed to parse AI response");
+
+      console.log(`Generated ${collected.length} of ${requested} requested questions for ${standard_code}`);
+
+      return new Response(
+        JSON.stringify({ questions: collected, requested, returned: collected.length }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
     }
+
+    // ─── Lessons / readings: single call ──────────────────────────────
+    const opts = { standard_code, standard_description, count, subject, framework, dok_level };
+    const prompt = content_type === "lesson_plan"
+      ? buildLessonPrompt(opts)
+      : content_type === "reading"
+      ? buildReadingPrompt(opts)
+      : (() => { throw new Error(`Unknown content_type: ${content_type}`); })();
 
     console.log(`Generating ${content_type} for ${standard_code} (count: ${count})`);
 
-    const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${LOVABLE_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: resolveModel(body, content_type === "reading" || content_type === "lesson_plan" ? "default" : "default"),
-        messages: [
-          { role: "system", content: withUdl(prompt.systemPrompt, content_type === "questions" ? "Question sets: vary response formats across the set (do not produce all multiple-choice). For each question, embed plain-language phrasing, define any technical term inline, and ensure distractors are accessible." : content_type === "lesson_plan" ? "Lesson plans: include explicit UDL choice options for engagement, vocabulary supports under representation, and at least two ways students can demonstrate learning under action & expression." : "Reading: include inline vocabulary callouts (Representation), a 'Try it your way' choice block (Action & Expression), and a Reflect question (Engagement) at the end of the reading paragraphs.") },
-          { role: "user", content: prompt.userPrompt },
-        ],
-        tools: [{
-          type: "function",
-          function: {
-            name: prompt.toolName,
-            description: `Return generated ${content_type}`,
-            parameters: prompt.schema,
-          },
-        }],
-        tool_choice: { type: "function", function: { name: prompt.toolName } },
-      }),
-    });
-
-    if (!response.ok) {
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-      const t = await response.text();
-      console.error("AI error:", response.status, t.substring(0, 500));
-      throw new Error(`AI gateway error [${response.status}]`);
-    }
-
-    const data = await response.json();
-    
-    // Try to extract JSON from multiple possible response shapes
-    let result: any = null;
-    
-    // Shape 1: tool_calls (expected)
-    const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
-    if (toolCall?.function?.arguments) {
-      try {
-        const raw = toolCall.function.arguments;
-        result = JSON.parse(typeof raw === "string" ? raw : JSON.stringify(raw));
-      } catch (e) {
-        console.error("Failed to parse tool_call arguments:", (e as Error).message, String(toolCall.function.arguments).substring(0, 500));
-      }
-    }
-    
-    // Shape 2: plain message content (fallback)
-    if (!result) {
-      const raw = data.choices?.[0]?.message?.content || "";
-      if (raw) {
-        try {
-          const cleaned = raw.replace(/```json\n?|```/g, "").trim();
-          const matched = cleaned.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
-          if (matched) {
-            result = JSON.parse(matched[0]);
-          }
-        } catch (e) {
-          console.error("Failed to parse content fallback:", (e as Error).message, raw.substring(0, 500));
-        }
-      }
-    }
-    
-    if (!result) {
-      console.error("Could not extract JSON from AI response:", JSON.stringify(data).substring(0, 1000));
-      throw new Error("Failed to parse AI response");
-    }
-
-    // Normalize question answers
-    if (content_type === "questions" && result.questions) {
-      result.questions = result.questions.map((q: any) => {
-        let answers = q.answers;
-        if (q.answers_json) {
-          try { answers = JSON.parse(q.answers_json); } catch { answers = []; }
-        }
-        if (Array.isArray(answers)) {
-          answers = answers.map((a: any) => ({ text: a.text, weight: a.weight ?? (a.correct ? 100 : 0) }));
-        }
-        if (answers?.options && Array.isArray(answers.options)) {
-          answers = answers.options.map((o: any) => ({ text: o.text, weight: o.correct ? 100 : 0 }));
-        }
-        const { answers_json, ...rest } = q;
-        return { ...rest, answers };
-      });
-    }
+    const { result, errorResponse } = await callGateway(LOVABLE_API_KEY, body, prompt, content_type);
+    if (errorResponse) return errorResponse;
+    if (!result) throw new Error("Failed to parse AI response");
 
     return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
+
   } catch (e) {
     const message = e instanceof Error ? e.message : "Unknown error";
     console.error("generate-content error:", message);

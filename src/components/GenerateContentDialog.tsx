@@ -121,8 +121,16 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
       );
       setDone(true);
       const total = latestProgressRef.current?.itemsGenerated ?? 0;
-      toast.success(`Generated ${total} ${total !== 1 ? labels.plural : labels.singular} for ${initialStandard.code}!`);
+      const asked = latestProgressRef.current?.itemsRequested ?? 0;
+      if (asked > total) {
+        toast.warning(
+          `Saved ${total} of ${asked} ${labels.plural} for ${initialStandard.code} — run it again to fill the rest.`,
+        );
+      } else {
+        toast.success(`Generated ${total} ${total !== 1 ? labels.plural : labels.singular} for ${initialStandard.code}!`);
+      }
       onComplete();
+
     } catch (e: any) {
       toast.error(e.message || "Generation failed");
     } finally {
@@ -234,8 +242,14 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
       }
       setDone(true);
       const total = latestProgressRef.current?.itemsGenerated ?? 0;
-      toast.success(`Generated ${total} ${labels.plural}!`);
+      const asked = latestProgressRef.current?.itemsRequested ?? 0;
+      if (asked > total) {
+        toast.warning(`Saved ${total} of ${asked} ${labels.plural} — run it again to fill the rest.`);
+      } else {
+        toast.success(`Generated ${total} ${labels.plural}!`);
+      }
       onComplete();
+
     } catch (e: any) {
       toast.error(e.message || "Generation failed");
     } finally {
@@ -377,11 +391,13 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
                 <Loader2 className="h-5 w-5 animate-spin text-primary shrink-0" />
               )}
               <div className="text-sm">
-                <span className="font-medium">{progress.itemsGenerated}</span> {labels.plural} generated
+                <span className="font-medium">{progress.itemsGenerated}</span>
+                {progress.itemsRequested > 0 && <> of {progress.itemsRequested}</>} {labels.plural} generated
                 {progress.errors.length > 0 && (
                   <span className="text-destructive ml-2">· {progress.errors.length} errors</span>
                 )}
               </div>
+
             </div>
 
             {progress.errors.length > 0 && (
