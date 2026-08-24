@@ -442,6 +442,18 @@ const QuestionBank = () => {
     }
   };
 
+  const handlePushToCanvas = () => {
+    if (selected.size === 0) return;
+    if (!canvasConnected || !canvasConfig) {
+      toast.warning("Connect Canvas first to push quizzes.");
+      navigate("/canvas");
+      return;
+    }
+    setShowExportDialog(false);
+    setShowPushToCanvas(true);
+  };
+
+
   // Build discipline → coreIdea → questions hierarchy
   // HS standards are grouped under their MS counterpart core idea
   const buildHierarchy = () => {
@@ -771,12 +783,11 @@ const QuestionBank = () => {
                 <Trash2 className="h-4 w-4" />
                 Delete ({selected.size})
               </Button>
-              {canvasConnected && (
-                <Button variant="outline" onClick={() => setShowPushToCanvas(true)} className="gap-2">
-                  <Upload className="h-4 w-4" />
-                  Push to Canvas ({selected.size})
-                </Button>
-              )}
+              <Button variant="outline" onClick={handlePushToCanvas} className="gap-2">
+                <Upload className="h-4 w-4" />
+                Push to Canvas ({selected.size})
+              </Button>
+
             </>
           )}
         </div>
@@ -1524,10 +1535,15 @@ const QuestionBank = () => {
           </div>
           <DialogFooter className="flex-col sm:flex-row gap-2">
             <Button variant="outline" onClick={() => setShowExportDialog(false)}>Cancel</Button>
+            <Button variant="secondary" onClick={handlePushToCanvas} disabled={exporting || selected.size === 0} className="gap-2">
+              <Upload className="h-4 w-4" />
+              Push to Canvas
+            </Button>
             <Button variant="secondary" onClick={handleExportQTI} disabled={exporting || !quizTitle.trim()} className="gap-2">
               {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
               Mastery Connect (QTI)
             </Button>
+
             <Button onClick={handleExport} disabled={exporting || !quizTitle.trim()} className="gap-2">
               {exporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />}
               Word Document
@@ -1901,6 +1917,8 @@ const QuestionBank = () => {
           onOpenChange={setShowPushToCanvas}
           questions={questions.filter(q => selected.has(q.id))}
           config={canvasConfig}
+          defaults={{ title: quizTitle || "Quiz from Question Bank" }}
+
         />
       )}
       {/* Bulk Delete Confirmation */}
