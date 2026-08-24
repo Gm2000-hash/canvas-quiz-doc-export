@@ -9,6 +9,8 @@ import { ALL_SUBSTANDARDS } from "@/lib/ngss-data";
 import { ALL_IDAHO_STANDARDS_FLAT } from "@/lib/idaho-standards-data";
 import { useProfileDefaults } from "@/hooks/useProfileDefaults";
 import { tagQuestionsWithStandards } from "@/lib/standards-api";
+import { saveMasterySnapshot } from "@/lib/standards-mastery";
+
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
