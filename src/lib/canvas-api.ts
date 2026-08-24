@@ -207,7 +207,13 @@ export interface CreateQuizQuestionParams {
   question_type: string;
   points_possible: number;
   answers?: any[];
+  position?: number;
+  correct_comments_html?: string;
+  incorrect_comments_html?: string;
+  neutral_comments_html?: string;
+  matching_answer_incorrect_matches?: string;
 }
+
 
 export async function createCanvasQuizQuestion(
   config: CanvasConfig,
