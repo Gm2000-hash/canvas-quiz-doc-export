@@ -217,7 +217,132 @@ Also include: 3-5 learning objectives, 8-12 key vocabulary terms with definition
   return { systemPrompt, userPrompt, schema, toolName: "return_readings" };
 }
 
+function udlHint(content_type: string) {
+  return content_type === "questions"
+    ? "Question sets: vary response formats across the set (do not produce all multiple-choice). For each question, embed plain-language phrasing, define any technical term inline, and ensure distractors are accessible."
+    : content_type === "lesson_plan"
+    ? "Lesson plans: include explicit UDL choice options for engagement, vocabulary supports under representation, and at least two ways students can demonstrate learning under action & expression."
+    : "Reading: include inline vocabulary callouts (Representation), a 'Try it your way' choice block (Action & Expression), and a Reflect question (Engagement) at the end of the reading paragraphs.";
+}
+
+interface GatewayCallResult {
+  result: any | null;
+  finishReason: string | null;
+  errorResponse: Response | null;
+}
+
+async function callGateway(
+  apiKey: string,
+  body: any,
+  prompt: { systemPrompt: string; userPrompt: string; schema: unknown; toolName: string },
+  content_type: string,
+): Promise<GatewayCallResult> {
+  const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: resolveModel(body, "default"),
+      messages: [
+        { role: "system", content: withUdl(prompt.systemPrompt, udlHint(content_type)) },
+        { role: "user", content: prompt.userPrompt },
+      ],
+      tools: [{
+        type: "function",
+        function: {
+          name: prompt.toolName,
+          description: `Return generated ${content_type}`,
+          parameters: prompt.schema,
+        },
+      }],
+      tool_choice: { type: "function", function: { name: prompt.toolName } },
+    }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 429) {
+      return {
+        result: null, finishReason: null,
+        errorResponse: new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
+          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }),
+      };
+    }
+    if (response.status === 402) {
+      return {
+        result: null, finishReason: null,
+        errorResponse: new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits." }), {
+          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }),
+      };
+    }
+    const t = await response.text();
+    console.error("AI error:", response.status, t.substring(0, 500));
+    throw new Error(`AI gateway error [${response.status}]`);
+  }
+
+  const data = await response.json();
+  const finishReason = data.choices?.[0]?.finish_reason ?? null;
+  if (finishReason && finishReason !== "stop" && finishReason !== "tool_calls") {
+    console.warn(`AI finish_reason: ${finishReason} — response may be truncated`);
+  }
+
+  let result: any = null;
+
+  // Shape 1: tool_calls (expected)
+  const toolCall = data.choices?.[0]?.message?.tool_calls?.[0];
+  if (toolCall?.function?.arguments) {
+    try {
+      const raw = toolCall.function.arguments;
+      result = JSON.parse(typeof raw === "string" ? raw : JSON.stringify(raw));
+    } catch (e) {
+      console.error("Failed to parse tool_call arguments:", (e as Error).message, String(toolCall.function.arguments).substring(0, 500));
+    }
+  }
+
+  // Shape 2: plain message content (fallback)
+  if (!result) {
+    const raw = data.choices?.[0]?.message?.content || "";
+    if (raw) {
+      try {
+        const cleaned = raw.replace(/```json\n?|```/g, "").trim();
+        const matched = cleaned.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+        if (matched) result = JSON.parse(matched[0]);
+      } catch (e) {
+        console.error("Failed to parse content fallback:", (e as Error).message, raw.substring(0, 500));
+      }
+    }
+  }
+
+  if (!result) {
+    console.error("Could not extract JSON from AI response:", JSON.stringify(data).substring(0, 1000));
+  }
+
+  return { result, finishReason, errorResponse: null };
+}
+
+function normalizeQuestion(q: any) {
+  let answers = q.answers;
+  if (q.answers_json) {
+    try { answers = JSON.parse(q.answers_json); } catch { answers = []; }
+  }
+  if (Array.isArray(answers)) {
+    answers = answers.map((a: any) => ({ text: a.text, weight: a.weight ?? (a.correct ? 100 : 0) }));
+  }
+  if (answers?.options && Array.isArray(answers.options)) {
+    answers = answers.options.map((o: any) => ({ text: o.text, weight: o.correct ? 100 : 0 }));
+  }
+  const { answers_json, ...rest } = q;
+  return { ...rest, answers };
+}
+
+const QUESTION_BATCH_SIZE = 5;
+const MAX_QUESTION_ATTEMPTS = 3;
+
 serve(withLogging("generate-content", async (req) => {
+
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
