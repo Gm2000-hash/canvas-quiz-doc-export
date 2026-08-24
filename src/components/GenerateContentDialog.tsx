@@ -391,11 +391,13 @@ export default function GenerateContentDialog({ open, onOpenChange, onComplete, 
                 <Loader2 className="h-5 w-5 animate-spin text-primary shrink-0" />
               )}
               <div className="text-sm">
-                <span className="font-medium">{progress.itemsGenerated}</span> {labels.plural} generated
+                <span className="font-medium">{progress.itemsGenerated}</span>
+                {progress.itemsRequested > 0 && <> of {progress.itemsRequested}</>} {labels.plural} generated
                 {progress.errors.length > 0 && (
                   <span className="text-destructive ml-2">· {progress.errors.length} errors</span>
                 )}
               </div>
+
             </div>
 
             {progress.errors.length > 0 && (
