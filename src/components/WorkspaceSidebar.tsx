@@ -14,7 +14,6 @@ import {
 } from "@/components/ui/sidebar";
 import {
   Home,
-  FileText,
   BookOpen,
   Layers,
   Library,
