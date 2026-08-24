@@ -168,6 +168,7 @@ function StandardsPicker({ standards, onChange, framework }: { standards: { code
 
 export default function CanvasResults({ embedded = false }: { embedded?: boolean } = {}) {
   const { config, setConfig } = useCanvasConfig();
+  const [searchParams] = useSearchParams();
   const { defaultFramework, subjects, grades } = useProfileDefaults();
   const [courses, setCourses] = useState<Course[]>([]);
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
