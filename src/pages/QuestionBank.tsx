@@ -771,12 +771,11 @@ const QuestionBank = () => {
                 <Trash2 className="h-4 w-4" />
                 Delete ({selected.size})
               </Button>
-              {canvasConnected && (
-                <Button variant="outline" onClick={() => setShowPushToCanvas(true)} className="gap-2">
-                  <Upload className="h-4 w-4" />
-                  Push to Canvas ({selected.size})
-                </Button>
-              )}
+              <Button variant="outline" onClick={handlePushToCanvas} className="gap-2">
+                <Upload className="h-4 w-4" />
+                Push to Canvas ({selected.size})
+              </Button>
+
             </>
           )}
         </div>
