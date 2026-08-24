@@ -7,6 +7,40 @@ import { resolveModel } from "../_shared/model.ts";
 
 const AI_GATEWAY = 'https://ai.gateway.lovable.dev/v1/chat/completions';
 
+// Max upload size accepted by this function (raised so large quiz documents work)
+const MAX_FILE_BYTES = 25 * 1024 * 1024;
+
+/**
+ * Base64-encode an ArrayBuffer in chunks.
+ * Spreading a whole Uint8Array into String.fromCharCode overflows the JS call
+ * stack ("Maximum call stack size exceeded") on files larger than ~100KB.
+ */
+function toBase64(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  const CHUNK = 0x8000; // 32KB per chunk keeps the argument list small
+  let binary = '';
+  for (let i = 0; i < bytes.length; i += CHUNK) {
+    binary += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + CHUNK)) as unknown as number[]);
+  }
+  return btoa(binary);
+}
+
+const QUESTION_SYSTEM_PROMPT = `You are a quiz parser for an educational assessment app. Extract every assessment question from the provided document.
+
+Return ONLY a valid JSON array. Each question object must have:
+- "question_text": string (the full question stem, plain text or simple HTML)
+- "question_type": one of "multiple_choice_question", "true_false_question", "multiple_answers_question", "short_answer_question", "essay_question", "matching_question", "numerical_question"
+- "points_possible": number (default 1)
+- "answers": array of { "text": string, "weight": number } — weight 100 for correct answers, 0 for incorrect. Empty array for essay/short answer questions when no key is given.
+- "dok_level": number 1-4 (your best estimate of Depth of Knowledge)
+- "blooms_level": one of "Remember", "Understand", "Apply", "Analyze", "Evaluate", "Create"
+
+Rules:
+- Preserve the original wording of questions and options; do not invent new questions.
+- Keep math/science notation as KaTeX ($...$) or HTML <sup>/<sub>.
+- If a correct answer is not indicated, still list the options with weight 0.
+- Return every question you find, in document order.`;
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
