@@ -1,6 +1,6 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { usePageTitle } from "@/hooks/usePageTitle";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { useCanvasConfig } from "@/hooks/useCanvasConfig";
 import { supabase } from "@/integrations/supabase/client";
@@ -150,6 +150,14 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
       } catch { /* silent */ }
     })();
   }, [canvasConnected, canvasConfig, fetchedCanvasCourses]);
+
+  // ── Deep link: ?courseId=&quizId= focuses the pushed quiz run ──
+  useEffect(() => {
+    if (!deepCourseId) return;
+    if (courses.some(c => String(c.id) === deepCourseId)) {
+      setSelectedCourseId(deepCourseId);
+    }
+  }, [deepCourseId, courses]);
 
   const loadCanvasData = async () => {
     if (!canvasConfig) return;
@@ -416,7 +424,7 @@ export default function QuizAnalytics({ embedded = false }: { embedded?: boolean
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <Tabs defaultValue="isat">
+          <Tabs value={innerTab} onValueChange={setInnerTab}>
             <TabsList className="mb-4">
               <TabsTrigger value="isat" className="gap-1.5">
                 <Target className="h-4 w-4" /> ISAT Practice
