@@ -96,7 +96,7 @@ const CHART_COLORS = [
   "hsl(var(--chart-5, 340 75% 55%))",
 ];
 
-export default function QuizAnalytics() {
+export default function QuizAnalytics({ embedded = false }: { embedded?: boolean } = {}) {
   usePageTitle("Quiz Analytics");
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -365,7 +365,8 @@ export default function QuizAnalytics() {
   const loading = loadingIsat;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className={embedded ? "" : "min-h-screen bg-background"}>
+      {!embedded && (
       <div className="border-b bg-card/80 backdrop-blur-sm sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center gap-3">
           <AppNavSheet />
@@ -377,9 +378,10 @@ export default function QuizAnalytics() {
           </div>
         </div>
       </div>
+      )}
 
-      <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        <BentoHero
+      <div className={embedded ? "space-y-6" : "max-w-7xl mx-auto px-4 py-6 space-y-6"}>
+        {!embedded && <BentoHero
           eyebrow="Analytics"
           title={<>Where students <em className="italic font-light">shine</em> and stumble.</>}
           subtitle="Unified view of ISAT practice exams, Canvas quiz submissions, and embedded H5P activity completions — with standards-level breakdowns."
@@ -402,7 +404,7 @@ export default function QuizAnalytics() {
               body: canvasConnected ? "Click 'Load Canvas Data' inside the Canvas tab." : "Click 'Load Results' inside the Embedded tab.",
             },
           ]}
-        />
+        />}
         {loading ? (
           <div className="flex items-center justify-center py-24">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />

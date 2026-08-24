@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useProfile } from "@/hooks/useProfile";
 import { AppShell } from "@/components/AppShell";
 import Home from "./pages/Home";
-import CanvasExport from "./pages/CanvasExport";
+import CanvasHub from "./pages/CanvasHub";
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
 import QuestionBank from "./pages/QuestionBank";
@@ -18,7 +18,6 @@ import LessonPlanEditor from "./pages/LessonPlanEditor";
 import LessonsBrowser from "./pages/LessonsBrowser";
 import AdminDashboard from "./pages/AdminDashboard";
 import StandardsBrowser from "./pages/StandardsBrowser";
-import CanvasResults from "./pages/CanvasResults";
 import Library from "./pages/Library";
 import Profile from "./pages/Profile";
 import ActivityBuilder from "./pages/ActivityBuilder";
@@ -29,7 +28,6 @@ import ISATExamPlayer from "./pages/ISATExamPlayer";
 import ISATExamEditor from "./pages/ISATExamEditor";
 import ISATReviewPage from "./pages/ISATReviewPage";
 import QuizBuilder from "./pages/QuizBuilder";
-import QuizAnalytics from "./pages/QuizAnalytics";
 import PublicActivityPlayer from "./pages/PublicActivityPlayer";
 import NotePage from "./pages/NotePage";
 import NotesHome from "./pages/NotesHome";
@@ -114,7 +112,7 @@ const App = () => (
           <Route path="/" element={<ProtectedRoute><Home /></ProtectedRoute>} />
           <Route path="/notes" element={<ProtectedRoute><NotesHome /></ProtectedRoute>} />
           <Route path="/notes/:id" element={<ProtectedRoute><NotePage /></ProtectedRoute>} />
-          <Route path="/canvas" element={<ProtectedRoute><CanvasExport /></ProtectedRoute>} />
+          <Route path="/canvas" element={<ProtectedRoute><CanvasHub /></ProtectedRoute>} />
           <Route path="/question-bank" element={<ProtectedRoute><QuestionBank /></ProtectedRoute>} />
           <Route path="/create-question" element={<ProtectedRoute><QuestionEditor /></ProtectedRoute>} />
           <Route path="/lesson-planner" element={<ProtectedRoute><LessonPlanner /></ProtectedRoute>} />
@@ -125,7 +123,7 @@ const App = () => (
           <Route path="/admin/library" element={<AdminRoute><Library /></AdminRoute>} />
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
           <Route path="/standards" element={<ProtectedRoute><StandardsBrowser /></ProtectedRoute>} />
-          <Route path="/canvas-results" element={<ProtectedRoute><CanvasResults /></ProtectedRoute>} />
+          <Route path="/canvas-results" element={<Navigate to="/canvas?tab=results" replace />} />
           <Route path="/activities" element={<ProtectedRoute><ActivityBuilder /></ProtectedRoute>} />
           <Route path="/activities/:id" element={<ProtectedRoute><ActivityEditorPage /></ProtectedRoute>} />
           <Route path="/reading-library" element={<ProtectedRoute><ReadingLibrary /></ProtectedRoute>} />
@@ -133,7 +131,7 @@ const App = () => (
           <Route path="/isat-exam/:id/edit" element={<ProtectedRoute><ISATExamEditor /></ProtectedRoute>} />
           <Route path="/quiz-builder" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
           <Route path="/quiz-builder/:id" element={<ProtectedRoute><QuizBuilder /></ProtectedRoute>} />
-          <Route path="/quiz-analytics" element={<ProtectedRoute><QuizAnalytics /></ProtectedRoute>} />
+          <Route path="/quiz-analytics" element={<Navigate to="/canvas?tab=analytics" replace />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>
