@@ -47,15 +47,22 @@ function buildQuestionPrompt(opts: any) {
     ? `- Generate ALL questions at DOK Level ${dok_level}\n- Match Bloom's taxonomy levels appropriate for DOK ${dok_level}`
     : `- Include a range of DOK levels (1-3)\n- Vary Bloom's taxonomy levels`;
 
-  const systemPrompt = `You are an expert ${gradeRange} ${subjectContext} assessment writer specializing in ${testName}-aligned questions.\n\nCreate a MIX of these question types:\n${questionTypes}\n\nGuidelines:\n- Questions should be grade-appropriate (${gradeRange})\n${dokInstruction}\n- Use real-world scenarios when possible`;
+  const systemPrompt = `You are an expert ${gradeRange} ${subjectContext} assessment writer specializing in ${testName}-aligned questions.\n\nCreate a MIX of these question types:\n${questionTypes}\n\nHARD REQUIREMENT: return EXACTLY ${count} question${count === 1 ? "" : "s"} in the questions array — no fewer. Keep each question concise so the whole set fits in one response.\n\nGuidelines:\n- Questions should be grade-appropriate (${gradeRange})\n${dokInstruction}\n- Use real-world scenarios when possible`;
 
-  const userPrompt = `Generate ${count} ${testName}-style ${subjectContext} questions for this ${frameworkLabel}:\n\nStandard: ${standard_code}\nDescription: ${standard_description}`;
+  const exclude: string[] = Array.isArray(opts.exclude_stems) ? opts.exclude_stems : [];
+  const excludeBlock = exclude.length
+    ? `\n\nDo NOT repeat or paraphrase these already-generated questions:\n${exclude.map((s: string) => `- ${String(s).slice(0, 160)}`).join("\n")}`
+    : "";
+
+  const userPrompt = `Generate exactly ${count} ${testName}-style ${subjectContext} question${count === 1 ? "" : "s"} for this ${frameworkLabel}:\n\nStandard: ${standard_code}\nDescription: ${standard_description}\n\nReturn all ${count} question${count === 1 ? "" : "s"} — do not stop early.${excludeBlock}`;
 
   const schema = {
     type: "object",
     properties: {
       questions: {
         type: "array",
+        minItems: count,
+        maxItems: count,
         items: {
           type: "object",
           properties: {
@@ -76,6 +83,7 @@ function buildQuestionPrompt(opts: any) {
 
   return { systemPrompt, userPrompt, schema, toolName: "return_questions" };
 }
+
 
 // ─── Lesson plan generation prompt & schema ────────────────────────────
 function buildLessonPrompt(opts: any) {
