@@ -346,6 +346,9 @@ export default function QuizBuilder() {
               { label: "Preview" },
             ]} />
             <div className="ml-auto flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handlePushToCanvas} className="gap-1.5">
+                <Upload className="h-4 w-4" /> Push to Canvas ({selectedQuestions.length})
+              </Button>
               <Button variant="outline" size="sm" onClick={() => setPreviewMode(false)} className="gap-1.5">
                 <EyeOff className="h-4 w-4" /> Exit Preview
               </Button>
