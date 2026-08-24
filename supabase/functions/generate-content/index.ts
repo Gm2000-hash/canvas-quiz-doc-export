@@ -267,25 +267,11 @@ async function callGateway(
   });
 
   if (!response.ok) {
-    if (response.status === 429) {
-      return {
-        result: null, finishReason: null,
-        errorResponse: new Response(JSON.stringify({ error: "Rate limited. Please try again in a moment." }), {
-          status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }),
-      };
-    }
-    if (response.status === 402) {
-      return {
-        result: null, finishReason: null,
-        errorResponse: new Response(JSON.stringify({ error: "AI credits exhausted. Please add credits." }), {
-          status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" },
-        }),
-      };
-    }
     const t = await response.text();
     console.error("AI error:", response.status, t.substring(0, 500));
-    throw new Error(`AI gateway error [${response.status}]`);
+    let gatewayMessage = `AI gateway error [${response.status}]`;
+    try { gatewayMessage = JSON.parse(t)?.message ?? JSON.parse(t)?.error ?? gatewayMessage; } catch { /* retain status */ }
+    throw new QuestionGenerationError(gatewayMessage, response.status, Number(response.headers.get("Retry-After")) || undefined);
   }
 
   const data = await response.json();
