@@ -254,16 +254,26 @@ ${formattingInstructions}
 
 Use the tool provided to return your questions. Return EXACTLY the number of questions requested — no fewer. Keep each question concise so the whole set fits in one response.`;
 
+    /** Tolerant JSON parse: handles double-encoded and over-escaped strings from the model. */
+    const parseAnswersJson = (raw: string): any => {
+      const attempts = [raw, raw.replace(/\\\\n/g, "\\n").replace(/\\n/g, " "), raw.replace(/\\+/g, "\\")];
+      for (const candidate of attempts) {
+        try {
+          let parsed = JSON.parse(candidate);
+          if (typeof parsed === "string") parsed = JSON.parse(parsed);
+          return parsed;
+        } catch { /* try next */ }
+      }
+      console.error('Failed to parse answers_json:', String(raw).substring(0, 300));
+      return [];
+    };
+
     const normalize = (q: any) => {
       let answers = q.answers;
       if (q.answers_json) {
-        try {
-          answers = JSON.parse(q.answers_json);
-        } catch (e) {
-          console.error('Failed to parse answers_json:', q.answers_json?.substring?.(0, 200));
-          answers = [];
-        }
+        answers = parseAnswersJson(String(q.answers_json));
       }
+
 
       if ((q.question_type === 'multiple_choice_question' || q.question_type === 'multiple_answers_question') && Array.isArray(answers)) {
         answers = answers.map((a: any) => ({ text: a.text, weight: a.weight ?? (a.correct ? 100 : 0) }));
