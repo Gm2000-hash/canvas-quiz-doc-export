@@ -1835,6 +1835,12 @@ const QuestionBank = () => {
         onOpenChange={setShowCreateDialog}
         onCreated={loadQuestions}
       />
+      <ImportQuizFileDialog
+        open={showImportQuiz}
+        onOpenChange={setShowImportQuiz}
+        onImported={loadQuestions}
+        onQuizCreated={() => navigate("/quiz-builder")}
+      />
       <GenerateContentDialog
         open={showGenerateDialog}
         onOpenChange={(v) => {
