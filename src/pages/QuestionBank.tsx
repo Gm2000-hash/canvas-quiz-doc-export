@@ -1917,6 +1917,8 @@ const QuestionBank = () => {
           onOpenChange={setShowPushToCanvas}
           questions={questions.filter(q => selected.has(q.id))}
           config={canvasConfig}
+          defaults={{ title: quizTitle || "Quiz from Question Bank" }}
+
         />
       )}
       {/* Bulk Delete Confirmation */}
